@@ -229,6 +229,7 @@ export const languageEnglish = {
         setupMessageOption2: "I will setup myself",
         claudeDesc: "Claude is a AI model made by Antropic, competitor to OpenAI. its better than GPT if you want to use it in other languages than English.",
         openAIDesc: "OpenAI GPT is a high quality AI model, but it is paid and filtered, and weak in other than English.",
+        openAIProvider: "OpenAI GPT is the best model, but it is paid and filtered.",
         chooseChatType: "Great! Now select the chat language.",
         chooseChatTypeOption1: "Full English",
         chooseChatTypeOption1Desc: "This will make AI to use English and input/output in English. Recommended for English speakers.",
@@ -263,6 +264,7 @@ export const languageEnglish = {
         "Data": "Data",
         "Array": "Array",
         "Others": "Others",
+        "Dictionary": "Dictionary",
         "Deprecated": "Deprecated",
     },
     triggerDesc: {
@@ -1333,5 +1335,19 @@ export const languageEnglish = {
     showTypingEffect: "Show Typing Effect",
     dynamicRequest: "Dynamic Request",
     dynamicOutputPrompt: "Dynamic Output Prompt",
-    nightlyWarning: "## Nightly Builds\n\nYou are connecting to a nightly build of the software. This version is meant for testing and most likely contains bugs. **In this version, even if you encounter issues, we do not support resolving them directly.**"
+    nightlyWarning: "## Nightly Builds\n\nYou are connecting to a nightly build of the software. This version is meant for testing and most likely contains bugs. **In this version, even if you encounter issues, we do not support resolving them directly.**",
+
+    // Advanced Settings Section Headers
+    advSettingsClaudeSection: "Claude Settings",
+    advSettingsOpenAISection: "OpenAI Settings",
+    advSettingsGoogleSection: "Google Settings",
+    advSettingsLoreBookSection: "Lore Book Settings",
+    advSettingsImageMediaSection: "Image/Media Settings",
+    advSettingsTranslationSection: "Translation Settings",
+    advSettingsToolSection: "Tool Settings",
+    advSettingsChatResponseSection: "Chat/Response Settings",
+    advSettingsPromptSection: "Prompt Settings",
+    advSettingsCachePerformanceSection: "Cache/Performance Settings",
+    advSettingsDevDebugSection: "Developer/Debug Settings",
+    advSettingsOtherSection: "Other Settings",
 }
