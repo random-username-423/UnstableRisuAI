@@ -1350,4 +1350,5 @@ export const languageEnglish = {
     advSettingsCachePerformanceSection: "Cache/Performance Settings",
     advSettingsDevDebugSection: "Developer/Debug Settings",
     advSettingsOtherSection: "Other Settings",
+    vertexAuthError: "Vertex AI authentication details are missing.",
 }

@@ -1,4 +1,5 @@
 import { fetchNative, globalFetch, textifyReadableStream } from "src/ts/globalApi.svelte"
+import { language } from "src/lang"
 import { LLMFlags, LLMFormat } from "src/ts/model/modellist"
 import { getDatabase, setDatabase } from "src/ts/storage/database.svelte"
 import { replaceAsync, simplifySchema, sleep } from "src/ts/util"
@@ -74,11 +75,14 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
 
         if (chat.multimodals && chat.multimodals.length > 0) {
             let geminiParts: GeminiPart[] = [];
-            
-            geminiParts.push({
-                text: chat.content,
-            });
-            
+
+            // Only add text part if content is not empty
+            if(chat.content && chat.content.trim()){
+                geminiParts.push({
+                    text: chat.content,
+                });
+            }
+
             for (const modal of chat.multimodals) {
                 if (
                     (modal.type === "image" && arg.modelInfo.flags.includes(LLMFlags.hasImageInput)) ||
@@ -88,7 +92,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
                     const dataurl = modal.base64;
                     const base64 = dataurl.split(",")[1];
                     const mediaType = dataurl.split(";")[0].split(":")[1];
-        
+
                     geminiParts.push({
                         inlineData: {
                             mimeType: mediaType,
@@ -97,11 +101,25 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
                     });
                 }
             }
-    
+
+            // Add thoughtSignature for assistant messages with multimodals
+            if(chat.role === 'assistant'){
+                const geminiThinking = geminiThinkingMap.get(assistantMsgIndex)
+                if(geminiThinking?.data?.thoughtSignatures){
+                    // Add thoughtSignature to the first part (could be text or image)
+                    const firstPart = geminiParts[0]
+                    if(firstPart){
+                        firstPart.thoughtSignature = geminiThinking.data.thoughtSignatures[0]
+                    }
+                }
+                assistantMsgIndex++
+            }
+
             reformatedChat.push({
                 role: chat.role === 'user' ? 'user' : 'model',
                 parts: geminiParts,
-            });        }
+            });
+        }
         else if(chat.role === 'system'){
             if(prevChat?.role === 'user'){
                 reformatedChat[reformatedChat.length-1].parts[0].text += '\nsystem:' + chat.content
@@ -124,10 +142,10 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             if(chat.role === 'assistant'){
                 const geminiThinking = geminiThinkingMap.get(assistantMsgIndex)
                 if(geminiThinking?.data?.thoughtSignatures){
-                    // Add thoughtSignature to the last part
-                    const lastPart = parts[parts.length - 1]
-                    if(lastPart){
-                        lastPart.thoughtSignature = geminiThinking.data.thoughtSignatures[geminiThinking.data.thoughtSignatures.length - 1]
+                    // Add thoughtSignature to the first part (required by Gemini)
+                    const firstPart = parts[0]
+                    if(firstPart){
+                        firstPart.thoughtSignature = geminiThinking.data.thoughtSignatures[0]
                     }
                 }
                 assistantMsgIndex++
@@ -684,6 +702,7 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
                 const part = parts[i]
 
                 if(part.thoughtSignature){
+                    console.log('Found thoughtSignature:', part.thoughtSignature.substring(0, 50) + '...')
                     collectedSignatures.push(part.thoughtSignature)
                 }
 
@@ -705,7 +724,8 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
                             id: id
                         })
                         rDatas.push({
-                            text: `{{inlayeddata::${id}}}`
+                            text: `{{inlayeddata::${id}}}`,
+                            thought: part.thought
                         })
                     }
                     else{
@@ -888,6 +908,7 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
     }
 
     console.log(result)
+    console.log('collectedSignatures:', collectedSignatures.length, collectedSignatures.map(s => s.substring(0, 30) + '...'))
     return {
         type: 'success',
         result: result,

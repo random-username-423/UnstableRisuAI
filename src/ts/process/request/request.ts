@@ -52,6 +52,11 @@ interface requestDataArgument{
     escape?:boolean
     tools?: MCPTool[]
     rememberToolUsage?: boolean
+    encryptedThinkingHistory?: {
+        index: number
+        provider: string
+        data: any
+    }[]
 }
 
 export interface RequestDataArgumentExtended extends requestDataArgument{
@@ -63,11 +68,6 @@ export interface RequestDataArgumentExtended extends requestDataArgument{
     mode?:ModelModeExtended
     key?:string
     additionalOutput?:string
-    encryptedThinkingHistory?: {
-        index: number
-        provider: string
-        data: any
-    }[]
 }
 
 export type requestDataResponse = {

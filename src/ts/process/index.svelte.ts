@@ -821,6 +821,18 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         if(!msg.chatId){
             msg.chatId = v4()
         }
+
+        // Remove <Thoughts> content before extracting inlays
+        // so that inlayed images inside thoughts are not sent in the request
+        let thoughts:string[] = []
+        const maxThoughtDepth = DBState.db.promptSettings?.maxThoughtTagDepth ?? -1
+        formatedChat = formatedChat.replace(/<Thoughts>(.+)<\/Thoughts>/gms, (match, p1) => {
+            if(maxThoughtDepth === -1 || (maxThoughtDepth - ms.length) <= index){
+                thoughts.push(p1)
+            }
+            return ''
+        })
+
         let inlays:string[] = []
         if(msg.role === 'char'){
             formatedChat = formatedChat.replace(/{{(inlay|inlayed|inlayeddata)::(.+?)}}/g, (
@@ -896,14 +908,6 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     break
             }
         }
-        let thoughts:string[] = []
-        const maxThoughtDepth = DBState.db.promptSettings?.maxThoughtTagDepth ?? -1
-        formatedChat = formatedChat.replace(/<Thoughts>(.+)<\/Thoughts>/gms, (match, p1) => {
-            if(maxThoughtDepth === -1 || (maxThoughtDepth - ms.length) <= index){
-                thoughts.push(p1)
-            }
-            return ''
-        })
 
         const assetPromises:Promise<void>[] = []
         formatedChat = formatedChat.replace(/\{\{asset_?prompt::(.+?)\}\}/gmsiu, (match, p1) => {
@@ -1472,6 +1476,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             assistantOrderIndex++
         }
     }
+    console.log('Loaded encryptedThinkingHistory:', encryptedThinkingHistory)
 
     const req = await requestChatData({
         formated: formated,
@@ -1639,6 +1644,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             emoChanged = result2.emoChanged
             // Get encryptedThinking from response
             const encryptedThinking = (req.type === 'success' && req.encryptedThinking) ? [req.encryptedThinking] : undefined
+            console.log('Saving encryptedThinking:', encryptedThinking)
 
             if(i === 0 && arg.continue){
                 DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex] = {
