@@ -204,6 +204,15 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
             claudeChat.push(formatedChat)
         }
     }
+    // Build a map of assistant index -> encrypted thinking data
+    const anthropicThinkingMap = new Map<number, any>()
+    for(const et of (arg.encryptedThinkingHistory || [])){
+        if(et.provider === 'anthropic'){
+            anthropicThinkingMap.set(et.index, et)
+        }
+    }
+    let assistantMsgIndex = 0
+
     for(const chat of formated){
         switch(chat.role){
             case 'user':{
@@ -215,11 +224,53 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
                 break
             }
             case 'assistant':{
-                addClaudeChat({
-                    role: 'assistant',
-                    content: chat.content,
-                    cache: chat.cachePoint
-                }, chat.multimodals)
+                // Check for thinking data to include (matched by assistant order index)
+                const anthropicThinking = anthropicThinkingMap.get(assistantMsgIndex)
+                assistantMsgIndex++
+
+                if(anthropicThinking?.data?.signatures || anthropicThinking?.data?.redacted){
+                    // Build content with thinking blocks
+                    const content: any[] = []
+
+                    // Add thinking blocks with signatures
+                    if(anthropicThinking.data.signatures){
+                        for(const sig of anthropicThinking.data.signatures){
+                            content.push({
+                                type: 'thinking',
+                                thinking: '', // Original thinking content is not stored
+                                signature: sig
+                            })
+                        }
+                    }
+
+                    // Add redacted thinking blocks
+                    if(anthropicThinking.data.redacted){
+                        for(const red of anthropicThinking.data.redacted){
+                            content.push({
+                                type: 'redacted_thinking',
+                                data: red
+                            })
+                        }
+                    }
+
+                    // Add text content
+                    content.push({
+                        type: 'text',
+                        text: chat.content
+                    })
+
+                    claudeChat.push({
+                        role: 'assistant',
+                        content: content
+                    })
+                }
+                else{
+                    addClaudeChat({
+                        role: 'assistant',
+                        content: chat.content,
+                        cache: chat.cachePoint
+                    }, chat.multimodals)
+                }
                 break
             }
             case 'system':{
@@ -464,6 +515,9 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
         }
         let resText = ''
         let thinking = false
+        let collectedSignatures: string[] = []
+        let collectedRedacted: string[] = []
+
         for(const content of contents){
             if(content.type === 'text'){
                 if(thinking){
@@ -478,6 +532,10 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
                     thinking = true
                 }
                 resText += content.thinking ?? ''
+                // Collect signature from thinking block
+                if(content.signature){
+                    collectedSignatures.push(content.signature)
+                }
             }
             if(content.type === 'redacted_thinking'){
                 if(!thinking){
@@ -485,19 +543,34 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
                     thinking = true
                 }
                 resText += '\n{{redacted_thinking}}\n'
+                // Collect redacted thinking data
+                if(content.data){
+                    collectedRedacted.push(content.data)
+                }
             }
         }
-    
-    
+
+        // Build encrypted thinking data
+        const hasEncryptedData = collectedSignatures.length > 0 || collectedRedacted.length > 0
+        const encryptedThinking = hasEncryptedData ? {
+            provider: 'anthropic',
+            data: {
+                signatures: collectedSignatures.length > 0 ? collectedSignatures : undefined,
+                redacted: collectedRedacted.length > 0 ? collectedRedacted : undefined
+            }
+        } : undefined
+
         if(arg.extractJson && db.jsonSchemaEnabled){
             return {
                 type: 'success',
-                result: extractJSON(resText, db.jsonSchema)
+                result: extractJSON(resText, db.jsonSchema),
+                encryptedThinking
             }
         }
         return {
             type: 'success',
-            result: resText
+            result: resText,
+            encryptedThinking
         }
     }
 
@@ -699,6 +772,11 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
         let breakError = ''
         let thinking = false
 
+        // Collect signatures and redacted thinking during streaming
+        let collectedSignatures: string[] = []
+        let collectedRedacted: string[] = []
+        let currentBlockType: string | null = null
+
         const stream = new ReadableStream<StreamResponseChunk>({
             async start(controller){
                 let text = ''
@@ -706,8 +784,13 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                 let parserData = ''
                 const decoder = new TextDecoder()
                 const parseEvent = (async (e:string) => {
-                    try {               
+                    try {
                         const parsedData = JSON.parse(e)
+
+                        // Track content block type from content_block_start
+                        if(parsedData?.type === 'content_block_start'){
+                            currentBlockType = parsedData?.content_block?.type || null
+                        }
 
                         if(parsedData?.type === 'content_block_delta'){
                             if(parsedData?.delta?.type === 'text' || parsedData.delta?.type === 'text_delta'){
@@ -717,7 +800,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                                 }
                                 text += parsedData.delta?.text ?? ''
                             }
-    
+
                             if(parsedData?.delta?.type === 'thinking' || parsedData.delta?.type === 'thinking_delta'){
                                 if(!thinking){
                                     text += "<Thoughts>\n"
@@ -725,7 +808,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                                 }
                                 text += parsedData.delta?.thinking ?? ''
                             }
-    
+
                             if(parsedData?.delta?.type === 'redacted_thinking'){
                                 if(!thinking){
                                     text += "<Thoughts>\n"
@@ -733,6 +816,24 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                                 }
                                 text += '\n{{redacted_thinking}}\n'
                             }
+
+                            // Collect signature from thinking delta (some API versions)
+                            if(parsedData?.delta?.signature){
+                                collectedSignatures.push(parsedData.delta.signature)
+                            }
+                        }
+
+                        // Collect signatures from content_block_stop
+                        if(parsedData?.type === 'content_block_stop'){
+                            // signature might be in the content_block_stop event
+                            if(parsedData?.content_block?.signature){
+                                collectedSignatures.push(parsedData.content_block.signature)
+                            }
+                            // redacted_thinking data might be here too
+                            if(parsedData?.content_block?.type === 'redacted_thinking' && parsedData?.content_block?.data){
+                                collectedRedacted.push(parsedData.content_block.data)
+                            }
+                            currentBlockType = null
                         }
 
                         if(parsedData?.type === 'error'){
@@ -748,13 +849,13 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                             text += "Error:" + parsedData?.error?.message
 
                         }
-                        
+
                     }
                     catch (error) {
                     }
 
-                        
-                        
+
+
                 })
                 let breakWhile = false
                 let i = 0;
@@ -764,7 +865,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                         if(arg?.abortSignal?.aborted || breakWhile){
                             break
                         }
-                        const {done, value} = await reader.read() 
+                        const {done, value} = await reader.read()
                         if(done){
                             break
                         }
@@ -778,6 +879,8 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                                     parserData = ''
                                     prevText = ''
                                     text = ''
+                                    collectedSignatures = []
+                                    collectedRedacted = []
                                     reader.cancel()
                                     const res = await fetchNative(replacerURL, {
                                         body: JSON.stringify(body),
@@ -785,7 +888,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                                         method: "POST",
                                         chatId: arg.chatId
                                     })
-                            
+
                                     if(res.status !== 200){
                                         controller.enqueue({
                                             "0": await textifyReadableStream(res.body)
@@ -809,6 +912,19 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                     } catch (error) {
                         await sleep(1)
                     }
+                }
+                // Emit collected signatures and redacted data as special keys at stream end
+                if(collectedSignatures.length > 0 || collectedRedacted.length > 0){
+                    const finalChunk: StreamResponseChunk = {
+                        "0": text
+                    }
+                    if(collectedSignatures.length > 0){
+                        finalChunk['__anthropic_signatures'] = JSON.stringify(collectedSignatures)
+                    }
+                    if(collectedRedacted.length > 0){
+                        finalChunk['__anthropic_redacted'] = JSON.stringify(collectedRedacted)
+                    }
+                    controller.enqueue(finalChunk)
                 }
                 controller.close()
             },
@@ -937,6 +1053,9 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
 
         return requestClaudeHTTP(replacerURL, headers, body, arg)
     }
+    let collectedSignatures: string[] = []
+    let collectedRedacted: string[] = []
+
     for(const content of contents){
         if(content.type === 'text'){
             if(thinking){
@@ -951,6 +1070,10 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                 thinking = true
             }
             resText += content.thinking ?? ''
+            // Collect signature from thinking block
+            if(content.signature){
+                collectedSignatures.push(content.signature)
+            }
         }
         if(content.type === 'redacted_thinking'){
             if(!thinking){
@@ -958,22 +1081,37 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                 thinking = true
             }
             resText += '\n{{redacted_thinking}}\n'
+            // Collect redacted thinking data
+            if(content.data){
+                collectedRedacted.push(content.data)
+            }
         }
         if(content.type === 'tool_use'){
 
         }
     }
 
+    // Build encrypted thinking data
+    const hasEncryptedData = collectedSignatures.length > 0 || collectedRedacted.length > 0
+    const encryptedThinking = hasEncryptedData ? {
+        provider: 'anthropic',
+        data: {
+            signatures: collectedSignatures.length > 0 ? collectedSignatures : undefined,
+            redacted: collectedRedacted.length > 0 ? collectedRedacted : undefined
+        }
+    } : undefined
 
     arg.additionalOutput ??= ""
     if(arg.extractJson && db.jsonSchemaEnabled){
         return {
             type: 'success',
-            result: arg.additionalOutput + extractJSON(resText, db.jsonSchema)
+            result: arg.additionalOutput + extractJSON(resText, db.jsonSchema),
+            encryptedThinking
         }
     }
     return {
         type: 'success',
-        result: arg.additionalOutput + resText
+        result: arg.additionalOutput + resText,
+        encryptedThinking
     }
 }

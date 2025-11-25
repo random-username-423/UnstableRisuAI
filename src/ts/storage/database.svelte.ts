@@ -1622,6 +1622,10 @@ export interface Message{
     promptInfo?: MessagePresetInfo
     name?:string
     otherUser?:boolean
+    encryptedThinking?: {
+        provider: string
+        data: any
+    }[]
 }
 
 export interface MessageGenerationInfo{

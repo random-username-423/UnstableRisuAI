@@ -991,12 +991,31 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
 
     const items:OAIResponseItem[] = []
 
+    // Build a map of assistant index -> encrypted thinking data
+    const openaiThinkingMap = new Map<number, any>()
+    for(const et of (arg.encryptedThinkingHistory || [])){
+        if(et.provider === 'openai'){
+            openaiThinkingMap.set(et.index, et)
+        }
+    }
+    let assistantMsgIndex = 0
+
     for(let i=0;i<formated.length;i++){
         const content = formated[i]
         switch(content.role){
             case 'function':
                 break
             case 'assistant':{
+                // Add reasoning item before assistant message if available
+                const openaiThinking = openaiThinkingMap.get(assistantMsgIndex)
+                if(openaiThinking?.data?.encrypted_content){
+                    items.push({
+                        type: 'reasoning',
+                        encrypted_content: openaiThinking.data.encrypted_content
+                    } as any)
+                }
+                assistantMsgIndex++
+
                 const item:OAIResponseOutputItem = {
                     content: [],
                     role: content.role,
@@ -1057,7 +1076,8 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
         input: items,
         max_output_tokens: maxTokens,
         tools: [],
-        store: false
+        store: false,
+        include: ["reasoning.encrypted_content"]
     }, ['temperature', 'top_p'], {}, arg.mode)
 
     if(arg.previewBody){
@@ -1098,6 +1118,10 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
     const calls = (response.data.output?.filter((m:OAIResponseOutputItem|OAIResponseOutputToolCall) => m.type === 'function_call')) as OAIResponseOutputToolCall[]
     let result:string = (response.data.output?.find((m:OAIResponseOutputItem) => m.type === 'message') as OAIResponseOutputItem)?.content?.find(m => m.type === 'output_text')?.text
 
+    // Extract encrypted reasoning content
+    const reasoningItem = response.data.output?.find((m:any) => m.type === 'reasoning')
+    const encryptedContent = reasoningItem?.encrypted_content
+
     if(!result){
         return {
             type: 'fail',
@@ -1106,7 +1130,11 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
     }
     return {
         type: 'success',
-        result: result
+        result: result,
+        encryptedThinking: encryptedContent ? {
+            provider: 'openai',
+            data: { encrypted_content: encryptedContent }
+        } : undefined
     }
 }
 

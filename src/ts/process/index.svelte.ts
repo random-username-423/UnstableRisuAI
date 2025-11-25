@@ -1452,6 +1452,27 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         return true
     }
 
+    // Collect encrypted thinking from previous messages
+    // Use assistant order index (0 for first assistant, 1 for second, etc.)
+    const encryptedThinkingHistory: {index: number, provider: string, data: any}[] = []
+    const messages = DBState.db.characters[selectedChar].chats[selectedChat].message
+    let assistantOrderIndex = 0
+    for(let i = 0; i < messages.length; i++){
+        const msg = messages[i]
+        if(msg.role === 'char'){ // assistant message
+            if(msg.encryptedThinking){
+                for(const et of msg.encryptedThinking){
+                    encryptedThinkingHistory.push({
+                        index: assistantOrderIndex,
+                        provider: et.provider,
+                        data: et.data
+                    })
+                }
+            }
+            assistantOrderIndex++
+        }
+    }
+
     const req = await requestChatData({
         formated: formated,
         biasString: biases,
@@ -1465,6 +1486,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         previewBody: arg.previewPrompt,
         escape: nowChatroom.type === 'character' && nowChatroom.escapeOutput,
         rememberToolUsage: DBState.db.rememberToolUsage,
+        encryptedThinkingHistory: encryptedThinkingHistory.length > 0 ? encryptedThinkingHistory : undefined,
     }, 'model', abortSignal)
 
     console.log(req)
@@ -1536,6 +1558,42 @@ export async function sendChat(chatProcessIndex = -1,arg:{
 
         addRerolls(generationId, Object.values(lastResponseChunk))
 
+        // Save encrypted thinking from streaming response (Gemini)
+        if(lastResponseChunk['__sign_text'] || lastResponseChunk['__sign_function']){
+            const signatures: string[] = []
+            if(lastResponseChunk['__sign_text']) signatures.push(lastResponseChunk['__sign_text'])
+            if(lastResponseChunk['__sign_function']) signatures.push(lastResponseChunk['__sign_function'])
+            if(signatures.length > 0){
+                DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking = [{
+                    provider: 'gemini',
+                    data: { thoughtSignatures: signatures }
+                }]
+            }
+        }
+
+        // Save encrypted thinking from streaming response (Anthropic)
+        if(lastResponseChunk['__anthropic_signatures'] || lastResponseChunk['__anthropic_redacted']){
+            try {
+                const signatures = lastResponseChunk['__anthropic_signatures']
+                    ? JSON.parse(lastResponseChunk['__anthropic_signatures'])
+                    : undefined
+                const redacted = lastResponseChunk['__anthropic_redacted']
+                    ? JSON.parse(lastResponseChunk['__anthropic_redacted'])
+                    : undefined
+                if(signatures || redacted){
+                    DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking = [{
+                        provider: 'anthropic',
+                        data: {
+                            signatures: signatures,
+                            redacted: redacted
+                        }
+                    }]
+                }
+            } catch(e) {
+                console.error('Failed to parse Anthropic encrypted thinking:', e)
+            }
+        }
+
         DBState.db.characters[selectedChar].chats[selectedChat] = runCurrentChatFunction(DBState.db.characters[selectedChar].chats[selectedChat])
         currentChat = DBState.db.characters[selectedChar].chats[selectedChat]        
         const triggerResult = await runTrigger(currentChar, 'output', {chat:currentChat})
@@ -1579,6 +1637,9 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             const inlayResult = runInlayScreen(currentChar, result)
             result = inlayResult.text
             emoChanged = result2.emoChanged
+            // Get encryptedThinking from response
+            const encryptedThinking = (req.type === 'success' && req.encryptedThinking) ? [req.encryptedThinking] : undefined
+
             if(i === 0 && arg.continue){
                 DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex] = {
                     role: 'char',
@@ -1588,7 +1649,8 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     generationInfo,
                     promptInfo,
                     chatId: generationId,
-                }       
+                    encryptedThinking,
+                }
                 if(inlayResult.promise){
                     const p = await inlayResult.promise
                     DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].data = p
@@ -1603,6 +1665,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     generationInfo,
                     promptInfo,
                     chatId: generationId,
+                    encryptedThinking,
                 })
                 const ind = DBState.db.characters[selectedChar].chats[selectedChat].message.length - 1
                 if(inlayResult.promise){

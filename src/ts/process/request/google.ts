@@ -54,11 +54,20 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
         formated.shift()
     }
 
+    // Build a map of assistant index -> encrypted thinking data
+    const geminiThinkingMap = new Map<number, any>()
+    for(const et of (arg.encryptedThinkingHistory || [])){
+        if(et.provider === 'gemini'){
+            geminiThinkingMap.set(et.index, et)
+        }
+    }
+    let assistantMsgIndex = 0
+
     for(let i=0;i<formated.length;i++){
         const chat = formated[i]
-  
+
         const prevChat = reformatedChat[reformatedChat.length-1]
-        const qRole = 
+        const qRole =
             chat.role === 'user' ? 'user' :
             chat.role === 'assistant' ? 'model' :
             chat.role
@@ -107,11 +116,26 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             }
         }
         else if(chat.role === 'assistant' || chat.role === 'user'){
+            const parts: GeminiPart[] = [{
+                text: chat.content
+            }]
+
+            // Add thoughtSignature for assistant messages if available
+            if(chat.role === 'assistant'){
+                const geminiThinking = geminiThinkingMap.get(assistantMsgIndex)
+                if(geminiThinking?.data?.thoughtSignatures){
+                    // Add thoughtSignature to the last part
+                    const lastPart = parts[parts.length - 1]
+                    if(lastPart){
+                        lastPart.thoughtSignature = geminiThinking.data.thoughtSignatures[geminiThinking.data.thoughtSignatures.length - 1]
+                    }
+                }
+                assistantMsgIndex++
+            }
+
             reformatedChat.push({
                 role: chat.role === 'user' ? 'user' : 'model',
-                parts: [{
-                    text: chat.content
-                }]
+                parts: parts
             })
         }
         else{
@@ -649,14 +673,19 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
         }
     }
 
-    let rDatas:{text: string, thought?: boolean}[] = [] 
+    let rDatas:{text: string, thought?: boolean}[] = []
+    let collectedSignatures: string[] = []
     const processDataItem = async (data:any):Promise<GeminiPart[]> => {
         const parts = data?.candidates?.[0]?.content?.parts as GeminiPart[]
 
         if(parts){
-         
+
             for(let i=0;i<parts.length;i++){
                 const part = parts[i]
+
+                if(part.thoughtSignature){
+                    collectedSignatures.push(part.thoughtSignature)
+                }
 
                 if(part.text){
                     rDatas.push({
@@ -861,7 +890,11 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
     console.log(result)
     return {
         type: 'success',
-        result: result
+        result: result,
+        encryptedThinking: collectedSignatures.length > 0 ? {
+            provider: 'gemini',
+            data: { thoughtSignatures: collectedSignatures }
+        } : undefined
     }
 }
 

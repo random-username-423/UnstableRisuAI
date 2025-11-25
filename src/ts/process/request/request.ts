@@ -63,6 +63,11 @@ export interface RequestDataArgumentExtended extends requestDataArgument{
     mode?:ModelModeExtended
     key?:string
     additionalOutput?:string
+    encryptedThinkingHistory?: {
+        index: number
+        provider: string
+        data: any
+    }[]
 }
 
 export type requestDataResponse = {
@@ -74,6 +79,10 @@ export type requestDataResponse = {
     },
     failByServerError?: boolean
     model?: string
+    encryptedThinking?: {
+        provider: string
+        data: any
+    }
 }|{
     type: "streaming",
     result: ReadableStream<StreamResponseChunk>,
