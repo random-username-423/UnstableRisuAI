@@ -44,6 +44,7 @@ import { fetch as TauriHTTPFetch } from '@tauri-apps/plugin-http';
 import { moduleUpdate } from "./process/modules";
 import type { AccountStorage } from "./storage/accountStorage";
 import { makeColdData } from "./process/coldstorage.svelte";
+import { platform } from '@tauri-apps/plugin-os';
 
 //@ts-ignore
 export const isTauri = !!window.__TAURI_INTERNALS__
@@ -555,7 +556,15 @@ export async function loadData() {
         try {
             if(isTauri){
                 LoadingStatusState.text = "Checking Files..."
-                appWindow.maximize()
+
+                // 모바일 체크 추가
+                const currentPlatform = await platform();
+                const isMobile = currentPlatform === 'android' || currentPlatform === 'ios';
+                
+                if(!isMobile){
+                    appWindow.maximize()
+                }
+                
                 if(!await exists('', {baseDir: BaseDirectory.AppData})){
                     await mkdir('', {baseDir: BaseDirectory.AppData})
                 }

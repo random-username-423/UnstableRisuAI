@@ -1,29 +1,31 @@
 import { alertConfirm, alertWait } from "./alert";
 import { language } from "../lang";
-import { Capacitor } from "@capacitor/core";
-import {
-    check,
-} from '@tauri-apps/plugin-updater'
-import { relaunch } from '@tauri-apps/plugin-process'
+import { platform } from '@tauri-apps/plugin-os';
+import { relaunch } from '@tauri-apps/plugin-process';
 
 export async function checkRisuUpdate(){
-
-    if(Capacitor.isNativePlatform()){
-        return
+    const currentPlatform = await platform();
+    const isMobile = currentPlatform === 'android' || currentPlatform === 'ios';
+    
+    if(isMobile){
+        return;
     }
 
     try {
-        const checked = await check()     
+        // 동적 import로 변경 (모바일에서는 여기까지 안 옴)
+        const { check } = await import('@tauri-apps/plugin-updater');
+        
+        const checked = await check();     
         if(checked){
-            const conf = await alertConfirm(language.newVersion)
+            const conf = await alertConfirm(language.newVersion);
             if(conf){
-                alertWait(`Updating to ${checked.version}...`)
-                await checked.downloadAndInstall()
-                await relaunch()
+                alertWait(`Updating to ${checked.version}...`);
+                await checked.downloadAndInstall();
+                await relaunch();
             }
         }
     } catch (error) {
-        console.error(error)
+        console.error(error);
     }
 }
 

@@ -1,0 +1,37 @@
+{
+    "identifier": "mobile-capability",
+    "platforms": [
+        "android",
+        "iOS"
+    ],
+    "windows": [
+        "main"
+    ],
+    "permissions": [
+        "core:default",
+        "fs:default",
+        "http:default",
+        "dialog:default",
+        "os:default",
+        "fs:allow-read-file",
+        "fs:allow-write-file",
+        "fs:allow-read-dir",
+        "fs:allow-copy-file",
+        "fs:allow-mkdir",
+        "fs:allow-remove",
+        "fs:allow-remove",
+        "fs:allow-rename",
+        "fs:allow-exists",
+        {
+            "identifier": "fs:scope",
+            "allow": [
+                "$APPDATA",
+                "$APPDATA/*",
+                "$APPDATA/**/*",
+                "$DOWNLOAD/*",
+                "/data/**/*",
+                "$RESOURCE/*"
+            ]
+        }
+    ]
+}
