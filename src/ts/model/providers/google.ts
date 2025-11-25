@@ -3,8 +3,8 @@ import { LLMFlags, LLMFormat, LLMProvider, LLMTokenizer, type LLMModel } from '.
 export const GoogleModels: LLMModel[] = [
     // ===== Gemini 3.0 Series (2025-11) =====
     {
-        name: "Gemini Pro 3.0",
-        id: 'gemini-3.0-pro',
+        name: "Gemini Pro 3 (Preview)",
+        id: 'gemini-3-pro-preview',
         provider: LLMProvider.GoogleCloud,
         format: LLMFormat.GoogleCloud,
         flags: [LLMFlags.geminiThinking, LLMFlags.geminiBlockOff, LLMFlags.hasImageInput, LLMFlags.poolSupported, LLMFlags.hasAudioInput, LLMFlags.hasVideoInput, LLMFlags.hasStreaming, LLMFlags.requiresAlternateRole],
@@ -12,12 +12,13 @@ export const GoogleModels: LLMModel[] = [
         tokenizer: LLMTokenizer.GoogleCloud,
         recommended: true
     },
-    {
-        name: "Gemini Deep Think 3.0",
-        id: 'gemini-3.0-deep-think',
+
+        {
+        name: "Gemini Pro 3 Image (Preview)",
+        id: 'gemini-3-pro-image-preview',
         provider: LLMProvider.GoogleCloud,
         format: LLMFormat.GoogleCloud,
-        flags: [LLMFlags.geminiThinking, LLMFlags.geminiBlockOff, LLMFlags.hasImageInput, LLMFlags.poolSupported, LLMFlags.hasAudioInput, LLMFlags.hasVideoInput, LLMFlags.hasStreaming, LLMFlags.requiresAlternateRole],
+        flags: [LLMFlags.geminiThinking, LLMFlags.geminiBlockOff, LLMFlags.hasImageInput, LLMFlags.hasImageOutput, LLMFlags.poolSupported, LLMFlags.hasAudioInput, LLMFlags.hasVideoInput, LLMFlags.hasStreaming, LLMFlags.requiresAlternateRole],
         parameters: ['thinking_tokens', 'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'],
         tokenizer: LLMTokenizer.GoogleCloud,
         recommended: true
@@ -115,7 +116,6 @@ export const GoogleModels: LLMModel[] = [
         flags: [LLMFlags.geminiBlockOff, LLMFlags.hasImageInput, LLMFlags.poolSupported, LLMFlags.hasAudioInput, LLMFlags.hasVideoInput, LLMFlags.hasStreaming, LLMFlags.requiresAlternateRole, LLMFlags.geminiThinking],
         parameters: ['thinking_tokens', 'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'],
         tokenizer: LLMTokenizer.GoogleCloud,
-        recommended: true
     },
     {
         name: "Gemini Flash Lite 2.5 Preview (06/17)",
