@@ -249,17 +249,17 @@
 
 {#if $CharConfigSubMenu === 0}
     {#if DBState.db.characters[$selectedCharID].type !== 'group' && licensed !== 'private'}
-        <TextInput size="xl" marginBottom placeholder="Character Name" bind:value={DBState.db.characters[$selectedCharID].name} />
-        <span class="text-textcolor">{language.description} <Help key="charDesc"/></span>
+        <TextInput size="xl" marginBottom fullwidth placeholder="Character Name" bind:value={DBState.db.characters[$selectedCharID].name} />
+        <div class="text-textcolor">{language.description} <Help key="charDesc"/></div>
         <TextAreaInput highlight margin="both" autocomplete="off" bind:value={(DBState.db.characters[$selectedCharID] as character).desc}></TextAreaInput>
-        <span class="text-textcolor2 mb-6 text-sm">{tokens.desc} {language.tokens}</span>
-        <span class="text-textcolor">{language.firstMessage} <Help key="charFirstMessage"/></span>
+        <div class="text-textcolor2 mb-6 text-sm">{tokens.desc} {language.tokens}</div>
+        <div class="text-textcolor">{language.firstMessage} <Help key="charFirstMessage"/></div>
         <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.db.characters[$selectedCharID].firstMessage}></TextAreaInput>
-        <span class="text-textcolor2 mb-6 text-sm">{tokens.firstMsg} {language.tokens}</span>
+        <div class="text-textcolor2 mb-6 text-sm">{tokens.firstMsg} {language.tokens}</div>
 
     {:else if licensed !== 'private' && DBState.db.characters[$selectedCharID].type === 'group'}
-        <TextInput size="xl" marginBottom placeholder="Group Name" bind:value={DBState.db.characters[$selectedCharID].name} />
-        <span class="text-textcolor">{language.character}</span>
+        <TextInput size="xl" marginBottom fullwidth placeholder="Group Name" bind:value={DBState.db.characters[$selectedCharID].name} />
+        <div class="text-textcolor">{language.character}</div>
         <div class="p-4 gap-2 bg-bgcolor rounded-lg char-grid">
             {#if (DBState.db.characters[$selectedCharID] as groupChat).characters.length === 0}
                 <span class="text-textcolor2">No Character</span>
@@ -308,7 +308,7 @@
         </div>
 
     {/if}
-    <span class="text-textcolor">{language.authorNote} <Help key="chatNote"/></span>
+    <div class="text-textcolor">{language.authorNote} <Help key="chatNote"/></div>
     <TextAreaInput
         margin="both"
         autocomplete="off"
@@ -316,7 +316,7 @@
         highlight
         placeholder={getAuthorNoteDefaultText()}
     />
-    <span class="text-textcolor2 mb-6 text-sm">{tokens.localNote} {language.tokens}</span>
+    <div class="text-textcolor2 mb-6 text-sm">{tokens.localNote} {language.tokens}</div>
 
     {#if !$MobileGUI}
         <Toggles bind:chara={DBState.db.characters[$selectedCharID]} noContainer />

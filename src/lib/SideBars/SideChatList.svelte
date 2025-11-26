@@ -36,6 +36,31 @@
     let sorted = $state(0)
     let opened = 0
 
+    // Lazy loading state - only render first N items, load more on scroll
+    const INITIAL_LOAD = 30
+    const LOAD_MORE = 20
+    let loadedCount = $state(INITIAL_LOAD)
+
+    // Get chats without folder
+    let chatsWithoutFolder = $derived(chara.chats.filter(chat => chat.folderId == null))
+    let visibleChats = $derived(chatsWithoutFolder.slice(0, loadedCount))
+
+    function handleScroll(e: Event) {
+        const target = e.target as HTMLDivElement
+        // Load more when near bottom
+        if (target.scrollHeight - target.scrollTop - target.clientHeight < 100) {
+            if (loadedCount < chatsWithoutFolder.length) {
+                loadedCount = Math.min(loadedCount + LOAD_MORE, chatsWithoutFolder.length)
+            }
+        }
+    }
+
+    // Reset loaded count when chara changes
+    $effect(() => {
+        chara
+        loadedCount = INITIAL_LOAD
+    })
+
     const createStb = () => {
         for (let chat of listEle.querySelectorAll('.risu-chat')) {
             chatsStb.push(new Sortable(chat, {
@@ -135,8 +160,10 @@
         })
     })
 </script>
-<div class="flex flex-col w-full h-[calc(100%-2rem)] max-h-[calc(100%-2rem)]">
-    <Button className="relative bottom-2" onclick={() => {
+<div class="flex flex-col w-full h-full">
+    <!-- 상단 고정 영역: 새 채팅 버튼 -->
+    <div class="flex-shrink-0 w-full">
+        <Button className="w-full" onclick={() => {
         const cha = chara
         const len = chara.chats.length
         let chats = chara.chats
@@ -156,9 +183,11 @@
         chara.chatPage = 0
         $ReloadGUIPointer += 1
     }}>{language.newChat}</Button>
+    </div>
 
+    <!-- 중간 가변 영역: 채팅 목록 (스크롤) -->
     {#key sorted}
-    <div class="flex flex-col mt-2 overflow-y-auto flex-grow" bind:this={listEle}>
+    <div class="flex flex-col mt-2 overflow-y-auto flex-grow min-h-0" bind:this={listEle} onscroll={handleScroll}>
         <!-- folder div -->
         <div class="flex flex-col" bind:this={folderEles}>
             <!-- chat folder -->
@@ -349,119 +378,119 @@
             </div>
             {/each}
         </div>
-        <!-- chat without folder div -->
+        <!-- chat without folder div - Lazy Loading -->
         <div class="risu-chat flex flex-col">
-            {#each chara.chats as chat, i}
-            {#if chat.folderId == null}
-            <button data-risu-chat-idx={i} onclick={() => {
+            {#each visibleChats as chat, idx}
+            {@const originalIndex = chara.chats.indexOf(chat)}
+            <button data-risu-chat-idx={originalIndex} onclick={() => {
                 if(!editMode){
-                    chara.chatPage = i
+                    chara.chatPage = originalIndex
                     $ReloadGUIPointer += 1
                 }
             }}
             class="flex items-center text-textcolor border-solid border-0 border-darkborderc p-2 cursor-pointer rounded-md"
-            class:bg-selected={i === chara.chatPage}>
+            class:bg-selected={originalIndex === chara.chatPage}>
                 {#if editMode}
-                    <TextInput bind:value={chara.chats[i].name} className="flex-grow min-w-0" padding={false}/>
+                    <TextInput bind:value={chara.chats[originalIndex].name} className="flex-grow min-w-0" padding={false}/>
                 {:else}
-                    <span>{chat.name}</span>
+                    <span class="line-clamp-2 flex-grow">{chat.name}</span>
                 {/if}
-                <div class="flex-grow flex justify-end">
-                    <div role="button" tabindex="0" onkeydown={(e) => {
-                        if(e.key === 'Enter'){
-                            e.currentTarget.click()
-                        }
-                    }} class="text-textcolor2 hover:text-green-500 mr-1 cursor-pointer" onclick={async () => {
-                        const option = await alertChatOptions()
-                        switch(option){
-                            case 0:{
-                                const newChat = safeStructuredClone($state.snapshot(chara.chats[i]))
-                                newChat.name = `Copy of ${newChat.name}`
-                                newChat.id = v4()
-                                chara.chats.unshift(newChat)
-                                chara.chatPage = 0
-                                chara.chats = chara.chats
-                                break
-                            }
-                            case 1:{
-                                const chat = chara.chats[i]
-                                if(chat.bindedPersona){
-                                    const confirm = await alertConfirm(language.doYouWantToUnbindCurrentPersona)
-                                    if(confirm){
-                                        chat.bindedPersona = ''
-                                        alertNormal(language.personaUnbindedSuccess)
-                                    }
+                <div class="flex-shrink-0 flex justify-end">
+                            <div role="button" tabindex="0" onkeydown={(e) => {
+                                if(e.key === 'Enter'){
+                                    e.currentTarget.click()
                                 }
-                                else{
-                                    const confirm = await alertConfirm(language.doYouWantToBindCurrentPersona)
-                                    if(confirm){
-                                        if(!DBState.db.personas[DBState.db.selectedPersona].id){
-                                            DBState.db.personas[DBState.db.selectedPersona].id = v4()
+                            }} class="text-textcolor2 hover:text-green-500 mr-1 cursor-pointer" onclick={async () => {
+                                const option = await alertChatOptions()
+                                switch(option){
+                                    case 0:{
+                                        const newChat = safeStructuredClone($state.snapshot(chara.chats[originalIndex]))
+                                        newChat.name = `Copy of ${newChat.name}`
+                                        newChat.id = v4()
+                                        chara.chats.unshift(newChat)
+                                        chara.chatPage = 0
+                                        chara.chats = chara.chats
+                                        break
+                                    }
+                                    case 1:{
+                                        const chat = chara.chats[originalIndex]
+                                        if(chat.bindedPersona){
+                                            const confirm = await alertConfirm(language.doYouWantToUnbindCurrentPersona)
+                                            if(confirm){
+                                                chat.bindedPersona = ''
+                                                alertNormal(language.personaUnbindedSuccess)
+                                            }
                                         }
-                                        chat.bindedPersona = DBState.db.personas[DBState.db.selectedPersona].id
-                                        console.log(DBState.db.personas[DBState.db.selectedPersona])
-                                        alertNormal(language.personaBindedSuccess)
+                                        else{
+                                            const confirm = await alertConfirm(language.doYouWantToBindCurrentPersona)
+                                            if(confirm){
+                                                if(!DBState.db.personas[DBState.db.selectedPersona].id){
+                                                    DBState.db.personas[DBState.db.selectedPersona].id = v4()
+                                                }
+                                                chat.bindedPersona = DBState.db.personas[DBState.db.selectedPersona].id
+                                                console.log(DBState.db.personas[DBState.db.selectedPersona])
+                                                alertNormal(language.personaBindedSuccess)
+                                            }
+                                        }
+                                        break
+                                    }
+                                    case 2:{
+                                        chara.chatPage = originalIndex
+                                        createMultiuserRoom()
                                     }
                                 }
-                                break
-                            }
-                            case 2:{
-                                chara.chatPage = i
-                                createMultiuserRoom()
-                            }
-                        }
-                    }}>
-                        <MenuIcon size={18}/>
-                    </div>
-                    <div role="button" tabindex="0" onkeydown={(e) => {
-                        if(e.key === 'Enter'){
-                            e.currentTarget.click()
-                        }
-                    }} class="text-textcolor2 hover:text-green-500 mr-1 cursor-pointer" onclick={() => {
-                        editMode = !editMode
-                    }}>
-                        <PencilIcon size={18}/>
-                    </div>
-                    <div role="button" tabindex="0" onkeydown={(e) => {
-                        if(e.key === 'Enter'){
-                            e.currentTarget.click()
-                        }
-                    }} class="text-textcolor2 hover:text-green-500 mr-1 cursor-pointer" onclick={async (e) => {
-                        e.stopPropagation()
-                        exportChat(i)
-                    }}>
-                        <DownloadIcon size={18}/>
-                    </div>
-                    <div role="button" tabindex="0" onkeydown={(e) => {
-                        if(e.key === 'Enter'){
-                            e.currentTarget.click()
-                        }
-                    }} class="text-textcolor2 hover:text-green-500 cursor-pointer" onclick={async (e) => {
-                        e.stopPropagation()
-                        if(chara.chats.length === 1){
-                            alertError(language.errors.onlyOneChat)
-                            return
-                        }
-                        const d = await alertConfirm(`${language.removeConfirm}${chat.name}`)
-                        if(d){
-                            chara.chatPage = 0
-                            $ReloadGUIPointer += 1
-                            let chats = chara.chats
-                            chats.splice(i, 1)
-                            chara.chats = chats
-                        }
-                    }}>
-                        <TrashIcon size={18}/>
-                    </div>
-                </div>
+                            }}>
+                                <MenuIcon size={18}/>
+                            </div>
+                            <div role="button" tabindex="0" onkeydown={(e) => {
+                                if(e.key === 'Enter'){
+                                    e.currentTarget.click()
+                                }
+                            }} class="text-textcolor2 hover:text-green-500 mr-1 cursor-pointer" onclick={() => {
+                                editMode = !editMode
+                            }}>
+                                <PencilIcon size={18}/>
+                            </div>
+                            <div role="button" tabindex="0" onkeydown={(e) => {
+                                if(e.key === 'Enter'){
+                                    e.currentTarget.click()
+                                }
+                            }} class="text-textcolor2 hover:text-green-500 mr-1 cursor-pointer" onclick={async (e) => {
+                                e.stopPropagation()
+                                exportChat(originalIndex)
+                            }}>
+                                <DownloadIcon size={18}/>
+                            </div>
+                            <div role="button" tabindex="0" onkeydown={(e) => {
+                                if(e.key === 'Enter'){
+                                    e.currentTarget.click()
+                                }
+                            }} class="text-textcolor2 hover:text-green-500 cursor-pointer" onclick={async (e) => {
+                                e.stopPropagation()
+                                if(chara.chats.length === 1){
+                                    alertError(language.errors.onlyOneChat)
+                                    return
+                                }
+                                const d = await alertConfirm(`${language.removeConfirm}${chat.name}`)
+                                if(d){
+                                    chara.chatPage = 0
+                                    $ReloadGUIPointer += 1
+                                    let chats = chara.chats
+                                    chats.splice(originalIndex, 1)
+                                    chara.chats = chats
+                                }
+                            }}>
+                                <TrashIcon size={18}/>
+                            </div>
+                        </div>
             </button>
-            {/if}
             {/each}
         </div>
     </div>
     {/key}
 
-    <div class="border-t border-selected mt-2">
+    <!-- 하단 고정 영역: 버튼들 + 토글 -->
+    <div class="flex-shrink-0 border-t border-selected mt-2">
         <div class="flex mt-2 ml-2 items-center">
             <button class="text-textcolor2 hover:text-green-500 mr-2 cursor-pointer" onclick={() => {
                 exportAllChats()
@@ -504,13 +533,13 @@
             </button>
         </div>
 
-        {#if DBState.db.characters[$selectedCharID]?.chaId !== '§playground'}            
+        {#if DBState.db.characters[$selectedCharID]?.chaId !== '§playground'}
             <Toggles bind:chara={chara} />
         {/if}
+        {#if chara.type === 'group'}
+        <div class="flex mt-2 items-center">
+            <CheckInput bind:check={chara.orderByOrder} name={language.orderByOrder}/>
+        </div>
+        {/if}
     </div>
-    {#if chara.type === 'group'}
-    <div class="flex mt-2 items-center">
-        <CheckInput bind:check={chara.orderByOrder} name={language.orderByOrder}/>
-    </div>
-    {/if}
 </div>

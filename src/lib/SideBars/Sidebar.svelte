@@ -679,7 +679,7 @@
 </div>
 {/if}
 <div
-  class="setting-area h-full flex-col overflow-y-auto overflow-x-hidden bg-darkbg py-6 text-textcolor max-h-full"
+  class="setting-area h-full flex-col overflow-x-hidden bg-darkbg py-6 text-textcolor max-h-full"
   class:risu-sidebar={!$sideBarClosing}
   class:w-96={$sideBarSize === 0}
   class:w-110={$sideBarSize === 1}
@@ -713,15 +713,22 @@
   >
     <!-- <button class="border-none bg-transparent p-0 text-textcolor"><X /></button> -->
   </button>
-  {#if sideBarMode === 0}
-    {#if $selectedCharID < 0 || $settingsOpen}
+  <div class="flex flex-col flex-grow min-h-0" class:hidden={sideBarMode !== 0}>
+    <!-- Welcome message -->
+    <div class:hidden={!($selectedCharID < 0 || $settingsOpen)}>
       <div>
         <h1 class="text-xl">Welcome to RisuAI!</h1>
         <span class="text-xs text-textcolor2">Select a bot to start chatting</span>
       </div>
-    {:else if DBState.db.characters[$selectedCharID]?.chaId === '§playground'}
-      <SideChatList bind:chara={ DBState.db.characters[$selectedCharID]} />
-    {:else if $ConnectionOpenStore}
+    </div>
+    <!-- Playground -->
+    <div class="flex flex-col flex-grow min-h-0" class:hidden={$selectedCharID < 0 || $settingsOpen || DBState.db.characters[$selectedCharID]?.chaId !== '§playground'}>
+      {#if $selectedCharID >= 0 && DBState.db.characters[$selectedCharID]?.chaId === '§playground'}
+        <SideChatList bind:chara={ DBState.db.characters[$selectedCharID]} />
+      {/if}
+    </div>
+    <!-- Connection Open -->
+    <div class:hidden={$selectedCharID < 0 || $settingsOpen || DBState.db.characters[$selectedCharID]?.chaId === '§playground' || !$ConnectionOpenStore}>
       <div class="flex flex-col">
         <h1 class="text-xl">{language.connectionOpen}</h1>
         <span class="text-textcolor2 mb-4">{language.connectionOpenInfo}</span>
@@ -737,7 +744,9 @@
           {/if}
         </div>
       </div>
-    {:else}
+    </div>
+    <!-- Main chat/character panel -->
+    <div class="flex flex-col flex-grow min-h-0" class:hidden={$selectedCharID < 0 || $settingsOpen || DBState.db.characters[$selectedCharID]?.chaId === '§playground' || $ConnectionOpenStore}>
       <div class="w-full h-8 min-h-8 border-l border-b border-r border-selected relative bottom-6 rounded-b-md flex">
         <button onclick={() => {
           devTool = false
@@ -755,17 +764,24 @@
           </button>
         {/if}
       </div>
-      {#if QuickSettings.open}
+      <div class:hidden={!QuickSettings.open}>
         <QuickSettingsGui />
-      {:else if devTool}
+      </div>
+      <div class:hidden={QuickSettings.open || !devTool}>
         <DevTool />
-      {:else if $botMakerMode}
-        <CharConfig />
-      {:else}
-        <SideChatList bind:chara={ DBState.db.characters[$selectedCharID]} />
-      {/if}
-    {/if}
-  {/if}
+      </div>
+      <div class:hidden={QuickSettings.open || devTool || !$botMakerMode}>
+        {#if $selectedCharID >= 0 && DBState.db.characters[$selectedCharID]}
+          <CharConfig />
+        {/if}
+      </div>
+      <div class="flex-grow min-h-0 flex flex-col" class:hidden={QuickSettings.open || devTool || $botMakerMode}>
+        {#if $selectedCharID >= 0 && DBState.db.characters[$selectedCharID]}
+          <SideChatList bind:chara={ DBState.db.characters[$selectedCharID]} />
+        {/if}
+      </div>
+    </div>
+  </div>
 </div>
 
 {#if $DynamicGUI}
@@ -876,32 +892,44 @@
   .risu-sidebar:not(.dynamic-sidebar) {
     animation-name: sidebar-transition-non-dynamic;
     animation-duration: var(--risu-animation-speed);
+    contain: layout style;
+    will-change: width, min-width;
   }
   .risu-sidebar-close:not(.dynamic-sidebar) {
     animation-name: sidebar-transition-close-non-dynamic;
     animation-duration: var(--risu-animation-speed);
     position: relative;
+    contain: layout style;
+    will-change: width, min-width;
   }
   .risu-sidebar.dynamic-sidebar {
     animation-name: sidebar-transition;
     animation-duration: var(--risu-animation-speed);
+    contain: layout style;
+    will-change: width, min-width;
   }
   .risu-sidebar-close.dynamic-sidebar {
     animation-name: sidebar-transition-close;
     animation-duration: var(--risu-animation-speed);
     position: relative;
     right: 3rem;
+    contain: layout style;
+    will-change: width, min-width;
   }
 
 
   .risu-sub-sidebar {
     animation-name: sub-sidebar-transition;
     animation-duration: var(--risu-animation-speed);
+    contain: layout style;
+    will-change: width, min-width;
   }
   .risu-sub-sidebar-close {
     animation-name: sub-sidebar-transition-close;
     animation-duration: var(--risu-animation-speed);
     position: relative;
+    contain: layout style;
+    will-change: width, min-width;
   }
   .sidebar-dark-animation{
     animation-name: sidebar-dark-transition;
