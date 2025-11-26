@@ -335,6 +335,48 @@ export async function saveDb(){
     if(window.BroadcastChannel){
         channel = new BroadcastChannel('risu-db')
     }
+
+    // Initialize save worker for web environment
+    let saveWorker: Worker | null = null
+    let pendingSaves = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
+
+    if (!isTauri && !isNodeServer) {
+        try {
+            saveWorker = new Worker(new URL('./storage/saveWorker.ts', import.meta.url), {
+                type: 'module'
+            })
+            saveWorker.onmessage = (e) => {
+                const { type, key, error } = e.data
+                const pending = pendingSaves.get(key)
+                if (pending) {
+                    if (type === 'success') {
+                        pending.resolve()
+                    } else {
+                        pending.reject(new Error(error || 'Unknown save error'))
+                    }
+                    pendingSaves.delete(key)
+                }
+            }
+            saveWorker.onerror = (e) => {
+                console.error('Save worker error:', e)
+            }
+        } catch (e) {
+            console.warn('Failed to initialize save worker, falling back to main thread:', e)
+            saveWorker = null
+        }
+    }
+
+    async function saveToWorker(key: string, data: Uint8Array): Promise<void> {
+        if (!saveWorker) {
+            // Fallback to main thread
+            await forageStorage.setItem(key, data)
+            return
+        }
+        return new Promise((resolve, reject) => {
+            pendingSaves.set(key, { resolve, reject })
+            saveWorker.postMessage({ type: 'save', key, data })
+        })
+    }
     if(channel){
         channel.onmessage = async (ev) => {
             if(ev.data === sessionID){
@@ -471,13 +513,19 @@ export async function saveDb(){
                 await writeFile(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData, {baseDir: BaseDirectory.AppData});
             }
             else{
-                
-                await forageStorage.setItem('database/database.bin', dbData)
-                if(!forageStorage.isAccount){
-                    await forageStorage.setItem(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData)
+                // Use worker for non-account storage to avoid blocking main thread
+                if(!forageStorage.isAccount && saveWorker){
+                    await saveToWorker('database/database.bin', dbData)
+                    await saveToWorker(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData)
                 }
-                if(forageStorage.isAccount){
-                    await sleep(3000)
+                else{
+                    await forageStorage.setItem('database/database.bin', dbData)
+                    if(!forageStorage.isAccount){
+                        await forageStorage.setItem(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData)
+                    }
+                    if(forageStorage.isAccount){
+                        await sleep(3000)
+                    }
                 }
             }
             if(!forageStorage.isAccount){
