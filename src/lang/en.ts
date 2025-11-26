@@ -118,7 +118,7 @@ export const languageEnglish = {
         chainOfThought: "If enabled, it will add chain of thought prompt to the prompt.",
         gptVisionQuality: "This option is used to set the quality of the image detection model for OpenAI. The higher the quality, the more accurate the detection, but more tokens are used.",
         geminiVisionQuality: "This option is used to set the media resolution for Gemini. The higher the resolution, the more accurate the detection, but more tokens are used. For Gemini 3: Low=280, Medium=560, High=1120, Unspecified=1120 tokens per image. Other models may vary.",
-        genTimes: "This option is used to set the number of responses to generate on support models. other then first response will be act as cached reroll. this can reduce the cost of the model, but it can also increase the cost if you use it without reroll.",
+        genTimes: "Generate multiple outputs from a single input. Example: Set to 3 = input cost x1, output cost x3. (Normally 3 requests = input x3, output x3)",
         requestretrys: "This option is used to set the number of request retrys when request fails.",
         emotionPrompt: "This option is used to set the prompt that is used to detect emotion. if it is blank, it will use the default prompt.",
         removePunctuationHypa: "If enabled, it will remove punctuation before executing HypaMemory.",

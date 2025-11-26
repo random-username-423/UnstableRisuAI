@@ -160,6 +160,9 @@
     <OptionInput value="high">High</OptionInput>
 </SelectInput>
 
+<span class="text-textcolor mt-4">{language.genTimes} <Help key="genTimes"/></span>
+<NumberInput marginBottom={true} size={"sm"} min={1} max={10} bind:value={DBState.db.genTime}/>
+
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
 <!-- ==================== Google Settings ==================== -->
@@ -321,10 +324,7 @@
 <!-- ==================== Other Settings ==================== -->
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsOtherSection}</h3>
 
-<span class="text-textcolor">{language.genTimes} <Help key="genTimes"/></span>
-<NumberInput marginBottom={true} size={"sm"} min={0} max={4096} bind:value={DBState.db.genTime}/>
-
-<span class="text-textcolor mt-4">{language.heightMode}</span>
+<span class="text-textcolor">{language.heightMode}</span>
 <SelectInput bind:value={DBState.db.heightMode}>
     <OptionInput value="normal">Normal</OptionInput>
     <OptionInput value="percent">Percent</OptionInput>
