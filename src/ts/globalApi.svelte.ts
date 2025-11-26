@@ -322,21 +322,40 @@ export let saving = $state({
 // Tauri: OPFS Worker (IPC 블로킹 방지)
 // Web: IndexedDB Worker
 let opfsWorker: Worker | null = null
+let opfsWorkerReady = false
 let pendingSaves = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
 let pendingLoads = new Map<string, { resolve: (data: Uint8Array | null) => void, reject: (e: Error) => void }>()
 
-function initOPFSWorker() {
+async function initOPFSWorker(): Promise<void> {
     if (opfsWorker || isNodeServer) return
 
     try {
-        // Tauri에서는 OPFS Worker, 웹에서는 IndexedDB Worker 사용
-        const workerUrl = isTauri
-            ? new URL('./storage/opfsSaveWorker.ts', import.meta.url)
-            : new URL('./storage/saveWorker.ts', import.meta.url)
+        // Vite의 ?worker 쿼리로 Worker 번들링
+        // Tauri: OPFS Worker, Web: IndexedDB Worker
+        if (isTauri) {
+            const OPFSWorker = await import('./storage/opfsSaveWorker?worker')
+            opfsWorker = new OPFSWorker.default()
+        } else {
+            const SaveWorker = await import('./storage/saveWorker?worker')
+            opfsWorker = new SaveWorker.default()
+        }
 
-        opfsWorker = new Worker(workerUrl, {
-            type: 'module'
+        // Worker ready 신호를 기다림 (5초 타임아웃)
+        await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                reject(new Error('OPFS Worker initialization timeout'))
+            }, 5000)
+
+            const readyHandler = (e: MessageEvent) => {
+                if (e.data.type === 'ready') {
+                    clearTimeout(timeout)
+                    opfsWorkerReady = true
+                    resolve()
+                }
+            }
+            opfsWorker!.addEventListener('message', readyHandler, { once: true })
         })
+
         opfsWorker.onmessage = (e) => {
             const { type, key, error, data } = e.data
 
@@ -369,9 +388,11 @@ function initOPFSWorker() {
         opfsWorker.onerror = (e) => {
             console.error('OPFS worker error:', e)
         }
+        console.log('[OPFS] Worker initialized successfully')
     } catch (e) {
         console.warn('Failed to initialize OPFS worker, falling back to main thread:', e)
         opfsWorker = null
+        opfsWorkerReady = false
     }
 }
 
@@ -417,7 +438,7 @@ export async function saveDb(){
     }
 
     // Initialize worker if not already done
-    initOPFSWorker()
+    await initOPFSWorker()
 
     if(channel){
         channel.onmessage = async (ev) => {
@@ -663,8 +684,8 @@ export async function loadData() {
                     await mkdir('assets', {baseDir: BaseDirectory.AppData})
                 }
 
-                // OPFS Worker 초기화
-                initOPFSWorker()
+                // OPFS Worker 초기화 (ready 신호까지 대기)
+                await initOPFSWorker()
 
                 // OPFS에서 먼저 로드 시도
                 LoadingStatusState.text = "Reading Save File..."

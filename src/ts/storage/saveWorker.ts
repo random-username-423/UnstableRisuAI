@@ -23,6 +23,9 @@ function getStorage(): LocalForage {
     return storage
 }
 
+// Worker 준비 완료 신호 전송
+self.postMessage({ type: 'ready' })
+
 self.onmessage = async (e: MessageEvent<SaveMessage>) => {
     const { type, key, data } = e.data
 

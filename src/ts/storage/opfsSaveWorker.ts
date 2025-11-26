@@ -48,6 +48,9 @@ async function getRoot(): Promise<FileSystemDirectoryHandle> {
     return root
 }
 
+// Worker 준비 완료 신호 전송
+self.postMessage({ type: 'ready' })
+
 async function ensureDirectory(dirPath: string): Promise<FileSystemDirectoryHandle> {
     const root = await getRoot()
     const parts = dirPath.split('/').filter(p => p)
