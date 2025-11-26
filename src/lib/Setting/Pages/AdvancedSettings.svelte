@@ -186,6 +186,12 @@
     <OptionInput value="high">High</OptionInput>
 </SelectInput>
 
+<div class="flex items-center mt-4">
+    <Check bind:check={DBState.db.geminiMergeSystemToUser} name={language.geminiMergeSystemToUser}>
+        <Help key="geminiMergeSystemToUser"/>
+    </Check>
+</div>
+
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
 <!-- ==================== Lore Book Settings ==================== -->

@@ -528,7 +528,7 @@ export interface OpenAIChatExtra {
 export function reformater(formated:OpenAIChat[],modelInfo:LLMModel|LLMFlags[]){
 
     const flags = Array.isArray(modelInfo) ? modelInfo : modelInfo.flags
-    
+
     const db = getDatabase()
     let systemPrompt:OpenAIChat|null = null
 

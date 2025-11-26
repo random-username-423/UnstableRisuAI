@@ -50,7 +50,8 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
     let reformatedChat:GeminiChat[] = []
     let systemPrompt = ''
 
-    if(formated[0].role === 'system'){
+    // Extract system prompt unless legacy merge mode is enabled
+    if(!db.geminiMergeSystemToUser && formated[0].role === 'system'){
         systemPrompt = formated[0].content
         formated.shift()
     }
