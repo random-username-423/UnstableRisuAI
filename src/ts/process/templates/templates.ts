@@ -643,8 +643,8 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
       "globalNote",
       "authorNote"
     ],
-    "aiModel": "claude-3-5-sonnet-20240620",
-    "subModel": "instructgpt35",
+    "aiModel": "claude-sonnet-4-5-20250929",
+    "subModel": "gemini-2.5-flash",
     "currentPluginProvider": "",
     "textgenWebUIStreamURL": "",
     "textgenWebUIBlockingURL": "",
@@ -698,7 +698,7 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
       "stoptokens": "",
       "top_k": 140
     },
-    "proxyRequestModel": "claude-3-5-sonnet-20240620",
+    "proxyRequestModel": "claude-sonnet-4-5-20250929",
     "openrouterRequestModel": "anthropic/claude-2",
     "NAISettings": {
       "topK": 12,
@@ -785,7 +785,7 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
     "NAIadventure": false,
     "NAIappendName": true,
     "autoSuggestPrompt": "",
-    "customProxyRequestModel": "claude-3-5-sonnet-20240620",
+    "customProxyRequestModel": "claude-sonnet-4-5-20250929",
     "reverseProxyOobaArgs": {
       "mode": "instruct"
     },

@@ -52,7 +52,7 @@ export function setDatabase(data:Database){
         data.PresensePenalty = 70
     }
     if(checkNullish(data.aiModel)){
-        data.aiModel = 'gpt35_0301'
+        data.aiModel = 'claude-sonnet-4-5-20250929'
     }
     if(checkNullish(data.jailbreakToggle)){
         data.jailbreakToggle = false
@@ -136,7 +136,7 @@ export function setDatabase(data:Database){
         data.theme = ''
     }
     if(checkNullish(data.subModel)){
-        data.subModel = 'gpt35_0301'
+        data.subModel = 'gemini-2.5-flash'
     }
     if(checkNullish(data.timeOut)){
         data.timeOut = 120
