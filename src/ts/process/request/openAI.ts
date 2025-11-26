@@ -1127,6 +1127,9 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
     // Extract encrypted reasoning content
     const reasoningItem = response.data.output?.find((m:any) => m.type === 'reasoning')
     const encryptedContent = reasoningItem?.encrypted_content
+    const reasoningTokens = response.data.usage?.output_tokens_details?.reasoning_tokens
+        ?? response.data.usage?.completion_tokens_details?.reasoning_tokens
+        ?? 0
 
     if(!result){
         return {
@@ -1137,9 +1140,10 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
     return {
         type: 'success',
         result: result,
-        encryptedThinking: encryptedContent ? {
+        encryptedThinking: (encryptedContent && reasoningTokens > 0) ? {
             provider: 'openai',
-            data: { encrypted_content: encryptedContent }
+            data: { encrypted_content: encryptedContent },
+            tokens: reasoningTokens
         } : undefined
     }
 }

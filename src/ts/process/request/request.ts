@@ -85,6 +85,7 @@ export type requestDataResponse = {
     encryptedThinking?: {
         provider: string
         data: any
+        tokens: number
     }
 }|{
     type: "streaming",

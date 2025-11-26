@@ -1634,16 +1634,9 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                 const redacted = lastResponseChunk['__anthropic_redacted']
                     ? JSON.parse(lastResponseChunk['__anthropic_redacted'])
                     : undefined
-                if(signatures || redacted){
-                    // Calculate thinking tokens by subtracting text tokens from total output tokens
-                    let thinkingTokens: number | undefined = undefined
-                    const outputTokens = parseInt(lastResponseChunk['__anthropic_output_tokens'] || '0', 10)
-                    if(outputTokens > 0){
-                        const textContent = DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex]?.data || ''
-                        const textTokens = await tokenizer.tokenizeNum(textContent)
-                        thinkingTokens = Math.max(0, outputTokens - textTokens)
-                    }
-                    console.log('[Anthropic] Saving thinking tokens:', thinkingTokens, '(output:', outputTokens, ')')
+                const thinkingTokens = parseInt(lastResponseChunk['__anthropic_thinking_tokens'] || '0', 10)
+                if((signatures || redacted) && thinkingTokens > 0){
+                    console.log('[Anthropic] Saving thinking tokens:', thinkingTokens)
                     DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking = [{
                         provider: 'anthropic',
                         data: {

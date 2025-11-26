@@ -11,6 +11,7 @@ import type { MultiModal } from "../index.svelte"
 import { extractJSON } from "../templates/jsonSchema"
 import { applyParameters, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
+import { tokenize } from "src/ts/tokenizer"
 
 interface Claude3TextBlock {
     type: 'text',
@@ -514,6 +515,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
             }
         }
         let resText = ''
+        let actualResponseText = ''
         let thinking = false
         let collectedSignatures: string[] = []
         let collectedRedacted: string[] = []
@@ -525,6 +527,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
                     thinking = false
                 }
                 resText += content.text
+                actualResponseText += content.text
             }
             if(content.type === 'thinking'){
                 if(!thinking){
@@ -552,12 +555,22 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
 
         // Build encrypted thinking data
         const hasEncryptedData = collectedSignatures.length > 0 || collectedRedacted.length > 0
-        const encryptedThinking = hasEncryptedData ? {
+        const outputTokens = res.data?.usage?.output_tokens ?? 0
+        const actualResponseTokens = await tokenize(actualResponseText)
+        const thinkingTokens = outputTokens - actualResponseTokens
+        console.log('[Anthropic] Thinking tokens calculation:', {
+            outputTokens,
+            actualResponseTokens,
+            thinkingTokens,
+            hasEncryptedData
+        })
+        const encryptedThinking = (hasEncryptedData && thinkingTokens > 0) ? {
             provider: 'anthropic',
             data: {
                 signatures: collectedSignatures.length > 0 ? collectedSignatures : undefined,
                 redacted: collectedRedacted.length > 0 ? collectedRedacted : undefined
-            }
+            },
+            tokens: thinkingTokens
         } : undefined
 
         if(arg.extractJson && db.jsonSchemaEnabled){
@@ -777,6 +790,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
         let collectedRedacted: string[] = []
         let currentBlockType: string | null = null
         let outputTokens: number = 0
+        let actualResponseText = ''
 
         const stream = new ReadableStream<StreamResponseChunk>({
             async start(controller){
@@ -800,6 +814,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                                     thinking = false
                                 }
                                 text += parsedData.delta?.text ?? ''
+                                actualResponseText += parsedData.delta?.text ?? ''
                             }
 
                             if(parsedData?.delta?.type === 'thinking' || parsedData.delta?.type === 'thinking_delta'){
@@ -885,6 +900,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                                     parserData = ''
                                     prevText = ''
                                     text = ''
+                                    actualResponseText = ''
                                     collectedSignatures = []
                                     collectedRedacted = []
                                     reader.cancel()
@@ -921,19 +937,27 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                 }
                 // Emit collected signatures and redacted data as special keys at stream end
                 if(collectedSignatures.length > 0 || collectedRedacted.length > 0){
-                    const finalChunk: StreamResponseChunk = {
-                        "0": text
+                    const actualResponseTokens = await tokenize(actualResponseText)
+                    const thinkingTokens = outputTokens - actualResponseTokens
+                    console.log('[Anthropic Streaming] Thinking tokens calculation:', {
+                        outputTokens,
+                        actualResponseTokens,
+                        thinkingTokens
+                    })
+
+                    if(thinkingTokens > 0){
+                        const finalChunk: StreamResponseChunk = {
+                            "0": text
+                        }
+                        if(collectedSignatures.length > 0){
+                            finalChunk['__anthropic_signatures'] = JSON.stringify(collectedSignatures)
+                        }
+                        if(collectedRedacted.length > 0){
+                            finalChunk['__anthropic_redacted'] = JSON.stringify(collectedRedacted)
+                        }
+                        finalChunk['__anthropic_thinking_tokens'] = String(thinkingTokens)
+                        controller.enqueue(finalChunk)
                     }
-                    if(collectedSignatures.length > 0){
-                        finalChunk['__anthropic_signatures'] = JSON.stringify(collectedSignatures)
-                    }
-                    if(collectedRedacted.length > 0){
-                        finalChunk['__anthropic_redacted'] = JSON.stringify(collectedRedacted)
-                    }
-                    if(outputTokens > 0){
-                        finalChunk['__anthropic_output_tokens'] = String(outputTokens)
-                    }
-                    controller.enqueue(finalChunk)
                 }
                 controller.close()
             },
@@ -1064,6 +1088,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
     }
     let collectedSignatures: string[] = []
     let collectedRedacted: string[] = []
+    let actualResponseText = ''
 
     for(const content of contents){
         if(content.type === 'text'){
@@ -1072,6 +1097,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                 thinking = false
             }
             resText += content.text
+            actualResponseText += content.text
         }
         if(content.type === 'thinking'){
             if(!thinking){
@@ -1102,12 +1128,22 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
 
     // Build encrypted thinking data
     const hasEncryptedData = collectedSignatures.length > 0 || collectedRedacted.length > 0
-    const encryptedThinking = hasEncryptedData ? {
+    const outputTokens = res.data?.usage?.output_tokens ?? 0
+    const actualResponseTokens = await tokenize(actualResponseText)
+    const thinkingTokens = outputTokens - actualResponseTokens
+    console.log('[Anthropic] Thinking tokens calculation:', {
+        outputTokens,
+        actualResponseTokens,
+        thinkingTokens,
+        hasEncryptedData
+    })
+    const encryptedThinking = (hasEncryptedData && thinkingTokens > 0) ? {
         provider: 'anthropic',
         data: {
             signatures: collectedSignatures.length > 0 ? collectedSignatures : undefined,
             redacted: collectedRedacted.length > 0 ? collectedRedacted : undefined
-        }
+        },
+        tokens: thinkingTokens
     } : undefined
 
     arg.additionalOutput ??= ""

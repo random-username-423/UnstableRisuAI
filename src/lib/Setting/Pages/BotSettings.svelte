@@ -352,7 +352,7 @@
     {/if}
     {#if modelInfo.parameters.includes('thinking_tokens')}
         <span class="text-textcolor">{language.thinkingTokens}</span>
-        <SliderInput min={-1} max={64000} marginBottom step={200} bind:value={DBState.db.thinkingTokens} disableable disabled={DBState.db.thinkingLevel !== -1000}/>
+        <SliderInput min={-1} max={64000} marginBottom step={200} bind:value={DBState.db.thinkingTokens} disableable disabled={modelInfo.parameters.includes('thinking_level') && DBState.db.thinkingLevel !== -1000}/>
 
     {/if}
     {#if modelInfo.parameters.includes('reasoning_effort')}

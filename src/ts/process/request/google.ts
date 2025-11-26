@@ -944,10 +944,10 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
     return {
         type: 'success',
         result: result,
-        encryptedThinking: collectedSignatures.length > 0 ? {
+        encryptedThinking: (collectedSignatures.length > 0 && thoughtsTokenCount > 0) ? {
             provider: 'gemini',
             data: { thoughtSignatures: collectedSignatures },
-            tokens: thoughtsTokenCount > 0 ? thoughtsTokenCount : undefined
+            tokens: thoughtsTokenCount
         } : undefined
     }
 }
