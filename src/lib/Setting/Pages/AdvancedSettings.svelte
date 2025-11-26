@@ -153,6 +153,12 @@
     </div>
 {/if}
 
+<span class="text-textcolor mt-4">Vision Quality <Help key="gptVisionQuality"/></span>
+<SelectInput bind:value={DBState.db.gptVisionQuality}>
+    <OptionInput value="low">Low</OptionInput>
+    <OptionInput value="high">High</OptionInput>
+</SelectInput>
+
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
 <!-- ==================== Google Settings ==================== -->
@@ -168,6 +174,14 @@
     <span class="text-textcolor2 text-sm">{language.useExperimental} {language.required}</span>
 {/if}
 
+<span class="text-textcolor mt-4">Vision Quality <Help key="geminiVisionQuality"/></span>
+<SelectInput bind:value={DBState.db.geminiVisionQuality}>
+    <OptionInput value="unspecified">Unspecified</OptionInput>
+    <OptionInput value="low">Low</OptionInput>
+    <OptionInput value="medium">Medium</OptionInput>
+    <OptionInput value="high">High</OptionInput>
+</SelectInput>
+
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
 <!-- ==================== Lore Book Settings ==================== -->
@@ -182,12 +196,6 @@
 
 <!-- ==================== Image/Media Settings ==================== -->
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsImageMediaSection}</h3>
-
-<span class="text-textcolor mt-4">Vision Quality <Help key="gptVisionQuality"/></span>
-<SelectInput bind:value={DBState.db.gptVisionQuality}>
-    <OptionInput value="low">Low</OptionInput>
-    <OptionInput value="high">High</OptionInput>
-</SelectInput>
 
 <span class="text-textcolor mt-4">{language.assetMaxDifference}</span>
 <NumberInput marginBottom={true} size={"sm"} bind:value={DBState.db.assetMaxDifference}/>

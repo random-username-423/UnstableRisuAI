@@ -434,8 +434,13 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
         arg.useStreaming = false
     }    let headers:{[key:string]:string} = {}
 
-    if(db.gptVisionQuality === 'high'){
-        body.generation_config.mediaResolution = "MEDIA_RESOLUTION_MEDIUM"
+    if(db.geminiVisionQuality && db.geminiVisionQuality !== 'unspecified'){
+        const resolutionMap: Record<string, string> = {
+            'low': 'MEDIA_RESOLUTION_LOW',
+            'medium': 'MEDIA_RESOLUTION_MEDIUM',
+            'high': 'MEDIA_RESOLUTION_HIGH'
+        }
+        body.generation_config.mediaResolution = resolutionMap[db.geminiVisionQuality] ?? 'MEDIA_RESOLUTION_UNSPECIFIED'
     }
 
     const PROJECT_ID = db.google.projectId

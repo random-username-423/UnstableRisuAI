@@ -409,6 +409,7 @@ export function setDatabase(data:Database){
     data.generationSeed ??= -1
     data.newOAIHandle ??= true
     data.gptVisionQuality ??= 'low'
+    data.geminiVisionQuality ??= 'unspecified'
     data.huggingfaceKey ??= ''
     data.fishSpeechKey ??= ''
     data.statistics ??= {}
@@ -863,6 +864,7 @@ export interface Database{
     putUserOpen: boolean
     inlayImage:boolean
     gptVisionQuality:string
+    geminiVisionQuality:string
     reverseProxyOobaMode:boolean
     reverseProxyOobaArgs: OobaChatCompletionRequestParams
     tpo?:boolean
