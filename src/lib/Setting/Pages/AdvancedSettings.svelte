@@ -155,6 +155,7 @@
 
 <span class="text-textcolor mt-4">Vision Quality <Help key="gptVisionQuality"/></span>
 <SelectInput bind:value={DBState.db.gptVisionQuality}>
+    <OptionInput value="auto">Auto</OptionInput>
     <OptionInput value="low">Low</OptionInput>
     <OptionInput value="high">High</OptionInput>
 </SelectInput>

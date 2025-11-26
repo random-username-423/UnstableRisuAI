@@ -408,7 +408,7 @@ export function setDatabase(data:Database){
     data.customProxyRequestModel ??= ''
     data.generationSeed ??= -1
     data.newOAIHandle ??= true
-    data.gptVisionQuality ??= 'low'
+    data.gptVisionQuality ??= 'auto'
     data.geminiVisionQuality ??= 'unspecified'
     data.huggingfaceKey ??= ''
     data.fishSpeechKey ??= ''
