@@ -124,14 +124,19 @@ export function setObjectValue<T>(obj: T, key: string, value: any): T {
 }
 
 export function applyParameters(data: { [key: string]: any }, parameters: Parameter[], rename: ParameterMap, ModelMode:ModelModeExtended, arg:{
-    ignoreTopKIfZero?:boolean
+    ignoreTopKIfZero?:boolean,
+    modelId?:string
 } = {}): { [key: string]: any } {
     const db = getDatabase()
 
     function getEffort(effort:number){
         switch(effort){
             case -1:{
-                return 'minimal'
+                // GPT-5 시리즈만 minimal, GPT-5.1+ 및 기타는 none
+                if (arg.modelId?.startsWith('gpt-5') && !arg.modelId?.startsWith('gpt-5.')) {
+                    return 'minimal'
+                }
+                return 'none'
             }
             case 0:{
                 return 'low'

@@ -1080,8 +1080,11 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
         store: false,
         include: ["reasoning.encrypted_content"]
     }, arg.modelInfo.parameters as Parameter[], {
-        'reasoning_effort': 'reasoning.effort'
-    }, arg.mode)
+        'reasoning_effort': 'reasoning.effort',
+        'verbosity': 'text.verbosity'
+    }, arg.mode, {
+        modelId: arg.modelInfo.internalID ?? aiModel
+    })
 
     if(arg.previewBody){
         return {

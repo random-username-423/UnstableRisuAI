@@ -15,7 +15,7 @@ export const OpenAIModels: LLMModel[] = [
             LLMFlags.hasImageInput,
             LLMFlags.DeveloperRole
         ],
-        parameters: ['reasoning_effort'],
+        parameters: GPT5Parameters,
         tokenizer: LLMTokenizer.tiktokenO200Base,
         recommended: true
     },
@@ -32,7 +32,7 @@ export const OpenAIModels: LLMModel[] = [
             LLMFlags.hasImageInput,
             LLMFlags.DeveloperRole
         ],
-        parameters: ['reasoning_effort'],
+        parameters: GPT5Parameters,
         tokenizer: LLMTokenizer.tiktokenO200Base
     },
     {
@@ -66,7 +66,7 @@ export const OpenAIModels: LLMModel[] = [
             LLMFlags.hasImageInput,
             LLMFlags.DeveloperRole
         ],
-        parameters: ['reasoning_effort'],
+        parameters: GPT5Parameters,
         tokenizer: LLMTokenizer.tiktokenO200Base
     },
     {
@@ -82,7 +82,7 @@ export const OpenAIModels: LLMModel[] = [
             LLMFlags.hasImageInput,
             LLMFlags.DeveloperRole
         ],
-        parameters: ['reasoning_effort'],
+        parameters: GPT5Parameters,
         tokenizer: LLMTokenizer.tiktokenO200Base
     },
 
