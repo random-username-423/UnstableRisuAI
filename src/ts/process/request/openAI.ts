@@ -1,5 +1,5 @@
 import { language } from "src/lang"
-import { applyParameters, setObjectValue, type OpenAIChatExtra, type OpenAIContents, type OpenAIToolCall, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
+import { applyParameters, setObjectValue, type OpenAIChatExtra, type OpenAIContents, type OpenAIToolCall, type Parameter, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
 import { getDatabase } from "src/ts/storage/database.svelte"
 import { LLMFlags, LLMFormat } from "src/ts/model/modellist"
 import { strongBan, tokenizeNum } from "src/ts/tokenizer"
@@ -1011,7 +1011,8 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
                 if(openaiThinking?.data?.encrypted_content){
                     items.push({
                         type: 'reasoning',
-                        encrypted_content: openaiThinking.data.encrypted_content
+                        encrypted_content: openaiThinking.data.encrypted_content,
+                        summary: []
                     } as any)
                 }
                 assistantMsgIndex++
@@ -1078,7 +1079,9 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
         tools: [],
         store: false,
         include: ["reasoning.encrypted_content"]
-    }, ['temperature', 'top_p'], {}, arg.mode)
+    }, arg.modelInfo.parameters as Parameter[], {
+        'reasoning_effort': 'reasoning.effort'
+    }, arg.mode)
 
     if(arg.previewBody){
         return {

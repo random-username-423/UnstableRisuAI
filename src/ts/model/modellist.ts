@@ -59,20 +59,6 @@ for (let model of LLMModels) {
     model.fullName ??= model.provider !== LLMProvider.AsIs ? `${ProviderNames.get(model.provider) ?? ''} ${model.name}`.trim() : model.name
 }
 
-// Add Response API variants for OpenAI models
-for (let i = 0; i < LLMModels.length; i++) {
-    if (LLMModels[i].provider === LLMProvider.OpenAI && LLMModels[i].format === LLMFormat.OpenAICompatible) {
-        LLMModels.push({
-            ...LLMModels[i],
-            format: LLMFormat.OpenAIResponseAPI,
-            flags: [...LLMModels[i].flags, LLMFlags.hasPrefill],
-            id: `${LLMModels[i].id}-response-api`,
-            name: `${LLMModels[i].name} (Response API)`,
-            fullName: `${LLMModels[i].fullName ?? LLMModels[i].name} (Response API)`,
-            recommended: false
-        })
-    }
-}
 
 export function getModelInfo(id: string): LLMModel {
     const db = getDatabase()
