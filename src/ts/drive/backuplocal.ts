@@ -23,20 +23,22 @@ export async function SaveLocalBackup(){
         return
     }
 
-    //check backup data is corrupted
-    const corrupted = await fetch(hubURL + '/backupcheck', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(getDatabase()),
-    })
-    if(corrupted.status === 400){
-        alertError('Failed, Backup data is corrupted')
-        return
-    }
-
     const db = getDatabase()
+
+    //check backup data is corrupted
+    if(db.checkCorruption){
+        const corrupted = await fetch(hubURL + '/backupcheck', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(db),
+        })
+        if(corrupted.status === 400){
+            alertError('Failed, Backup data is corrupted')
+            return
+        }
+    }
     const assetMap = new Map<string, { charName: string, assetName: string }>()
     if (db.characters) {
         for (const char of db.characters) {

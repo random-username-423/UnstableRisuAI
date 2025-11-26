@@ -256,6 +256,20 @@
 
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
+<!-- ==================== Chat Input Settings ==================== -->
+<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsChatInputSection}</h3>
+
+<div class="flex items-center mt-4">
+    <Check bind:check={DBState.db.newChatSeparator} name={language.newChatSeparator}>
+        <Help key="newChatSeparator"/>
+    </Check>
+</div>
+<div class="flex items-center mt-4">
+    <Check bind:check={DBState.db.useSayNothing} name={language.sayNothing}> <Help key="sayNothing"/></Check>
+</div>
+
+<div class="border-b border-darkborderc mt-4 mb-2"></div>
+
 <!-- ==================== Chat/Response Settings ==================== -->
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsChatResponseSection}</h3>
 
@@ -304,20 +318,44 @@
 
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
-<!-- ==================== Cache/Performance Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsCachePerformanceSection}</h3>
+<!-- ==================== Performance Settings ==================== -->
+<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsPerformanceSection}</h3>
 
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.useTokenizerCaching} name={language.useTokenizerCaching}>
     </Check>
 </div>
+
+<div class="border-b border-darkborderc mt-4 mb-2"></div>
+
+<!-- ==================== Network Settings ==================== -->
+<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsNetworkSection}</h3>
+
+{#if DBState.db.showUnrecommended}
+    <div class="flex items-center mt-4">
+        <Check bind:check={DBState.db.usePlainFetch} name={language.forcePlainFetch}> <Help key="forcePlainFetch" unrecommended/></Check>
+    </div>
+{/if}
+<div class="flex items-center mt-4">
+    <Check bind:check={DBState.db.autofillRequestUrl} name={language.autoFillRequestURL}> <Help key="autoFillRequestURL"/></Check>
+</div>
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.antiServerOverloads} name={language.antiServerOverload}>
+        <Help key="antiServerOverload"/>
     </Check>
 </div>
-
 <span class="text-textcolor mt-4">{language.requestretrys} <Help key="requestretrys"/></span>
 <NumberInput marginBottom={true} size={"sm"} min={0} max={20} bind:value={DBState.db.requestRetrys}/>
+{#if !isNodeServer && !isTauri}
+    <span class="text-textcolor mt-4">{language.requestLocation}</span>
+    <SelectInput bind:value={DBState.db.requestLocation}>
+        <OptionInput value="">Default</OptionInput>
+        <OptionInput value="eu">EU (GDPR)</OptionInput>
+        <OptionInput value="fedramp">US (FedRAMP)</OptionInput>
+    </SelectInput>
+{/if}
+<span class="text-textcolor mt-4">Kei Server URL</span>
+<TextInput marginBottom={true} size={"sm"} bind:value={DBState.db.keiServerURL} placeholder="Leave it blank to use default"/>
 
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
@@ -334,24 +372,6 @@
     <OptionInput value="lvh">LVH</OptionInput>
 </SelectInput>
 
-{#if !isNodeServer && !isTauri}
-    <span class="text-textcolor mt-4">{language.requestLocation}</span>
-    <SelectInput bind:value={DBState.db.requestLocation}>
-        <OptionInput value="">Default</OptionInput>
-        <OptionInput value="eu">EU (GDPR)</OptionInput>
-        <OptionInput value="fedramp">US (FedRAMP)</OptionInput>
-    </SelectInput>
-{/if}
-
-<span class="text-textcolor mt-4">Kei Server URL</span>
-<TextInput marginBottom={true} size={"sm"} bind:value={DBState.db.keiServerURL} placeholder="Leave it blank to use default"/>
-
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.useSayNothing} name={language.sayNothing}> <Help key="sayNothing"/></Check>
-</div>
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.autofillRequestUrl} name={language.autoFillRequestURL}> <Help key="autoFillRequestURL"/></Check>
-</div>
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.allowAllExtentionFiles} name="Allow all in file select"/>
 </div>
@@ -362,6 +382,7 @@
 </div>
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.checkCorruption} name={language.checkCorruption}>
+        <Help key="checkCorruption"/>
     </Check>
 </div>
 {#if DBState.db.useExperimental}
@@ -372,9 +393,6 @@
     </div>
 {/if}
 {#if DBState.db.showUnrecommended}
-    <div class="flex items-center mt-4">
-        <Check bind:check={DBState.db.usePlainFetch} name={language.forcePlainFetch}> <Help key="forcePlainFetch" unrecommended/></Check>
-    </div>
     <div class="flex items-center mt-4">
         <Check bind:check={DBState.db.showDeprecatedTriggerV1} name={language.showDeprecatedTriggerV1}> <Help key='unrecommended' unrecommended/></Check>
     </div>

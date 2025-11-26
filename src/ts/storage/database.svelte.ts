@@ -557,6 +557,7 @@ export function setDatabase(data:Database){
         key: data.hypaCustomSettings?.key ?? "",
         model: data.hypaCustomSettings?.model ?? ""     
     }
+    data.newChatSeparator ??= true
     data.doNotChangeSeperateModels ??= false
     data.modelTools ??= []
     data.hotkeys ??= structuredClone(defaultHotkeys)
@@ -1025,6 +1026,7 @@ export interface Database{
     pastThinkingSend: number        // 0: None, 1: Send, 2: Send (Extra Context)
     pastThinkingExtraTokens: number // Extra Context mode token budget
     antiServerOverloads: boolean
+    newChatSeparator: boolean
     hypaCustomSettings: {
         url: string,
         key: string,
