@@ -341,6 +341,15 @@
         <NumberInput bind:value={DBState.db.generationSeed} marginBottom={true}/>
     {/if}
 
+    {#if modelInfo.parameters.includes('thinking_level')}
+        <span class="text-textcolor">{language.thinkingLevel}</span>
+        <select class="bg-darkbg border border-darkborderc text-textcolor p-2 mb-2 rounded-md w-full" bind:value={DBState.db.thinkingLevel}>
+            <option value={-1000}>Unspecified</option>
+            <option value={0}>Low</option>
+            <option value={1}>Medium (Unsupported)</option>
+            <option value={2}>High</option>
+        </select>
+    {/if}
     {#if modelInfo.parameters.includes('thinking_tokens')}
         <span class="text-textcolor">{language.thinkingTokens}</span>
         <SliderInput min={-1} max={64000} marginBottom step={200} bind:value={DBState.db.thinkingTokens} disableable/>
@@ -557,6 +566,8 @@
                     <SliderInput min={0} max={200} marginBottom step={0.01} fixed={2} bind:value={DBState.db.seperateParameters[param].presence_penalty} disableable/>
                     <span class="text-textcolor">{language.thinkingTokens}</span>
                     <SliderInput min={0} max={64000} marginBottom step={200} fixed={0} bind:value={DBState.db.seperateParameters[param].thinking_tokens} disableable/>
+                    <span class="text-textcolor">{language.thinkingLevel}</span>
+                    <SliderInput min={0} max={2} marginBottom step={1} fixed={0} bind:value={DBState.db.seperateParameters[param].thinking_level} disableable/>
                     <span class="text-textcolor">Verbosity</span>
                     <SliderInput min={0} max={2} marginBottom step={1} fixed={0} bind:value={DBState.db.seperateParameters[param].verbosity} disableable/>
                 </Arcodion>

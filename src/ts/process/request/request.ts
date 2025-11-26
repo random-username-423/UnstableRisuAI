@@ -101,7 +101,7 @@ export type requestDataResponse = {
 
 export interface StreamResponseChunk{[key:string]:string}
 
-export type Parameter = 'temperature'|'top_k'|'repetition_penalty'|'min_p'|'top_a'|'top_p'|'frequency_penalty'|'presence_penalty'|'reasoning_effort'|'thinking_tokens'|'verbosity'
+export type Parameter = 'temperature'|'top_k'|'repetition_penalty'|'min_p'|'top_a'|'top_p'|'frequency_penalty'|'presence_penalty'|'reasoning_effort'|'thinking_tokens'|'thinking_level'|'verbosity'
 export type ModelModeExtended = 'model'|'submodel'|'memory'|'emotion'|'otherAx'|'translate'
 type ParameterMap = {
     [key in Parameter]?: string;
@@ -176,6 +176,26 @@ export function applyParameters(data: { [key: string]: any }, parameters: Parame
         }
     }
 
+    function getThinkingLevel(level:number):string|number{
+        switch(level){
+            case -1000:{
+                return -1000
+            }
+            case 0:{
+                return 'low'
+            }
+            case 1:{
+                return 'medium'
+            }
+            case 2:{
+                return 'high'
+            }
+            default:{
+                return -1000
+            }
+        }
+    }
+
     if(db.seperateParametersEnabled && ModelMode !== 'model'){
         if(ModelMode === 'submodel'){
             ModelMode = 'otherAx'
@@ -231,6 +251,10 @@ export function applyParameters(data: { [key: string]: any }, parameters: Parame
                 }
                 case 'verbosity':{
                     value = getVerbosity(db.seperateParameters[ModelMode].verbosity)
+                    break
+                }
+                case 'thinking_level':{
+                    value = getThinkingLevel(db.seperateParameters[ModelMode].thinking_level)
                     break
                 }
             }
@@ -293,6 +317,10 @@ export function applyParameters(data: { [key: string]: any }, parameters: Parame
             }
             case 'thinking_tokens':{
                 value = db.thinkingTokens
+                break
+            }
+            case 'thinking_level':{
+                value = getThinkingLevel(db.thinkingLevel)
                 break
             }
         }

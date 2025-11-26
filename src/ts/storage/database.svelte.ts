@@ -1019,6 +1019,7 @@ export interface Database{
     returnCSSError:boolean
     useExperimentalGoogleTranslator:boolean
     thinkingTokens: number
+    thinkingLevel: number
     antiServerOverloads: boolean
     hypaCustomSettings: {
         url: string,
@@ -1101,6 +1102,7 @@ interface SeparateParameters{
     presence_penalty?:number
     reasoning_effort?:number
     thinking_tokens?:number
+    thinking_level?:number
     outputImageModal?:boolean
     verbosity?:number
 }
@@ -1433,6 +1435,7 @@ export interface botPreset{
     regex?:customscript[]
     reasonEffort?:number
     thinkingTokens?:number
+    thinkingLevel?:number
     outputImageModal?:boolean
     seperateModelsForAxModels?:boolean
     seperateModels?:{
@@ -1861,6 +1864,7 @@ export function saveCurrentPreset(){
         image: pres?.[db.botPresetsId]?.image ?? '',
         reasonEffort: db.reasoningEffort ?? 0,
         thinkingTokens: db.thinkingTokens ?? null,
+        thinkingLevel: db.thinkingLevel ?? -1000,
         outputImageModal: db.outputImageModal ?? false,
         seperateModelsForAxModels: db.doNotChangeSeperateModels ? false : db.seperateModelsForAxModels ?? false,
         seperateModels: db.doNotChangeSeperateModels ? null : safeStructuredClone(db.seperateModels),
@@ -1991,6 +1995,7 @@ export function setPreset(db:Database, newPres: botPreset){
     db.presetRegex = newPres.regex ?? []
     db.reasoningEffort = newPres.reasonEffort ?? 0
     db.thinkingTokens = newPres.thinkingTokens ?? null
+    db.thinkingLevel = newPres.thinkingLevel ?? -1000
     db.outputImageModal = newPres.outputImageModal ?? false
     if(!db.doNotChangeSeperateModels){
         db.seperateModelsForAxModels = newPres.seperateModelsForAxModels ?? false

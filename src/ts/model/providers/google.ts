@@ -8,7 +8,7 @@ const GeminiAPIModels: LLMModel[] = [
         provider: LLMProvider.GeminiAPI,
         format: LLMFormat.GeminiAPI,
         flags: [LLMFlags.geminiThinking, LLMFlags.geminiBlockOff, LLMFlags.hasImageInput, LLMFlags.hasImageOutput, LLMFlags.poolSupported, LLMFlags.hasAudioInput, LLMFlags.hasVideoInput, LLMFlags.hasStreaming, LLMFlags.requiresAlternateRole],
-        parameters: ['thinking_tokens', 'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'],
+        parameters: ['thinking_level', 'thinking_tokens', 'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'],
         tokenizer: LLMTokenizer.GeminiAPI,
         recommended: true
     },
@@ -18,7 +18,7 @@ const GeminiAPIModels: LLMModel[] = [
         provider: LLMProvider.GeminiAPI,
         format: LLMFormat.GeminiAPI,
         flags: [LLMFlags.geminiThinking, LLMFlags.geminiBlockOff, LLMFlags.hasImageInput, LLMFlags.poolSupported, LLMFlags.hasAudioInput, LLMFlags.hasVideoInput, LLMFlags.hasStreaming, LLMFlags.requiresAlternateRole],
-        parameters: ['thinking_tokens', 'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'],
+        parameters: ['thinking_level', 'thinking_tokens', 'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'],
         tokenizer: LLMTokenizer.GeminiAPI,
         recommended: true
     },

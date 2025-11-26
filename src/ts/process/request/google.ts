@@ -344,8 +344,23 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
 
     let para:Parameter[] = ['temperature', 'top_p', 'top_k', 'presence_penalty', 'frequency_penalty']
 
+    // Determine whether to use thinking_level or thinking_tokens
+    // thinking_level takes priority if set (not -1000/unspecified)
+    let useThinkingLevel = false
     if(arg.modelInfo.flags.includes(LLMFlags.geminiThinking)){
-        para.push('thinking_tokens')
+        if(arg.modelInfo.parameters.includes('thinking_level')){
+            // Check if thinking_level is set (not unspecified)
+            const thinkingLevelValue = db.thinkingLevel ?? -1000
+            if(thinkingLevelValue !== -1000){
+                para.push('thinking_level')
+                useThinkingLevel = true
+            } else if(arg.modelInfo.parameters.includes('thinking_tokens')){
+                // Fall back to thinking_tokens if thinking_level is unspecified
+                para.push('thinking_tokens')
+            }
+        } else if(arg.modelInfo.parameters.includes('thinking_tokens')){
+            para.push('thinking_tokens')
+        }
     }
 
     para = para.filter((v) => {
@@ -361,7 +376,8 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             'top_k': "topK",
             'presence_penalty': "presencePenalty",
             'frequency_penalty': "frequencyPenalty",
-            'thinking_tokens': "thinkingBudget"
+            'thinking_tokens': "thinkingBudget",
+            'thinking_level': "thinkingLevel"
         }, arg.mode, {
             ignoreTopKIfZero: true
         }),
@@ -386,11 +402,19 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
     }
 
     if(arg.modelInfo.flags.includes(LLMFlags.geminiThinking)){
-        body.generation_config.thinkingConfig = {
-            "thinkingBudget": body.generation_config.thinkingBudget,
-            "includeThoughts": true,
+        if(useThinkingLevel){
+            body.generation_config.thinkingConfig = {
+                "thinkingLevel": body.generation_config.thinkingLevel,
+                "includeThoughts": true,
+            }
+            delete body.generation_config.thinkingLevel
+        } else if(body.generation_config.thinkingBudget !== undefined){
+            body.generation_config.thinkingConfig = {
+                "thinkingBudget": body.generation_config.thinkingBudget,
+                "includeThoughts": true,
+            }
+            delete body.generation_config.thinkingBudget
         }
-        delete body.generation_config.thinkingBudget
     }
 
     if(systemPrompt === ''){

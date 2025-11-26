@@ -1252,6 +1252,7 @@ export const languageKorean = {
     "deleteCount": "삭제 개수",
     "returnCSSError": "CSS 오류 반환",
     "thinkingTokens": "사고 토큰",
+    "thinkingLevel": "사고 레벨",
     "antiServerOverload": "서버 과부하 방지",
     "localActivationInGlobalLorebook": "글로벌 로어북에서 로컬 활성화",
     "showFolderNameInIcon": "아이콘에 폴더 이름 표시",
