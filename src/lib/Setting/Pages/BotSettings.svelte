@@ -374,6 +374,18 @@
             <option value={2}>High</option>
         </select>
     {/if}
+    {#if modelInfo.parameters.includes('thinking_level') || modelInfo.parameters.includes('thinking_tokens') || modelInfo.parameters.includes('reasoning_effort')}
+        <span class="text-textcolor">{language.pastThinkingSend}</span>
+        <select class="bg-darkbg border border-darkborderc text-textcolor p-2 mb-2 rounded-md w-full" bind:value={DBState.db.pastThinkingSend}>
+            <option value={0}>None</option>
+            <option value={1}>Send</option>
+            <option value={2}>Send (Extra Context)</option>
+        </select>
+        {#if (DBState.db.pastThinkingSend ?? 1) === 2}
+            <span class="text-textcolor">{language.pastThinkingExtraTokens}</span>
+            <SliderInput min={0} max={128000} marginBottom step={1000} bind:value={DBState.db.pastThinkingExtraTokens} />
+        {/if}
+    {/if}
     {#if modelInfo.parameters.includes('temperature')}
         <span class="text-textcolor">{language.temperature} <Help key="tempature"/></span>
         <SliderInput min={0} max={200} marginBottom bind:value={DBState.db.temperature} multiple={0.01} fixed={2} disableable/>

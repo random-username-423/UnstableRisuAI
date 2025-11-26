@@ -1147,6 +1147,7 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
 function getTranStream(arg:RequestDataArgumentExtended):TransformStream<Uint8Array, StreamResponseChunk> {
     let dataUint:Uint8Array|Buffer = new Uint8Array([])
     let reasoningContent = ""
+    let reasoningTokens = 0
     const db = getDatabase()
 
     return new TransformStream<Uint8Array, StreamResponseChunk>({
@@ -1166,22 +1167,30 @@ function getTranStream(arg:RequestDataArgumentExtended):TransformStream<Uint8Arr
                                         reasoningContent = p1
                                         return ""
                                     })
-                
+
                                     if(reasoningContent){
                                         reasoningContent = reasoningContent.replace(/\<think\>/gm, '')
                                     }
-                                }                
+                                }
+                                // Add reasoning_tokens to final chunk if available
+                                if(reasoningTokens > 0){
+                                    readed["__oai_reasoning_tokens"] = String(reasoningTokens)
+                                }
                                 if(arg.extractJson && (db.jsonSchemaEnabled || arg.schema)){
                                     for(const key in readed){
                                         const extracted = extractJSON(readed[key], arg.extractJson)
                                         JSONreaded[key] = extracted
+                                    }
+                                    if(reasoningTokens > 0){
+                                        JSONreaded["__oai_reasoning_tokens"] = String(reasoningTokens)
                                     }
                                     console.log(JSONreaded)
                                     control.enqueue(JSONreaded)
                                 }
                                 else if(reasoningContent){
                                     control.enqueue({
-                                        "0": `<Thoughts>\n${reasoningContent}\n</Thoughts>\n${readed["0"]}`
+                                        "0": `<Thoughts>\n${reasoningContent}\n</Thoughts>\n${readed["0"]}`,
+                                        "__oai_reasoning_tokens": reasoningTokens > 0 ? String(reasoningTokens) : undefined
                                     })
                                 }
                                 else{
@@ -1189,7 +1198,16 @@ function getTranStream(arg:RequestDataArgumentExtended):TransformStream<Uint8Arr
                                 }
                                 return
                             }
-                            const choices = JSON.parse(rawChunk).choices
+                            const parsed = JSON.parse(rawChunk)
+                            // Collect reasoning_tokens from usage if available
+                            if(parsed.usage?.completion_tokens_details?.reasoning_tokens){
+                                reasoningTokens = parsed.usage.completion_tokens_details.reasoning_tokens
+                            }
+                            // Also check output_tokens_details for newer API format
+                            if(parsed.usage?.output_tokens_details?.reasoning_tokens){
+                                reasoningTokens = parsed.usage.output_tokens_details.reasoning_tokens
+                            }
+                            const choices = parsed.choices
                             for(const choice of choices){
                                 const chunk = choice.delta.content ?? choices.text
                                 if(chunk){

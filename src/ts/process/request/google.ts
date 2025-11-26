@@ -717,7 +717,12 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
 
     let rDatas:{text: string, thought?: boolean}[] = []
     let collectedSignatures: string[] = []
+    let thoughtsTokenCount: number = 0
     const processDataItem = async (data:any):Promise<GeminiPart[]> => {
+        // Extract thoughtsTokenCount from usageMetadata
+        if(data?.usageMetadata?.thoughtsTokenCount){
+            thoughtsTokenCount = data.usageMetadata.thoughtsTokenCount
+        }
         const parts = data?.candidates?.[0]?.content?.parts as GeminiPart[]
 
         if(parts){
@@ -933,12 +938,16 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
 
     console.log(result)
     console.log('collectedSignatures:', collectedSignatures.length, collectedSignatures.map(s => s.substring(0, 30) + '...'))
+    if(thoughtsTokenCount > 0 || collectedSignatures.length > 0){
+        console.log('[Gemini] Saving thinking tokens:', thoughtsTokenCount)
+    }
     return {
         type: 'success',
         result: result,
         encryptedThinking: collectedSignatures.length > 0 ? {
             provider: 'gemini',
-            data: { thoughtSignatures: collectedSignatures }
+            data: { thoughtSignatures: collectedSignatures },
+            tokens: thoughtsTokenCount > 0 ? thoughtsTokenCount : undefined
         } : undefined
     }
 }
@@ -946,11 +955,12 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
 function initStreamState(state?: {[key:string]:string}): {[key:string]:string} {
     if(!state) {
         return {
-            "__sign_text": "", 
-            "__sign_function": "", 
-            "__last_thought": "", 
-            "__thoughts": "", 
-            "__tool_calls": "[]", 
+            "__sign_text": "",
+            "__sign_function": "",
+            "__last_thought": "",
+            "__thoughts": "",
+            "__tool_calls": "[]",
+            "__thoughts_tokens": "0",
             "0": ""
         };
     }
@@ -959,6 +969,7 @@ function initStreamState(state?: {[key:string]:string}): {[key:string]:string} {
     state["__last_thought"] = state["__last_thought"] || "";
     state["__thoughts"] = state["__thoughts"] || "";
     state["__tool_calls"] = state["__tool_calls"] || "[]";
+    state["__thoughts_tokens"] = state["__thoughts_tokens"] || "0";
     state["0"] = state["0"] || "";
     return state;
 }
@@ -1007,7 +1018,11 @@ function getTranStream():TransformStream<Uint8Array, StreamResponseChunk> {
                                 }
                             }
                         }
-                    } 
+                        // Extract thoughtsTokenCount from usageMetadata
+                        if(jsonData.usageMetadata?.thoughtsTokenCount){
+                            readed["__thoughts_tokens"] = String(jsonData.usageMetadata.thoughtsTokenCount);
+                        }
+                    }
                 }
                 control.enqueue(readed)
             } catch (error) { 

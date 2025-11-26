@@ -776,6 +776,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
         let collectedSignatures: string[] = []
         let collectedRedacted: string[] = []
         let currentBlockType: string | null = null
+        let outputTokens: number = 0
 
         const stream = new ReadableStream<StreamResponseChunk>({
             async start(controller){
@@ -848,6 +849,11 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                             }
                             text += "Error:" + parsedData?.error?.message
 
+                        }
+
+                        // Collect output_tokens from message_delta event
+                        if(parsedData?.type === 'message_delta' && parsedData?.usage?.output_tokens){
+                            outputTokens = parsedData.usage.output_tokens
                         }
 
                     }
@@ -923,6 +929,9 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                     }
                     if(collectedRedacted.length > 0){
                         finalChunk['__anthropic_redacted'] = JSON.stringify(collectedRedacted)
+                    }
+                    if(outputTokens > 0){
+                        finalChunk['__anthropic_output_tokens'] = String(outputTokens)
                     }
                     controller.enqueue(finalChunk)
                 }

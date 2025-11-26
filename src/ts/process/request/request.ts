@@ -56,7 +56,10 @@ interface requestDataArgument{
         index: number
         provider: string
         data: any
+        tokens?: number
     }[]
+    pastThinkingExtraContext?: boolean  // true if using Extra Context mode
+    pastThinkingExtraTokens?: number    // token budget for Extra Context mode
 }
 
 export interface RequestDataArgumentExtended extends requestDataArgument{

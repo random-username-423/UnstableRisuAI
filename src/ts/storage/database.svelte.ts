@@ -1020,6 +1020,8 @@ export interface Database{
     useExperimentalGoogleTranslator:boolean
     thinkingTokens: number
     thinkingLevel: number
+    pastThinkingSend: number        // 0: None, 1: Send, 2: Send (Extra Context)
+    pastThinkingExtraTokens: number // Extra Context mode token budget
     antiServerOverloads: boolean
     hypaCustomSettings: {
         url: string,
@@ -1436,6 +1438,8 @@ export interface botPreset{
     reasonEffort?:number
     thinkingTokens?:number
     thinkingLevel?:number
+    pastThinkingSend?:number
+    pastThinkingExtraTokens?:number
     outputImageModal?:boolean
     seperateModelsForAxModels?:boolean
     seperateModels?:{
@@ -1628,6 +1632,7 @@ export interface Message{
     encryptedThinking?: {
         provider: string
         data: any
+        tokens?: number
     }[]
 }
 
@@ -1865,6 +1870,8 @@ export function saveCurrentPreset(){
         reasonEffort: db.reasoningEffort ?? 0,
         thinkingTokens: db.thinkingTokens ?? null,
         thinkingLevel: db.thinkingLevel ?? -1000,
+        pastThinkingSend: db.pastThinkingSend ?? 1,
+        pastThinkingExtraTokens: db.pastThinkingExtraTokens ?? 16000,
         outputImageModal: db.outputImageModal ?? false,
         seperateModelsForAxModels: db.doNotChangeSeperateModels ? false : db.seperateModelsForAxModels ?? false,
         seperateModels: db.doNotChangeSeperateModels ? null : safeStructuredClone(db.seperateModels),
@@ -1996,6 +2003,8 @@ export function setPreset(db:Database, newPres: botPreset){
     db.reasoningEffort = newPres.reasonEffort ?? 0
     db.thinkingTokens = newPres.thinkingTokens ?? null
     db.thinkingLevel = newPres.thinkingLevel ?? -1000
+    db.pastThinkingSend = newPres.pastThinkingSend ?? 1
+    db.pastThinkingExtraTokens = newPres.pastThinkingExtraTokens ?? 16000
     db.outputImageModal = newPres.outputImageModal ?? false
     if(!db.doNotChangeSeperateModels){
         db.seperateModelsForAxModels = newPres.seperateModelsForAxModels ?? false

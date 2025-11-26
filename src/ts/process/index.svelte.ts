@@ -1458,25 +1458,63 @@ export async function sendChat(chatProcessIndex = -1,arg:{
 
     // Collect encrypted thinking from previous messages
     // Use assistant order index (0 for first assistant, 1 for second, etc.)
-    const encryptedThinkingHistory: {index: number, provider: string, data: any}[] = []
-    const messages = DBState.db.characters[selectedChar].chats[selectedChat].message
-    let assistantOrderIndex = 0
-    for(let i = 0; i < messages.length; i++){
-        const msg = messages[i]
-        if(msg.role === 'char'){ // assistant message
-            if(msg.encryptedThinking){
-                for(const et of msg.encryptedThinking){
-                    encryptedThinkingHistory.push({
-                        index: assistantOrderIndex,
-                        provider: et.provider,
-                        data: et.data
-                    })
+    // pastThinkingSend: 0 = None, 1 = Send, 2 = Send (Extra Context)
+    const pastThinkingSend = DBState.db.pastThinkingSend ?? 1
+    const pastThinkingExtraTokens = DBState.db.pastThinkingExtraTokens ?? 16000
+    let encryptedThinkingHistory: {index: number, provider: string, data: any, tokens?: number}[] = []
+
+    if(pastThinkingSend !== 0){
+        const messages = DBState.db.characters[selectedChar].chats[selectedChat].message
+        let assistantOrderIndex = 0
+        for(let i = 0; i < messages.length; i++){
+            const msg = messages[i]
+            if(msg.role === 'char'){ // assistant message
+                if(msg.encryptedThinking){
+                    for(const et of msg.encryptedThinking){
+                        // Skip entries without valid token count (can't calculate budget)
+                        if(!et.tokens || et.tokens <= 0){
+                            continue
+                        }
+                        encryptedThinkingHistory.push({
+                            index: assistantOrderIndex,
+                            provider: et.provider,
+                            data: et.data,
+                            tokens: et.tokens
+                        })
+                    }
                 }
+                assistantOrderIndex++
             }
-            assistantOrderIndex++
+        }
+
+        // Calculate token budget for encrypted thinking
+        if(pastThinkingSend === 1){
+            // Send mode: include thinking tokens in maxContext calculation
+            // Remove oldest thinking entries if total exceeds available context
+            let thinkingTokens = encryptedThinkingHistory.reduce((sum, et) => sum + (et.tokens ?? 0), 0)
+            const availableForThinking = maxContextTokens - inputTokens - DBState.db.maxResponse
+
+            while(thinkingTokens > availableForThinking && encryptedThinkingHistory.length > 0){
+                const removed = encryptedThinkingHistory.shift()
+                thinkingTokens -= removed?.tokens ?? 0
+            }
+        } else if(pastThinkingSend === 2){
+            // Extra Context mode: thinking has separate budget (pastThinkingExtraTokens)
+            let thinkingTokens = encryptedThinkingHistory.reduce((sum, et) => sum + (et.tokens ?? 0), 0)
+
+            while(thinkingTokens > pastThinkingExtraTokens && encryptedThinkingHistory.length > 0){
+                const removed = encryptedThinkingHistory.shift()
+                thinkingTokens -= removed?.tokens ?? 0
+            }
         }
     }
-    console.log('Loaded encryptedThinkingHistory:', encryptedThinkingHistory)
+    const totalThinkingTokens = encryptedThinkingHistory.reduce((sum, et) => sum + (et.tokens ?? 0), 0)
+    console.log('[PastThinking] Sending thinking history:', {
+        count: encryptedThinkingHistory.length,
+        totalTokens: totalThinkingTokens,
+        mode: pastThinkingSend === 0 ? 'None' : pastThinkingSend === 1 ? 'Send' : 'Send (Extra Context)',
+        budget: pastThinkingSend === 2 ? pastThinkingExtraTokens : 'maxContext'
+    })
 
     const req = await requestChatData({
         formated: formated,
@@ -1492,6 +1530,8 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         escape: nowChatroom.type === 'character' && nowChatroom.escapeOutput,
         rememberToolUsage: DBState.db.rememberToolUsage,
         encryptedThinkingHistory: encryptedThinkingHistory.length > 0 ? encryptedThinkingHistory : undefined,
+        pastThinkingExtraContext: pastThinkingSend === 2,
+        pastThinkingExtraTokens: DBState.db.pastThinkingExtraTokens ?? 16000,
     }, 'model', abortSignal)
 
     console.log(req)
@@ -1563,15 +1603,24 @@ export async function sendChat(chatProcessIndex = -1,arg:{
 
         addRerolls(generationId, Object.values(lastResponseChunk))
 
+        // Debug: log all special keys in lastResponseChunk
+        const specialKeys = Object.keys(lastResponseChunk).filter(k => k.startsWith('__'))
+        if(specialKeys.length > 0){
+            console.log('[Debug] lastResponseChunk special keys:', specialKeys, lastResponseChunk)
+        }
+
         // Save encrypted thinking from streaming response (Gemini)
         if(lastResponseChunk['__sign_text'] || lastResponseChunk['__sign_function']){
             const signatures: string[] = []
             if(lastResponseChunk['__sign_text']) signatures.push(lastResponseChunk['__sign_text'])
             if(lastResponseChunk['__sign_function']) signatures.push(lastResponseChunk['__sign_function'])
             if(signatures.length > 0){
+                const thoughtsTokens = parseInt(lastResponseChunk['__thoughts_tokens'] || '0', 10)
+                console.log('[Gemini] Saving thinking tokens:', thoughtsTokens)
                 DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking = [{
                     provider: 'gemini',
-                    data: { thoughtSignatures: signatures }
+                    data: { thoughtSignatures: signatures },
+                    tokens: thoughtsTokens > 0 ? thoughtsTokens : undefined
                 }]
             }
         }
@@ -1586,16 +1635,47 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     ? JSON.parse(lastResponseChunk['__anthropic_redacted'])
                     : undefined
                 if(signatures || redacted){
+                    // Calculate thinking tokens by subtracting text tokens from total output tokens
+                    let thinkingTokens: number | undefined = undefined
+                    const outputTokens = parseInt(lastResponseChunk['__anthropic_output_tokens'] || '0', 10)
+                    if(outputTokens > 0){
+                        const textContent = DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex]?.data || ''
+                        const textTokens = await tokenizer.tokenizeNum(textContent)
+                        thinkingTokens = Math.max(0, outputTokens - textTokens)
+                    }
+                    console.log('[Anthropic] Saving thinking tokens:', thinkingTokens, '(output:', outputTokens, ')')
                     DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking = [{
                         provider: 'anthropic',
                         data: {
                             signatures: signatures,
                             redacted: redacted
-                        }
+                        },
+                        tokens: thinkingTokens
                     }]
                 }
             } catch(e) {
                 console.error('Failed to parse Anthropic encrypted thinking:', e)
+            }
+        }
+
+        // Save encrypted thinking from streaming response (OpenAI)
+        if(lastResponseChunk['__oai_reasoning_tokens']){
+            const reasoningTokens = parseInt(lastResponseChunk['__oai_reasoning_tokens'] || '0', 10)
+            if(reasoningTokens > 0){
+                console.log('[OpenAI] Saving reasoning tokens:', reasoningTokens)
+                // For OpenAI, we don't have encrypted content in streaming, but we save the token count
+                // The actual thinking content is embedded in the text as <Thoughts> tags
+                const existingThinking = DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking
+                if(!existingThinking){
+                    DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking = [{
+                        provider: 'openai',
+                        data: {},
+                        tokens: reasoningTokens
+                    }]
+                } else {
+                    // Update existing entry with token count
+                    existingThinking[0].tokens = reasoningTokens
+                }
             }
         }
 
