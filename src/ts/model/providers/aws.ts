@@ -1,6 +1,7 @@
 import { LLMFlags, LLMFormat, LLMProvider, LLMTokenizer, ClaudeParameters, type LLMModel } from '../types'
 
-export const AWSModels: LLMModel[] = [
+// Base AWS Bedrock Claude models (without Bedrock suffix in name)
+const AWSBedrockBaseModels: LLMModel[] = [
     // ===== Claude 4.5 Series (2025-09~11) =====
     {
         name: 'Claude 4.5 Opus',
@@ -179,3 +180,9 @@ export const AWSModels: LLMModel[] = [
         tokenizer: LLMTokenizer.Claude
     },
 ]
+
+// Add "(Bedrock)" suffix to all model names
+export const AWSModels: LLMModel[] = AWSBedrockBaseModels.map(model => ({
+    ...model,
+    name: `${model.name} (Bedrock)`
+}))

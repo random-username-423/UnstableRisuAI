@@ -645,19 +645,19 @@ export const OpenAIModels: LLMModel[] = [
         parameters: OpenAIParameters,
         tokenizer: LLMTokenizer.tiktokenCl100kBase
     },
-    {
-        id: 'gpt35_0301',
-        internalID: 'gpt-3.5-turbo-0301',
-        name: 'GPT-3.5 Turbo 0301',
-        provider: LLMProvider.OpenAI,
-        format: LLMFormat.OpenAICompatible,
-        flags: [
-            LLMFlags.hasFullSystemPrompt,
-            LLMFlags.hasStreaming
-        ],
-        parameters: OpenAIParameters,
-        tokenizer: LLMTokenizer.tiktokenCl100kBase
-    },
+    // {
+    //     id: 'gpt35_0301',
+    //     internalID: 'gpt-3.5-turbo-0301',
+    //     name: 'GPT-3.5 Turbo 0301',
+    //     provider: LLMProvider.OpenAI,
+    //     format: LLMFormat.OpenAICompatible,
+    //     flags: [
+    //         LLMFlags.hasFullSystemPrompt,
+    //         LLMFlags.hasStreaming
+    //     ],
+    //     parameters: OpenAIParameters,
+    //     tokenizer: LLMTokenizer.tiktokenCl100kBase
+    // },
     {
         id: 'gpt35_16k',
         internalID: 'gpt-3.5-turbo-16k',
