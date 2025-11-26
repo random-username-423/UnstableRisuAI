@@ -154,6 +154,7 @@ export const languageKorean = {
         "dynamicRequest": "활성화하면 사용자 입력을 기다리지 않고 무작위 타이밍에 모델에 요청합니다.",
         "showTypingEffect": "활성화하면 어시스턴트가 응답을 생성하는 동안 타이핑 표시기를 표시합니다.",
         "dynamicOutputPrompt": "활성화하면 요청에 스키마 정보가 포함됩니다.",
+        "pastThinkingSend": "AI 모델(Claude, Gemini 등)의 이전 추론 과정을 다음 요청에 포함하는 방식을 설정합니다.\n\n- **포함 안 함**: 이전 추론을 전송하지 않습니다.\n- **포함**: 이전 추론을 컨텍스트에 포함합니다.\n- **포함 (추가 컨텍스트)**: 이전 추론에 별도 토큰 예산을 사용합니다. 추론만 의도적으로 적게 유지하는 것이 가능하지만, 경우에 따라 캐시가 쉽게 무효화될 수 있습니다.\n\n`<Thoughts>` 태그의 내용은 이 설정과 관련 없이 전송되지 않습니다."
     },
     "setup": {
         "chooseProvider": "AI 제공자를 선택해 주세요",
@@ -1257,9 +1258,12 @@ export const languageKorean = {
     "delimiter": "구분자",
     "deleteCount": "삭제 개수",
     "returnCSSError": "CSS 오류 반환",
-    "thinkingTokens": "사고 토큰",
-    "thinkingLevel": "사고 레벨",
-    "pastThinkingSend": "기존 사고 과정 전송",
+    "thinkingTokens": "최대 추론 응답 크기",
+    "thinkingLevel": "추론 응답 수준",
+    "pastThinkingSend": "이전 추론 컨텍스트 포함 방식",
+    "pastThinkingSendNone": "포함 안 함",
+    "pastThinkingSendSend": "포함",
+    "pastThinkingSendExtra": "포함 (추가 컨텍스트)",
     "pastThinkingExtraTokens": "추가 컨텍스트 토큰 예산",
     "antiServerOverload": "서버 과부하 시 자동 재시도",
     "newChatSeparator": "[Start a new chat] 구분자 삽입",

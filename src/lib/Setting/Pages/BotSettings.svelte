@@ -335,12 +335,26 @@
     <span class="text-textcolor">{language.maxResponseSize}</span>
     <NumberInput min={0} max={2048} marginBottom={true} bind:value={DBState.db.maxResponse}/>
 
+    <hr class="border-darkborderc mb-4 mt-2"/>
+
     {#if DBState.db.aiModel.startsWith('gpt') || DBState.db.aiModel === 'reverse_proxy' || DBState.db.aiModel === 'openrouter'}
         <span class="text-textcolor">{language.seed}</span>
 
         <NumberInput bind:value={DBState.db.generationSeed} marginBottom={true}/>
     {/if}
 
+    {#if modelInfo.parameters.includes('thinking_level') || modelInfo.parameters.includes('thinking_tokens') || modelInfo.parameters.includes('reasoning_effort')}
+        <span class="text-textcolor">{language.pastThinkingSend} <Help key="pastThinkingSend"/></span>
+        <select class="bg-darkbg border border-darkborderc text-textcolor p-2 mb-2 rounded-md w-full" bind:value={DBState.db.pastThinkingSend}>
+            <option value={0}>{language.pastThinkingSendNone}</option>
+            <option value={1}>{language.pastThinkingSendSend}</option>
+            <option value={2}>{language.pastThinkingSendExtra}</option>
+        </select>
+        {#if (DBState.db.pastThinkingSend ?? 1) === 2}
+            <span class="text-textcolor">{language.pastThinkingExtraTokens}</span>
+            <SliderInput min={0} max={128000} marginBottom step={1000} bind:value={DBState.db.pastThinkingExtraTokens} />
+        {/if}
+    {/if}
     {#if modelInfo.parameters.includes('thinking_level')}
         <span class="text-textcolor">{language.thinkingLevel}</span>
         <select class="bg-darkbg border border-darkborderc text-textcolor p-2 mb-2 rounded-md w-full" bind:value={DBState.db.thinkingLevel}>
@@ -348,12 +362,12 @@
             <option value={0}>Low</option>
             <option value={1}>Medium (Unsupported)</option>
             <option value={2}>High</option>
+            <option value={-1}>Custom</option>
         </select>
     {/if}
-    {#if modelInfo.parameters.includes('thinking_tokens')}
+    {#if modelInfo.parameters.includes('thinking_tokens') && (!modelInfo.parameters.includes('thinking_level') || DBState.db.thinkingLevel === -1)}
         <span class="text-textcolor">{language.thinkingTokens}</span>
-        <SliderInput min={-1} max={64000} marginBottom step={200} bind:value={DBState.db.thinkingTokens} disableable disabled={modelInfo.parameters.includes('thinking_level') && DBState.db.thinkingLevel !== -1000}/>
-
+        <SliderInput min={-1} max={64000} marginBottom step={200} bind:value={DBState.db.thinkingTokens} disableable/>
     {/if}
     {#if modelInfo.parameters.includes('reasoning_effort')}
         <span class="text-textcolor">Reasoning Effort</span>
@@ -374,18 +388,7 @@
             <option value={2}>High</option>
         </select>
     {/if}
-    {#if modelInfo.parameters.includes('thinking_level') || modelInfo.parameters.includes('thinking_tokens') || modelInfo.parameters.includes('reasoning_effort')}
-        <span class="text-textcolor">{language.pastThinkingSend}</span>
-        <select class="bg-darkbg border border-darkborderc text-textcolor p-2 mb-2 rounded-md w-full" bind:value={DBState.db.pastThinkingSend}>
-            <option value={0}>None</option>
-            <option value={1}>Send</option>
-            <option value={2}>Send (Extra Context)</option>
-        </select>
-        {#if (DBState.db.pastThinkingSend ?? 1) === 2}
-            <span class="text-textcolor">{language.pastThinkingExtraTokens}</span>
-            <SliderInput min={0} max={128000} marginBottom step={1000} bind:value={DBState.db.pastThinkingExtraTokens} />
-        {/if}
-    {/if}
+    <hr class="border-darkborderc mb-4 mt-2"/>
     {#if modelInfo.parameters.includes('temperature')}
         <span class="text-textcolor">{language.temperature} <Help key="tempature"/></span>
         <SliderInput min={0} max={200} marginBottom bind:value={DBState.db.temperature} multiple={0.01} fixed={2} disableable/>

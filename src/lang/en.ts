@@ -191,7 +191,8 @@ export const languageEnglish = {
         dynamicResponseTiming: "When enabled, it will adjust the response timing dynamically.",
         dynamicRequest: "When enabled, it will request to model at random timing without waiting for user input.",
         showTypingEffect: "When enabled, it will show a typing indicator while the assistant is generating a response.",
-        dynamicOutputPrompt: "When enabled, the schema information will be included in the request."
+        dynamicOutputPrompt: "When enabled, the schema information will be included in the request.",
+        pastThinkingSend: "Controls how previous thinking/reasoning from AI models (Claude, Gemini, etc.) is included in subsequent requests.\n\n- **None**: Previous thinking is not sent.\n- **Send**: Previous thinking is included in context.\n- **Send (Extra Context)**: Previous thinking uses a separate token budget. This allows you to intentionally keep reasoning minimal, but cache may be invalidated more easily in some cases.\n\nContent inside `<Thoughts>` tags is never sent regardless of this setting."
     },
     setup: {
         chooseProvider: "Choose AI Provider",
@@ -1258,6 +1259,9 @@ export const languageEnglish = {
     thinkingTokens: "Thinking Tokens",
     thinkingLevel: "Thinking Level",
     pastThinkingSend: "Past Thinking Send Mode",
+    pastThinkingSendNone: "None",
+    pastThinkingSendSend: "Send",
+    pastThinkingSendExtra: "Send (Extra Context)",
     pastThinkingExtraTokens: "Extra Context Token Budget",
     antiServerOverload: "Auto Retry on Server Overload",
     newChatSeparator: "Insert [Start a new chat] Separator",
