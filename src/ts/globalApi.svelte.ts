@@ -318,9 +318,89 @@ export let saving = $state({
     state: false
 })
 
+// OPFS/IndexedDB Worker (모듈 레벨)
+// Tauri: OPFS Worker (IPC 블로킹 방지)
+// Web: IndexedDB Worker
+let opfsWorker: Worker | null = null
+let pendingSaves = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
+let pendingLoads = new Map<string, { resolve: (data: Uint8Array | null) => void, reject: (e: Error) => void }>()
+
+function initOPFSWorker() {
+    if (opfsWorker || isNodeServer) return
+
+    try {
+        // Tauri에서는 OPFS Worker, 웹에서는 IndexedDB Worker 사용
+        const workerUrl = isTauri
+            ? new URL('./storage/opfsSaveWorker.ts', import.meta.url)
+            : new URL('./storage/saveWorker.ts', import.meta.url)
+
+        opfsWorker = new Worker(workerUrl, {
+            type: 'module'
+        })
+        opfsWorker.onmessage = (e) => {
+            const { type, key, error, data } = e.data
+
+            // Handle save responses
+            if (type === 'success' || type === 'error') {
+                const pending = pendingSaves.get(key)
+                if (pending) {
+                    if (type === 'success') {
+                        pending.resolve()
+                    } else {
+                        pending.reject(new Error(error || 'Unknown save error'))
+                    }
+                    pendingSaves.delete(key)
+                }
+            }
+            // Handle load responses
+            else if (type === 'load_success' || type === 'load_error') {
+                const pending = pendingLoads.get(key)
+                if (pending) {
+                    if (type === 'load_success') {
+                        pending.resolve(data || null)
+                    } else {
+                        // File not found is not an error, just return null
+                        pending.resolve(null)
+                    }
+                    pendingLoads.delete(key)
+                }
+            }
+        }
+        opfsWorker.onerror = (e) => {
+            console.error('OPFS worker error:', e)
+        }
+    } catch (e) {
+        console.warn('Failed to initialize OPFS worker, falling back to main thread:', e)
+        opfsWorker = null
+    }
+}
+
+async function saveToWorker(key: string, data: Uint8Array): Promise<void> {
+    if (!opfsWorker) {
+        // Fallback to main thread
+        await forageStorage.setItem(key, data)
+        return
+    }
+    return new Promise((resolve, reject) => {
+        pendingSaves.set(key, { resolve, reject })
+        // Transferable로 전달하여 제로카피
+        opfsWorker.postMessage({ type: 'save', key, data }, [data.buffer])
+    })
+}
+
+export async function loadFromWorker(key: string): Promise<Uint8Array | null> {
+    if (!opfsWorker) {
+        return null
+    }
+    return new Promise((resolve, reject) => {
+        pendingLoads.set(key, { resolve, reject })
+        opfsWorker.postMessage({ type: 'load', key })
+    })
+}
+
 /**
  * Saves the current state of the database.
- * 
+ *
  * @returns {Promise<void>} - A promise that resolves when the database has been saved.
  */
 export let requiresFullEncoderReload = $state({
@@ -336,47 +416,9 @@ export async function saveDb(){
         channel = new BroadcastChannel('risu-db')
     }
 
-    // Initialize save worker for web environment
-    let saveWorker: Worker | null = null
-    let pendingSaves = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
+    // Initialize worker if not already done
+    initOPFSWorker()
 
-    if (!isTauri && !isNodeServer) {
-        try {
-            saveWorker = new Worker(new URL('./storage/saveWorker.ts', import.meta.url), {
-                type: 'module'
-            })
-            saveWorker.onmessage = (e) => {
-                const { type, key, error } = e.data
-                const pending = pendingSaves.get(key)
-                if (pending) {
-                    if (type === 'success') {
-                        pending.resolve()
-                    } else {
-                        pending.reject(new Error(error || 'Unknown save error'))
-                    }
-                    pendingSaves.delete(key)
-                }
-            }
-            saveWorker.onerror = (e) => {
-                console.error('Save worker error:', e)
-            }
-        } catch (e) {
-            console.warn('Failed to initialize save worker, falling back to main thread:', e)
-            saveWorker = null
-        }
-    }
-
-    async function saveToWorker(key: string, data: Uint8Array): Promise<void> {
-        if (!saveWorker) {
-            // Fallback to main thread
-            await forageStorage.setItem(key, data)
-            return
-        }
-        return new Promise((resolve, reject) => {
-            pendingSaves.set(key, { resolve, reject })
-            saveWorker.postMessage({ type: 'save', key, data })
-        })
-    }
     if(channel){
         channel.onmessage = async (ev) => {
             if(ev.data === sessionID){
@@ -508,24 +550,21 @@ export async function saveDb(){
                 continue
             }
             const dbData = new Uint8Array(encoded)
-            if(isTauri){
-                await writeFile('database/database.bin', dbData, {baseDir: BaseDirectory.AppData});
-                await writeFile(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData, {baseDir: BaseDirectory.AppData});
+            // Tauri와 웹 모두 Worker 사용 (Tauri: OPFS, Web: IndexedDB)
+            // Worker를 사용하면 메인 스레드 블로킹 없음
+            if(!forageStorage.isAccount && opfsWorker){
+                // 백업용 복사본 생성 (Transferable로 보내면 원본 buffer가 detached됨)
+                const backupData = new Uint8Array(dbData)
+                await saveToWorker('database/database.bin', dbData)
+                await saveToWorker(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, backupData)
             }
             else{
-                // Use worker for non-account storage to avoid blocking main thread
-                if(!forageStorage.isAccount && saveWorker){
-                    await saveToWorker('database/database.bin', dbData)
-                    await saveToWorker(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData)
+                await forageStorage.setItem('database/database.bin', dbData)
+                if(!forageStorage.isAccount){
+                    await forageStorage.setItem(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData)
                 }
-                else{
-                    await forageStorage.setItem('database/database.bin', dbData)
-                    if(!forageStorage.isAccount){
-                        await forageStorage.setItem(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData)
-                    }
-                    if(forageStorage.isAccount){
-                        await sleep(3000)
-                    }
+                if(forageStorage.isAccount){
+                    await sleep(3000)
                 }
             }
             if(!forageStorage.isAccount){
@@ -608,11 +647,12 @@ export async function loadData() {
                 // 모바일 체크 추가
                 const currentPlatform = await platform();
                 const isMobile = currentPlatform === 'android' || currentPlatform === 'ios';
-                
+
                 if(!isMobile){
                     appWindow.maximize()
                 }
-                
+
+                // Tauri용 디렉토리 생성 (assets 저장용)
                 if(!await exists('', {baseDir: BaseDirectory.AppData})){
                     await mkdir('', {baseDir: BaseDirectory.AppData})
                 }
@@ -622,12 +662,31 @@ export async function loadData() {
                 if(!await exists('assets', {baseDir: BaseDirectory.AppData})){
                     await mkdir('assets', {baseDir: BaseDirectory.AppData})
                 }
-                if(!await exists('database/database.bin', {baseDir: BaseDirectory.AppData})){
-                    await writeFile('database/database.bin', encodeRisuSaveLegacy({}), {baseDir: BaseDirectory.AppData});
+
+                // OPFS Worker 초기화
+                initOPFSWorker()
+
+                // OPFS에서 먼저 로드 시도
+                LoadingStatusState.text = "Reading Save File..."
+                let readed = await loadFromWorker('database/database.bin')
+
+                // OPFS에 데이터가 없으면 기존 파일시스템에서 마이그레이션
+                if (!readed) {
+                    console.log('[OPFS] No data in OPFS, checking filesystem for migration...')
+                    if (await exists('database/database.bin', {baseDir: BaseDirectory.AppData})) {
+                        LoadingStatusState.text = "Migrating from filesystem to OPFS..."
+                        readed = await readFile('database/database.bin', {baseDir: BaseDirectory.AppData})
+                        console.log('[OPFS] Migrated data from filesystem')
+                    }
                 }
+
+                // 데이터가 없으면 새로 생성
+                if (!readed) {
+                    console.log('[OPFS] No existing data, creating new database')
+                    readed = encodeRisuSaveLegacy({})
+                }
+
                 try {
-                    LoadingStatusState.text = "Reading Save File..."
-                    const readed = await readFile('database/database.bin',{baseDir: BaseDirectory.AppData})
                     LoadingStatusState.text = "Cleaning Unnecessary Files..."
                     getDbBackups() //this also cleans the backups
                     LoadingStatusState.text = "Decoding Save File..."
@@ -641,11 +700,18 @@ export async function loadData() {
                         if (!backupLoaded) {
                             try {
                                 LoadingStatusState.text = `Reading Backup File ${backup}...`
-                                const backupData = await readFile(`database/dbbackup-${backup}.bin`, {baseDir: BaseDirectory.AppData})
-                                setDatabase(
-                                  await decodeRisuSave(backupData)
-                                )
-                                backupLoaded = true
+                                // OPFS에서 백업 로드 시도
+                                let backupData = await loadFromWorker(`database/dbbackup-${backup}.bin`)
+                                // OPFS에 없으면 파일시스템에서 시도
+                                if (!backupData && await exists(`database/dbbackup-${backup}.bin`, {baseDir: BaseDirectory.AppData})) {
+                                    backupData = await readFile(`database/dbbackup-${backup}.bin`, {baseDir: BaseDirectory.AppData})
+                                }
+                                if (backupData) {
+                                    setDatabase(
+                                      await decodeRisuSave(backupData)
+                                    )
+                                    backupLoaded = true
+                                }
                             } catch (error) {
                                 console.error(error)
                             }
@@ -658,7 +724,7 @@ export async function loadData() {
                 LoadingStatusState.text = "Checking Update..."
                 await checkRisuUpdate()
                 await changeFullscreen()
-    
+
             }
             else{
                 await forageStorage.Init()
