@@ -1315,5 +1315,6 @@ export const languageKorean = {
     "showTypingEffect": "타이핑 효과 표시",
     "dynamicRequest": "동적 요청",
     "dynamicOutputPrompt": "동적 출력 프롬프트",
-    "vertexAuthError": "Vertex AI 인증 정보가 누락되었습니다."
+    "vertexAuthError": "Vertex AI 인증 정보가 누락되었습니다.",
+    "required": "필요"
 }

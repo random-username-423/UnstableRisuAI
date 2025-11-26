@@ -1,6 +1,14 @@
 // Re-export types
 export * from './types'
 
+// Provider names that should have a separator line AFTER them in the model list UI
+// Categories: Proprietary APIs | Open-source APIs | Local | Others
+export const ProviderSeparatorAfter = new Set([
+    'Vertex AI',      // End of proprietary models
+    'Cohere',         // End of open-source APIs
+    'Horde',          // End of local models
+])
+
 import { getDatabase } from "../storage/database.svelte"
 import {
     LLMFlags,
@@ -29,17 +37,19 @@ export const LLMModels: LLMModel[] = [
     ...OpenAIModels,
     ...AnthropicModels,
     ...AWSModels,
-    ...OtherModels.slice(0, 2), // Ooba, Mancer
-    ...OtherModels.slice(2, 3), // OpenRouter
-    ...MistralModels,
     ...GoogleModels,
-    ...OtherModels.slice(3, 4), // Kobold
-    ...NovelAIModels,
-    ...CohereModels,
-    ...OtherModels.slice(4, 8), // Ollama, WebLLM models
-    ...DeepSeekModels,
+    ...OtherModels.slice(2, 3), // OpenRouter
+    ...OtherModels.slice(1, 2), // Mancer
     ...DeepInfraModels,
-    ...OtherModels.slice(8), // Plugin, Custom API
+    ...DeepSeekModels,
+    ...MistralModels,
+    ...CohereModels,
+    ...OtherModels.slice(0, 1), // Ooba
+    ...OtherModels.slice(3, 4), // Kobold
+    ...OtherModels.slice(6, 9), // WebLLM models
+    ...OtherModels.slice(4, 6), // Ollama, Horde
+    ...NovelAIModels,
+    ...OtherModels.slice(9), // Plugin, Custom API
 ]
 
 // Post-processing: fill in default values
@@ -60,19 +70,6 @@ for (let i = 0; i < LLMModels.length; i++) {
             name: `${LLMModels[i].name} (Response API)`,
             fullName: `${LLMModels[i].fullName ?? LLMModels[i].name} (Response API)`,
             recommended: false
-        })
-    }
-    // Add Vertex AI variants for Google Cloud models
-    if (LLMModels[i].provider === LLMProvider.GoogleCloud) {
-        LLMModels.push({
-            ...LLMModels[i],
-            id: `${LLMModels[i].id}-vertex`,
-            name: `${LLMModels[i].name} Vertex`,
-            fullName: `${LLMModels[i].fullName ?? LLMModels[i].name} Vertex`,
-            flags: [...LLMModels[i].flags],
-            recommended: false,
-            provider: LLMProvider.VertexAI,
-            format: LLMFormat.VertexAIGemini
         })
     }
 }

@@ -22,7 +22,6 @@ export const CohereModels: LLMModel[] = [
         provider: LLMProvider.Cohere,
         format: LLMFormat.Cohere,
         flags: [LLMFlags.hasFirstSystemPrompt, LLMFlags.requiresAlternateRole, LLMFlags.mustStartWithUserInput],
-        recommended: true,
         parameters: [
             'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'
         ],

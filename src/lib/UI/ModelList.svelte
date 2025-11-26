@@ -1,11 +1,10 @@
 <script lang="ts">
     
     import { DBState } from 'src/ts/stores.svelte';
-    import { getHordeModels } from "src/ts/horde/getModels";
     import Arcodion from "./Arcodion.svelte";
     import { language } from "src/lang";
     import CheckInput from "./GUI/CheckInput.svelte";
-    import { getModelInfo, getModelList } from 'src/ts/model/modellist';
+    import { getModelInfo, getModelList, ProviderSeparatorAfter } from 'src/ts/model/modellist';
     import { ArrowLeft } from "lucide-svelte";
 
     interface Props {
@@ -59,6 +58,9 @@
                 {#if provider.providerName === '@as-is'}
                     {#each provider.models as model}
                         <button class="hover:bg-selected px-6 py-2 text-lg" onclick={() => {changeModel(model.id)}}>{model.name}</button>
+                        {#if ProviderSeparatorAfter.has(model.name)}
+                            <div class="border-b border-darkborderc my-2"></div>
+                        {/if}
                     {/each}
                 {:else}
                     <Arcodion name={provider.providerName}>
@@ -66,25 +68,11 @@
                             <button class="hover:bg-selected px-6 py-2 text-lg" onclick={() => {changeModel(model.id)}}>{model.name}</button>
                         {/each}
                     </Arcodion>
+                    {#if ProviderSeparatorAfter.has(provider.providerName)}
+                        <div class="border-b border-darkborderc my-2"></div>
+                    {/if}
                 {/if}
             {/each}
-            <Arcodion name="Horde">
-                {#await getHordeModels()}
-                    <button class="p-2">Loading...</button>
-                {:then models}
-                    <button onclick={() => {changeModel("horde:::" + 'auto')}} class="p-2 hover:text-green-500">
-                        Auto Model
-                        <br><span class="text-textcolor2 text-sm">Performace: Auto</span>
-                    </button>
-                    {#each models as model}
-                        <button onclick={() => {changeModel("horde:::" + model.name)}} class="p-2 hover:text-green-500">
-                            {model.name.trim()}
-                            <br><span class="text-textcolor2 text-sm">Performace: {model.performance.toFixed(1)}</span>
-                        </button>
-                    {/each}
-                {/await}
-            </Arcodion>
-
             {#if DBState?.db.customModels?.length > 0}
                 <Arcodion name={language.customModels}>
                     {#each DBState.db.customModels as model}

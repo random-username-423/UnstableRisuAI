@@ -481,7 +481,7 @@
                 <OptionInput value="6">NovelList</OptionInput>
                 <OptionInput value="7">Llama3</OptionInput>
                 <OptionInput value="8">Gemma</OptionInput>
-                <OptionInput value="9">GoogleCloud</OptionInput>
+                <OptionInput value="9">GeminiAPI</OptionInput>
                 <OptionInput value="10">Cohere</OptionInput>
                 <OptionInput value="12">DeepSeek</OptionInput>
             </SelectInput>
@@ -494,7 +494,7 @@
                 <OptionInput value="2">Anthropic</OptionInput>
                 <OptionInput value="3">AnthropicLegacy</OptionInput>
                 <OptionInput value="4">Mistral</OptionInput>
-                <OptionInput value="5">GoogleCloud</OptionInput>
+                <OptionInput value="5">GeminiAPI</OptionInput>
                 <OptionInput value="6">VertexAIGemini</OptionInput>
                 <OptionInput value="7">NovelList</OptionInput>
                 <OptionInput value="8">Cohere</OptionInput>

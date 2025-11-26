@@ -32,7 +32,6 @@ export const AnthropicModels: LLMModel[] = [
             LLMFlags.hasStreaming,
             LLMFlags.claudeThinking
         ],
-        recommended: true,
         parameters: [...ClaudeParameters, 'thinking_tokens'],
         tokenizer: LLMTokenizer.Claude
     },

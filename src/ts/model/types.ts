@@ -28,7 +28,7 @@ export enum LLMFlags{
 export enum LLMProvider{
     OpenAI,
     Anthropic,
-    GoogleCloud,
+    GeminiAPI,
     VertexAI,
     AsIs,
     Mistral,
@@ -49,7 +49,7 @@ export enum LLMFormat{
     Anthropic,
     AnthropicLegacy,
     Mistral,
-    GoogleCloud,
+    GeminiAPI,
     VertexAIGemini,
     NovelList,
     Cohere,
@@ -76,7 +76,7 @@ export enum LLMTokenizer{
     NovelList,
     Llama3,
     Gemma,
-    GoogleCloud,
+    GeminiAPI,
     Cohere,
     Local,
     DeepSeek
@@ -107,7 +107,7 @@ export const ClaudeParameters: Parameter[] = ['temperature', 'top_k', 'top_p']
 export const ProviderNames = new Map<LLMProvider, string>([
     [LLMProvider.OpenAI, 'OpenAI'],
     [LLMProvider.Anthropic, 'Anthropic'],
-    [LLMProvider.GoogleCloud, 'Google Cloud'],
+    [LLMProvider.GeminiAPI, 'Gemini API'],
     [LLMProvider.VertexAI, 'Vertex AI'],
     [LLMProvider.AsIs, 'As Is'],
     [LLMProvider.Mistral, 'MistralAI'],
@@ -116,7 +116,7 @@ export const ProviderNames = new Map<LLMProvider, string>([
     [LLMProvider.NovelAI, 'NovelAI'],
     [LLMProvider.WebLLM, 'WebLLM'],
     [LLMProvider.Horde, 'Horde'],
-    [LLMProvider.AWS, 'AWS'],
+    [LLMProvider.AWS, 'Amazon Bedrock'],
     [LLMProvider.DeepSeek, 'DeepSeek'],
     [LLMProvider.DeepInfra, 'DeepInfra']
 ])

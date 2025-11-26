@@ -108,7 +108,7 @@
     <span class="text-textcolor mt-2">{language.submodel} <Help key="submodel"/></span>
     <ModelList bind:value={DBState.db.subModel}/>
 
-    {#if modelInfo.provider === LLMProvider.GoogleCloud || subModelInfo.provider === LLMProvider.GoogleCloud}
+    {#if modelInfo.provider === LLMProvider.GeminiAPI || subModelInfo.provider === LLMProvider.GeminiAPI}
         <span class="text-textcolor">GoogleAI API Key</span>
         <TextInput marginBottom={true} size={"sm"} placeholder="..." hideText={DBState.db.hideApiKey} bind:value={DBState.db.google.accessToken}/>
     {/if}
@@ -180,8 +180,8 @@
             <OptionInput value={LLMFormat.Mistral.toString()}>
                 Mistral
             </OptionInput>
-            <OptionInput value={LLMFormat.GoogleCloud.toString()}>
-                Google Cloud
+            <OptionInput value={LLMFormat.GeminiAPI.toString()}>
+                Gemini API
             </OptionInput>
             <OptionInput value={LLMFormat.Cohere.toString()}>
                 Cohere

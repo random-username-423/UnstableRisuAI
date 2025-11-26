@@ -134,9 +134,9 @@ export async function encode(data:string):Promise<(number[]|Uint32Array|Int32Arr
             result = await tokenizeGGUFModel(data);
         } else if(modelInfo.tokenizer === LLMTokenizer.tiktokenO200Base){
             result = await tikJS(data, 'o200k_base');
-        } else if(modelInfo.tokenizer === LLMTokenizer.GoogleCloud && db.googleClaudeTokenizing){
+        } else if(modelInfo.tokenizer === LLMTokenizer.GeminiAPI && db.googleClaudeTokenizing){
             result = await tokenizeGoogleCloud(data);
-        } else if(modelInfo.tokenizer === LLMTokenizer.Gemma || modelInfo.tokenizer === LLMTokenizer.GoogleCloud){
+        } else if(modelInfo.tokenizer === LLMTokenizer.Gemma || modelInfo.tokenizer === LLMTokenizer.GeminiAPI){
             result = await gemmaTokenize(data);
         } else if(modelInfo.tokenizer === LLMTokenizer.DeepSeek){
             result = await tokenizeWebTokenizers(data, 'DeepSeek');

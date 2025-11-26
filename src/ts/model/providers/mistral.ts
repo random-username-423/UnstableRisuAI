@@ -108,7 +108,6 @@ export const MistralModels: LLMModel[] = [
         provider: LLMProvider.Mistral,
         format: LLMFormat.Mistral,
         flags: [LLMFlags.hasFirstSystemPrompt, LLMFlags.mustStartWithUserInput, LLMFlags.requiresAlternateRole],
-        recommended: true,
         parameters: ['temperature', 'presence_penalty', 'frequency_penalty', 'top_p'],
         tokenizer: LLMTokenizer.Mistral
     },

@@ -25,7 +25,6 @@ export const NovelAIModels: LLMModel[] = [
         provider: LLMProvider.NovelAI,
         format: LLMFormat.NovelAI,
         flags: [LLMFlags.hasFullSystemPrompt],
-        recommended: true,
         parameters: [
             'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'
         ],
@@ -37,7 +36,6 @@ export const NovelAIModels: LLMModel[] = [
         provider: LLMProvider.NovelAI,
         format: LLMFormat.NovelAI,
         flags: [LLMFlags.hasFullSystemPrompt],
-        recommended: true,
         parameters: [
             'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'
         ],

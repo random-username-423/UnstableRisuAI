@@ -54,3 +54,6 @@ Cargo.lock
 # Claude Code
 .claude/
 CLAUDE.md
+
+/android
+/src-tauri/gen

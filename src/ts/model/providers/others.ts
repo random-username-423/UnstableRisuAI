@@ -53,7 +53,18 @@ export const OtherModels: LLMModel[] = [
         format: LLMFormat.Ollama,
         flags: [LLMFlags.hasFullSystemPrompt],
         parameters: OpenAIParameters,
-        tokenizer: LLMTokenizer.Unknown
+        tokenizer: LLMTokenizer.Unknown,
+        recommended: true
+    },
+    {
+        id: 'horde',
+        name: 'Horde',
+        provider: LLMProvider.Horde,
+        format: LLMFormat.Horde,
+        flags: [],
+        parameters: OpenAIParameters,
+        tokenizer: LLMTokenizer.Unknown,
+        recommended: true
     },
     {
         id: 'hf:::Xenova/opt-350m',

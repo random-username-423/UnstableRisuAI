@@ -13,7 +13,6 @@ function makeDeepInfraModels(ids: string[]): LLMModel[] {
             tokenizer: LLMTokenizer.DeepSeek,
             endpoint: 'https://api.deepinfra.com/v1/openai/chat/completions',
             keyIdentifier: 'deepinfra',
-            recommended: true
         } as LLMModel
     })
 }

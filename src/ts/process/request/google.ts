@@ -561,7 +561,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             `https://${REGION}-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${REGION}/publishers/google/models/${arg.modelInfo.internalID}:${endpoint}`
         
         }
-    else if(arg.modelInfo.format === LLMFormat.GoogleCloud && arg.useStreaming){
+    else if(arg.modelInfo.format === LLMFormat.GeminiAPI && arg.useStreaming){
         url = `https://generativelanguage.googleapis.com/v1beta/models/${arg.modelInfo.internalID}:streamGenerateContent?key=${apiKey}&alt=sse`
     }
     else{
@@ -630,7 +630,7 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
         return (thoughts ? `<Thoughts>\n\n${thoughts}\n\n</Thoughts>\n\n` : '') + content
     }
 
-    if((arg.modelInfo.format === LLMFormat.GoogleCloud || arg.modelInfo.format === LLMFormat.VertexAIGemini) && arg.useStreaming){
+    if((arg.modelInfo.format === LLMFormat.GeminiAPI || arg.modelInfo.format === LLMFormat.VertexAIGemini) && arg.useStreaming){
         headers['Content-Type'] = 'application/json'
 
         if(arg.previewBody){
