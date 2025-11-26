@@ -109,22 +109,30 @@
 <!-- ==================== Claude Settings ==================== -->
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsClaudeSection}</h3>
 
+{#if DBState.db.useExperimental}
+    <div class="flex items-center mt-4">
+        <Check bind:check={DBState.db.automaticCachePoint} name={language.claudeAutomaticCaching}>
+            <Help key="claudeAutomaticCaching"/><Help key="experimental"/>
+        </Check>
+    </div>
+{/if}
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.claude1HourCaching} name={language.claude1HourCaching}>
-    </Check>
-</div>
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.claudeBatching} name={language.claudeBatching}>
-        <Help key="experimental" />
+        <Help key="claude1HourCaching"/>
     </Check>
 </div>
 {#if DBState.db.useExperimental}
     <div class="flex items-center mt-4">
         <Check bind:check={DBState.db.claudeRetrivalCaching} name={language.claudeCachingRetrival}>
-            <Help key="unrecommended" unrecommended/>
+            <Help key="claudeCachingRetrival"/><Help key="unrecommended" unrecommended/>
         </Check>
     </div>
 {/if}
+<div class="flex items-center mt-4">
+    <Check bind:check={DBState.db.claudeBatching} name={language.claudeBatching}>
+        <Help key="claudeBatching"/><Help key="experimental"/>
+    </Check>
+</div>
 
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
@@ -287,13 +295,6 @@
 <!-- ==================== Cache/Performance Settings ==================== -->
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsCachePerformanceSection}</h3>
 
-{#if DBState.db.useExperimental}
-    <div class="flex items-center mt-4">
-        <Check bind:check={DBState.db.automaticCachePoint} name={language.automaticCachePoint}>
-            <Help key="automaticCachePoint"/><Help key="experimental"/>
-        </Check>
-    </div>
-{/if}
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.useTokenizerCaching} name={language.useTokenizerCaching}>
     </Check>
