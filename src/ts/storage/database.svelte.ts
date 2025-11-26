@@ -585,6 +585,7 @@ export function setDatabase(data:Database){
     data.ImagenImageSize ??= '1K'
     data.ImagenAspectRatio ??= '1:1'
     data.ImagenPersonGeneration ??= 'allow_all'
+    data.openAIServiceTier ??= ''
     //@ts-ignore
     if(!globalThis.__NODE__ && !window.__TAURI_INTERNALS__){
         //this is intended to forcely reduce the size of the database in web
@@ -1097,6 +1098,7 @@ export interface Database{
     ImagenImageSize:string
     ImagenAspectRatio:string
     ImagenPersonGeneration:string
+    openAIServiceTier:string
 }
 
 interface SeparateParameters{

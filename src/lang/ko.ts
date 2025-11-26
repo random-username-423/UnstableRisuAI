@@ -90,6 +90,7 @@ export const languageKorean = {
         "autoFillRequestURL": "활성화되면 요청 URL을 현재 모델과 일치하도록 자동으로 채웁니다.",
         "chainOfThought": "활성화되면 생각의 사슬 프롬프트를 프롬프트에 추가합니다.",
         "gptVisionQuality": "OpenAI의 이미지 감지 모델 품질을 설정합니다. 품질이 높을수록 감지가 더 정확하지만 토큰이 더 많이 사용됩니다.",
+        "openAIServiceTier": "OpenAI API 서비스 티어. 'Flex'는 응답 시간이 느린 대신 50% 비용 절감. 최신 추론 모델에서 사용 가능.",
         "geminiVisionQuality": "Gemini의 미디어 해상도를 설정합니다. 해상도가 높을수록 감지가 더 정확하지만 토큰이 더 많이 사용됩니다. Gemini 3 기준: Low=280, Medium=560, High=1120, Unspecified=1120 토큰/이미지. 다른 모델은 다를 수 있습니다.",
         "geminiMergeSystemToUser": "활성화하면 Gemini의 system_instruction 필드 대신 system 메시지를 user 메시지에 병합합니다. 시스템 프롬프트에 문제가 있는 경우 이 옵션을 활성화하세요.",
         "genTimes": "동일한 인풋으로 여러 개의 아웃풋을 생성합니다. 예: 3으로 설정 시 인풋 비용 x1, 아웃풋 비용 x3. (일반적으로 3번 요청하면 인풋 x3, 아웃풋 x3)",

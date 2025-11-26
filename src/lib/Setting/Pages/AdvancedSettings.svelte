@@ -160,6 +160,13 @@
     <OptionInput value="high">High</OptionInput>
 </SelectInput>
 
+<span class="text-textcolor mt-4">Service Tier <Help key="openAIServiceTier"/></span>
+<SelectInput bind:value={DBState.db.openAIServiceTier}>
+    <OptionInput value="">Unspecified</OptionInput>
+    <OptionInput value="default">Default</OptionInput>
+    <OptionInput value="flex">Flex</OptionInput>
+</SelectInput>
+
 <span class="text-textcolor mt-4">{language.genTimes} <Help key="genTimes"/></span>
 <NumberInput marginBottom={true} size={"sm"} min={1} max={10} bind:value={DBState.db.genTime}/>
 

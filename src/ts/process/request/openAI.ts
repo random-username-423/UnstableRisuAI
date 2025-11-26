@@ -409,6 +409,10 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
         delete body.logit_bias
     }
 
+    if(db.openAIServiceTier){
+        body.service_tier = db.openAIServiceTier
+    }
+
     if(aiModel.startsWith('gpt4o1') || arg.modelInfo.flags.includes(LLMFlags.OAICompletionTokens)){
         body.max_completion_tokens = body.max_tokens
         delete body.max_tokens
@@ -1102,6 +1106,10 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
 
     if(db.modelTools.includes('search')){
         body.tools.push('web_search_preview')
+    }
+
+    if(db.openAIServiceTier){
+        body.service_tier = db.openAIServiceTier
     }
 
     const response = await globalFetch("https://api.openai.com/v1/responses", {

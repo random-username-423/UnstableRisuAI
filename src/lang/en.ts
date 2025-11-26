@@ -117,6 +117,7 @@ export const languageEnglish = {
         autoFillRequestURL: "If enabled, it will autofill request url to match the current model.",
         chainOfThought: "If enabled, it will add chain of thought prompt to the prompt.",
         gptVisionQuality: "This option is used to set the quality of the image detection model for OpenAI. The higher the quality, the more accurate the detection, but more tokens are used.",
+        openAIServiceTier: "Service tier for OpenAI API. 'Flex' offers 50% cost reduction with slower response times. Available for latest reasoning models.",
         geminiVisionQuality: "This option is used to set the media resolution for Gemini. The higher the resolution, the more accurate the detection, but more tokens are used. For Gemini 3: Low=280, Medium=560, High=1120, Unspecified=1120 tokens per image. Other models may vary.",
         geminiMergeSystemToUser: "When enabled, system messages will be merged into user messages instead of using Gemini's native system_instruction field. Enable this if you experience issues with system prompts.",
         genTimes: "Generate multiple outputs from a single input. Example: Set to 3 = input cost x1, output cost x3. (Normally 3 requests = input x3, output x3)",
