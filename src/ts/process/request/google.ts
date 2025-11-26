@@ -409,11 +409,14 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
                 "includeThoughts": true,
             }
             delete body.generation_config.thinkingLevel
-        } else if(body.generation_config.thinkingBudget !== undefined){
+        } else if(body.generation_config.thinkingBudget !== undefined && body.generation_config.thinkingBudget > 0){
             body.generation_config.thinkingConfig = {
                 "thinkingBudget": body.generation_config.thinkingBudget,
                 "includeThoughts": true,
             }
+            delete body.generation_config.thinkingBudget
+        } else {
+            // thinkingBudget이 0이거나 undefined일 때 삭제
             delete body.generation_config.thinkingBudget
         }
     }
