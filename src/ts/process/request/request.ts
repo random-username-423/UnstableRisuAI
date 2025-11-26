@@ -129,8 +129,11 @@ export function applyParameters(data: { [key: string]: any }, parameters: Parame
 } = {}): { [key: string]: any } {
     const db = getDatabase()
 
-    function getEffort(effort:number){
+    function getEffort(effort:number):string|number{
         switch(effort){
+            case -1000:{
+                return -1000
+            }
             case -1:{
                 // GPT-5 시리즈만 minimal, GPT-5.1+ 및 기타는 none
                 if (arg.modelId?.startsWith('gpt-5') && !arg.modelId?.startsWith('gpt-5.')) {
@@ -153,8 +156,11 @@ export function applyParameters(data: { [key: string]: any }, parameters: Parame
         }
     }
 
-    function getVerbosity(verbosity:number){
+    function getVerbosity(verbosity:number):string|number{
         switch(verbosity){
+            case -1000:{
+                return -1000
+            }
             case 0:{
                 return 'low'
             }

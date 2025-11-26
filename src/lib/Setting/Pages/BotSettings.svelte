@@ -349,6 +349,7 @@
     {#if modelInfo.parameters.includes('reasoning_effort')}
         <span class="text-textcolor">Reasoning Effort</span>
         <select class="bg-darkbg border border-darkborderc text-textcolor p-2 mb-2 rounded-md w-full" bind:value={DBState.db.reasoningEffort}>
+            <option value={-1000}>Unspecified</option>
             <option value={-1}>None</option>
             <option value={0}>Low</option>
             <option value={1}>Medium</option>
@@ -358,6 +359,7 @@
     {#if modelInfo.parameters.includes('verbosity')}
         <span class="text-textcolor">Verbosity</span>
         <select class="bg-darkbg border border-darkborderc text-textcolor p-2 mb-2 rounded-md w-full" bind:value={DBState.db.verbosity}>
+            <option value={-1000}>Unspecified</option>
             <option value={0}>Low</option>
             <option value={1}>Medium</option>
             <option value={2}>High</option>
