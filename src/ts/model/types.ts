@@ -100,7 +100,7 @@ export interface LLMModel{
 
 // Common parameter arrays
 export const OpenAIParameters: Parameter[] = ['temperature', 'top_p', 'frequency_penalty', 'presence_penalty']
-export const GPT5Parameters: Parameter[] = ['temperature', 'top_p', 'frequency_penalty', 'presence_penalty', 'reasoning_effort', 'verbosity']
+export const GPT5Parameters: Parameter[] = ['reasoning_effort', 'verbosity']
 export const ClaudeParameters: Parameter[] = ['temperature', 'top_k', 'top_p']
 
 // Provider names map

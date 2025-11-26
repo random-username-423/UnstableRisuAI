@@ -365,8 +365,10 @@
             <option value={2}>High</option>
         </select>
     {/if}
-    <span class="text-textcolor">{language.temperature} <Help key="tempature"/></span>
-    <SliderInput min={0} max={200} marginBottom bind:value={DBState.db.temperature} multiple={0.01} fixed={2} disableable/>
+    {#if modelInfo.parameters.includes('temperature')}
+        <span class="text-textcolor">{language.temperature} <Help key="tempature"/></span>
+        <SliderInput min={0} max={200} marginBottom bind:value={DBState.db.temperature} multiple={0.01} fixed={2} disableable/>
+    {/if}
     {#if modelInfo.parameters.includes('top_k')}
         <span class="text-textcolor">Top K</span>
         <SliderInput min={0} max={100} marginBottom step={1} bind:value={DBState.db.top_k} disableable/>
