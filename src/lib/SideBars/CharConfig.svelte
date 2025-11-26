@@ -672,12 +672,12 @@
             <h2 class="mb-2 text-2xl font-bold mt-2">{language.scripts}</h2>
         {/if}
 
-        <span class="text-textcolor mt-2">{language.backgroundHTML} <Help key="backgroundHTML" /></span>
+        <div class="text-textcolor mt-2">{language.backgroundHTML} <Help key="backgroundHTML" /></div>
         <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.db.characters[$selectedCharID].backgroundHTML}></TextAreaInput>
 
-        <span class="text-textcolor mt-4">{language.regexScript} <Help key="regexScript"/></span>
+        <div class="text-textcolor mt-4">{language.regexScript} <Help key="regexScript"/></div>
         <RegexList bind:value={DBState.db.characters[$selectedCharID].customscript} />
-        <div class="text-textcolor2 mt-2 flex gap-2">
+        <div class="text-textcolor2 mt-2 mb-6 flex gap-2">
             <button class="font-medium cursor-pointer hover:text-green-500" onclick={() => {
                 if(DBState.db.characters[$selectedCharID].type === 'character'){
                     let script = DBState.db.characters[$selectedCharID].customscript
@@ -698,12 +698,11 @@
             }}><HardDriveUploadIcon /></button>
         </div>
 
-        <span class="text-textcolor mt-4">{language.triggerScript} <Help key="triggerScript"/></span>
+        <div class="text-textcolor mt-4">{language.triggerScript} <Help key="triggerScript"/></div>
         <TriggerList bind:value={(DBState.db.characters[$selectedCharID] as character).triggerscript} lowLevelAble={DBState.db.characters[$selectedCharID].lowLevelAccess} />
 
-
         {#if DBState.db.characters[$selectedCharID].virtualscript || DBState.db.showUnrecommended}
-            <span class="text-textcolor mt-4">{language.charjs} <Help key="charjs" unrecommended/></span>
+            <div class="text-textcolor mt-6">{language.charjs} <Help key="charjs" unrecommended/></div>
             <TextAreaInput margin="both" autocomplete="off" bind:value={DBState.db.characters[$selectedCharID].virtualscript}></TextAreaInput>
         {/if}
     {/if}
@@ -712,11 +711,11 @@
     {#if DBState.db.characters[$selectedCharID].license !== 'CC BY-NC-SA 4.0'
     && DBState.db.characters[$selectedCharID].license !== 'CC BY-SA 4.0'
     }
-        <Button size="lg" onclick={async () => {
+        <Button onclick={async () => {
             if(await alertTOS()){
                 $ShowRealmFrameStore = 'character'
             }
-        }} className="mt-2">
+        }} className="mt-2 w-full">
             {#if DBState.db.characters[$selectedCharID].realmId}
                 {language.updateRealm}
             {:else}
@@ -731,14 +730,14 @@
         && DBState.db.characters[$selectedCharID].license !== 'CC BY-NC-ND 4.0'
         || DBState.db.tpo
         }
-        <Button size="sm" onclick={async () => {
+        <Button onclick={async () => {
             const res = await exportChar($selectedCharID)
-        }} className="mt-2">{language.exportCharacter}</Button>
+        }} className="mt-2 w-full">{language.exportCharacter}</Button>
     {/if}
 
     <Button onclick={async () => {
         removeChar($selectedCharID, DBState.db.characters[$selectedCharID].name)
-    }} className="mt-2" size="sm">{ DBState.db.characters[$selectedCharID].type === 'group' ? language.removeGroup : language.removeCharacter}</Button>
+    }} className="mt-2 w-full">{ DBState.db.characters[$selectedCharID].type === 'group' ? language.removeGroup : language.removeCharacter}</Button>
     
 {:else if $CharConfigSubMenu === 5}
     {#if DBState.db.characters[$selectedCharID].type === 'character'}
@@ -746,7 +745,7 @@
             <h2 class="mb-2 text-2xl font-bold mt-2">TTS</h2>
         {/if}
         <span class="text-textcolor">{language.provider}</span>
-        <SelectInput className="mb-4 mt-2" bind:value={DBState.db.characters[$selectedCharID].ttsMode} onchange={(e) => {
+        <SelectInput className="mb-4 mt-2 w-full" bind:value={DBState.db.characters[$selectedCharID].ttsMode} onchange={(e) => {
             if(DBState.db.characters[$selectedCharID].type === 'character'){
                 (DBState.db.characters[$selectedCharID] as character).ttsSpeech = ''
             }
@@ -1086,13 +1085,13 @@
         <TextAreaInput margin="both" autocomplete="off" bind:value={DBState.db.characters[$selectedCharID].translatorNote}></TextAreaInput>
 
         <span class="text-textcolor">{language.creator}</span>
-        <TextInput size="sm" autocomplete="off" bind:value={DBState.db.characters[$selectedCharID].additionalData.creator} />
+        <TextInput size="sm" fullwidth autocomplete="off" bind:value={DBState.db.characters[$selectedCharID].additionalData.creator} />
 
         <span class="text-textcolor">{language.CharVersion}</span>
-        <TextInput size="sm" bind:value={DBState.db.characters[$selectedCharID].additionalData.character_version}/>
+        <TextInput size="sm" fullwidth bind:value={DBState.db.characters[$selectedCharID].additionalData.character_version}/>
 
         <span class="text-textcolor">{language.nickname} <Help key="nickname" /></span>
-        <TextInput size="sm" bind:value={DBState.db.characters[$selectedCharID].nickname}/>
+        <TextInput size="sm" fullwidth bind:value={DBState.db.characters[$selectedCharID].nickname}/>
 
         <span class="text-textcolor">{language.depthPrompt}</span>
         <div class="flex justify-center items-center">
@@ -1182,7 +1181,7 @@
                     }
                     showHypaV2Alert()
                 }}
-                className="mt-4"
+                className="mt-4 w-full"
             >
                 {language.hypaMemoryV2Modal}
             </Button>
@@ -1191,7 +1190,7 @@
                 onclick={() => {
                     $hypaV3ModalOpen = true
                 }}
-                className="mt-4"
+                className="mt-4 w-full"
             >
                 {language.hypaMemoryV3Modal}
             </Button>
@@ -1202,7 +1201,7 @@
 
         <Button
             onclick={applyModule}
-            className="mt-4"
+            className="mt-4 w-full"
         >
             {language.applyModule}
         </Button>
