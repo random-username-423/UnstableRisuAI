@@ -120,20 +120,34 @@
         <span class="text-textcolor">Vertex Private Key</span>
         <TextInput marginBottom={true} size={"sm"} placeholder="..." hideText={DBState.db.hideApiKey} bind:value={DBState.db.vertexPrivateKey} oninput={clearVertexToken}/>
         <span class="text-textcolor">Region</span>
-        <SelectInput value={DBState.db.vertexRegion} onchange={(e) => {
-            DBState.db.vertexRegion = e.currentTarget.value
+        {@const predefinedRegions = ['global', 'us-central1', 'us-east1', 'us-east4', 'us-west1', 'us-west4', 'europe-west1', 'europe-west4', 'asia-northeast1', 'asia-northeast3', 'asia-southeast1', 'asia-east1']}
+        {@const isCustomRegion = !predefinedRegions.includes(DBState.db.vertexRegion)}
+        <SelectInput value={isCustomRegion ? '__custom__' : DBState.db.vertexRegion} onchange={(e) => {
+            const val = e.currentTarget.value
+            if (val === '__custom__') {
+                DBState.db.vertexRegion = ''
+            } else {
+                DBState.db.vertexRegion = val
+            }
             clearVertexToken()
         }}>
-            <OptionInput value={'global'}>
-                global
-            </OptionInput>
-            <OptionInput value={'us-central1'}>
-                us-central1
-            </OptionInput>
-            <OptionInput value={'us-west1'}>
-                us-west1
-            </OptionInput>
-        </SelectInput>    
+            <OptionInput value={'global'}>global</OptionInput>
+            <OptionInput value={'us-central1'}>us-central1</OptionInput>
+            <OptionInput value={'us-east1'}>us-east1</OptionInput>
+            <OptionInput value={'us-east4'}>us-east4</OptionInput>
+            <OptionInput value={'us-west1'}>us-west1</OptionInput>
+            <OptionInput value={'us-west4'}>us-west4</OptionInput>
+            <OptionInput value={'europe-west1'}>europe-west1</OptionInput>
+            <OptionInput value={'europe-west4'}>europe-west4</OptionInput>
+            <OptionInput value={'asia-northeast1'}>asia-northeast1</OptionInput>
+            <OptionInput value={'asia-northeast3'}>asia-northeast3</OptionInput>
+            <OptionInput value={'asia-southeast1'}>asia-southeast1</OptionInput>
+            <OptionInput value={'asia-east1'}>asia-east1</OptionInput>
+            <OptionInput value={'__custom__'}>Custom...</OptionInput>
+        </SelectInput>
+        {#if isCustomRegion}
+            <TextInput marginBottom={true} size={"sm"} placeholder="e.g. asia-south1" bind:value={DBState.db.vertexRegion} oninput={clearVertexToken}/>
+        {/if}    
     {/if}
     {#if modelInfo.provider === LLMProvider.AI21 || subModelInfo.provider === LLMProvider.AI21}
         <span class="text-textcolor">AI21 {language.apiKey}</span>

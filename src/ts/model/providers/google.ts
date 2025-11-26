@@ -314,6 +314,7 @@ const GeminiAPIModels: LLMModel[] = [
 const VertexAIModels: LLMModel[] = GeminiAPIModels.map(model => ({
     ...model,
     id: `${model.id}-vertex`,
+    internalID: model.id,
     name: `${model.name} Vertex`,
     provider: LLMProvider.VertexAI,
     format: LLMFormat.VertexAIGemini,
