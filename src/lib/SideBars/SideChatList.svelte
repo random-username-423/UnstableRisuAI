@@ -37,7 +37,7 @@
     let opened = 0
 
     // Lazy loading state - only render first N items, load more on scroll
-    const INITIAL_LOAD = 30
+    const INITIAL_LOAD = 60
     const LOAD_MORE = 20
     let loadedCount = $state(INITIAL_LOAD)
 
