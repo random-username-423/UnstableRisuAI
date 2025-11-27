@@ -1,5 +1,5 @@
 // Note: BaseDirectory, readFile, readDir are no longer needed for backup since assets now use IndexedDB
-import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert } from "../alert";
+import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear } from "../alert";
 import { LocalWriter, forageStorage, isTauri, requiresFullEncoderReload, saveToWorker } from "../globalApi.svelte";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
@@ -172,30 +172,33 @@ export async function LoadLocalBackup(){
                         const data = remainingBuffer.slice(offset + 4 + nameLength + 4, offset + 4 + nameLength + 4 + dataLength);
 
                         if (name === 'database.risudat') {
+                            console.log('[LoadLocalBackup] Found database.risudat, processing...');
                             const db = new Uint8Array(data);
                             const dbData = await decodeRisuSave(db);
+                            console.log('[LoadLocalBackup] Database decoded');
                             setDatabaseLite(dbData);
                             requiresFullEncoderReload.state = true;
                             if (isTauri) {
                                 await saveToWorker('database/database.bin', db);
+                                console.log('[LoadLocalBackup] Saved to worker');
                                 const currentPlatform = await platform();
+                                console.log('[LoadLocalBackup] Platform:', currentPlatform);
+                                alertClear();
+                                await sleep(50);
                                 if (currentPlatform === 'android' || currentPlatform === 'ios') {
-                                    location.reload();
+                                    // Mobile: Ask user to manually restart (process plugin not supported)
+                                    alertNormal('Backup loaded successfully!\nPlease close and reopen the app.');
+                                    return;
                                 } else {
                                     await relaunch();
                                 }
-                                alertStore.set({
-                                    type: "wait",
-                                    msg: "Success, Refreshing your app."
-                                });
                             } else {
                                 await forageStorage.setItem('database/database.bin', db);
+                                alertClear();
+                                await sleep(50);
                                 location.search = '';
-                                alertStore.set({
-                                    type: "wait",
-                                    msg: "Success, Refreshing your app."
-                                });
                             }
+                            return;
                         } else {
                             // 에셋은 IndexedDB (forageStorage)에 저장 (Tauri와 웹 모두 동일)
                             await forageStorage.setItem('assets/' + name, data);

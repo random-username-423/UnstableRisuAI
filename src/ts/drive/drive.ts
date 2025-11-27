@@ -1,4 +1,4 @@
-import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../alert";
+import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../alert";
 import { getDatabase, type Database } from "../storage/database.svelte";
 import { forageStorage, getUnpargeables, isTauri, openURL, saveToWorker } from "../globalApi.svelte";
 // Note: BaseDirectory, exists, readFile, readDir are no longer needed for assets since they now use IndexedDB
@@ -404,24 +404,22 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
             await saveToWorker('database/database.bin', dbData)
             console.log('[GoogleDrive Restore] Restore completed! Relaunching app...')
             const currentPlatform = await platform()
+            alertClear()
+            await sleep(50)
             if(currentPlatform === 'android' || currentPlatform === 'ios'){
-                location.reload()
+                // Mobile: Ask user to manually restart (process plugin not supported)
+                alertNormal('Backup loaded successfully!\nPlease close and reopen the app.')
+                return
             } else {
                 relaunch()
             }
-            alertStore.set({
-                type: "wait",
-                msg: "Success, Refreshing your app."
-            })
         }
         else{
             await forageStorage.setItem('database/database.bin', dbData)
             console.log('[GoogleDrive Restore] Restore completed! Refreshing page...')
+            alertClear()
+            await sleep(50)
             location.search = ''
-            alertStore.set({
-                type: "wait",
-                msg: "Success, Refreshing your app."
-            })
         }
     }
     else if(mode === 'backup'){
