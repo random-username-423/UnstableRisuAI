@@ -33,9 +33,9 @@
   "identifier": "co.aiclient.risu",
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU2ODMzOTIxMDMxOTY1MUYKUldRZlpSa0RJVG1EVmx5Vm1WYlhFM29HMEJrUTRrYmg5dDQ0RFpvdUphNDdxQmVlWXJHVmV5TEYK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IERGQTExQTQwQzQzODI0MTMKUldRVEpEakVRQnFoM3pzMkUyeUhnNVVLakFDQXErUHpISE42Sms1M25nQmJydi9RUjNxNFhjSUcK",
       "endpoints": [
-        "https://github.com/kwaroran/RisuAI/releases/latest/download/latest.json"
+        "https://github.com/random-username-423/UnstableRisuAI/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"
