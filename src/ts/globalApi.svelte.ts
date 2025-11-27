@@ -339,6 +339,7 @@ export async function loadAsset(id:string){
 }
 
 let lastSave = ''
+let lastBackupTime = 0
 export let saving = $state({
     state: false
 })
@@ -656,16 +657,24 @@ export async function saveDb(){
             const dbData = new Uint8Array(encoded)
             // Tauri와 웹 모두 OPFS Worker 사용
             // Worker를 사용하면 메인 스레드 블로킹 없음
+            const now = Date.now()
+            const intervalMs = (db.dbBackupIntervalMinutes ?? 10) * 60 * 1000
+            const shouldBackup = (now - lastBackupTime) >= intervalMs
+
             if(!forageStorage.isAccount && opfsWorker){
                 // 백업용 복사본 생성 (Transferable로 보내면 원본 buffer가 detached됨)
                 const backupData = new Uint8Array(dbData)
                 await saveToWorker('database/database.bin', dbData)
-                await saveToWorker(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, backupData)
+                if(shouldBackup){
+                    await saveToWorker(`database/dbbackup-${(now/100).toFixed()}.bin`, backupData)
+                    lastBackupTime = now
+                }
             }
             else{
                 await forageStorage.setItem('database/database.bin', dbData)
-                if(!forageStorage.isAccount){
-                    await forageStorage.setItem(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData)
+                if(!forageStorage.isAccount && shouldBackup){
+                    await forageStorage.setItem(`database/dbbackup-${(now/100).toFixed()}.bin`, dbData)
+                    lastBackupTime = now
                 }
                 if(forageStorage.isAccount){
                     await sleep(3000)
@@ -712,7 +721,8 @@ async function getDbBackups() {
             }
         }
         backups.sort((a, b) => b - a)
-        while(backups.length > 20){
+        const maxBackups = db.maxDbBackups ?? 20
+        while(backups.length > maxBackups){
             const last = backups.pop()
             await remove(`database/dbbackup-${last}.bin`,{baseDir: BaseDirectory.AppData})
         }
@@ -727,7 +737,8 @@ async function getDbBackups() {
           .map(file => parseInt(file.slice(9, -4)))
           .sort((a, b) => b - a);
 
-        while(backups.length > 20){
+        const maxBackups = db.maxDbBackups ?? 20
+        while(backups.length > maxBackups){
             const last = backups.pop()
             await deleteFromWorker(`database/dbbackup-${last}.bin`)
         }

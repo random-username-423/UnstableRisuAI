@@ -206,6 +206,12 @@ export function setDatabase(data:Database){
     if(checkNullish(data.driveParallelConnections)){
         data.driveParallelConnections = 20
     }
+    if(checkNullish(data.maxDbBackups)){
+        data.maxDbBackups = 20
+    }
+    if(checkNullish(data.dbBackupIntervalMinutes)){
+        data.dbBackupIntervalMinutes = 10
+    }
     if(checkNullish(data.useSayNothing)){
         data.useSayNothing = true
     }
@@ -758,6 +764,8 @@ export interface Database{
     }
     requestRetrys:number
     driveParallelConnections:number
+    maxDbBackups:number
+    dbBackupIntervalMinutes:number
     emotionPrompt2:string
     useSayNothing:boolean
     didFirstSetup: boolean

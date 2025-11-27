@@ -183,7 +183,9 @@ export const languageKorean = {
         "showDeprecatedTriggerV1": "더 이상 사용되지 않는 V1 트리거 형식 버튼을 표시합니다. 레거시 V1 트리거를 사용하는 경우에만 활성화하세요.",
         "lightningRealmImport": "Realm에서 캐릭터 가져오기 시 에셋을 클라우드 스토리지에 업로드합니다. Risu 계정 동기화가 필요합니다.",
         "banCharacterset": "지정된 유니코드 스크립트(예: 한자, 한글)를 포함하는 AI 응답을 거부합니다. 응답에서 특정 언어를 강제하는 데 유용합니다.",
-        "driveParallelConnections": "Google Drive 백업/복원 시 동시 연결 수입니다. 높을수록 전송 속도가 빨라지지만 속도 제한이 발생할 수 있습니다. 기본값: 20."
+        "driveParallelConnections": "Google Drive 백업/복원 시 동시 연결 수입니다. 높을수록 전송 속도가 빨라지지만 속도 제한이 발생할 수 있습니다. 기본값: 20.",
+        "maxDbBackups": "디바이스 내부에 저장되는 DB 백업의 최대 개수입니다. 충돌 복구용 숨겨진 백업이며, DB만 저장됩니다 (에셋 제외). 각 백업은 DB 크기와 동일합니다. 낮출수록 저장 공간이 절약됩니다. 기본값: 20.",
+        "dbBackupIntervalMinutes": "내부 DB 백업 사이의 최소 시간(분)입니다. 마지막 백업 이후 이 시간이 지나지 않으면 새 백업 생성을 건너뜁니다. 값이 클수록 저장 쓰기가 줄지만 충돌 시 더 많은 데이터가 손실될 수 있습니다. 기본값: 10분."
     },
     "setup": {
         "chooseProvider": "AI 제공자를 선택해 주세요",
@@ -1283,6 +1285,8 @@ export const languageKorean = {
     "checkCorruption": "백업 데이터 손상 확인",
     "backupTooLargeError": "백업 데이터가 너무 커서 검증할 수 없습니다. 고급 설정 > 네트워크 섹션에서 '백업 데이터 손상 확인'을 끄고 다시 시도해주세요.",
     "driveParallelConnections": "Google Drive 동시 연결 수",
+    "maxDbBackups": "내부 DB 백업 보관 수",
+    "dbBackupIntervalMinutes": "내부 DB 백업 간격 (분)",
     "showPromptComparison": "프롬프트 비교 표시",
     "inlayErrorResponse": "오류 응답 삽입",
     "min": "최소",

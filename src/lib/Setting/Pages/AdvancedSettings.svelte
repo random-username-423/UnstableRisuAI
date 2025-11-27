@@ -377,6 +377,10 @@
 <NumberInput marginBottom={true} size={"sm"} min={0} max={20} bind:value={DBState.db.requestRetrys}/>
 <span class="text-textcolor mt-4">{language.driveParallelConnections} <Help key="driveParallelConnections"/></span>
 <NumberInput marginBottom={true} size={"sm"} min={1} max={50} bind:value={DBState.db.driveParallelConnections}/>
+<span class="text-textcolor mt-4">{language.maxDbBackups} <Help key="maxDbBackups"/></span>
+<NumberInput marginBottom={true} size={"sm"} min={1} max={50} bind:value={DBState.db.maxDbBackups}/>
+<span class="text-textcolor mt-4">{language.dbBackupIntervalMinutes} <Help key="dbBackupIntervalMinutes"/></span>
+<NumberInput marginBottom={true} size={"sm"} min={1} max={60} bind:value={DBState.db.dbBackupIntervalMinutes}/>
 {#if !isNodeServer && !isTauri}
     <span class="text-textcolor mt-4">{language.requestLocation} <Help key="requestLocation"/></span>
     <SelectInput bind:value={DBState.db.requestLocation}>
