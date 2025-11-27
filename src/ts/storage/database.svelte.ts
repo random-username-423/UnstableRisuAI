@@ -203,6 +203,9 @@ export function setDatabase(data:Database){
     if(checkNullish(data.requestRetrys)){
         data.requestRetrys = 2
     }
+    if(checkNullish(data.driveParallelConnections)){
+        data.driveParallelConnections = 20
+    }
     if(checkNullish(data.useSayNothing)){
         data.useSayNothing = true
     }
@@ -754,6 +757,7 @@ export interface Database{
         FontColorQuote2 : string
     }
     requestRetrys:number
+    driveParallelConnections:number
     emotionPrompt2:string
     useSayNothing:boolean
     didFirstSetup: boolean

@@ -182,7 +182,8 @@ export const languageKorean = {
         "personaNote": "각 페르소나에 메모 필드를 표시합니다. 다른 페르소나 버전을 구분하는 데 유용합니다.",
         "showDeprecatedTriggerV1": "더 이상 사용되지 않는 V1 트리거 형식 버튼을 표시합니다. 레거시 V1 트리거를 사용하는 경우에만 활성화하세요.",
         "lightningRealmImport": "Realm에서 캐릭터 가져오기 시 에셋을 클라우드 스토리지에 업로드합니다. Risu 계정 동기화가 필요합니다.",
-        "banCharacterset": "지정된 유니코드 스크립트(예: 한자, 한글)를 포함하는 AI 응답을 거부합니다. 응답에서 특정 언어를 강제하는 데 유용합니다."
+        "banCharacterset": "지정된 유니코드 스크립트(예: 한자, 한글)를 포함하는 AI 응답을 거부합니다. 응답에서 특정 언어를 강제하는 데 유용합니다.",
+        "driveParallelConnections": "Google Drive 백업/복원 시 동시 연결 수입니다. 높을수록 전송 속도가 빨라지지만 속도 제한이 발생할 수 있습니다. 기본값: 20."
     },
     "setup": {
         "chooseProvider": "AI 제공자를 선택해 주세요",
@@ -1281,6 +1282,7 @@ export const languageKorean = {
     "banCharacterset": "문자셋 자동 재생성",
     "checkCorruption": "백업 데이터 손상 확인",
     "backupTooLargeError": "백업 데이터가 너무 커서 검증할 수 없습니다. 고급 설정 > 네트워크 섹션에서 '백업 데이터 손상 확인'을 끄고 다시 시도해주세요.",
+    "driveParallelConnections": "Google Drive 동시 연결 수",
     "showPromptComparison": "프롬프트 비교 표시",
     "inlayErrorResponse": "오류 응답 삽입",
     "min": "최소",

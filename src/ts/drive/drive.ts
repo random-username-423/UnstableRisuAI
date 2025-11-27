@@ -127,7 +127,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
         return d.name
     })
 
-    const PARALLEL_UPLOADS = 20
+    const PARALLEL_UPLOADS = getDatabase().driveParallelConnections || 20
 
     if(isTauri){
         // OPFS와 Tauri fs 모두에서 에셋 수집
@@ -411,7 +411,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         const sampleFiles = fileNames.slice(0, 10)
         console.log(`[GoogleDrive Restore] Sample of Drive files (first 10):`, sampleFiles)
 
-        const PARALLEL_DOWNLOADS = 20
+        const PARALLEL_DOWNLOADS = getDatabase().driveParallelConnections || 20
         let errorLogs:string[] = []
         let downloadedCount = 0
         let skippedCount = 0
@@ -575,7 +575,7 @@ async function createFileInFolder(accessToken:string, fileName:string, content:U
       "metadata",
       new Blob([JSON.stringify(metadata)], { type: "application/json" })
     );
-    body.append("file", new Blob([content], { type: mimeType }));
+    body.append("file", new Blob([content as BlobPart], { type: mimeType }));
   
     const response = await fetch(
       "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",

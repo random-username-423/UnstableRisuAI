@@ -375,6 +375,8 @@
 </div>
 <span class="text-textcolor mt-4">{language.requestretrys} <Help key="requestretrys"/></span>
 <NumberInput marginBottom={true} size={"sm"} min={0} max={20} bind:value={DBState.db.requestRetrys}/>
+<span class="text-textcolor mt-4">{language.driveParallelConnections} <Help key="driveParallelConnections"/></span>
+<NumberInput marginBottom={true} size={"sm"} min={1} max={50} bind:value={DBState.db.driveParallelConnections}/>
 {#if !isNodeServer && !isTauri}
     <span class="text-textcolor mt-4">{language.requestLocation} <Help key="requestLocation"/></span>
     <SelectInput bind:value={DBState.db.requestLocation}>
