@@ -1,7 +1,7 @@
 import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../alert";
 import { getDatabase, type Database } from "../storage/database.svelte";
-import { forageStorage, getUnpargeables, isTauri, openURL } from "../globalApi.svelte";
-import { BaseDirectory, exists, readFile, readDir, writeFile } from "@tauri-apps/plugin-fs";
+import { forageStorage, getUnpargeables, isTauri, openURL, saveToWorker } from "../globalApi.svelte";
+import { BaseDirectory, exists, readFile, readDir } from "@tauri-apps/plugin-fs";
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
 import { sleep } from "../util";
@@ -323,8 +323,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
                                 if(file.name === formatedImage){
                                     const fData = await getFileData(ACCESS_TOKEN, file.id)
                                     if(isTauri){
-                                        await writeFile(`assets/` + images, fData ,{baseDir: BaseDirectory.AppData})
-        
+                                        await saveToWorker('assets/' + images, fData)
                                     }
                                     else{
                                         await forageStorage.setItem('assets/' + images, fData)
@@ -348,7 +347,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         const dbData = encodeRisuSaveLegacy(db, 'compression')
 
         if(isTauri){
-            await writeFile('database/database.bin', dbData, {baseDir: BaseDirectory.AppData})
+            await saveToWorker('database/database.bin', dbData)
             relaunch()
             alertStore.set({
                 type: "wait",
