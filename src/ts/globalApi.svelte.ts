@@ -306,7 +306,17 @@ export async function saveAsset(data:Uint8Array, customId:string = '', fileName:
  */
 export async function loadAsset(id:string){
     if(isTauri){
-        return await readFile(id,{baseDir: BaseDirectory.AppData})
+        // OPFS에서 먼저 시도
+        const opfsData = await loadFromWorker(id);
+        if (opfsData) {
+            return opfsData;
+        }
+        // 폴백: 기존 Tauri fs (마이그레이션 전 데이터용)
+        try {
+            return await readFile(id, {baseDir: BaseDirectory.AppData});
+        } catch {
+            return null;
+        }
     }
     else{
         return await forageStorage.getItem(id) as unknown as Uint8Array
@@ -396,7 +406,7 @@ async function initOPFSWorker(): Promise<void> {
     }
 }
 
-async function saveToWorker(key: string, data: Uint8Array): Promise<void> {
+export async function saveToWorker(key: string, data: Uint8Array): Promise<void> {
     if (!opfsWorker) {
         // Fallback to main thread
         await forageStorage.setItem(key, data)
