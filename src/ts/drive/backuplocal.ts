@@ -4,6 +4,7 @@ import { LocalWriter, forageStorage, isTauri, requiresFullEncoderReload, saveToW
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
+import { platform } from "@tauri-apps/plugin-os";
 import { sleep } from "../util";
 
 function getBasename(data:string){
@@ -237,7 +238,12 @@ export async function LoadLocalBackup(){
                             requiresFullEncoderReload.state = true;
                             if (isTauri) {
                                 await saveToWorker('database/database.bin', db);
-                                await relaunch();
+                                const currentPlatform = await platform();
+                                if (currentPlatform === 'android' || currentPlatform === 'ios') {
+                                    location.reload();
+                                } else {
+                                    await relaunch();
+                                }
                                 alertStore.set({
                                     type: "wait",
                                     msg: "Success, Refreshing your app."

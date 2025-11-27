@@ -4,6 +4,7 @@ import { forageStorage, getUnpargeables, isTauri, openURL, saveToWorker, listFro
 import { BaseDirectory, exists, readFile, readDir } from "@tauri-apps/plugin-fs";
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
+import { platform } from '@tauri-apps/plugin-os';
 import { sleep } from "../util";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 
@@ -505,7 +506,12 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         if(isTauri){
             await saveToWorker('database/database.bin', dbData)
             console.log('[GoogleDrive Restore] Restore completed! Relaunching app...')
-            relaunch()
+            const currentPlatform = await platform()
+            if(currentPlatform === 'android' || currentPlatform === 'ios'){
+                location.reload()
+            } else {
+                relaunch()
+            }
             alertStore.set({
                 type: "wait",
                 msg: "Success, Refreshing your app."
