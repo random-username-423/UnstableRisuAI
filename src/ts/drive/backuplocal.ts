@@ -5,7 +5,7 @@ import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { sleep } from "../util";
-import { hubURL } from "../characterCards";
+import { checkBackupCorruption } from "./backupUtils";
 
 function getBasename(data:string){
     const baseNameRegex = /\\/g
@@ -26,19 +26,10 @@ export async function SaveLocalBackup(){
     const db = getDatabase()
 
     //check backup data is corrupted
-    if(db.checkCorruption){
-        const corrupted = await fetch(hubURL + '/backupcheck', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(db),
-        })
-        if(corrupted.status === 400){
-            alertError('Failed, Backup data is corrupted')
-            return
-        }
+    if (!await checkBackupCorruption(db)) {
+        return
     }
+
     const assetMap = new Map<string, { charName: string, assetName: string }>()
     if (db.characters) {
         for (const char of db.characters) {

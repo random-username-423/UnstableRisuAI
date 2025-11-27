@@ -1280,6 +1280,7 @@ export const languageKorean = {
     "imageTranslation": "이미지 번역",
     "banCharacterset": "문자셋 자동 재생성",
     "checkCorruption": "백업 데이터 손상 확인",
+    "backupTooLargeError": "백업 데이터가 너무 커서 검증할 수 없습니다. 고급 설정 > 네트워크 섹션에서 '백업 데이터 손상 확인'을 끄고 다시 시도해주세요.",
     "showPromptComparison": "프롬프트 비교 표시",
     "inlayErrorResponse": "오류 응답 삽입",
     "min": "최소",

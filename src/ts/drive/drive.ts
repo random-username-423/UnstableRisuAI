@@ -5,8 +5,8 @@ import { BaseDirectory, exists, readFile, readDir } from "@tauri-apps/plugin-fs"
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
 import { sleep } from "../util";
-import { hubURL } from "../characterCards";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
+import { checkBackupCorruption } from "./backupUtils";
 
 export async function checkDriver(type:'save'|'load'|'loadtauri'|'savetauri'|'reftoken'){
     const CLIENT_ID = '580075990041-l26k2d3c0nemmqiu3d3aag01npfrkn76.apps.googleusercontent.com';
@@ -120,15 +120,8 @@ async function backupDrive(ACCESS_TOKEN:string) {
     })
 
     //check backup data is corrupted
-    const corrupted = await fetch(hubURL + '/backupcheck', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(getDatabase()),
-    })
-    if(corrupted.status === 400){
-        alertError('Failed, Backup data is corrupted')
+    const db = getDatabase()
+    if (!await checkBackupCorruption(db)) {
         return
     }
 

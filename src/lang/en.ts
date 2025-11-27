@@ -1206,6 +1206,7 @@ export const languageEnglish = {
     imageTranslation: "Image Translation",
     banCharacterset: 'Auto Regenerate On Characterset',
     checkCorruption: "Check Backup Data Corruption",
+    backupTooLargeError: "Backup data is too large to verify. Please disable 'Check Backup Data Corruption' in Advanced Settings > Network section and try again.",
     showPromptComparison: "Show Prompt Comparison",
     inlayErrorResponse: "Inlay Error Response",
     triggerOn: "Trigger On",
