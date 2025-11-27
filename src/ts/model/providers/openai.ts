@@ -347,7 +347,7 @@ export const OpenAIModels: LLMModel[] = [
             LLMFlags.hasImageInput,
             LLMFlags.DeveloperRole
         ],
-        parameters: OpenAIParameters,
+        parameters: ['reasoning_effort'],
         tokenizer: LLMTokenizer.tiktokenO200Base
     },
     {
@@ -360,7 +360,7 @@ export const OpenAIModels: LLMModel[] = [
             LLMFlags.hasStreaming,
             LLMFlags.OAICompletionTokens
         ],
-        parameters: OpenAIParameters,
+        parameters: ['reasoning_effort'],
         tokenizer: LLMTokenizer.tiktokenO200Base
     },
     {
@@ -373,7 +373,7 @@ export const OpenAIModels: LLMModel[] = [
             LLMFlags.hasStreaming,
             LLMFlags.OAICompletionTokens
         ],
-        parameters: OpenAIParameters,
+        parameters: ['reasoning_effort'],
         tokenizer: LLMTokenizer.tiktokenO200Base
     },
 

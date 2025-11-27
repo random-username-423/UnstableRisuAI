@@ -1076,13 +1076,15 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
         (items[items.length-1] as OAIResponseOutputItem).status = 'incomplete'
     }
     
+    const isReasoningModel = arg.modelInfo.parameters?.includes('reasoning_effort')
+
     const body = applyParameters({
         model: arg.modelInfo.internalID ?? aiModel,
         input: items,
         max_output_tokens: maxTokens,
         tools: [],
         store: false,
-        include: ["reasoning.encrypted_content"]
+        ...(isReasoningModel ? { include: ["reasoning.encrypted_content"] } : {})
     }, arg.modelInfo.parameters as Parameter[], {
         'reasoning_effort': 'reasoning.effort',
         'verbosity': 'text.verbosity'
