@@ -108,9 +108,6 @@ let fileCache:{
     res: []
 }
 
-let pathCache:{[key:string]:string} = {}
-let checkedPaths:string[] = []
-
 /**
  * Checks if a file exists in the Capacitor filesystem.
  * 
@@ -130,27 +127,54 @@ async function checkCapFileExists(getUriOptions: CapFS.GetUriOptions): Promise<b
     }
 }
 
+// OPFS 파일 캐시 (Tauri에서 OPFS 로드 결과를 캐싱)
+const opfsFileCache: { [key: string]: string | 'loading' | null } = {}
+
 /**
  * Gets the source URL of a file.
- * 
+ *
  * @param {string} loc - The location of the file.
  * @returns {Promise<string>} - A promise that resolves to the source URL of the file.
  */
 export async function getFileSrc(loc:string) {
     if(isTauri){
         if(loc.startsWith('assets')){
+            // 캐시 확인
+            const cached = opfsFileCache[loc]
+            if (cached && cached !== 'loading') {
+                return cached
+            }
+            if (cached === 'loading') {
+                // 다른 호출이 로딩 중이면 대기
+                while (opfsFileCache[loc] === 'loading') {
+                    await sleep(10)
+                }
+                return opfsFileCache[loc] || ''
+            }
+
+            // 로딩 시작
+            opfsFileCache[loc] = 'loading'
+
+            // OPFS에서 먼저 시도
+            try {
+                const opfsData = await loadFromWorker(loc)
+                if (opfsData && opfsData.byteLength > 0) {
+                    const dataUrl = `data:image/png;base64,${Buffer.from(opfsData).toString('base64')}`
+                    opfsFileCache[loc] = dataUrl
+                    return dataUrl
+                }
+            } catch (e) {
+                // OPFS 실패 시 무시하고 폴백
+            }
+
+            // 폴백: 기존 Tauri fs (마이그레이션 전 데이터용)
             if(appDataDirPath === ''){
                 appDataDirPath = await appDataDir();
             }
-            const cached = pathCache[loc]
-            if(cached){
-                return convertFileSrc(cached)
-            }
-            else{
-                const joined = await join(appDataDirPath,loc)
-                pathCache[loc] = joined
-                return convertFileSrc(joined)
-            }
+            const joined = await join(appDataDirPath, loc)
+            const result = convertFileSrc(joined)
+            opfsFileCache[loc] = result
+            return result
         }
         return convertFileSrc(loc)
     }
@@ -282,14 +306,13 @@ export async function saveAsset(data:Uint8Array, customId:string = '', fileName:
     if(fileName && fileName.split('.').length > 0){
         fileExtension = fileName.split('.').pop()
     }
+    let form = `assets/${id}.${fileExtension}`
     if(isTauri){
-        await writeFile(`assets/${id}.${fileExtension}`, data, {
-            baseDir: BaseDirectory.AppData
-        });
-        return `assets/${id}.${fileExtension}`
+        // OPFS에 저장 (getFileSrc와 일관성 유지)
+        await saveToWorker(form, data)
+        return form
     }
     else{
-        let form = `assets/${id}.${fileExtension}`
         const replacer = await forageStorage.setItem(form, data)
         if(replacer){
             return replacer
@@ -311,10 +334,19 @@ export async function loadAsset(id:string){
         if (opfsData) {
             return opfsData;
         }
-        // 폴백: 기존 Tauri fs (마이그레이션 전 데이터용)
+        // 폴백 1: 기존 Tauri fs (마이그레이션 전 데이터용)
         try {
             return await readFile(id, {baseDir: BaseDirectory.AppData});
         } catch {
+            // 폴백 2: forageStorage (Worker 초기화 실패 시 백업 복원용)
+            try {
+                const forageData = await forageStorage.getItem(id) as unknown as Uint8Array;
+                if (forageData) {
+                    return forageData;
+                }
+            } catch {
+                // ignore
+            }
             return null;
         }
     }
@@ -335,6 +367,7 @@ let opfsWorker: Worker | null = null
 let opfsWorkerReady = false
 let pendingSaves = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
 let pendingLoads = new Map<string, { resolve: (data: Uint8Array | null) => void, reject: (e: Error) => void }>()
+let pendingLists = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
 
 async function initOPFSWorker(): Promise<void> {
     if (opfsWorker || isNodeServer) return
@@ -394,6 +427,19 @@ async function initOPFSWorker(): Promise<void> {
                     pendingLoads.delete(key)
                 }
             }
+            // Handle list responses
+            else if (type === 'list_success' || type === 'list_error') {
+                const { dirPath, files } = e.data
+                const pending = pendingLists.get(dirPath)
+                if (pending) {
+                    if (type === 'list_success') {
+                        pending.resolve(files || [])
+                    } else {
+                        pending.resolve([])
+                    }
+                    pendingLists.delete(dirPath)
+                }
+            }
         }
         opfsWorker.onerror = (e) => {
             console.error('OPFS worker error:', e)
@@ -407,8 +453,12 @@ async function initOPFSWorker(): Promise<void> {
 }
 
 export async function saveToWorker(key: string, data: Uint8Array): Promise<void> {
+    // Worker가 없으면 자동 초기화 (백업 복원 시에도 OPFS 사용)
     if (!opfsWorker) {
-        // Fallback to main thread
+        await initOPFSWorker()
+    }
+    if (!opfsWorker) {
+        // Worker 초기화 실패 시 Fallback to main thread
         await forageStorage.setItem(key, data)
         return
     }
@@ -420,12 +470,30 @@ export async function saveToWorker(key: string, data: Uint8Array): Promise<void>
 }
 
 export async function loadFromWorker(key: string): Promise<Uint8Array | null> {
+    // Worker가 없으면 자동 초기화
+    if (!opfsWorker) {
+        await initOPFSWorker()
+    }
     if (!opfsWorker) {
         return null
     }
     return new Promise((resolve, reject) => {
         pendingLoads.set(key, { resolve, reject })
         opfsWorker.postMessage({ type: 'load', key })
+    })
+}
+
+export async function listFromWorker(dirPath: string): Promise<string[]> {
+    // Worker가 없으면 자동 초기화
+    if (!opfsWorker) {
+        await initOPFSWorker()
+    }
+    if (!opfsWorker) {
+        return []
+    }
+    return new Promise((resolve, reject) => {
+        pendingLists.set(dirPath, { resolve, reject })
+        opfsWorker.postMessage({ type: 'list', dirPath })
     })
 }
 

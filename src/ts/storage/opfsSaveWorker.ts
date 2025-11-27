@@ -26,6 +26,11 @@ interface LoadMessage {
     key: string
 }
 
+interface ListMessage {
+    type: 'list'
+    dirPath: string
+}
+
 interface SaveResponse {
     type: 'success' | 'error'
     key: string
@@ -36,6 +41,13 @@ interface LoadResponse {
     type: 'load_success' | 'load_error'
     key: string
     data?: Uint8Array
+    error?: string
+}
+
+interface ListResponse {
+    type: 'list_success' | 'list_error'
+    dirPath: string
+    files?: string[]
     error?: string
 }
 
@@ -75,11 +87,11 @@ async function getDirectory(dirPath: string): Promise<FileSystemDirectoryHandle 
     }
 }
 
-self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage>) => {
-    const { type, key } = e.data
+self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage>) => {
+    const { type } = e.data
 
     if (type === 'save') {
-        const { data } = e.data as SaveMessage
+        const { key, data } = e.data as SaveMessage
         try {
             const parts = key.split('/')
             const fileName = parts.pop()!
@@ -106,6 +118,7 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage>) => {
             self.postMessage(response)
         }
     } else if (type === 'load') {
+        const { key } = e.data as LoadMessage
         try {
             const parts = key.split('/')
             const fileName = parts.pop()!
@@ -135,6 +148,37 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage>) => {
             const response: LoadResponse = {
                 type: 'load_error',
                 key,
+                error: error instanceof Error ? error.message : String(error)
+            }
+            self.postMessage(response)
+        }
+    } else if (type === 'list') {
+        const { dirPath } = e.data as ListMessage
+        try {
+            const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
+            if (!dir) {
+                const response: ListResponse = {
+                    type: 'list_success',
+                    dirPath,
+                    files: []
+                }
+                self.postMessage(response)
+                return
+            }
+
+            const files: string[] = []
+            for await (const [name, handle] of (dir as any).entries()) {
+                if (handle.kind === 'file') {
+                    files.push(name)
+                }
+            }
+
+            const response: ListResponse = { type: 'list_success', dirPath, files }
+            self.postMessage(response)
+        } catch (error) {
+            const response: ListResponse = {
+                type: 'list_error',
+                dirPath,
                 error: error instanceof Error ? error.message : String(error)
             }
             self.postMessage(response)

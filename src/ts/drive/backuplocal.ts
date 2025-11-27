@@ -1,6 +1,6 @@
 import { BaseDirectory, readFile, readDir, writeFile } from "@tauri-apps/plugin-fs";
 import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert } from "../alert";
-import { LocalWriter, forageStorage, isTauri, requiresFullEncoderReload, saveToWorker } from "../globalApi.svelte";
+import { LocalWriter, forageStorage, isTauri, requiresFullEncoderReload, saveToWorker, listFromWorker, loadFromWorker } from "../globalApi.svelte";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
@@ -82,11 +82,34 @@ export async function SaveLocalBackup(){
     const missingAssets: string[] = []
 
     if(isTauri){
-        const assets = await readDir('assets', {baseDir: BaseDirectory.AppData})
+        // OPFS와 Tauri fs 모두에서 에셋 수집
+        const allAssets = new Set<string>()
+
+        // 1. OPFS에서 에셋 목록 가져오기
+        const opfsAssets = await listFromWorker('assets')
+        for (const name of opfsAssets) {
+            if (name.endsWith('.png')) {
+                allAssets.add(name)
+            }
+        }
+
+        // 2. Tauri fs에서도 에셋 목록 가져오기 (마이그레이션 전 데이터용)
+        try {
+            const tauriAssets = await readDir('assets', {baseDir: BaseDirectory.AppData})
+            for (const asset of tauriAssets) {
+                if (asset.name && asset.name.endsWith('.png')) {
+                    allAssets.add(asset.name)
+                }
+            }
+        } catch {
+            // assets 폴더가 없을 수 있음
+        }
+
+        const assetList = Array.from(allAssets)
         let i = 0;
-        for(let asset of assets){
+        for(let assetName of assetList){
             i += 1;
-            let message = `Saving local Backup... (${i} / ${assets.length})`
+            let message = `Saving local Backup... (${i} / ${assetList.length})`
             if (missingAssets.length > 0) {
                 const skippedItems = missingAssets.map(key => {
                     const assetInfo = assetMap.get(key);
@@ -96,15 +119,22 @@ export async function SaveLocalBackup(){
             }
             alertWait(message)
 
-            const key = asset.name
-            if(!key || !key.endsWith('.png')){
-                continue
+            // OPFS에서 먼저 시도
+            let data = await loadFromWorker('assets/' + assetName)
+
+            // OPFS에 없으면 Tauri fs에서 시도
+            if (!data) {
+                try {
+                    data = await readFile('assets/' + assetName, {baseDir: BaseDirectory.AppData})
+                } catch {
+                    // 파일 없음
+                }
             }
-            const data = await readFile('assets/' + asset.name, {baseDir: BaseDirectory.AppData})
+
             if (data) {
-                await writer.writeBackup(key, data)
+                await writer.writeBackup(assetName, data)
             } else {
-                missingAssets.push(key)
+                missingAssets.push(assetName)
             }
         }
     }
