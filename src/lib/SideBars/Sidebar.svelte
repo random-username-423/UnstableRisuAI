@@ -717,7 +717,7 @@
     <!-- Welcome message -->
     <div class:hidden={!($selectedCharID < 0 || $settingsOpen)}>
       <div>
-        <h1 class="text-xl">Welcome to RisuAI!</h1>
+        <h1 class="text-xl">Welcome to UnstableRisuAI!</h1>
         <span class="text-xs text-textcolor2">Select a bot to start chatting</span>
       </div>
     </div>

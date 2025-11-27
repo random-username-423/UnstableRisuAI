@@ -49,18 +49,26 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <h2 class="text-4xl text-textcolor mb-0 mt-6 font-black relative" class:text-bordered={specialDay === 'newYear'} onclick={onClick}>
     {#if specialDay === 'midAutumn'}
-        <span class="text-amber-400">🐉RisuAI🐉</span>
+        <span class="text-amber-400">🐉UnstableRisuAI🐉</span>
     {:else if specialDay === 'chuseok'}
         <div class="flex">
-            <span class="text-blue-500">R</span>
-            <span class="text-red-500">i</span>
+            <span class="text-blue-500">U</span>
+            <span class="text-red-500">n</span>
             <span class="text-yellow-500">s</span>
-            <span class="text-white">u</span>
-            <span class="text-black">A</span>
-            <span class="text-blue-500">I</span>
+            <span class="text-white">t</span>
+            <span class="text-black">a</span>
+            <span class="text-blue-500">b</span>
+            <span class="text-red-500">l</span>
+            <span class="text-yellow-500">e</span>
+            <span class="text-white">R</span>
+            <span class="text-black">i</span>
+            <span class="text-blue-500">s</span>
+            <span class="text-red-500">u</span>
+            <span class="text-yellow-500">A</span>
+            <span class="text-white">I</span>
         </div>
     {:else}
-        RisuAI
+        UnstableRisuAI
     {/if}
     {#if specialDay === 'christmas'}
         <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
