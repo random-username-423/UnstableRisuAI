@@ -84,6 +84,7 @@
 </div>
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.enableDevTools} name={language.enableDevTools}>
+        <Help key="enableDevTools"/>
     </Check>
 </div>
 {#if isNodeServer || isTauri}
@@ -95,12 +96,14 @@
     {#if DBState.db.promptInfoInsideChat}
         <div class="flex items-center mt-4">
             <Check bind:check={DBState.db.promptTextInfoInsideChat} name={language.promptTextInfoInsideChat}>
+                <Help key="promptTextInfoInsideChat"/>
             </Check>
         </div>
     {/if}
 {/if}
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.returnCSSError} name={language.returnCSSError}>
+        <Help key="returnCSSError"/>
     </Check>
 </div>
 
@@ -143,7 +146,9 @@
     <Check bind:check={DBState.db.forceProxyAsOpenAI} name={language.forceProxyAsOpenAI}> <Help key="forceProxyAsOpenAI"/></Check>
 </div>
 <div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.newOAIHandle} name={language.newOAIHandle}/>
+    <Check bind:check={DBState.db.newOAIHandle} name={language.newOAIHandle}>
+        <Help key="newOAIHandle"/>
+    </Check>
 </div>
 {#if DBState.db.useExperimental}
     <div class="flex items-center mt-4">
@@ -178,7 +183,7 @@
 {#if DBState.db.useExperimental}
     <div class="flex items-center mt-4">
         <Check bind:check={DBState.db.googleClaudeTokenizing} name={language.googleCloudTokenization}>
-            <Help key="experimental"/>
+            <Help key="googleCloudTokenization"/><Help key="experimental"/>
         </Check>
     </div>
 {:else}
@@ -204,9 +209,9 @@
 <!-- ==================== Lore Book Settings ==================== -->
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsLoreBookSection}</h3>
 
-<span class="text-textcolor mt-4 mb-2">{language.loreBookDepth}</span>
+<span class="text-textcolor mt-4 mb-2">{language.loreBookDepth} <Help key="loreBookDepth"/></span>
 <NumberInput marginBottom={true} size={"sm"} min={0} max={20} bind:value={DBState.db.loreBookDepth}/>
-<span class="text-textcolor">{language.loreBookToken}</span>
+<span class="text-textcolor">{language.loreBookToken} <Help key="loreBookToken"/></span>
 <NumberInput marginBottom={true} size={"sm"} min={0} max={4096} bind:value={DBState.db.loreBookToken}/>
 
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
@@ -214,7 +219,7 @@
 <!-- ==================== Image/Media Settings ==================== -->
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsImageMediaSection}</h3>
 
-<span class="text-textcolor mt-4">{language.assetMaxDifference}</span>
+<span class="text-textcolor mt-4">{language.assetMaxDifference} <Help key="assetMaxDifference"/></span>
 <NumberInput marginBottom={true} size={"sm"} bind:value={DBState.db.assetMaxDifference}/>
 
 <div class="flex items-center mt-4">
@@ -224,7 +229,9 @@
     <Check bind:check={DBState.db.legacyMediaFindings} name={language.legacyMediaFindings}> <Help key="legacyMediaFindings"/></Check>
 </div>
 <div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.newImageHandlingBeta} name={language.newImageHandlingBeta}/>
+    <Check bind:check={DBState.db.newImageHandlingBeta} name={language.newImageHandlingBeta}>
+        <Help key="newImageHandlingBeta"/>
+    </Check>
 </div>
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.dynamicAssets} name={language.dynamicAssets}>
@@ -245,12 +252,14 @@
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsTranslationSection}</h3>
 
 <div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.noWaitForTranslate} name={language.noWaitForTranslate}/>
+    <Check bind:check={DBState.db.noWaitForTranslate} name={language.noWaitForTranslate}>
+        <Help key="noWaitForTranslate"/>
+    </Check>
 </div>
 {#if DBState.db.useExperimental}
     <div class="flex items-center mt-4">
         <Check bind:check={DBState.db.useExperimentalGoogleTranslator} name={"New Google Translate Experimental"}>
-            <Help key="unrecommended" unrecommended/>
+            <Help key="useExperimentalGoogleTranslator"/><Help key="unrecommended" unrecommended/>
         </Check>
     </div>
 {/if}
@@ -261,10 +270,14 @@
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsToolSection}</h3>
 
 <div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.rememberToolUsage} name={language.rememberToolUsage}></Check>
+    <Check bind:check={DBState.db.rememberToolUsage} name={language.rememberToolUsage}>
+        <Help key="rememberToolUsage"/>
+    </Check>
 </div>
 <div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.simplifiedToolUse} name={language.simplifiedToolUse}></Check>
+    <Check bind:check={DBState.db.simplifiedToolUse} name={language.simplifiedToolUse}>
+        <Help key="simplifiedToolUse"/>
+    </Check>
 </div>
 
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
@@ -286,14 +299,16 @@
 <!-- ==================== Chat/Response Settings ==================== -->
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsChatResponseSection}</h3>
 
-<span class="text-textcolor">{language.autoContinueMinTokens}</span>
+<span class="text-textcolor">{language.autoContinueMinTokens} <Help key="autoContinueMinTokens"/></span>
 <NumberInput marginBottom={true} size={"sm"} min={0} bind:value={DBState.db.autoContinueMinTokens}/>
 
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.autoContinueChat} name={language.autoContinueChat}> <Help key="autoContinueChat"/></Check>
 </div>
 <div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.removeIncompleteResponse} name={language.removeIncompleteResponse}></Check>
+    <Check bind:check={DBState.db.removeIncompleteResponse} name={language.removeIncompleteResponse}>
+        <Help key="removeIncompleteResponse"/>
+    </Check>
 </div>
 {#if DBState.db.useExperimental}
     <div class="flex items-center mt-4">
@@ -308,10 +323,10 @@
 <!-- ==================== Prompt Settings ==================== -->
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsPromptSection}</h3>
 
-<span class="text-textcolor">{language.additionalPrompt}</span>
+<span class="text-textcolor">{language.additionalPrompt} <Help key="additionalPrompt"/></span>
 <TextInput marginBottom={true} size={"sm"} bind:value={DBState.db.additionalPrompt}/>
 
-<span class="text-textcolor">{language.descriptionPrefix}</span>
+<span class="text-textcolor">{language.descriptionPrefix} <Help key="descriptionPrefix"/></span>
 <TextInput marginBottom={true} size={"sm"} bind:value={DBState.db.descriptionPrefix}/>
 
 <span class="text-textcolor">{language.emotionPrompt} <Help key="emotionPrompt"/></span>
@@ -336,6 +351,7 @@
 
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.useTokenizerCaching} name={language.useTokenizerCaching}>
+        <Help key="useTokenizerCaching"/>
     </Check>
 </div>
 
@@ -360,14 +376,14 @@
 <span class="text-textcolor mt-4">{language.requestretrys} <Help key="requestretrys"/></span>
 <NumberInput marginBottom={true} size={"sm"} min={0} max={20} bind:value={DBState.db.requestRetrys}/>
 {#if !isNodeServer && !isTauri}
-    <span class="text-textcolor mt-4">{language.requestLocation}</span>
+    <span class="text-textcolor mt-4">{language.requestLocation} <Help key="requestLocation"/></span>
     <SelectInput bind:value={DBState.db.requestLocation}>
         <OptionInput value="">Default</OptionInput>
         <OptionInput value="eu">EU (GDPR)</OptionInput>
         <OptionInput value="fedramp">US (FedRAMP)</OptionInput>
     </SelectInput>
 {/if}
-<span class="text-textcolor mt-4">Kei Server URL</span>
+<span class="text-textcolor mt-4">Kei Server URL <Help key="keiServerURL"/></span>
 <TextInput marginBottom={true} size={"sm"} bind:value={DBState.db.keiServerURL} placeholder="Leave it blank to use default"/>
 
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
@@ -375,7 +391,7 @@
 <!-- ==================== Other Settings ==================== -->
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsOtherSection}</h3>
 
-<span class="text-textcolor">{language.heightMode}</span>
+<span class="text-textcolor">{language.heightMode} <Help key="heightMode"/></span>
 <SelectInput bind:value={DBState.db.heightMode}>
     <OptionInput value="normal">Normal</OptionInput>
     <OptionInput value="percent">Percent</OptionInput>
@@ -386,7 +402,9 @@
 </SelectInput>
 
 <div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.allowAllExtentionFiles} name="Allow all in file select"/>
+    <Check bind:check={DBState.db.allowAllExtentionFiles} name="Allow all in file select">
+        <Help key="allowAllExtentionFiles"/>
+    </Check>
 </div>
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.removePunctuationHypa} name={language.removePunctuationHypa}>
@@ -401,19 +419,21 @@
 {#if DBState.db.useExperimental}
     <div class="flex items-center mt-4">
         <Check bind:check={DBState.db.personaNote} name={language.personaNote}>
-            <Help key="experimental" />
+            <Help key="personaNote"/><Help key="experimental"/>
         </Check>
     </div>
 {/if}
 {#if DBState.db.showUnrecommended}
     <div class="flex items-center mt-4">
-        <Check bind:check={DBState.db.showDeprecatedTriggerV1} name={language.showDeprecatedTriggerV1}> <Help key='unrecommended' unrecommended/></Check>
+        <Check bind:check={DBState.db.showDeprecatedTriggerV1} name={language.showDeprecatedTriggerV1}>
+            <Help key="showDeprecatedTriggerV1"/><Help key='unrecommended' unrecommended/>
+        </Check>
     </div>
 {/if}
 {#if DBState.db?.account?.useSync}
     <div class="flex items-center mt-4">
         <Check bind:check={DBState.db.lightningRealmImport} name={"Lightning Realm Import"}>
-            <Help key="experimental"/>
+            <Help key="lightningRealmImport"/><Help key="experimental"/>
         </Check>
     </div>
 {/if}
@@ -421,7 +441,7 @@
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
 <!-- ==================== Ban Character Set (Arcodion) ==================== -->
-<Arcodion styled name={language.banCharacterset}>
+<Arcodion styled name={language.banCharacterset} help="banCharacterset">
     {#each characterSets as set}
         <Button styled={DBState.db.banCharacterset.includes(set) ? 'primary' : "outlined"} onclick={(e) => {
             if (DBState.db.banCharacterset.includes(set)) {
