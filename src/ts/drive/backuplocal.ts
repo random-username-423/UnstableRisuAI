@@ -1,6 +1,6 @@
-import { BaseDirectory, readFile, readDir } from "@tauri-apps/plugin-fs";
+// Note: BaseDirectory, readFile, readDir are no longer needed for backup since assets now use IndexedDB
 import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert } from "../alert";
-import { LocalWriter, forageStorage, isTauri, requiresFullEncoderReload, saveToWorker, listFromWorker, loadFromWorker } from "../globalApi.svelte";
+import { LocalWriter, forageStorage, isTauri, requiresFullEncoderReload, saveToWorker } from "../globalApi.svelte";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
@@ -67,90 +67,30 @@ export async function SaveLocalBackup(){
     }
     const missingAssets: string[] = []
 
-    if(isTauri){
-        // OPFS와 Tauri fs 모두에서 에셋 수집
-        const allAssets = new Set<string>()
+    // IndexedDB (forageStorage)에서 에셋 수집 (Tauri와 웹 모두 동일)
+    const keys = await forageStorage.keys()
+    const assetKeys = keys.filter(key => key && key.endsWith('.png'))
 
-        // 1. OPFS에서 에셋 목록 가져오기
-        const opfsAssets = await listFromWorker('assets')
-        for (const name of opfsAssets) {
-            if (name.endsWith('.png')) {
-                allAssets.add(name)
-            }
+    for(let i = 0; i < assetKeys.length; i++){
+        const key = assetKeys[i]
+        let message = `Saving local Backup... (${i + 1} / ${assetKeys.length})`
+        if (missingAssets.length > 0) {
+            const skippedItems = missingAssets.map(k => {
+                const assetInfo = assetMap.get(k);
+                return assetInfo ? `'${assetInfo.assetName}' from ${assetInfo.charName}` : `'${k}'`;
+            }).join(', ');
+            message += `\n(Skipping... ${skippedItems})`;
         }
+        alertWait(message)
 
-        // 2. Tauri fs에서도 에셋 목록 가져오기 (마이그레이션 전 데이터용)
-        try {
-            const tauriAssets = await readDir('assets', {baseDir: BaseDirectory.AppData})
-            for (const asset of tauriAssets) {
-                if (asset.name && asset.name.endsWith('.png')) {
-                    allAssets.add(asset.name)
-                }
-            }
-        } catch {
-            // assets 폴더가 없을 수 있음
+        const data = await forageStorage.getItem(key) as unknown as Uint8Array
+        if (data) {
+            await writer.writeBackup(key, data)
+        } else {
+            missingAssets.push(key)
         }
-
-        const assetList = Array.from(allAssets)
-        let i = 0;
-        for(let assetName of assetList){
-            i += 1;
-            let message = `Saving local Backup... (${i} / ${assetList.length})`
-            if (missingAssets.length > 0) {
-                const skippedItems = missingAssets.map(key => {
-                    const assetInfo = assetMap.get(key);
-                    return assetInfo ? `'${assetInfo.assetName}' from ${assetInfo.charName}` : `'${key}'`;
-                }).join(', ');
-                message += `\n(Skipping... ${skippedItems})`;
-            }
-            alertWait(message)
-
-            // OPFS에서 먼저 시도
-            let data = await loadFromWorker('assets/' + assetName)
-
-            // OPFS에 없으면 Tauri fs에서 시도
-            if (!data) {
-                try {
-                    data = await readFile('assets/' + assetName, {baseDir: BaseDirectory.AppData})
-                } catch {
-                    // 파일 없음
-                }
-            }
-
-            if (data) {
-                await writer.writeBackup(assetName, data)
-            } else {
-                missingAssets.push(assetName)
-            }
-        }
-    }
-    else{
-        const keys = await forageStorage.keys()
-
-        for(let i=0;i<keys.length;i++){
-            const key = keys[i]
-            let message = `Saving local Backup... (${i + 1} / ${keys.length})`
-            if (missingAssets.length > 0) {
-                const skippedItems = missingAssets.map(key => {
-                    const assetInfo = assetMap.get(key);
-                    return assetInfo ? `'${assetInfo.assetName}' from ${assetInfo.charName}` : `'${key}'`;
-                }).join(', ');
-                message += `\n(Skipping... ${skippedItems})`;
-            }
-            alertWait(message)
-
-            if(!key || !key.endsWith('.png')){
-                continue
-            }
-            const data = await forageStorage.getItem(key) as unknown as Uint8Array
-            if (data) {
-                await writer.writeBackup(key, data)
-            } else {
-                missingAssets.push(key)
-            }
-            if(forageStorage.isAccount){
-                await sleep(1000)
-            }
+        if(forageStorage.isAccount){
+            await sleep(1000)
         }
     }
 
@@ -257,11 +197,8 @@ export async function LoadLocalBackup(){
                                 });
                             }
                         } else {
-                            if (isTauri) {
-                                await saveToWorker('assets/' + name, data);
-                            } else {
-                                await forageStorage.setItem('assets/' + name, data);
-                            }
+                            // 에셋은 IndexedDB (forageStorage)에 저장 (Tauri와 웹 모두 동일)
+                            await forageStorage.setItem('assets/' + name, data);
                         }
                         await sleep(10);
                         if (forageStorage.isAccount) {

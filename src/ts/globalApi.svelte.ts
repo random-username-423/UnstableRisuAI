@@ -127,8 +127,8 @@ async function checkCapFileExists(getUriOptions: CapFS.GetUriOptions): Promise<b
     }
 }
 
-// OPFS 파일 캐시 (Tauri에서 OPFS 로드 결과를 캐싱)
-const opfsFileCache: { [key: string]: string | 'loading' | null } = {}
+// 에셋 파일 캐시 (IndexedDB 로드 결과를 캐싱)
+const assetFileCache: { [key: string]: string | 'loading' | null } = {}
 
 /**
  * Gets the source URL of a file.
@@ -140,40 +140,40 @@ export async function getFileSrc(loc:string) {
     if(isTauri){
         if(loc.startsWith('assets')){
             // 캐시 확인
-            const cached = opfsFileCache[loc]
+            const cached = assetFileCache[loc]
             if (cached && cached !== 'loading') {
                 return cached
             }
             if (cached === 'loading') {
                 // 다른 호출이 로딩 중이면 대기
-                while (opfsFileCache[loc] === 'loading') {
+                while (assetFileCache[loc] === 'loading') {
                     await sleep(10)
                 }
-                return opfsFileCache[loc] || ''
+                return assetFileCache[loc] || ''
             }
 
             // 로딩 시작
-            opfsFileCache[loc] = 'loading'
+            assetFileCache[loc] = 'loading'
 
-            // OPFS에서 먼저 시도
+            // IndexedDB (forageStorage)에서 로드
             try {
-                const opfsData = await loadFromWorker(loc)
-                if (opfsData && opfsData.byteLength > 0) {
-                    const dataUrl = `data:image/png;base64,${Buffer.from(opfsData).toString('base64')}`
-                    opfsFileCache[loc] = dataUrl
+                const data = await forageStorage.getItem(loc) as unknown as Uint8Array
+                if (data && data.byteLength > 0) {
+                    const dataUrl = `data:image/png;base64,${Buffer.from(data).toString('base64')}`
+                    assetFileCache[loc] = dataUrl
                     return dataUrl
                 }
             } catch (e) {
-                // OPFS 실패 시 무시하고 폴백
+                // IndexedDB 실패 시 무시하고 폴백
             }
 
-            // 폴백: 기존 Tauri fs (마이그레이션 전 데이터용)
+            // 폴백: 기존 Tauri fs (마이그레이션 전 레거시 데이터용)
             if(appDataDirPath === ''){
                 appDataDirPath = await appDataDir();
             }
             const joined = await join(appDataDirPath, loc)
             const result = convertFileSrc(joined)
-            opfsFileCache[loc] = result
+            assetFileCache[loc] = result
             return result
         }
         return convertFileSrc(loc)
@@ -307,18 +307,12 @@ export async function saveAsset(data:Uint8Array, customId:string = '', fileName:
         fileExtension = fileName.split('.').pop()
     }
     let form = `assets/${id}.${fileExtension}`
-    if(isTauri){
-        // OPFS에 저장 (getFileSrc와 일관성 유지)
-        await saveToWorker(form, data)
-        return form
+    // Tauri와 웹 모두 IndexedDB (forageStorage) 사용
+    const replacer = await forageStorage.setItem(form, data)
+    if(replacer){
+        return replacer
     }
-    else{
-        const replacer = await forageStorage.setItem(form, data)
-        if(replacer){
-            return replacer
-        }
-        return form
-    }
+    return form
 }
 
 /**
@@ -328,31 +322,20 @@ export async function saveAsset(data:Uint8Array, customId:string = '', fileName:
  * @returns {Promise<Uint8Array>} - A promise that resolves to the data of the loaded asset file.
  */
 export async function loadAsset(id:string){
-    if(isTauri){
-        // OPFS에서 먼저 시도
-        const opfsData = await loadFromWorker(id);
-        if (opfsData) {
-            return opfsData;
-        }
-        // 폴백 1: 기존 Tauri fs (마이그레이션 전 데이터용)
+    // Tauri와 웹 모두 IndexedDB (forageStorage) 사용
+    const data = await forageStorage.getItem(id) as unknown as Uint8Array
+    if (data) {
+        return data
+    }
+    // 폴백: Tauri fs (마이그레이션 전 레거시 데이터용)
+    if (isTauri) {
         try {
-            return await readFile(id, {baseDir: BaseDirectory.AppData});
+            return await readFile(id, {baseDir: BaseDirectory.AppData})
         } catch {
-            // 폴백 2: forageStorage (Worker 초기화 실패 시 백업 복원용)
-            try {
-                const forageData = await forageStorage.getItem(id) as unknown as Uint8Array;
-                if (forageData) {
-                    return forageData;
-                }
-            } catch {
-                // ignore
-            }
-            return null;
+            return null
         }
     }
-    else{
-        return await forageStorage.getItem(id) as unknown as Uint8Array
-    }
+    return null
 }
 
 let lastSave = ''
@@ -368,20 +351,16 @@ let opfsWorkerReady = false
 let pendingSaves = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
 let pendingLoads = new Map<string, { resolve: (data: Uint8Array | null) => void, reject: (e: Error) => void }>()
 let pendingLists = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
+let pendingDeletes = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
 
 async function initOPFSWorker(): Promise<void> {
     if (opfsWorker || isNodeServer) return
 
     try {
         // Vite의 ?worker 쿼리로 Worker 번들링
-        // Tauri: OPFS Worker, Web: IndexedDB Worker
-        if (isTauri) {
-            const OPFSWorker = await import('./storage/opfsSaveWorker?worker')
-            opfsWorker = new OPFSWorker.default()
-        } else {
-            const SaveWorker = await import('./storage/saveWorker?worker')
-            opfsWorker = new SaveWorker.default()
-        }
+        // Tauri와 Web 모두 OPFS Worker 사용 (DB 저장용)
+        const OPFSWorker = await import('./storage/opfsSaveWorker?worker')
+        opfsWorker = new OPFSWorker.default()
 
         // Worker ready 신호를 기다림 (5초 타임아웃)
         await new Promise<void>((resolve, reject) => {
@@ -440,6 +419,18 @@ async function initOPFSWorker(): Promise<void> {
                     pendingLists.delete(dirPath)
                 }
             }
+            // Handle delete responses
+            else if (type === 'delete_success' || type === 'delete_error') {
+                const pending = pendingDeletes.get(key)
+                if (pending) {
+                    if (type === 'delete_success') {
+                        pending.resolve()
+                    } else {
+                        pending.reject(new Error(error || 'Unknown delete error'))
+                    }
+                    pendingDeletes.delete(key)
+                }
+            }
         }
         opfsWorker.onerror = (e) => {
             console.error('OPFS worker error:', e)
@@ -494,6 +485,20 @@ export async function listFromWorker(dirPath: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
         pendingLists.set(dirPath, { resolve, reject })
         opfsWorker.postMessage({ type: 'list', dirPath })
+    })
+}
+
+export async function deleteFromWorker(key: string): Promise<void> {
+    // Worker가 없으면 자동 초기화
+    if (!opfsWorker) {
+        await initOPFSWorker()
+    }
+    if (!opfsWorker) {
+        return
+    }
+    return new Promise((resolve, reject) => {
+        pendingDeletes.set(key, { resolve, reject })
+        opfsWorker.postMessage({ type: 'delete', key })
     })
 }
 
@@ -649,7 +654,7 @@ export async function saveDb(){
                 continue
             }
             const dbData = new Uint8Array(encoded)
-            // Tauri와 웹 모두 Worker 사용 (Tauri: OPFS, Web: IndexedDB)
+            // Tauri와 웹 모두 OPFS Worker 사용
             // Worker를 사용하면 메인 스레드 블로킹 없음
             if(!forageStorage.isAccount && opfsWorker){
                 // 백업용 복사본 생성 (Transferable로 보내면 원본 buffer가 detached됨)
@@ -714,16 +719,17 @@ async function getDbBackups() {
         return backups
     }
     else{
-        const keys = await forageStorage.keys()
+        // 웹도 OPFS에서 백업 목록 가져오기
+        const files = await listFromWorker('database')
 
-        const backups = keys
-          .filter(key => key.startsWith('database/dbbackup-'))
-          .map(key => parseInt(key.slice(18, -4)))
+        const backups = files
+          .filter(file => file.startsWith('dbbackup-'))
+          .map(file => parseInt(file.slice(9, -4)))
           .sort((a, b) => b - a);
 
         while(backups.length > 20){
             const last = backups.pop()
-            await forageStorage.removeItem(`database/dbbackup-${last}.bin`)
+            await deleteFromWorker(`database/dbbackup-${last}.bin`)
         }
         return backups
     }
@@ -732,8 +738,102 @@ async function getDbBackups() {
 let usingSw = false
 
 /**
+ * Migrates assets from OPFS to IndexedDB (forageStorage).
+ * Called once on app startup if not already migrated.
+ */
+async function migrateOPFStoIndexedDB(): Promise<void> {
+    if (!isTauri) return
+
+    // 이미 마이그레이션 완료 체크
+    const migrationDone = await forageStorage.getItem('__opfs_asset_migration_done__')
+    if (migrationDone) return
+
+    // OPFS Worker 초기화
+    await initOPFSWorker()
+
+    // OPFS에서 에셋 목록 가져오기
+    const opfsAssets = await listFromWorker('assets')
+    if (opfsAssets.length === 0) {
+        // 에셋이 없으면 마이그레이션 완료로 표시
+        await forageStorage.setItem('__opfs_asset_migration_done__', new Uint8Array([1]))
+        return
+    }
+
+    console.log(`[Migration] Starting OPFS → IndexedDB migration for ${opfsAssets.length} assets`)
+    alertWait(`에셋 마이그레이션 중... (0 / ${opfsAssets.length})`)
+
+    for (let i = 0; i < opfsAssets.length; i++) {
+        const name = opfsAssets[i]
+        alertWait(`에셋 마이그레이션 중... (${i + 1} / ${opfsAssets.length})`)
+
+        const data = await loadFromWorker('assets/' + name)
+        if (data) {
+            await forageStorage.setItem('assets/' + name, data)
+        }
+    }
+
+    // 마이그레이션 완료 플래그 저장
+    await forageStorage.setItem('__opfs_asset_migration_done__', new Uint8Array([1]))
+    console.log('[Migration] OPFS → IndexedDB migration completed')
+
+    // OPFS 에셋 삭제 (공간 확보)
+    alertWait('OPFS 정리 중...')
+    for (const name of opfsAssets) {
+        await deleteFromWorker('assets/' + name)
+    }
+    console.log('[Migration] OPFS assets cleaned up')
+}
+
+/**
+ * 웹에서 IndexedDB의 DB를 OPFS로 마이그레이션
+ * 에셋은 IndexedDB에 유지, DB만 OPFS로 이동
+ */
+async function migrateWebDBtoOPFS(): Promise<void> {
+    if (isTauri) return
+
+    // 이미 마이그레이션 완료 체크
+    const migrationDone = await loadFromWorker('__web_db_migration_done__')
+    if (migrationDone) return
+
+    // IndexedDB에서 DB 확인
+    const indexedDBData = await forageStorage.getItem('database/database.bin') as unknown as Uint8Array
+    if (!indexedDBData) {
+        // IndexedDB에 DB가 없으면 마이그레이션 완료로 표시
+        await saveToWorker('__web_db_migration_done__', new Uint8Array([1]))
+        return
+    }
+
+    console.log('[Migration] Starting Web IndexedDB → OPFS migration for DB')
+    alertWait('DB 마이그레이션 중...')
+
+    // DB를 OPFS로 복사
+    await saveToWorker('database/database.bin', indexedDBData)
+
+    // 백업 파일들도 마이그레이션
+    const keys = await forageStorage.keys()
+    const backupKeys = keys.filter(k => k.startsWith('database/dbbackup-'))
+    for (const key of backupKeys) {
+        const backupData = await forageStorage.getItem(key) as unknown as Uint8Array
+        if (backupData) {
+            await saveToWorker(key, backupData)
+        }
+    }
+
+    // 마이그레이션 완료 플래그 저장
+    await saveToWorker('__web_db_migration_done__', new Uint8Array([1]))
+    console.log('[Migration] Web IndexedDB → OPFS migration completed')
+
+    // IndexedDB에서 DB 삭제 (공간 확보)
+    await forageStorage.removeItem('database/database.bin')
+    for (const key of backupKeys) {
+        await forageStorage.removeItem(key)
+    }
+    console.log('[Migration] IndexedDB DB cleaned up')
+}
+
+/**
  * Loads the application data.
- * 
+ *
  * @returns {Promise<void>} - A promise that resolves when the data has been loaded.
  */
 export async function loadData() {
@@ -764,6 +864,10 @@ export async function loadData() {
 
                 // OPFS Worker 초기화 (ready 신호까지 대기)
                 await initOPFSWorker()
+
+                // OPFS → IndexedDB 에셋 마이그레이션 (최초 1회)
+                LoadingStatusState.text = "Checking asset migration..."
+                await migrateOPFStoIndexedDB()
 
                 // OPFS에서 먼저 로드 시도
                 LoadingStatusState.text = "Reading Save File..."
@@ -828,12 +932,20 @@ export async function loadData() {
             else{
                 await forageStorage.Init()
 
+                // OPFS Worker 초기화 (웹에서도 DB 저장용으로 사용)
+                await initOPFSWorker()
+
+                // IndexedDB → OPFS DB 마이그레이션 (최초 1회)
+                LoadingStatusState.text = "Checking DB migration..."
+                await migrateWebDBtoOPFS()
+
+                // OPFS에서 DB 로드
                 LoadingStatusState.text = "Loading Local Save File..."
-                let gotStorage:Uint8Array = await forageStorage.getItem('database/database.bin') as unknown as Uint8Array
+                let gotStorage:Uint8Array = await loadFromWorker('database/database.bin')
                 LoadingStatusState.text = "Decoding Local Save File..."
                 if(checkNullish(gotStorage)){
                     gotStorage = encodeRisuSaveLegacy({})
-                    await forageStorage.setItem('database/database.bin', gotStorage)
+                    await saveToWorker('database/database.bin', gotStorage)
                 }
                 try {
                     const decoded = await decodeRisuSave(gotStorage)
@@ -846,11 +958,13 @@ export async function loadData() {
                     for(const backup of backups){
                         try {
                             LoadingStatusState.text = `Reading Backup File ${backup}...`
-                            const backupData:Uint8Array = await forageStorage.getItem(`database/dbbackup-${backup}.bin`) as unknown as Uint8Array
-                            setDatabase(
-                                await decodeRisuSave(backupData)
-                            )
-                            backupLoaded = true
+                            const backupData:Uint8Array = await loadFromWorker(`database/dbbackup-${backup}.bin`)
+                            if (backupData) {
+                                setDatabase(
+                                    await decodeRisuSave(backupData)
+                                )
+                                backupLoaded = true
+                            }
                         } catch (error) {}
                     }
                     if(!backupLoaded){

@@ -31,6 +31,11 @@ interface ListMessage {
     dirPath: string
 }
 
+interface DeleteMessage {
+    type: 'delete'
+    key: string
+}
+
 interface SaveResponse {
     type: 'success' | 'error'
     key: string
@@ -48,6 +53,12 @@ interface ListResponse {
     type: 'list_success' | 'list_error'
     dirPath: string
     files?: string[]
+    error?: string
+}
+
+interface DeleteResponse {
+    type: 'delete_success' | 'delete_error'
+    key: string
     error?: string
 }
 
@@ -87,7 +98,7 @@ async function getDirectory(dirPath: string): Promise<FileSystemDirectoryHandle 
     }
 }
 
-self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage>) => {
+self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage | DeleteMessage>) => {
     const { type } = e.data
 
     if (type === 'save') {
@@ -179,6 +190,39 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage>
             const response: ListResponse = {
                 type: 'list_error',
                 dirPath,
+                error: error instanceof Error ? error.message : String(error)
+            }
+            self.postMessage(response)
+        }
+    } else if (type === 'delete') {
+        const { key } = e.data as DeleteMessage
+        try {
+            const parts = key.split('/')
+            const fileName = parts.pop()!
+            const dirPath = parts.join('/')
+
+            const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
+            if (!dir) {
+                // 디렉토리가 없으면 파일도 없는 것이므로 성공 처리
+                const response: DeleteResponse = { type: 'delete_success', key }
+                self.postMessage(response)
+                return
+            }
+
+            await dir.removeEntry(fileName)
+
+            const response: DeleteResponse = { type: 'delete_success', key }
+            self.postMessage(response)
+        } catch (error) {
+            // 파일이 없어도 성공으로 처리 (이미 삭제된 상태)
+            if (error instanceof Error && error.name === 'NotFoundError') {
+                const response: DeleteResponse = { type: 'delete_success', key }
+                self.postMessage(response)
+                return
+            }
+            const response: DeleteResponse = {
+                type: 'delete_error',
+                key,
                 error: error instanceof Error ? error.message : String(error)
             }
             self.postMessage(response)
