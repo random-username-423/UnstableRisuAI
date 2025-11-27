@@ -995,15 +995,6 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
 
     const items:OAIResponseItem[] = []
 
-    // Build a map of assistant index -> encrypted thinking data
-    const openaiThinkingMap = new Map<number, any>()
-    for(const et of (arg.encryptedThinkingHistory || [])){
-        if(et.provider === 'openai'){
-            openaiThinkingMap.set(et.index, et)
-        }
-    }
-    let assistantMsgIndex = 0
-
     for(let i=0;i<formated.length;i++){
         const content = formated[i]
         switch(content.role){
@@ -1011,7 +1002,7 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
                 break
             case 'assistant':{
                 // Add reasoning item before assistant message if available
-                const openaiThinking = openaiThinkingMap.get(assistantMsgIndex)
+                const openaiThinking = (content.encryptedThinking || []).find(et => et.provider === 'openai')
                 if(openaiThinking?.data?.encrypted_content){
                     items.push({
                         type: 'reasoning',
@@ -1019,7 +1010,6 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
                         summary: []
                     } as any)
                 }
-                assistantMsgIndex++
 
                 const item:OAIResponseOutputItem = {
                     content: [],

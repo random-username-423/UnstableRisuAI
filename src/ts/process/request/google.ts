@@ -56,15 +56,6 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
         formated.shift()
     }
 
-    // Build a map of assistant index -> encrypted thinking data
-    const geminiThinkingMap = new Map<number, any>()
-    for(const et of (arg.encryptedThinkingHistory || [])){
-        if(et.provider === 'gemini'){
-            geminiThinkingMap.set(et.index, et)
-        }
-    }
-    let assistantMsgIndex = 0
-
     for(let i=0;i<formated.length;i++){
         const chat = formated[i]
 
@@ -105,7 +96,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
 
             // Add thoughtSignature for assistant messages with multimodals
             if(chat.role === 'assistant'){
-                const geminiThinking = geminiThinkingMap.get(assistantMsgIndex)
+                const geminiThinking = (chat.encryptedThinking || []).find(et => et.provider === 'gemini')
                 if(geminiThinking?.data?.thoughtSignatures){
                     // Add thoughtSignature to the first part (could be text or image)
                     const firstPart = geminiParts[0]
@@ -113,7 +104,6 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
                         firstPart.thoughtSignature = geminiThinking.data.thoughtSignatures[0]
                     }
                 }
-                assistantMsgIndex++
             }
 
             reformatedChat.push({
@@ -141,7 +131,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
 
             // Add thoughtSignature for assistant messages if available
             if(chat.role === 'assistant'){
-                const geminiThinking = geminiThinkingMap.get(assistantMsgIndex)
+                const geminiThinking = (chat.encryptedThinking || []).find(et => et.provider === 'gemini')
                 if(geminiThinking?.data?.thoughtSignatures){
                     // Add thoughtSignature to the first part (required by Gemini)
                     const firstPart = parts[0]
@@ -149,7 +139,6 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
                         firstPart.thoughtSignature = geminiThinking.data.thoughtSignatures[0]
                     }
                 }
-                assistantMsgIndex++
             }
 
             reformatedChat.push({

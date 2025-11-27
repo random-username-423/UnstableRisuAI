@@ -43,6 +43,11 @@ export interface OpenAIChat{
     multimodals?: MultiModal[]
     thoughts?: string[]
     cachePoint?: boolean
+    encryptedThinking?: {
+        provider: string
+        data: any
+        tokens: number
+    }[]
 }
 
 export interface MultiModal{
@@ -801,6 +806,10 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         }
     }
 
+    // pastThinkingSend: 0 = None, 1 = Send (include in maxContext), 2 = Send (Extra Context)
+    const pastThinkingSend = DBState.db.pastThinkingSend ?? 1
+    const pastThinkingExtraTokens = DBState.db.pastThinkingExtraTokens ?? 16000
+
     let index = 0
     for(const msg of ms){
         let formatedChat = (await processScriptFull(nowChatroom,risuChatParser(msg.data, {chara: currentChar, role: msg.role}), 'editprocess', index, {
@@ -944,13 +953,27 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             memo: msg.chatId,
             attr: attr,
             multimodals: multimodal,
-            thoughts: thoughts
+            thoughts: thoughts,
+            encryptedThinking: (pastThinkingSend !== 0 && msg.encryptedThinking)
+                ? msg.encryptedThinking.filter(et => et.tokens && et.tokens > 0)
+                : undefined
         }
         if(chat.multimodals.length === 0){
             delete chat.multimodals
         }
+        if(chat.encryptedThinking && chat.encryptedThinking.length === 0){
+            delete chat.encryptedThinking
+        }
         chats.push(chat)
-        currentTokens += await tokenizer.tokenizeChat(chat)
+
+        // Calculate tokens: base chat tokens + thinking tokens (mode 1 only)
+        let chatTokens = await tokenizer.tokenizeChat(chat)
+        if(pastThinkingSend === 1 && chat.encryptedThinking){
+            for(const et of chat.encryptedThinking){
+                chatTokens += et.tokens
+            }
+        }
+        currentTokens += chatTokens
         index++
     }
     console.log(JSON.stringify(chats, null, 2))
@@ -1456,59 +1479,43 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         return true
     }
 
-    // Collect encrypted thinking from previous messages
-    // Use assistant order index (0 for first assistant, 1 for second, etc.)
-    // pastThinkingSend: 0 = None, 1 = Send, 2 = Send (Extra Context)
-    const pastThinkingSend = DBState.db.pastThinkingSend ?? 1
-    const pastThinkingExtraTokens = DBState.db.pastThinkingExtraTokens ?? 16000
-    let encryptedThinkingHistory: {index: number, provider: string, data: any, tokens?: number}[] = []
-
-    if(pastThinkingSend !== 0){
-        const messages = DBState.db.characters[selectedChar].chats[selectedChat].message
-        let assistantOrderIndex = 0
-        for(let i = 0; i < messages.length; i++){
-            const msg = messages[i]
-            if(msg.role === 'char'){ // assistant message
-                if(msg.encryptedThinking){
-                    for(const et of msg.encryptedThinking){
-                        // Skip entries without valid token count (can't calculate budget)
-                        if(!et.tokens || et.tokens <= 0){
-                            continue
-                        }
-                        encryptedThinkingHistory.push({
-                            index: assistantOrderIndex,
-                            provider: et.provider,
-                            data: et.data,
-                            tokens: et.tokens
-                        })
-                    }
+    // Mode 2: remove front encryptedThinking entries to fit within separate budget
+    // (Mode 1 already handled during message creation - thinking tokens included in maxContext)
+    if(pastThinkingSend === 2){
+        let totalThinkingTokens = 0
+        for(const chat of formated){
+            if(chat.encryptedThinking){
+                for(const et of chat.encryptedThinking){
+                    totalThinkingTokens += et.tokens
                 }
-                assistantOrderIndex++
             }
         }
 
-        // Calculate token budget for encrypted thinking
-        if(pastThinkingSend === 1){
-            // Send mode: include thinking tokens in maxContext calculation
-            // Remove oldest thinking entries if total exceeds available context
-            let thinkingTokens = encryptedThinkingHistory.reduce((sum, et) => sum + (et.tokens ?? 0), 0)
-            const availableForThinking = maxContextTokens - inputTokens - DBState.db.maxResponse
-
-            while(thinkingTokens > availableForThinking && encryptedThinkingHistory.length > 0){
-                const removed = encryptedThinkingHistory.shift()
-                thinkingTokens -= removed?.tokens ?? 0
+        // Remove from front (oldest) until within budget
+        while(totalThinkingTokens > pastThinkingExtraTokens){
+            let removed = false
+            for(const chat of formated){
+                if(chat.encryptedThinking && chat.encryptedThinking.length > 0){
+                    const removedEntry = chat.encryptedThinking.shift()
+                    totalThinkingTokens -= removedEntry?.tokens ?? 0
+                    if(chat.encryptedThinking.length === 0){
+                        chat.encryptedThinking = undefined
+                    }
+                    removed = true
+                    break
+                }
             }
-        } else if(pastThinkingSend === 2){
-            // Extra Context mode: thinking has separate budget (pastThinkingExtraTokens)
-            let thinkingTokens = encryptedThinkingHistory.reduce((sum, et) => sum + (et.tokens ?? 0), 0)
-
-            while(thinkingTokens > pastThinkingExtraTokens && encryptedThinkingHistory.length > 0){
-                const removed = encryptedThinkingHistory.shift()
-                thinkingTokens -= removed?.tokens ?? 0
-            }
+            if(!removed) break // No more entries to remove
         }
     }
-    const totalThinkingTokens = encryptedThinkingHistory.reduce((sum, et) => sum + (et.tokens ?? 0), 0)
+
+    // Collect encryptedThinkingHistory from formated array
+    // (already truncated for mode 1, budget-limited for mode 2)
+    const encryptedThinkingHistory = formated
+        .flatMap(chat => chat.encryptedThinking || [])
+        .filter(et => et.tokens > 0)
+
+    const totalThinkingTokens = encryptedThinkingHistory.reduce((sum, et) => sum + et.tokens, 0)
     console.log('[PastThinking] Sending thinking history:', {
         count: encryptedThinkingHistory.length,
         totalTokens: totalThinkingTokens,

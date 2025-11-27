@@ -53,10 +53,9 @@ interface requestDataArgument{
     tools?: MCPTool[]
     rememberToolUsage?: boolean
     encryptedThinkingHistory?: {
-        index: number
         provider: string
         data: any
-        tokens?: number
+        tokens: number
     }[]
     pastThinkingExtraContext?: boolean  // true if using Extra Context mode
     pastThinkingExtraTokens?: number    // token budget for Extra Context mode

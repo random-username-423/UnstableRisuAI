@@ -205,15 +205,6 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
             claudeChat.push(formatedChat)
         }
     }
-    // Build a map of assistant index -> encrypted thinking data
-    const anthropicThinkingMap = new Map<number, any>()
-    for(const et of (arg.encryptedThinkingHistory || [])){
-        if(et.provider === 'anthropic'){
-            anthropicThinkingMap.set(et.index, et)
-        }
-    }
-    let assistantMsgIndex = 0
-
     for(const chat of formated){
         switch(chat.role){
             case 'user':{
@@ -225,9 +216,8 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
                 break
             }
             case 'assistant':{
-                // Check for thinking data to include (matched by assistant order index)
-                const anthropicThinking = anthropicThinkingMap.get(assistantMsgIndex)
-                assistantMsgIndex++
+                // Check for thinking data to include (from chat.encryptedThinking)
+                const anthropicThinking = (chat.encryptedThinking || []).find(et => et.provider === 'anthropic')
 
                 if(anthropicThinking?.data?.signatures || anthropicThinking?.data?.redacted){
                     // Build content with thinking blocks
