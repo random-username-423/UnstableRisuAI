@@ -115,8 +115,9 @@ export async function syncDrive() {
 async function backupDrive(ACCESS_TOKEN:string) {
     alertStore.set({
         type: "wait",
-        msg: "Uploading Backup..."
+        msg: "Uploading Backup... (Fetching file list)"
     })
+    await sleep(10)  // UI 업데이트 대기
 
     console.log('[GoogleDrive Backup] Starting backup...')
     const files:DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
@@ -125,6 +126,8 @@ async function backupDrive(ACCESS_TOKEN:string) {
     const fileNames = files.map((d) => {
         return d.name
     })
+
+    const PARALLEL_UPLOADS = 20
 
     if(isTauri){
         // OPFS와 Tauri fs 모두에서 에셋 수집
@@ -151,67 +154,112 @@ async function backupDrive(ACCESS_TOKEN:string) {
         }
 
         const assetList = Array.from(allAssets)
-        let i = 0;
-        let uploadedCount = 0;
-        let skippedCount = 0;
         console.log(`[GoogleDrive Backup] Tauri: Found ${assetList.length} local assets (OPFS: ${opfsAssets.length})`)
 
-        for(let assetName of assetList){
-            i += 1;
-            alertStore.set({
-                type: "wait",
-                msg: `Uploading Backup... (${i} / ${assetList.length})`
-            })
-            if(!assetName.endsWith('.png')){
-                continue
-            }
+        // 업로드할 파일 목록 수집
+        const toUpload: { assetName: string, formatedKey: string }[] = []
+        let skippedCount = 0
+        for (const assetName of assetList) {
+            if (!assetName.endsWith('.png')) continue
             const formatedKey = newFormatKeys(assetName)
-            if(!fileNames.includes(formatedKey)){
-                // OPFS에서 먼저 시도
-                let data = await loadFromWorker('assets/' + assetName)
-
-                // OPFS에 없으면 Tauri fs에서 시도
-                if (!data) {
-                    try {
-                        data = await readFile('assets/' + assetName, {baseDir: BaseDirectory.AppData})
-                    } catch {
-                        console.log(`[GoogleDrive Backup] Failed to load asset: ${assetName}`)
-                        continue
-                    }
-                }
-
-                await createFileInFolder(ACCESS_TOKEN, formatedKey, data)
-                uploadedCount++
+            if (!fileNames.includes(formatedKey)) {
+                toUpload.push({ assetName, formatedKey })
             } else {
                 skippedCount++
             }
         }
-        console.log(`[GoogleDrive Backup] Tauri: Uploaded ${uploadedCount}, Skipped ${skippedCount} (already exists)`)
+
+        console.log(`[GoogleDrive Backup] Tauri: ${toUpload.length} to upload, ${skippedCount} skipped (already exists)`)
+
+        // 슬라이딩 윈도우 병렬 업로드
+        let uploadedCount = 0
+        let currentIndex = 0
+
+        async function uploadOne(): Promise<void> {
+            if (currentIndex >= toUpload.length) return
+
+            const { assetName, formatedKey } = toUpload[currentIndex++]
+
+            // OPFS에서 먼저 시도
+            let data = await loadFromWorker('assets/' + assetName)
+
+            // OPFS에 없으면 Tauri fs에서 시도
+            if (!data) {
+                try {
+                    data = await readFile('assets/' + assetName, {baseDir: BaseDirectory.AppData})
+                } catch {
+                    console.log(`[GoogleDrive Backup] Failed to load asset: ${assetName}`)
+                    await uploadOne()
+                    return
+                }
+            }
+
+            await createFileInFolder(ACCESS_TOKEN, formatedKey, data)
+            uploadedCount++
+
+            alertStore.set({
+                type: "wait",
+                msg: `Uploading Backup... (${uploadedCount} / ${toUpload.length})`
+            })
+
+            await uploadOne()
+        }
+
+        // 동시에 PARALLEL_UPLOADS개 시작
+        await Promise.all(
+            Array.from({ length: Math.min(PARALLEL_UPLOADS, toUpload.length) }, () => uploadOne())
+        )
+
+        console.log(`[GoogleDrive Backup] Tauri: Uploaded ${uploadedCount}`)
     }
     else{
         const keys = await forageStorage.keys()
-        let uploadedCount = 0;
-        let skippedCount = 0;
         console.log(`[GoogleDrive Backup] Web: Found ${keys.length} local keys`)
 
-        for(let i=0;i<keys.length;i++){
-            alertStore.set({
-                type: "wait",
-                msg: `Uploading Backup... (${i} / ${keys.length})`
-            })
-            const key = keys[i]
-            if(!key.endsWith('.png')){
-                continue
-            }
+        // 업로드할 파일 목록 수집
+        const toUpload: { key: string, formatedKey: string }[] = []
+        let skippedCount = 0
+        for (const key of keys) {
+            if (!key.endsWith('.png')) continue
             const formatedKey = newFormatKeys(key)
-            if(!fileNames.includes(formatedKey)){
-                await createFileInFolder(ACCESS_TOKEN, formatedKey, await forageStorage.getItem(key) as unknown as Uint8Array)
-                uploadedCount++
+            if (!fileNames.includes(formatedKey)) {
+                toUpload.push({ key, formatedKey })
             } else {
                 skippedCount++
             }
         }
-        console.log(`[GoogleDrive Backup] Web: Uploaded ${uploadedCount}, Skipped ${skippedCount} (already exists)`)
+
+        console.log(`[GoogleDrive Backup] Web: ${toUpload.length} to upload, ${skippedCount} skipped (already exists)`)
+
+        // 슬라이딩 윈도우 병렬 업로드
+        let uploadedCount = 0
+        let currentIndex = 0
+
+        async function uploadOne(): Promise<void> {
+            if (currentIndex >= toUpload.length) return
+
+            const { key, formatedKey } = toUpload[currentIndex++]
+            const data = await forageStorage.getItem(key) as unknown as Uint8Array
+
+            if (data) {
+                await createFileInFolder(ACCESS_TOKEN, formatedKey, data)
+                uploadedCount++
+
+                alertStore.set({
+                    type: "wait",
+                    msg: `Uploading Backup... (${uploadedCount} / ${toUpload.length})`
+                })
+            }
+
+            await uploadOne()
+        }
+
+        // 동시에 PARALLEL_UPLOADS개 시작
+        await Promise.all(
+            Array.from({ length: Math.min(PARALLEL_UPLOADS, toUpload.length) }, () => uploadOne())
+        )
+
+        console.log(`[GoogleDrive Backup] Web: Uploaded ${uploadedCount}`)
     }
 
     const dbData = encodeRisuSaveLegacy(getDatabase(), 'compression')
@@ -239,14 +287,17 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
     if(mode === 'backup'){
         alertStore.set({
             type: "wait",
-            msg: "Loading Backup..."
+            msg: "Loading Backup... (Fetching file list)"
         })
+        await sleep(10)  // UI 업데이트 대기
     }
     console.log(`[GoogleDrive Restore] Starting restore (mode: ${mode})...`)
     const files:DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
     console.log(`[GoogleDrive Restore] Found ${files.length} files in Drive`)
     let foragekeys:string[] = []
     let loadedForageKeys = false
+    let opfsAssetKeys: string[] = []
+    let loadedOpfsKeys = false
     let db = getDatabase()
 
     async function checkImageExists(images:string) {
@@ -254,6 +305,16 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
             return false
         }
         if(isTauri){
+            // OPFS 파일 목록 캐싱 (세션 45 이후 에셋은 OPFS에 저장됨)
+            if (!loadedOpfsKeys) {
+                opfsAssetKeys = await listFromWorker('assets')
+                loadedOpfsKeys = true
+            }
+
+            // OPFS에서 확인
+            if (opfsAssetKeys.includes(images)) return true
+
+            // OPFS에 없으면 Tauri fs 확인 (마이그레이션 전 데이터용)
             return await exists(`assets/` + images, {baseDir: BaseDirectory.AppData})
         }
         else{
@@ -329,6 +390,13 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
             }
             const selectedIndex = (await alertSelect([language.loadLatest, language.loadOthers]) === '0') ? 0 : parseInt(await alertSelect(selectables))
             const selectedDb = dbs[selectedIndex][0]
+
+            alertStore.set({
+                type: "wait",
+                msg: "Loading Backup... (Downloading database)"
+            })
+            await sleep(10)
+
             const decompressedDb:Database = await decodeRisuSave(await getFileData(ACCESS_TOKEN, selectedDb.id))
             return decompressedDb
         }
@@ -343,73 +411,83 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         const sampleFiles = fileNames.slice(0, 10)
         console.log(`[GoogleDrive Restore] Sample of Drive files (first 10):`, sampleFiles)
 
-        let ind = 0;
+        const PARALLEL_DOWNLOADS = 20
         let errorLogs:string[] = []
-        let downloadedCount = 0;
-        let skippedCount = 0;
-        let notFoundCount = 0;
+        let downloadedCount = 0
+        let skippedCount = 0
+        let notFoundCount = 0
+        let processedCount = 0
 
-        for(const images of requiredImages){
-            ind += 1
-            let found = false
-            for(let tries=0;tries<3;tries++){
-                const formatedImage = tries === 0 ? newFormatKeys(images) : formatKeys(images)
-                if(mode === 'sync'){
-                    alertStore.set({
-                        type: "wait",
-                        msg: `Sync Files... (${ind} / ${requiredImages.length})`
-                    })
-                }
-                else{
-                    alertStore.set({
-                        type: "wait",
-                        msg: `Loading Backup... (${ind} / ${requiredImages.length})`
-                    })
-                }
-                if(await checkImageExists(images)){
-                    //skip process
-                    skippedCount++
-                    found = true
-                    break
-                }
-                else{
-                    if(formatedImage.length >= 7){
-                        if(fileNames.includes(formatedImage)){
-                            for(const file of files){
-                                if(file.name === formatedImage){
-                                    const fData = await getFileData(ACCESS_TOKEN, file.id)
-                                    if(isTauri){
-                                        await saveToWorker('assets/' + images, fData)
-                                    }
-                                    else{
-                                        await forageStorage.setItem('assets/' + images, fData)
-                                    }
-                                    tries = 3
-                                    downloadedCount++
-                                    found = true
-                                }
-                            }
-                        }
-                        else{
-                            // Only show error on last try
-                            if(tries === 2){
-                                alertStore.set({
-                                    type: "wait",
-                                    msg: `Loading Backup... (${ind} / ${requiredImages.length}) (Not found: ${images})`
-                                })
-                                // Log first 20 not-found errors
-                                if(errorLogs.length < 20){
-                                    const newFormat = newFormatKeys(images)
-                                    const oldFormat = formatKeys(images)
-                                    errorLogs.push(`Asset not found: "${images}" (searched as: "${newFormat}" and "${oldFormat}")`)
-                                }
-                                notFoundCount++
-                                await sleep(500)
-                            }
-                        }
-                    }
-                }
+        // 다운로드할 파일 목록 수집 (로컬에 없는 것만)
+        const toDownload: { images: string, fileId: string | null }[] = []
+        for (const images of requiredImages) {
+            if (await checkImageExists(images)) {
+                skippedCount++
+                continue
             }
+
+            // Drive에서 파일 찾기 (newFormatKeys, formatKeys 순서로 시도)
+            let fileId: string | null = null
+            const newFormat = newFormatKeys(images)
+            const oldFormat = formatKeys(images)
+
+            if (fileNames.includes(newFormat)) {
+                const file = files.find(f => f.name === newFormat)
+                if (file) fileId = file.id
+            } else if (fileNames.includes(oldFormat)) {
+                const file = files.find(f => f.name === oldFormat)
+                if (file) fileId = file.id
+            }
+
+            if (fileId) {
+                toDownload.push({ images, fileId })
+            } else {
+                // 파일을 찾지 못함
+                if (errorLogs.length < 20) {
+                    errorLogs.push(`Asset not found: "${images}" (searched as: "${newFormat}" and "${oldFormat}")`)
+                }
+                notFoundCount++
+            }
+        }
+
+        console.log(`[GoogleDrive Restore] ${toDownload.length} to download, ${skippedCount} skipped, ${notFoundCount} not found`)
+
+        // 슬라이딩 윈도우 병렬 다운로드
+        let currentIndex = 0
+
+        async function downloadOne(): Promise<void> {
+            if (currentIndex >= toDownload.length) return
+
+            const { images, fileId } = toDownload[currentIndex++]
+
+            try {
+                const fData = await getFileData(ACCESS_TOKEN, fileId!)
+                if (isTauri) {
+                    await saveToWorker('assets/' + images, fData)
+                } else {
+                    await forageStorage.setItem('assets/' + images, fData)
+                }
+                downloadedCount++
+            } catch (e) {
+                console.log(`[GoogleDrive Restore] Failed to download: ${images}`, e)
+            }
+
+            processedCount++
+            alertStore.set({
+                type: "wait",
+                msg: mode === 'sync'
+                    ? `Sync Files... (${processedCount} / ${toDownload.length})`
+                    : `Loading Backup... (${processedCount} / ${toDownload.length})`
+            })
+
+            await downloadOne()
+        }
+
+        // 동시에 PARALLEL_DOWNLOADS개 시작
+        if (toDownload.length > 0) {
+            await Promise.all(
+                Array.from({ length: Math.min(PARALLEL_DOWNLOADS, toDownload.length) }, () => downloadOne())
+            )
         }
 
         console.log(`[GoogleDrive Restore] Restore summary:`)
