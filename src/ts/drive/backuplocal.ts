@@ -1,4 +1,3 @@
-// Note: BaseDirectory, readFile, readDir are no longer needed for backup since assets now use IndexedDB
 import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear } from "../alert";
 import { LocalWriter, forageStorage, isTauri, requiresFullEncoderReload, saveToWorker } from "../globalApi.svelte";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
@@ -6,6 +5,7 @@ import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { platform } from "@tauri-apps/plugin-os";
 import { sleep } from "../util";
+import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 
 function getBasename(data:string){
     const baseNameRegex = /\\/g
@@ -66,14 +66,37 @@ export async function SaveLocalBackup(){
         assetMap.set(db.customBackground, { charName: 'User Settings', assetName: 'Custom Background' })
     }
     const missingAssets: string[] = []
+    const writtenAssets = new Set<string>()  // 중복 방지
 
-    // IndexedDB (forageStorage)에서 에셋 수집 (Tauri와 웹 모두 동일)
+    // 1. IndexedDB (forageStorage)에서 에셋 수집
     const keys = await forageStorage.keys()
-    const assetKeys = keys.filter(key => key && key.endsWith('.png'))
+    const indexedDbAssetKeys = keys.filter(key => key && key.startsWith('assets/'))
+    console.log(`[LocalBackup] Found ${indexedDbAssetKeys.length} assets in IndexedDB`)
 
-    for(let i = 0; i < assetKeys.length; i++){
-        const key = assetKeys[i]
-        let message = `Saving local Backup... (${i + 1} / ${assetKeys.length})`
+    // 2. Tauri fs (AppData/assets)에서 에셋 수집 (레거시 데이터 호환)
+    let tauriFsAssetKeys: string[] = []
+    if (isTauri) {
+        try {
+            const assetsExist = await exists('assets', { baseDir: BaseDirectory.AppData })
+            if (assetsExist) {
+                const tauriFsAssets = await readDir('assets', { baseDir: BaseDirectory.AppData })
+                tauriFsAssetKeys = tauriFsAssets
+                    .filter(a => a.name && !a.isDirectory)
+                    .map(a => 'assets/' + a.name)
+                console.log(`[LocalBackup] Found ${tauriFsAssetKeys.length} assets in Tauri fs`)
+            }
+        } catch (e) {
+            console.warn('[LocalBackup] Failed to read Tauri fs assets:', e)
+        }
+    }
+
+    // 전체 에셋 목록 (중복 제거)
+    const allAssetKeys = [...new Set([...indexedDbAssetKeys, ...tauriFsAssetKeys])]
+    console.log(`[LocalBackup] Total unique assets to backup: ${allAssetKeys.length}`)
+
+    for(let i = 0; i < allAssetKeys.length; i++){
+        const key = allAssetKeys[i]
+        let message = `Saving local Backup... (${i + 1} / ${allAssetKeys.length})`
         if (missingAssets.length > 0) {
             const skippedItems = missingAssets.map(k => {
                 const assetInfo = assetMap.get(k);
@@ -83,9 +106,21 @@ export async function SaveLocalBackup(){
         }
         alertWait(message)
 
-        const data = await forageStorage.getItem(key) as unknown as Uint8Array
-        if (data) {
+        // 먼저 IndexedDB에서 시도
+        let data = await forageStorage.getItem(key) as unknown as Uint8Array
+
+        // IndexedDB에 없으면 Tauri fs에서 시도
+        if (!data && isTauri && tauriFsAssetKeys.includes(key)) {
+            try {
+                data = await readFile(key, { baseDir: BaseDirectory.AppData })
+            } catch (e) {
+                // 무시
+            }
+        }
+
+        if (data && data.byteLength > 0) {
             await writer.writeBackup(key, data)
+            writtenAssets.add(key)
         } else {
             missingAssets.push(key)
         }

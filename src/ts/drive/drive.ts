@@ -1,7 +1,7 @@
 import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../alert";
 import { getDatabase, type Database } from "../storage/database.svelte";
 import { forageStorage, getUnpargeables, isTauri, openURL, saveToWorker } from "../globalApi.svelte";
-// Note: BaseDirectory, exists, readFile, readDir are no longer needed for assets since they now use IndexedDB
+import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
 import { platform } from '@tauri-apps/plugin-os';
@@ -130,18 +130,40 @@ async function backupDrive(ACCESS_TOKEN:string) {
 
     const PARALLEL_UPLOADS = getDatabase().driveParallelConnections || 20
 
-    // IndexedDB (forageStorage)에서 에셋 수집 (Tauri와 웹 모두 동일)
+    // 1. IndexedDB (forageStorage)에서 에셋 수집
     const keys = await forageStorage.keys()
-    const assetKeys = keys.filter(key => key && key.endsWith('.png'))
-    console.log(`[GoogleDrive Backup] Found ${assetKeys.length} local assets`)
+    const indexedDbAssetKeys = keys.filter(key => key && key.startsWith('assets/'))
+    console.log(`[GoogleDrive Backup] Found ${indexedDbAssetKeys.length} assets in IndexedDB`)
+
+    // 2. Tauri fs (AppData/assets)에서 에셋 수집 (레거시 데이터 호환)
+    let tauriFsAssetKeys: string[] = []
+    if (isTauri) {
+        try {
+            const assetsExist = await exists('assets', { baseDir: BaseDirectory.AppData })
+            if (assetsExist) {
+                const tauriFsAssets = await readDir('assets', { baseDir: BaseDirectory.AppData })
+                tauriFsAssetKeys = tauriFsAssets
+                    .filter(a => a.name && !a.isDirectory)
+                    .map(a => 'assets/' + a.name)
+                console.log(`[GoogleDrive Backup] Found ${tauriFsAssetKeys.length} assets in Tauri fs`)
+            }
+        } catch (e) {
+            console.warn('[GoogleDrive Backup] Failed to read Tauri fs assets:', e)
+        }
+    }
+
+    // 전체 에셋 목록 (중복 제거)
+    const assetKeys = [...new Set([...indexedDbAssetKeys, ...tauriFsAssetKeys])]
+    console.log(`[GoogleDrive Backup] Total unique local assets: ${assetKeys.length}`)
 
     // 업로드할 파일 목록 수집
-    const toUpload: { key: string, formatedKey: string }[] = []
+    const toUpload: { key: string, formatedKey: string, fromTauriFs: boolean }[] = []
     let skippedCount = 0
     for (const key of assetKeys) {
         const formatedKey = newFormatKeys(key)
         if (!fileNames.includes(formatedKey)) {
-            toUpload.push({ key, formatedKey })
+            const fromTauriFs = !indexedDbAssetKeys.includes(key) && tauriFsAssetKeys.includes(key)
+            toUpload.push({ key, formatedKey, fromTauriFs })
         } else {
             skippedCount++
         }
@@ -156,10 +178,21 @@ async function backupDrive(ACCESS_TOKEN:string) {
     async function uploadOne(): Promise<void> {
         if (currentIndex >= toUpload.length) return
 
-        const { key, formatedKey } = toUpload[currentIndex++]
-        const data = await forageStorage.getItem(key) as unknown as Uint8Array
+        const { key, formatedKey, fromTauriFs } = toUpload[currentIndex++]
 
-        if (data) {
+        // 먼저 IndexedDB에서 시도
+        let data = await forageStorage.getItem(key) as unknown as Uint8Array
+
+        // IndexedDB에 없으면 Tauri fs에서 시도
+        if (!data && fromTauriFs) {
+            try {
+                data = await readFile(key, { baseDir: BaseDirectory.AppData })
+            } catch (e) {
+                // 무시
+            }
+        }
+
+        if (data && data.byteLength > 0) {
             await createFileInFolder(ACCESS_TOKEN, formatedKey, data)
             uploadedCount++
 

@@ -796,6 +796,72 @@ async function migrateOPFStoIndexedDB(): Promise<void> {
 }
 
 /**
+ * Migrates assets from Tauri fs (AppData) to IndexedDB (forageStorage).
+ * Called once on app startup if not already migrated.
+ * This handles legacy data from before the storage architecture change.
+ */
+async function migrateTauriFsToIndexedDB(): Promise<void> {
+    if (!isTauri) return
+
+    // 이미 마이그레이션 완료 체크
+    const migrationDone = await forageStorage.getItem('__taurifs_asset_migration_done__')
+    if (migrationDone) return
+
+    // Tauri fs에 assets 폴더가 있는지 확인
+    try {
+        const assetsExist = await exists('assets', { baseDir: BaseDirectory.AppData })
+        if (!assetsExist) {
+            // assets 폴더가 없으면 마이그레이션 완료로 표시
+            await forageStorage.setItem('__taurifs_asset_migration_done__', new Uint8Array([1]))
+            return
+        }
+
+        const assets = await readDir('assets', { baseDir: BaseDirectory.AppData })
+        if (assets.length === 0) {
+            await forageStorage.setItem('__taurifs_asset_migration_done__', new Uint8Array([1]))
+            return
+        }
+
+        console.log(`[Migration] Starting Tauri fs → IndexedDB migration for ${assets.length} assets`)
+        alertWait(`Tauri fs 에셋 마이그레이션 중... (0 / ${assets.length})`)
+
+        let migratedCount = 0
+        for (let i = 0; i < assets.length; i++) {
+            const asset = assets[i]
+            if (!asset.name || asset.isDirectory) continue
+
+            alertWait(`Tauri fs 에셋 마이그레이션 중... (${i + 1} / ${assets.length})`)
+
+            // IndexedDB에 이미 있는지 확인
+            const key = 'assets/' + asset.name
+            const existing = await forageStorage.getItem(key)
+            if (existing) {
+                continue // 이미 있으면 스킵
+            }
+
+            // Tauri fs에서 읽어서 IndexedDB에 저장
+            try {
+                const data = await readFile('assets/' + asset.name, { baseDir: BaseDirectory.AppData })
+                if (data && data.byteLength > 0) {
+                    await forageStorage.setItem(key, data)
+                    migratedCount++
+                }
+            } catch (e) {
+                console.warn(`[Migration] Failed to migrate asset: ${asset.name}`, e)
+            }
+        }
+
+        // 마이그레이션 완료 플래그 저장
+        await forageStorage.setItem('__taurifs_asset_migration_done__', new Uint8Array([1]))
+        console.log(`[Migration] Tauri fs → IndexedDB migration completed (${migratedCount} assets migrated)`)
+    } catch (e) {
+        console.warn('[Migration] Tauri fs migration failed:', e)
+        // 에러가 나도 완료로 표시 (무한 루프 방지)
+        await forageStorage.setItem('__taurifs_asset_migration_done__', new Uint8Array([1]))
+    }
+}
+
+/**
  * 웹에서 IndexedDB의 DB를 OPFS로 마이그레이션
  * 에셋은 IndexedDB에 유지, DB만 OPFS로 이동
  */
@@ -879,6 +945,9 @@ export async function loadData() {
                 // OPFS → IndexedDB 에셋 마이그레이션 (최초 1회)
                 LoadingStatusState.text = "Checking asset migration..."
                 await migrateOPFStoIndexedDB()
+
+                // Tauri fs → IndexedDB 에셋 마이그레이션 (레거시 데이터용)
+                await migrateTauriFsToIndexedDB()
 
                 // OPFS에서 먼저 로드 시도
                 LoadingStatusState.text = "Reading Save File..."
