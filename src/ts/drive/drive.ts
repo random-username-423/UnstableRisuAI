@@ -1,12 +1,11 @@
 import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../alert";
 import { getDatabase, type Database } from "../storage/database.svelte";
-import { forageStorage, getUnpargeables, isTauri, openURL, saveToWorker } from "../globalApi.svelte";
+import { forageStorage, getUnpargeables, isTauri, openURL, saveToWorker, listFromWorker, loadFromWorker } from "../globalApi.svelte";
 import { BaseDirectory, exists, readFile, readDir } from "@tauri-apps/plugin-fs";
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
 import { sleep } from "../util";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
-import { checkBackupCorruption } from "./backupUtils";
 
 export async function checkDriver(type:'save'|'load'|'loadtauri'|'savetauri'|'reftoken'){
     const CLIENT_ID = '580075990041-l26k2d3c0nemmqiu3d3aag01npfrkn76.apps.googleusercontent.com';
@@ -119,39 +118,81 @@ async function backupDrive(ACCESS_TOKEN:string) {
         msg: "Uploading Backup..."
     })
 
-    //check backup data is corrupted
-    const db = getDatabase()
-    if (!await checkBackupCorruption(db)) {
-        return
-    }
-
+    console.log('[GoogleDrive Backup] Starting backup...')
     const files:DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
+    console.log(`[GoogleDrive Backup] Found ${files.length} existing files in Drive`)
 
     const fileNames = files.map((d) => {
         return d.name
     })
 
     if(isTauri){
-        const assets = await readDir('assets', {baseDir: BaseDirectory.AppData})
+        // OPFS와 Tauri fs 모두에서 에셋 수집
+        const allAssets = new Set<string>()
+
+        // 1. OPFS에서 에셋 목록 가져오기
+        const opfsAssets = await listFromWorker('assets')
+        for (const name of opfsAssets) {
+            if (name.endsWith('.png')) {
+                allAssets.add(name)
+            }
+        }
+
+        // 2. Tauri fs에서도 에셋 목록 가져오기 (마이그레이션 전 데이터용)
+        try {
+            const tauriAssets = await readDir('assets', {baseDir: BaseDirectory.AppData})
+            for (const asset of tauriAssets) {
+                if (asset.name && asset.name.endsWith('.png')) {
+                    allAssets.add(asset.name)
+                }
+            }
+        } catch {
+            // assets 폴더가 없을 수 있음
+        }
+
+        const assetList = Array.from(allAssets)
         let i = 0;
-        for(let asset of assets){
+        let uploadedCount = 0;
+        let skippedCount = 0;
+        console.log(`[GoogleDrive Backup] Tauri: Found ${assetList.length} local assets (OPFS: ${opfsAssets.length})`)
+
+        for(let assetName of assetList){
             i += 1;
             alertStore.set({
                 type: "wait",
-                msg: `Uploading Backup... (${i} / ${assets.length})`
+                msg: `Uploading Backup... (${i} / ${assetList.length})`
             })
-            const key = asset.name
-            if(!key || !key.endsWith('.png')){
+            if(!assetName.endsWith('.png')){
                 continue
             }
-            const formatedKey = newFormatKeys(key)
+            const formatedKey = newFormatKeys(assetName)
             if(!fileNames.includes(formatedKey)){
-                await createFileInFolder(ACCESS_TOKEN, formatedKey, await readFile('assets/' + asset.name, {baseDir: BaseDirectory.AppData}))
+                // OPFS에서 먼저 시도
+                let data = await loadFromWorker('assets/' + assetName)
+
+                // OPFS에 없으면 Tauri fs에서 시도
+                if (!data) {
+                    try {
+                        data = await readFile('assets/' + assetName, {baseDir: BaseDirectory.AppData})
+                    } catch {
+                        console.log(`[GoogleDrive Backup] Failed to load asset: ${assetName}`)
+                        continue
+                    }
+                }
+
+                await createFileInFolder(ACCESS_TOKEN, formatedKey, data)
+                uploadedCount++
+            } else {
+                skippedCount++
             }
         }
+        console.log(`[GoogleDrive Backup] Tauri: Uploaded ${uploadedCount}, Skipped ${skippedCount} (already exists)`)
     }
     else{
         const keys = await forageStorage.keys()
+        let uploadedCount = 0;
+        let skippedCount = 0;
+        console.log(`[GoogleDrive Backup] Web: Found ${keys.length} local keys`)
 
         for(let i=0;i<keys.length;i++){
             alertStore.set({
@@ -165,8 +206,12 @@ async function backupDrive(ACCESS_TOKEN:string) {
             const formatedKey = newFormatKeys(key)
             if(!fileNames.includes(formatedKey)){
                 await createFileInFolder(ACCESS_TOKEN, formatedKey, await forageStorage.getItem(key) as unknown as Uint8Array)
+                uploadedCount++
+            } else {
+                skippedCount++
             }
         }
+        console.log(`[GoogleDrive Backup] Web: Uploaded ${uploadedCount}, Skipped ${skippedCount} (already exists)`)
     }
 
     const dbData = encodeRisuSaveLegacy(getDatabase(), 'compression')
@@ -176,8 +221,10 @@ async function backupDrive(ACCESS_TOKEN:string) {
         msg: `Uploading Backup... (Saving database)`
     })
 
-    await createFileInFolder(ACCESS_TOKEN, `${(Date.now() / 1000).toFixed(0)}-database.risudat`, dbData)
-
+    const dbFileName = `${(Date.now() / 1000).toFixed(0)}-database.risudat`
+    await createFileInFolder(ACCESS_TOKEN, dbFileName, dbData)
+    console.log(`[GoogleDrive Backup] Database saved as: ${dbFileName} (${(dbData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
+    console.log('[GoogleDrive Backup] Backup completed successfully!')
 
     alertNormal('Success')
 }
@@ -195,7 +242,9 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
             msg: "Loading Backup..."
         })
     }
+    console.log(`[GoogleDrive Restore] Starting restore (mode: ${mode})...`)
     const files:DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
+    console.log(`[GoogleDrive Restore] Found ${files.length} files in Drive`)
     let foragekeys:string[] = []
     let loadedForageKeys = false
     let db = getDatabase()
@@ -288,10 +337,21 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         lastSaved = Date.now()
         localStorage.setItem('risu_lastsaved', `${lastSaved}`)
         const requiredImages = (getUnpargeables(db))
+        console.log(`[GoogleDrive Restore] Database loaded. Required assets: ${requiredImages.length}`)
+
+        // Log sample of Drive files for debugging
+        const sampleFiles = fileNames.slice(0, 10)
+        console.log(`[GoogleDrive Restore] Sample of Drive files (first 10):`, sampleFiles)
+
         let ind = 0;
         let errorLogs:string[] = []
+        let downloadedCount = 0;
+        let skippedCount = 0;
+        let notFoundCount = 0;
+
         for(const images of requiredImages){
             ind += 1
+            let found = false
             for(let tries=0;tries<3;tries++){
                 const formatedImage = tries === 0 ? newFormatKeys(images) : formatKeys(images)
                 if(mode === 'sync'){
@@ -308,6 +368,9 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
                 }
                 if(await checkImageExists(images)){
                     //skip process
+                    skippedCount++
+                    found = true
+                    break
                 }
                 else{
                     if(formatedImage.length >= 7){
@@ -322,25 +385,48 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
                                         await forageStorage.setItem('assets/' + images, fData)
                                     }
                                     tries = 3
+                                    downloadedCount++
+                                    found = true
                                 }
                             }
                         }
                         else{
-                            alertStore.set({
-                                type: "wait",
-                                msg: `Loading Backup... (${ind} / ${requiredImages.length}) (Error in ${formatedImage})`
-                            })
-                            await sleep(1000)
+                            // Only show error on last try
+                            if(tries === 2){
+                                alertStore.set({
+                                    type: "wait",
+                                    msg: `Loading Backup... (${ind} / ${requiredImages.length}) (Not found: ${images})`
+                                })
+                                // Log first 20 not-found errors
+                                if(errorLogs.length < 20){
+                                    const newFormat = newFormatKeys(images)
+                                    const oldFormat = formatKeys(images)
+                                    errorLogs.push(`Asset not found: "${images}" (searched as: "${newFormat}" and "${oldFormat}")`)
+                                }
+                                notFoundCount++
+                                await sleep(500)
+                            }
                         }
                     }
                 }
             }
         }
+
+        console.log(`[GoogleDrive Restore] Restore summary:`)
+        console.log(`  - Downloaded: ${downloadedCount}`)
+        console.log(`  - Skipped (already exists): ${skippedCount}`)
+        console.log(`  - Not found in Drive: ${notFoundCount}`)
+        if(errorLogs.length > 0){
+            console.log(`[GoogleDrive Restore] Not found assets (first ${errorLogs.length}):`)
+            errorLogs.forEach(e => console.log(`  ${e}`))
+        }
         db.didFirstSetup = true
         const dbData = encodeRisuSaveLegacy(db, 'compression')
+        console.log(`[GoogleDrive Restore] Saving database... (${(dbData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
 
         if(isTauri){
             await saveToWorker('database/database.bin', dbData)
+            console.log('[GoogleDrive Restore] Restore completed! Relaunching app...')
             relaunch()
             alertStore.set({
                 type: "wait",
@@ -349,6 +435,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         }
         else{
             await forageStorage.setItem('database/database.bin', dbData)
+            console.log('[GoogleDrive Restore] Restore completed! Refreshing page...')
             location.search = ''
             alertStore.set({
                 type: "wait",
