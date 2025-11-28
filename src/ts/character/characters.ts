@@ -11,7 +11,7 @@ import { checkImageType, parseMarkdownSafe } from "../parser.svelte";
 import { translateHTML } from "../translator/translator";
 import { doingChat } from "../process/index.svelte";
 import { importCharacter } from "./characterCards";
-import { PngChunk } from '../pngChunk';
+import { PngChunk } from './pngChunk';
 
 export function createNewCharacter() {
     let db = getDatabase()

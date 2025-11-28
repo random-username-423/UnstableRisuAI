@@ -10,7 +10,7 @@ import { SettingsMenuIndex, ShowRealmFrameStore, selectedCharID, settingsOpen } 
 import { checkImageType, convertImage, hasher } from "../parser.svelte"
 import { CCardLib, type CharacterCardV3, type LorebookEntry } from '@risuai/ccardlib'
 import { reencodeImage } from "../process/files/inlays"
-import { PngChunk } from '../pngChunk'
+import { PngChunk } from './pngChunk'
 import type { OnnxModelFiles } from "../process/transformers"
 import { CharXReader, CharXWriter } from "../process/processzip"
 import { exportModule, readModule, type RisuModule } from "../process/modules"

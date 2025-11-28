@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 import crc32 from 'crc/crc32';
-import { AppendableBuffer, VirtualWriter, type LocalWriter } from './globalApi.svelte';
-import { blobToUint8Array } from './util';
+import { AppendableBuffer, VirtualWriter, type LocalWriter } from '../globalApi.svelte';
+import { blobToUint8Array } from '../util';
 
 class StreamChunkWriter{
     constructor(private data:Uint8Array, private writer:LocalWriter|WritableStreamDefaultWriter<Uint8Array>|VirtualWriter){
@@ -173,7 +173,7 @@ export const PngChunk = {
             }
         }
 
-        
+
 
         await appendTrimed(await slice(0,8))
         let pos = 8
