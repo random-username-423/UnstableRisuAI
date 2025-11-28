@@ -7,7 +7,7 @@
     import Chat from "./Chat.svelte";
     import { type Message } from "../../ts/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
-    import { getCharImage } from "../../ts/characters";
+    import { getCharImage } from "../../ts/character/characters";
     import { chatProcessStage, doingChat, sendChat } from "../../ts/process/index.svelte";
     import { sleep } from "../../ts/util";
     import { language } from "../../lang";

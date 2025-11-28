@@ -4,7 +4,7 @@ import { type character, type customscript, type groupChat, type Database, getDa
 import { downloadFile } from "../globalApi.svelte";
 import { alertError, alertNormal } from "../alert";
 import { language } from "src/lang";
-import { selectSingleFile } from "../util";
+import { selectSingleFile } from '../util';
 import { assetRegex, type CbsConditions, risuChatParser as risuChatParserOrg, type simpleCharacterArgument } from "../parser.svelte";
 import { getModuleAssets, getModuleRegexScripts, getModuleTriggers } from "./modules";
 import { HypaProcesser } from "./memory/hypamemory";

@@ -9,7 +9,7 @@ import {
 } from "@tauri-apps/plugin-fs"
 import { forageStorage, isNodeServer, isTauri } from "../globalApi.svelte"
 import { DBState } from "../stores.svelte"
-import { hubURL } from "../characterCards"
+import { hubURL } from "../character/characterCards"
 import type { AccountStorage } from "../storage/accountStorage"
 import type { NodeStorage } from "../storage/nodeStorage"
 

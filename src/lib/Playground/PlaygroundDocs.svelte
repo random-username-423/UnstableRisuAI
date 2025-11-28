@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { defaultCBSRegisterArg, registerCBS } from "src/ts/cbs";
+    import { defaultCBSRegisterArg, registerCBS } from "src/ts/character/cbs";
     import TextInput from "../UI/GUI/TextInput.svelte";
     import { parseMarkdownSafe } from "src/ts/parser.svelte";
 

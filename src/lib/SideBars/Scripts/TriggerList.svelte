@@ -10,7 +10,7 @@
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import Button from "src/lib/UI/GUI/Button.svelte";
     import { openURL } from "src/ts/globalApi.svelte";
-    import { hubURL } from "src/ts/characterCards";
+    import { hubURL } from "src/ts/character/characterCards";
     import { PlusIcon } from "lucide-svelte";
     import TriggerV2List from "./TriggerList2.svelte";
     import { DBState } from "src/ts/stores.svelte";

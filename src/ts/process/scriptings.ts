@@ -11,7 +11,7 @@ import type { OpenAIChat, MultiModal } from "./index.svelte";
 import { requestChatData } from "./request/request";
 import { v4 } from "uuid";
 import { getModuleLorebooks, getModuleTriggers } from "./modules";
-import { Mutex } from "../mutex";
+import { Mutex } from '../mutex';
 import { tokenize } from "../tokenizer";
 import { fetchNative, readImage } from "../globalApi.svelte";
 import { loadLoreBookV3Prompt } from './lorebook.svelte';

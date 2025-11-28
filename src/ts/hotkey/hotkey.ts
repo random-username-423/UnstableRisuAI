@@ -1,12 +1,12 @@
 import { get } from "svelte/store"
-import { alertMd, alertSelect, alertToast, alertWait, doingAlert } from "./alert"
-import { changeToPreset as changeToPreset2, getDatabase  } from "./storage/database.svelte"
-import { alertStore, MobileGUIStack, MobileSideBar, openPersonaList, openPresetList, OpenRealmStore, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
+import { alertMd, alertSelect, alertToast, alertWait, doingAlert } from "../alert"
+import { changeToPreset as changeToPreset2, getDatabase  } from "../storage/database.svelte"
+import { alertStore, MobileGUIStack, MobileSideBar, openPersonaList, openPresetList, OpenRealmStore, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "../stores.svelte"
 import { language } from "src/lang"
-import { updateTextThemeAndCSS } from "./gui/colorscheme"
+import { updateTextThemeAndCSS } from "../gui/colorscheme"
 import { defaultHotkeys } from "./defaulthotkeys"
-import { doingChat, previewBody, sendChat } from "./process/index.svelte"
-import { getRequestLog } from "./globalApi.svelte"
+import { doingChat, previewBody, sendChat } from "../process/index.svelte"
+import { getRequestLog } from "../globalApi.svelte"
 
 export function initHotkey(){
     document.addEventListener('keydown', async (ev) => {

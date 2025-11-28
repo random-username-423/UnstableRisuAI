@@ -1,11 +1,11 @@
 import { get } from "svelte/store"
-import { getDatabase, saveImage, setDatabase } from "./storage/database.svelte"
-import { getUserName, selectSingleFile, sleep } from "./util"
-import { alertError, alertNormal, alertStore } from "./alert"
-import { AppendableBuffer, downloadFile, readImage } from "./globalApi.svelte"
+import { getDatabase, saveImage, setDatabase } from "../storage/database.svelte"
+import { getUserName, selectSingleFile, sleep } from '../util'
+import { alertError, alertNormal, alertStore } from "../alert"
+import { AppendableBuffer, downloadFile, readImage } from "../globalApi.svelte"
 import { language } from "src/lang"
-import { reencodeImage } from "./process/files/inlays"
-import { PngChunk } from "./pngChunk"
+import { reencodeImage } from "../process/files/inlays"
+import { PngChunk } from '../pngChunk'
 import { v4 } from "uuid"
 
 export async function selectUserImg() {

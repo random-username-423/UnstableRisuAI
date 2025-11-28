@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { characterFormatUpdate, getCharImage, removeChar } from "../../ts/characters";
+    import { characterFormatUpdate, getCharImage, removeChar } from "../../ts/character/characters";
     import { type Database } from "../../ts/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
     import BarIcon from "../SideBars/BarIcon.svelte";

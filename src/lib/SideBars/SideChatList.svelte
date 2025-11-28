@@ -12,7 +12,7 @@
     import Button from "../UI/GUI/Button.svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
 
-    import { exportChat, importChat, exportAllChats } from "src/ts/characters";
+    import { exportChat, importChat, exportAllChats } from "src/ts/character/characters";
     import { alertChatOptions, alertConfirm, alertError, alertInput, alertNormal, alertSelect, alertStore } from "src/ts/alert";
     import { findCharacterbyId, parseKeyValue, sleep, sortableOptions } from "src/ts/util";
     import { createMultiuserRoom } from "src/ts/sync/multiuser";

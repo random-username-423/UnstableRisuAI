@@ -3,7 +3,7 @@
     import { language } from "../../lang";
     
     import { DBState } from 'src/ts/stores.svelte';
-    import { changeUserPersona } from "src/ts/persona";
+    import { changeUserPersona } from "src/ts/character/persona";
 
 
     interface Props {

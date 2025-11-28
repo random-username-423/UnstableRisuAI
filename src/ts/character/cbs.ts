@@ -1,9 +1,9 @@
-import type { Database, character, loreBook } from './storage/database.svelte';
-import type { CbsConditions } from './parser.svelte';
-import type { RisuModule } from './process/modules';
-import type { LLMModel } from './model/modellist';
+import type { Database, character, loreBook } from '../storage/database.svelte';
+import type { CbsConditions } from '../parser.svelte';
+import type { RisuModule } from '../process/modules';
+import type { LLMModel } from '../model/modellist';
 import { get } from 'svelte/store';
-import { CurrentTriggerIdStore } from './stores.svelte';
+import { CurrentTriggerIdStore } from '../stores.svelte';
 
 export const defaultCBSRegisterArg: CBSRegisterArg = {
     registerFunction: () => { throw new Error('registerFunction not implemented') },

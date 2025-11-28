@@ -6,7 +6,7 @@
     import { CharConfigSubMenu, MobileGUI, ShowRealmFrameStore, selectedCharID, hypaV3ModalOpen } from "../../ts/stores.svelte";
     import { PlusIcon, SmileIcon, TrashIcon, UserIcon, ActivityIcon, BookIcon, User, CurlyBraces, Volume2Icon, DownloadIcon, HardDriveUploadIcon, Share2Icon, ImageIcon, ImageOffIcon, ArrowUp, ArrowDown } from 'lucide-svelte'
     import Check from "../UI/GUI/CheckInput.svelte";
-    import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/characters";
+    import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/character/characters";
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
     import { alertConfirm, alertMd, alertNormal, alertSelectChar, alertTOS, showHypaV2Alert } from "../../ts/alert";
     import BarIcon from "./BarIcon.svelte";
@@ -14,7 +14,7 @@
     import { onDestroy } from "svelte";
     import {includes, isEqual} from 'lodash'
     import Help from "../Others/Help.svelte";
-    import { exportChar, hubURL } from "src/ts/characterCards";
+    import { exportChar, hubURL } from "src/ts/character/characterCards";
     import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices, FixNAITTS } from "src/ts/process/tts";
     import { checkCharOrder, getFileSrc, openURL } from "src/ts/globalApi.svelte";
     import { addGroupChar, rmCharFromGroup } from "src/ts/process/group";

@@ -1,6 +1,6 @@
 <script lang="ts">
 
-    import { type hubType } from "src/ts/characterCards";
+    import { type hubType } from "src/ts/character/characterCards";
     interface Props {
         card: hubType;
         onclick?: (event: MouseEvent & {

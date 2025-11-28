@@ -4,7 +4,7 @@ import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { platform } from "@tauri-apps/plugin-os";
-import { sleep } from "../util";
+import { sleep } from '../util';
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 
 function getBasename(data:string){

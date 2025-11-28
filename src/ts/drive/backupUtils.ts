@@ -1,5 +1,5 @@
 import { alertError } from "../alert";
-import { hubURL } from "../characterCards";
+import { hubURL } from "../character/characterCards";
 import { language } from "../../lang";
 import type { Database } from "../storage/database.svelte";
 import { isTauri } from "../globalApi.svelte";

@@ -2,7 +2,7 @@
     import { BookIcon, FlagIcon, ImageIcon, PaperclipIcon, SmileIcon, TrashIcon } from "lucide-svelte";
     import { language } from "src/lang";
     import { alertConfirm, alertInput, alertNormal } from "src/ts/alert";
-    import { hubURL, type hubType, downloadRisuHub, getRealmInfo } from "src/ts/characterCards";
+    import { hubURL, type hubType, downloadRisuHub, getRealmInfo } from "src/ts/character/characterCards";
     
     import { DBState } from 'src/ts/stores.svelte';
     import RealmLicense from "./RealmLicense.svelte";

@@ -3,9 +3,9 @@ import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "..
 import { requestChatData } from "../process/request/request";
 import { checkCharOrder, globalFetch, isNodeServer, isTauri, saveAsset } from "../globalApi.svelte";
 import { tokenize } from "../tokenizer";
-import { createBlankChar } from "../characters";
+import { createBlankChar } from "../character/characters";
 import { getDatabase, setDatabase, type character } from "../storage/database.svelte";
-import { sleep } from "../util";
+import { sleep } from '../util';
 
 
 type creationResult = { ok: false; data:string }|{ok:"creation";data:character}

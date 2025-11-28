@@ -20,7 +20,7 @@ import cbsIntro from '../etc/docs/cbs_intro.cbs?raw'
 import cbsDocs from '../etc/docs/cbs_docs.cbs?raw'
 import docsText from '../etc/docs/docs_text.cbs?raw'
 import { getModelInfo, type LLMModel } from './model/modellist';
-import { registerCBS, type matcherArg, type RegisterCallback } from './cbs';
+import { registerCBS, type matcherArg, type RegisterCallback } from './character/cbs';
 
 const markdownItOptions = {
     html: true,

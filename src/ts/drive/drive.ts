@@ -5,7 +5,7 @@ import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs"
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
 import { platform } from '@tauri-apps/plugin-os';
-import { sleep } from "../util";
+import { sleep } from '../util';
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 
 export async function checkDriver(type:'save'|'load'|'loadtauri'|'savetauri'|'reftoken'){

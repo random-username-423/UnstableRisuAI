@@ -8,7 +8,7 @@
     import GridChars from './lib/Others/GridCatalog.svelte';
     import WelcomeRisu from './lib/Others/WelcomeRisu.svelte';
     import Settings from './lib/Setting/Settings.svelte';
-    import { showRealmInfoStore, importCharacterProcess } from './ts/characterCards';
+    import { showRealmInfoStore, importCharacterProcess } from './ts/character/characterCards';
     import RealmFrame from './lib/UI/Realm/RealmFrame.svelte';
     import SavePopupIconComp from './lib/Others/SavePopupIcon.svelte';
     import Botpreset from './lib/Setting/botpreset.svelte';

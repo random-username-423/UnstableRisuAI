@@ -1,6 +1,6 @@
 import { writable } from "svelte/store"
 import { getDatabase } from "./database.svelte"
-import { hubURL } from "../characterCards"
+import { hubURL } from "../character/characterCards"
 import localforage from "localforage"
 import { alertLogin, alertNormalWait, alertStore, alertWait } from "../alert"
 import { AppendableBuffer, forageStorage, getUnpargeables } from "../globalApi.svelte"

@@ -2,7 +2,7 @@
     import type { character, groupChat, Message } from 'src/ts/storage/database.svelte';
     import { mount, onDestroy, unmount } from 'svelte';
     import Chat from './Chat.svelte';
-    import { getCharImage } from 'src/ts/characters';
+    import { getCharImage } from 'src/ts/character/characters';
     import { createSimpleCharacter } from 'src/ts/stores.svelte';
 
     const {

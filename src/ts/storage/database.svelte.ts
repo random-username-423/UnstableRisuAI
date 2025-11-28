@@ -2063,7 +2063,7 @@ import { LLMFlags, LLMFormat, LLMTokenizer } from '../model/modellist';
 import type { Parameter } from '../process/request/request';
 import type { HypaModel } from '../process/memory/hypamemory';
 import type { SerializableHypaV3Data } from '../process/memory/hypav3';
-import { defaultHotkeys, type Hotkey } from '../defaulthotkeys';
+import { defaultHotkeys, type Hotkey } from '../hotkey/defaulthotkeys';
 import type { OpenAIChat } from '../process/index.svelte';
 
 export async function downloadPreset(id:number, type:'json'|'risupreset'|'return' = 'json'){

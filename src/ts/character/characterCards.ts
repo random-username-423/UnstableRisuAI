@@ -1,19 +1,19 @@
 import { get, writable, type Writable } from "svelte/store"
-import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertSelect, alertStore, alertTOS, alertWait } from "./alert"
-import { defaultSdDataFunc, type character, setDatabase, type customscript, type loreSettings, type loreBook, type triggerscript, importPreset, type groupChat, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite, appVer } from "./storage/database.svelte"
-import { checkNullish, decryptBuffer, encryptBuffer, isKnownUri, selectFileByDom, selectMultipleFile, sleep } from "./util"
+import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertSelect, alertStore, alertTOS, alertWait } from "../alert"
+import { defaultSdDataFunc, type character, setDatabase, type customscript, type loreSettings, type loreBook, type triggerscript, importPreset, type groupChat, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite, appVer } from "../storage/database.svelte"
+import { checkNullish, decryptBuffer, encryptBuffer, isKnownUri, selectFileByDom, selectMultipleFile, sleep } from '../util'
 import { language } from "src/lang"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { characterFormatUpdate } from "./characters"
-import { AppendableBuffer, BlankWriter, checkCharOrder, downloadFile, isNodeServer, isTauri, loadAsset, LocalWriter, openURL, readImage, saveAsset, VirtualWriter } from "./globalApi.svelte"
-import { SettingsMenuIndex, ShowRealmFrameStore, selectedCharID, settingsOpen } from "./stores.svelte"
-import { checkImageType, convertImage, hasher } from "./parser.svelte"
+import { AppendableBuffer, BlankWriter, checkCharOrder, downloadFile, isNodeServer, isTauri, loadAsset, LocalWriter, openURL, readImage, saveAsset, VirtualWriter } from "../globalApi.svelte"
+import { SettingsMenuIndex, ShowRealmFrameStore, selectedCharID, settingsOpen } from "../stores.svelte"
+import { checkImageType, convertImage, hasher } from "../parser.svelte"
 import { CCardLib, type CharacterCardV3, type LorebookEntry } from '@risuai/ccardlib'
-import { reencodeImage } from "./process/files/inlays"
-import { PngChunk } from "./pngChunk"
-import type { OnnxModelFiles } from "./process/transformers"
-import { CharXReader, CharXWriter } from "./process/processzip"
-import { exportModule, readModule, type RisuModule } from "./process/modules"
+import { reencodeImage } from "../process/files/inlays"
+import { PngChunk } from '../pngChunk'
+import type { OnnxModelFiles } from "../process/transformers"
+import { CharXReader, CharXWriter } from "../process/processzip"
+import { exportModule, readModule, type RisuModule } from "../process/modules"
 import { readFile } from "@tauri-apps/plugin-fs"
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link';
 

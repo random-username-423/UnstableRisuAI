@@ -7,7 +7,7 @@
     import PlaygroundJinja from "./PlaygroundJinja.svelte";
     import PlaygroundSyntax from "./PlaygroundSyntax.svelte";
     import { findCharacterIndexbyId } from "src/ts/util";
-    import { characterFormatUpdate, createBlankChar } from "src/ts/characters";
+    import { characterFormatUpdate, createBlankChar } from "src/ts/character/characters";
     import { type character } from "src/ts/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
     import PlaygroundImageGen from "./PlaygroundImageGen.svelte";

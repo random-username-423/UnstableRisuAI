@@ -32,7 +32,7 @@
   addCharacter,
     changeChar,
     getCharImage,
-  } from "../../ts/characters";
+  } from "../../ts/character/characters";
     import CharConfig from "./CharConfig.svelte";
     import { language } from "../../lang";
     import { onDestroy } from "svelte";

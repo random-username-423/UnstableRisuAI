@@ -6,8 +6,8 @@
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import { alertConfirm, alertSelect } from "src/ts/alert";
-    import { getCharImage } from "src/ts/characters";
-    import { changeUserPersona, exportUserPersona, importUserPersona, saveUserPersona, selectUserImg } from "src/ts/persona";
+    import { getCharImage } from "src/ts/character/characters";
+    import { changeUserPersona, exportUserPersona, importUserPersona, saveUserPersona, selectUserImg } from "src/ts/character/persona";
     import Sortable from 'sortablejs/modular/sortable.core.esm.js';
     import { onDestroy, onMount } from "svelte";
     import { sleep, sortableOptions } from "src/ts/util";
