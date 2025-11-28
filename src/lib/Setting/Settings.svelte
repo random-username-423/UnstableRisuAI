@@ -20,7 +20,6 @@
     import PromptSettings from "./Pages/PromptSettings.svelte";
     import ThanksPage from "./Pages/ThanksPage.svelte";
     import ModuleSettings from "./Pages/Module/ModuleSettings.svelte";
-  import { isLite } from "src/ts/lite";
     import HotkeySettings from "./Pages/HotkeySettings.svelte";
 
     let openLoreList = $state(false)
@@ -36,9 +35,7 @@
                 class:w-full={window.innerWidth < 700 || $MobileGUI}
                 class:bg-darkbg={!$MobileGUI} class:bg-bgcolor={$MobileGUI}
             >
-                
-                {#if !$isLite}
-                    <button class="flex gap-2 items-center hover:text-textcolor"
+                <button class="flex gap-2 items-center hover:text-textcolor"
                         class:text-textcolor={$SettingsMenuIndex === 1 || $SettingsMenuIndex === 13}
                         class:text-textcolor2={$SettingsMenuIndex !== 1 && $SettingsMenuIndex !== 13}
                         onclick={() => {
@@ -75,7 +72,6 @@
                         <MonitorIcon />
                         <span>{language.display}</span>
                     </button>
-                {/if}
                 <button class="flex gap-2 items-center hover:text-textcolor"
                     class:text-textcolor={$SettingsMenuIndex === 10}
                     class:text-textcolor2={$SettingsMenuIndex !== 10}
@@ -85,8 +81,7 @@
                     <LanguagesIcon />
                     <span>{language.language}</span>
                 </button>
-                {#if !$isLite}
-                    <button class="flex gap-2 items-center hover:text-textcolor"
+                <button class="flex gap-2 items-center hover:text-textcolor"
                         class:text-textcolor={$SettingsMenuIndex === 11}
                         class:text-textcolor2={$SettingsMenuIndex !== 11}
                         onclick={() => {
@@ -113,7 +108,6 @@
                         <CodeIcon />
                         <span>{language.plugin}</span>
                     </button>
-                {/if}
                 <button class="flex gap-2 items-center hover:text-textcolor"
                     class:text-textcolor={$SettingsMenuIndex === 0}
                     class:text-textcolor2={$SettingsMenuIndex !== 0}
@@ -132,26 +126,24 @@
                         <KeyboardIcon />
                         <span>{language.hotkey}</span>
                     </button>
-                {#if !$isLite}
-                    <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 6}
-                        class:text-textcolor2={$SettingsMenuIndex !== 6}
-                        onclick={() => {
-                        $SettingsMenuIndex = 6
-                    }}>
-                        <ActivityIcon />
-                        <span>{language.advancedSettings}</span>
-                    </button>
-                    <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 77}
-                        class:text-textcolor2={$SettingsMenuIndex !== 77}
-                        onclick={() => {
-                        $SettingsMenuIndex = 77
-                    }}>
-                        <BoxIcon />
-                        <span>{language.supporterThanks}</span>
-                    </button>
-                {/if}
+                <button class="flex gap-2 items-center hover:text-textcolor"
+                    class:text-textcolor={$SettingsMenuIndex === 6}
+                    class:text-textcolor2={$SettingsMenuIndex !== 6}
+                    onclick={() => {
+                    $SettingsMenuIndex = 6
+                }}>
+                    <ActivityIcon />
+                    <span>{language.advancedSettings}</span>
+                </button>
+                <button class="flex gap-2 items-center hover:text-textcolor"
+                    class:text-textcolor={$SettingsMenuIndex === 77}
+                    class:text-textcolor2={$SettingsMenuIndex !== 77}
+                    onclick={() => {
+                    $SettingsMenuIndex = 77
+                }}>
+                    <BoxIcon />
+                    <span>{language.supporterThanks}</span>
+                </button>
                 {#if window.innerWidth < 700 && !$MobileGUI}
                     <button class="absolute top-2 right-2 hover:text-green-500 text-textcolor" onclick={() => {
                         settingsOpen.set(false)
