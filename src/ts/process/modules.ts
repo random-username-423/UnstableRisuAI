@@ -7,7 +7,6 @@ import { v4 } from "uuid"
 import { convertExternalLorebook } from "./lorebook.svelte"
 import { decodeRPack, encodeRPack } from "../rpack/rpack_bg"
 import { convertImage } from "../parser.svelte"
-import { Capacitor } from "@capacitor/core"
 import { HideIconStore, moduleBackgroundEmbedding, ReloadGUIPointer } from "../stores.svelte"
 import {get} from "svelte/store"
 
@@ -158,7 +157,7 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
             type: 'wait',
             msg: `Loading... (Adding Assets ${i} / ${module.assets.length})`
         })
-        if(!isTauri && !Capacitor.isNativePlatform() &&!isNodeServer){
+        if(!isTauri && !isNodeServer){
             await sleep(100)
         }
         i++

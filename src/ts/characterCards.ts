@@ -13,7 +13,6 @@ import { reencodeImage } from "./process/files/inlays"
 import { PngChunk } from "./pngChunk"
 import type { OnnxModelFiles } from "./process/transformers"
 import { CharXReader, CharXWriter } from "./process/processzip"
-import { Capacitor } from "@capacitor/core"
 import { exportModule, readModule, type RisuModule } from "./process/modules"
 import { readFile } from "@tauri-apps/plugin-fs"
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link';
@@ -1723,11 +1722,11 @@ export async function getRisuHub(arg:{
 }):Promise<hubType[]> {
     try {
         arg.search += ' __shared'
-        const stringArg = `search==${arg.search}&&page==${arg.page}&&nsfw==${arg.nsfw}&&sort==${arg.sort}&&web==${(!isNodeServer && !Capacitor.isNativePlatform() && !isTauri) ? 'web' : 'other'}`
+        const stringArg = `search==${arg.search}&&page==${arg.page}&&nsfw==${arg.nsfw}&&sort==${arg.sort}&&web==${(!isNodeServer && !isTauri) ? 'web' : 'other'}`
 
         const da = await fetch(hubURL + '/realm/' + encodeURIComponent(stringArg), {
             headers: {
-                "x-risuai-info": appVer + ';' + (isNodeServer ? 'node' : (Capacitor.isNativePlatform() ? 'capacitor' : isTauri ? 'tauri' : 'web'))
+                "x-risuai-info": appVer + ';' + (isNodeServer ? 'node' : isTauri ? 'tauri' : 'web')
             }
         })
         if(da.status !== 200){

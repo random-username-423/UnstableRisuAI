@@ -1,6 +1,6 @@
 /**
  * HTTP fetch utilities for RisuAI.
- * Handles fetch requests across different environments (Tauri, Capacitor, Web).
+ * Handles fetch requests across different environments (Tauri, Web).
  */
 
 import { sleep } from './util'
@@ -10,8 +10,6 @@ import { hubURL } from './characterCards'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { fetch as TauriHTTPFetch } from '@tauri-apps/plugin-http'
-import { Capacitor, CapacitorHttp } from '@capacitor/core'
-import { registerPlugin } from '@capacitor/core'
 
 // Environment detection (duplicated to avoid circular dependency with globalApi)
 //@ts-ignore
@@ -86,11 +84,6 @@ interface StreamedFetchEndData {
 
 type StreamedFetchChunk = StreamedFetchChunkData | StreamedFetchHeaderData | StreamedFetchEndData
 
-interface StreamedFetchPlugin {
-    streamedFetch(options: { id: string; url: string; body: string; headers: { [key: string]: string } }): Promise<{ error: string; success: boolean }>
-    addListener(eventName: 'streamed_fetch', listenerFunc: (data: StreamedFetchChunk) => void): void
-}
-
 //
 // Module-level state
 //
@@ -100,7 +93,6 @@ const knownHostes = ['localhost', '127.0.0.1', '0.0.0.0']
 let fetchIndex = 0
 let nativeFetchData: { [key: string]: StreamedFetchChunk[] } = {}
 let streamedFetchListening = false
-let capStreamedFetch: StreamedFetchPlugin | undefined
 
 //
 // Event listeners for streamed fetch
@@ -118,19 +110,6 @@ if (isTauri) {
     }).then(() => {
         streamedFetchListening = true
     })
-}
-
-if (Capacitor.isNativePlatform()) {
-    capStreamedFetch = registerPlugin<StreamedFetchPlugin>('CapacitorHttp', CapacitorHttp)
-
-    capStreamedFetch.addListener('streamed_fetch', (data) => {
-        try {
-            nativeFetchData[data.id]?.push(data)
-        } catch (error) {
-            console.error(error)
-        }
-    })
-    streamedFetchListening = true
 }
 
 //
@@ -303,28 +282,6 @@ async function fetchWithTauri(url: string, arg: GlobalFetchArgs): Promise<Global
     }
 }
 
-async function fetchWithCapacitor(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
-    const { body, headers = {}, rawResponse } = arg
-    headers['Content-Type'] = body instanceof URLSearchParams ? 'application/x-www-form-urlencoded' : 'application/json'
-
-    const res = await CapacitorHttp.request({
-        url,
-        method: arg.method ?? 'POST',
-        headers,
-        data: body,
-        responseType: rawResponse ? 'arraybuffer' : 'json'
-    })
-
-    addFetchLogInGlobalFetch(rawResponse ? 'Uint8Array Response' : res.data, true, url, arg)
-
-    return {
-        ok: true,
-        data: rawResponse ? new Uint8Array(res.data as ArrayBuffer) : res.data,
-        headers: res.headers,
-        status: res.status
-    }
-}
-
 async function fetchWithProxy(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
     try {
         const furl = !isTauri && !isNodeServer ? `${hubURL}/proxy2` : `/proxy2`
@@ -409,9 +366,6 @@ export async function globalFetch(url: string, arg: GlobalFetchArgs = {}): Promi
         }
         if (isTauri) {
             return await fetchWithTauri(url, arg)
-        }
-        if (Capacitor.isNativePlatform()) {
-            return await fetchWithCapacitor(url, arg)
         }
         return await fetchWithProxy(url, arg)
     } catch (error) {
@@ -558,20 +512,6 @@ export async function fetchNative(
                     resolved = true
                 }
             })
-        } else if (capStreamedFetch) {
-            capStreamedFetch
-                .streamedFetch({
-                    id: fetchId,
-                    url: url,
-                    headers: headers,
-                    body: realBody ? Buffer.from(realBody).toString('base64') : ''
-                })
-                .then((res) => {
-                    if (!res.success) {
-                        error = res.error
-                        resolved = true
-                    }
-                })
         }
 
         let resHeaders: { [key: string]: string } | null = null

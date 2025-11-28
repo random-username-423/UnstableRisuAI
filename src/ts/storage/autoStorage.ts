@@ -7,13 +7,11 @@ import { getDatabase, type Database } from "./database.svelte"
 import { AccountStorage } from "./accountStorage"
 import { decodeRisuSave, encodeRisuSaveLegacy } from "./risuSave";
 import { language } from "src/lang"
-import { MobileStorage } from "./mobileStorage"
-import { Capacitor } from "@capacitor/core"
 
 export class AutoStorage{
     isAccount:boolean = false
 
-    realStorage:LocalForage|NodeStorage|OpfsStorage|AccountStorage|MobileStorage
+    realStorage:LocalForage|NodeStorage|OpfsStorage|AccountStorage
 
     async setItem(key:string, value:Uint8Array):Promise<string|null> {
         await this.Init()
@@ -122,10 +120,6 @@ export class AutoStorage{
             if(localStorage.getItem('accountst') === 'able'){
                 this.realStorage = new AccountStorage()
                 this.isAccount = true
-                return
-            }
-            if(Capacitor.isNativePlatform()){
-                this.realStorage = new MobileStorage()
                 return
             }
             if(isNodeServer){

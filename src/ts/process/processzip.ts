@@ -2,7 +2,6 @@ import { AppendableBuffer, isNodeServer, isTauri, saveAsset, type LocalWriter, t
 import * as fflate from "fflate";
 import { sleep } from "../util";
 import { alertStore } from "../alert";
-import { Capacitor } from "@capacitor/core";
 
 export async function processZip(dataArray: Uint8Array): Promise<string> {
     const jszip = await import("jszip");
@@ -223,7 +222,7 @@ export class CharXReader{
                 break
             }
             pointer += 1024 * 1024
-            if(!isTauri && !Capacitor.isNativePlatform() &&!isNodeServer){
+            if(!isTauri && !isNodeServer){
                 const promiseLength = this.assetPromises.length
                 this.assetPromises = []
                 await sleep(promiseLength * 100)

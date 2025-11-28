@@ -1,5 +1,3 @@
-import { Capacitor } from "@capacitor/core";
-
 export function preLoadCheck(){
     const searchParams = new URLSearchParams(location.search);
 
@@ -7,11 +5,10 @@ export function preLoadCheck(){
     const isTauri = !!window.__TAURI_INTERNALS__
     //@ts-ignore
     const isNodeServer = !!globalThis.__NODE__
-    const isCapacitor = Capacitor.isNativePlatform();
 
-    const isWeb = !isTauri && !isNodeServer && location.hostname === 'risuai.xyz' && !isCapacitor;
-    
-    
+    const isWeb = !isTauri && !isNodeServer && location.hostname === 'risuai.xyz';
+
+
     // Check if the user has visited the main page
     if(!isWeb) {
         localStorage.setItem('mainpage', 'visited');
@@ -28,6 +25,6 @@ export function preLoadCheck(){
             e.returnValue = true
         })
     }
-    
+
     return true;
 }

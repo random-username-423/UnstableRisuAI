@@ -26,13 +26,10 @@ import { AutoStorage } from "./storage/autoStorage";
 import { updateAnimationSpeed } from "./gui/animation";
 import { updateColorScheme, updateTextThemeAndCSS } from "./gui/colorscheme";
 import { autoServerBackup, saveDbKei } from "./kei/backup";
-import { Capacitor } from '@capacitor/core';
-import * as CapFS from '@capacitor/filesystem'
 import { save } from "@tauri-apps/plugin-dialog";
 import { language } from "src/lang";
 import { startObserveDom } from "./observer.svelte";
 import { updateGuisize } from "./gui/guisize";
-import { encodeCapKeySafe } from "./storage/mobileStorage";
 import { updateLorebooks } from "./characters";
 import { initMobileGesture } from "./hotkey";
 import { moduleUpdate } from "./process/modules";
@@ -104,25 +101,6 @@ let fileCache:{
     res: []
 }
 
-/**
- * Checks if a file exists in the Capacitor filesystem.
- * 
- * @param {CapFS.GetUriOptions} getUriOptions - The options for getting the URI of the file.
- * @returns {Promise<boolean>} - A promise that resolves to true if the file exists, false otherwise.
- */
-async function checkCapFileExists(getUriOptions: CapFS.GetUriOptions): Promise<boolean> {
-    try {
-        await CapFS.Filesystem.stat(getUriOptions);
-        return true;
-    } catch (checkDirException) {
-        if (checkDirException.message === 'File does not exist') {
-            return false;
-        } else {
-            throw checkDirException;
-        }
-    }
-}
-
 // 에셋 파일 캐시 (IndexedDB 로드 결과를 캐싱)
 const assetFileCache: { [key: string]: string | 'loading' | null } = {}
 
@@ -176,19 +154,6 @@ export async function getFileSrc(loc:string) {
     }
     if(forageStorage.isAccount && loc.startsWith('assets')){
         return hubURL + `/rs/` + loc
-    }
-    if(Capacitor.isNativePlatform()){
-        if(!await checkCapFileExists({
-            path: encodeCapKeySafe(loc),
-            directory: CapFS.Directory.External
-        })){
-            return ''
-        }
-        const uri = await CapFS.Filesystem.getUri({
-            path: encodeCapKeySafe(loc),
-            directory: CapFS.Directory.External
-        })
-        return Capacitor.convertFileSrc(uri.uri)
     }
     try {
         if(usingSw){
@@ -589,7 +554,14 @@ export async function saveDb(){
                         $state.snapshot(DBState.db.characters[selIdState][key])
                     }
                 }
-                $state.snapshot(DBState.db.characters[selIdState].chats)
+                // Track chats length and current chat only (not all chats) for performance
+                const chats = DBState.db.characters[selIdState].chats
+                chats?.length
+                const currentChatPage = DBState.db.characters[selIdState].chatPage
+                const currentChat = chats?.[currentChatPage]
+                if (currentChat) {
+                    $state.snapshot(currentChat)
+                }
                 if(changeTracker.character[0] !== DBState.db.characters[selIdState]?.chaId){
                     changeTracker.character.unshift(DBState.db.characters[selIdState]?.chaId)
                 }
@@ -898,7 +870,7 @@ export async function loadData() {
                     return
                 }
                 LoadingStatusState.text = "Checking Service Worker..."
-                if(navigator.serviceWorker && (!Capacitor.isNativePlatform())){
+                if(navigator.serviceWorker){
                     usingSw = true
                     await registerSw()
                 }
@@ -1511,63 +1483,10 @@ export class TauriWriter{
 }
 
 /**
- * A writer class for mobile environment.
- */
-class MobileWriter{
-    path: string
-    firstWrite: boolean = true
-
-    /**
-     * Creates an instance of MobileWriter.
-     * 
-     * @param {string} path - The file path to write to.
-     */
-    constructor(path: string){
-        this.path = path
-    }
-
-    /**
-     * Writes data to the file.
-     * 
-     * @param {Uint8Array} data - The data to write.
-     */
-    async write(data:Uint8Array) {
-        if(this.firstWrite){
-            if(!await CapFS.Filesystem.checkPermissions()){
-                await CapFS.Filesystem.requestPermissions()
-            }
-            await CapFS.Filesystem.writeFile({
-                path: this.path,
-                data: Buffer.from(data).toString('base64'),
-                recursive: true,
-                directory: CapFS.Directory.Documents
-            })
-        }
-        else{
-            await CapFS.Filesystem.appendFile({
-                path: this.path,
-                data: Buffer.from(data).toString('base64'),
-                directory: CapFS.Directory.Documents
-            })
-        }
-        
-        this.firstWrite = false
-    }
-
-    /**
-     * Closes the writer. (No operation for MobileWriter)
-     */
-    async close(){
-        // do nothing
-    }
-}
-
-
-/**
  * Class representing a local writer.
  */
 export class LocalWriter {
-    writer: WritableStreamDefaultWriter | TauriWriter | MobileWriter
+    writer: WritableStreamDefaultWriter | TauriWriter
 
     /**
      * Initializes the writer.
@@ -1588,10 +1507,6 @@ export class LocalWriter {
                 return false
             }
             this.writer = new TauriWriter(filePath)
-            return true
-        }
-        if (Capacitor.isNativePlatform()) {
-            this.writer = new MobileWriter(name + '.' + ext[0])
             return true
         }
         const streamSaver = await import('streamsaver')

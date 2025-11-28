@@ -1,10 +1,13 @@
 <script>
-    import { onMount, createEventDispatcher } from 'svelte';
+    import { onMount, createEventDispatcher, onDestroy } from 'svelte';
     import { EditIcon, LanguagesIcon } from "lucide-svelte";
-    
+
     import { DBState } from 'src/ts/stores.svelte';
-    import CodeMirror from 'codemirror';
-    import 'codemirror/lib/codemirror.css';
+
+    // CodeMirror 6 imports
+    import { EditorView, lineNumbers, keymap, Decoration } from "@codemirror/view";
+    import { EditorState, StateField, StateEffect } from "@codemirror/state";
+    import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 
     /** @type {{value: any, translate: any}} */
     let { value = $bindable(), translate = $bindable() } = $props();
@@ -18,7 +21,7 @@
 
     const markdowns = [
         {
-            regex: /["“”](.*?)(["“”]|$)/gs,
+            regex: /["""](.*?)(["""]|$)/gs,
             className: "ci-quote",
         },
         {
@@ -39,81 +42,189 @@
         },
     ];
 
+    // StateEffect for updating decorations
+    const setDecorations = StateEffect.define();
+
+    // StateField to hold decorations
+    const decorationsField = StateField.define({
+        create() { return Decoration.none; },
+        update(value, tr) {
+            value = value.map(tr.changes);
+            for (let effect of tr.effects) {
+                if (effect.is(setDecorations)) {
+                    value = effect.value;
+                }
+            }
+            return value;
+        },
+        provide: f => EditorView.decorations.from(f)
+    });
+
+    function createDecorations(doc) {
+        const text = doc.toString();
+        const decorations = [];
+
+        for (const markdown of markdowns) {
+            // Reset regex lastIndex for global regex
+            markdown.regex.lastIndex = 0;
+            for (const match of text.matchAll(markdown.regex)) {
+                const from = match.index;
+                const to = match.index + match[0].length;
+                if (from < to) {
+                    decorations.push(
+                        Decoration.mark({ class: markdown.className }).range(from, to)
+                    );
+                }
+            }
+        }
+
+        // Sort by position (required by CM6)
+        decorations.sort((a, b) => a.from - b.from || a.to - b.to);
+        return Decoration.set(decorations);
+    }
+
+    // Custom theme to match original styling
+    const editorTheme = EditorView.theme({
+        "&": {
+            minHeight: "2em",
+            height: "auto",
+            backgroundColor: "var(--risu-theme-bgcolor)",
+            color: "#DD0"
+        },
+        "&.cm-focused": {
+            backgroundColor: "var(--risu-theme-textcolor2)",
+            outline: "none"
+        },
+        ".cm-gutters": {
+            backgroundColor: "var(--risu-theme-selected)",
+            borderLeftColor: "var(--risu-theme-borderc)",
+            borderRight: "none"
+        },
+        ".cm-content": {
+            caretColor: "#DD0"
+        },
+        ".cm-scroller": {
+            overflow: "auto"
+        }
+    });
+
+    function initEditor(element, initialValue, onChange) {
+        const updateListener = EditorView.updateListener.of((update) => {
+            if (update.docChanged) {
+                // Update decorations
+                const decorations = createDecorations(update.state.doc);
+                update.view.dispatch({
+                    effects: setDecorations.of(decorations)
+                });
+                // Call onChange callback
+                onChange(update.view);
+            }
+        });
+
+        const state = EditorState.create({
+            doc: initialValue ?? '',
+            extensions: [
+                lineNumbers(),
+                history(),
+                keymap.of([...defaultKeymap, ...historyKeymap]),
+                decorationsField,
+                updateListener,
+                editorTheme,
+                EditorView.lineWrapping
+            ]
+        });
+
+        const view = new EditorView({
+            state,
+            parent: element
+        });
+
+        // Initial decoration
+        const decorations = createDecorations(view.state.doc);
+        view.dispatch({ effects: setDecorations.of(decorations) });
+
+        return view;
+    }
+
+    // Helper to get value from editor
+    function getValue(editor, lineSep = '\r\n') {
+        if (!editor) return '';
+        const text = editor.state.doc.toString();
+        // Replace \n with custom line separator if needed
+        return lineSep === '\n' ? text : text.replace(/\n/g, lineSep);
+    }
+
+    // Helper to set value in editor
+    function setValue(editor, text) {
+        if (!editor) return;
+        const currentText = editor.state.doc.toString();
+        if (currentText !== text) {
+            editor.dispatch({
+                changes: { from: 0, to: editor.state.doc.length, insert: text ?? '' }
+            });
+        }
+    }
+
     onMount(() => {
-        veditor = initEditor(velement, value);
-        teditor = initEditor(telement, translate);
-        veditor.on('change', (_, evt) => {
-            if(evt.origin != 'setValue' && !toggleTranslate) {
-                const input = veditor.getValue('\r\n');
-                if(input != value) {
+        veditor = initEditor(velement, value, (view) => {
+            if (!toggleTranslate) {
+                const input = getValue(view);
+                if (input !== value) {
                     value = _value = input;
                     dispatch('change', { translate: false, value: input });
                 }
             }
         });
-        teditor.on('change', (_, evt) => {
-            if(evt.origin != 'setValue' && toggleTranslate) {
-                const input = teditor.getValue('\r\n');
-                if(input != translate) {
+
+        teditor = initEditor(telement, translate, (view) => {
+            if (toggleTranslate) {
+                const input = getValue(view);
+                if (input !== translate) {
                     translate = _translate = input;
                     dispatch('change', { translate: true, value: input });
                 }
             }
         });
+
         toggleTranslateText();
     });
 
+    onDestroy(() => {
+        veditor?.destroy();
+        teditor?.destroy();
+    });
+
     $effect.pre(() => {
-        if(value != _value) {
-            veditor.setValue(_value = value);
+        if (value !== _value && veditor) {
+            _value = value;
+            setValue(veditor, value);
         }
     });
     $effect.pre(() => {
-        if(translate != _translate) {
-            teditor.setValue(_translate = translate);
+        if (translate !== _translate && teditor) {
+            _translate = translate;
+            setValue(teditor, translate);
         }
     });
 
     function toggleTranslateText() {
         toggleTranslate = !toggleTranslate;
-        if(toggleTranslate) {
+        if (toggleTranslate) {
             velement.style.display = "none";
             telement.style.display = null;
-            teditor.refresh();
+            // CM6 doesn't need refresh, but requestMeasure ensures layout
+            teditor?.requestMeasure();
         } else {
             velement.style.display = null;
             telement.style.display = "none";
-            veditor.refresh();
-        }
-    }
-
-    function initEditor(element, value) {
-        const editor = CodeMirror(element, {
-            lineNumbers: true,
-            value: value,
-        });
-        editor.on('change', (sender) => updateMarks(sender.doc));
-        return editor;   
-    }
-
-    function updateMarks(doc) {
-        const text = doc.getValue();
-        for (const mark of doc.getAllMarks()) {
-            mark.clear();
-        }
-        for(const markdown of markdowns) {
-            for (const match of text.matchAll(markdown.regex)) {
-                const start = doc.posFromIndex(match.index);
-                const end = doc.posFromIndex(match.index + match[0].length);
-                doc.markText(start, end, { className: markdown.className });
-            }
+            veditor?.requestMeasure();
         }
     }
 </script>
 
 <div class="flex flex-1 items-end ml-2 mr-2">
     {#if DBState.db.useAutoTranslateInput}
-        <button 
+        <button
             onclick={toggleTranslateText}
             class="mr-2 bg-textcolor2 flex justify-center items-center text-gray-100 w-12 h-12 rounded-md hover:bg-green-500 transition-colors">
         {#if toggleTranslate}
@@ -134,18 +245,9 @@
         table-layout: fixed;
         width: 100%;
     }
-    .chatEditor :global(.CodeMirror) {
+    .chatEditor :global(.cm-editor) {
         min-height: 2em;
         height: auto;
-        background-color: var(--risu-theme-bgcolor);
-        color: #DD0;
-    }
-    .chatEditor :global(.CodeMirror:focus-within) {
-        background-color: var(--risu-theme-textcolor2);
-    }
-    .chatEditor :global(.CodeMirror-gutters) {
-        background-color: var(--risu-theme-selected);
-        border-left-color: var(--risu-theme-borderc);
     }
     .chatEditor :global(.ci-quote) {
         color: #FFF;

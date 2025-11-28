@@ -25,8 +25,8 @@ export async function shareRealmCardData():Promise<{ name: ArrayBuffer; data: Ar
         msg: ''
     })
     return {
-        name: namebuf.buffer,
-        data: writer.buf.buffer.buffer
+        name: namebuf.buffer as ArrayBuffer,
+        data: writer.buf.buffer.buffer as ArrayBuffer
     }
 }
 
