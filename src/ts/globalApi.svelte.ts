@@ -2,13 +2,10 @@ import {
     writeFile,
     BaseDirectory,
     readFile,
-    exists,
-    mkdir,
-    readDir,
-    remove
+    exists
 } from "@tauri-apps/plugin-fs"
 import { changeFullscreen, checkNullish, findCharacterbyId, sleep } from "./util"
-import { convertFileSrc, invoke } from "@tauri-apps/api/core"
+import { convertFileSrc } from "@tauri-apps/api/core"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { appDataDir, join } from "@tauri-apps/api/path";
 import { get } from "svelte/store";
@@ -29,22 +26,34 @@ import { AutoStorage } from "./storage/autoStorage";
 import { updateAnimationSpeed } from "./gui/animation";
 import { updateColorScheme, updateTextThemeAndCSS } from "./gui/colorscheme";
 import { autoServerBackup, saveDbKei } from "./kei/backup";
-import { Capacitor, CapacitorHttp } from '@capacitor/core';
+import { Capacitor } from '@capacitor/core';
 import * as CapFS from '@capacitor/filesystem'
 import { save } from "@tauri-apps/plugin-dialog";
-import { listen } from '@tauri-apps/api/event'
-import { registerPlugin } from '@capacitor/core';
 import { language } from "src/lang";
 import { startObserveDom } from "./observer.svelte";
 import { updateGuisize } from "./gui/guisize";
 import { encodeCapKeySafe } from "./storage/mobileStorage";
 import { updateLorebooks } from "./characters";
 import { initMobileGesture } from "./hotkey";
-import { fetch as TauriHTTPFetch } from '@tauri-apps/plugin-http';
 import { moduleUpdate } from "./process/modules";
 import type { AccountStorage } from "./storage/accountStorage";
 import { makeColdData } from "./process/coldstorage.svelte";
 import { platform } from '@tauri-apps/plugin-os';
+import { migrateOPFSAssetsToIndexedDB, migrateTauriFsAssetsToIndexedDB, migrateWebDBtoOPFS } from './storage/migration';
+import { AppendableBuffer } from './fetch';
+
+// Re-export fetch utilities
+export {
+    globalFetch,
+    fetchNative,
+    addFetchLog,
+    getFetchData,
+    getRequestLog,
+    textifyReadableStream,
+    AppendableBuffer,
+    type GlobalFetchArgs,
+    type GlobalFetchResult
+} from './fetch';
 
 //@ts-ignore
 export const isTauri = !!window.__TAURI_INTERNALS__
@@ -55,19 +64,6 @@ export const googleBuild = false
 export const isMobile = navigator.userAgent.match(/(iPad)|(iPhone)|(iPod)|(android)|(webOS)/i)
 
 const appWindow = isTauri ? getCurrentWebviewWindow() : null
-
-interface fetchLog{
-    body:string
-    header:string
-    response:string
-    success:boolean,
-    date:string
-    url:string
-    responseType?:string
-    chatId?:string
-}
-
-let fetchLog:fetchLog[] = []
 
 export async function downloadFile(name:string, dat:Uint8Array|ArrayBuffer|string) {
     if(typeof(dat) === 'string'){
@@ -354,7 +350,7 @@ let pendingLoads = new Map<string, { resolve: (data: Uint8Array | null) => void,
 let pendingLists = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
 let pendingDeletes = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
 
-async function initOPFSWorker(): Promise<void> {
+export async function initOPFSWorker(): Promise<void> {
     if (opfsWorker || isNodeServer) return
 
     try {
@@ -710,203 +706,23 @@ async function getDbBackups() {
     if(db?.account?.useSync && !isTauri && !isNodeServer){
         return []
     }
-    if(isTauri){
-        const keys = await readDir('database', {baseDir: BaseDirectory.AppData})
-        let backups:number[] = []
-        for(const key of keys){
-            if(key.name.startsWith("dbbackup-")){
-                let da = key.name.substring(9)
-                da = da.substring(0,da.length-4)
-                backups.push(parseInt(da))
-            }
-        }
-        backups.sort((a, b) => b - a)
-        const maxBackups = db.maxDbBackups ?? 20
-        while(backups.length > maxBackups){
-            const last = backups.pop()
-            await remove(`database/dbbackup-${last}.bin`,{baseDir: BaseDirectory.AppData})
-        }
-        return backups
-    }
-    else{
-        // 웹도 OPFS에서 백업 목록 가져오기
-        const files = await listFromWorker('database')
+    // Both Tauri and web use OPFS for database storage now
+    const files = await listFromWorker('database')
 
-        const backups = files
-          .filter(file => file.startsWith('dbbackup-'))
-          .map(file => parseInt(file.slice(9, -4)))
-          .sort((a, b) => b - a);
+    const backups = files
+      .filter(file => file.startsWith('dbbackup-'))
+      .map(file => parseInt(file.slice(9, -4)))
+      .sort((a, b) => b - a);
 
-        const maxBackups = db.maxDbBackups ?? 20
-        while(backups.length > maxBackups){
-            const last = backups.pop()
-            await deleteFromWorker(`database/dbbackup-${last}.bin`)
-        }
-        return backups
+    const maxBackups = db.maxDbBackups ?? 20
+    while(backups.length > maxBackups){
+        const last = backups.pop()
+        await deleteFromWorker(`database/dbbackup-${last}.bin`)
     }
+    return backups
 }
 
 let usingSw = false
-
-/**
- * Migrates assets from OPFS to IndexedDB (forageStorage).
- * Called once on app startup if not already migrated.
- */
-async function migrateOPFStoIndexedDB(): Promise<void> {
-    if (!isTauri) return
-
-    // 이미 마이그레이션 완료 체크
-    const migrationDone = await forageStorage.getItem('__opfs_asset_migration_done__')
-    if (migrationDone) return
-
-    // OPFS Worker 초기화
-    await initOPFSWorker()
-
-    // OPFS에서 에셋 목록 가져오기
-    const opfsAssets = await listFromWorker('assets')
-    if (opfsAssets.length === 0) {
-        // 에셋이 없으면 마이그레이션 완료로 표시
-        await forageStorage.setItem('__opfs_asset_migration_done__', new Uint8Array([1]))
-        return
-    }
-
-    console.log(`[Migration] Starting OPFS → IndexedDB migration for ${opfsAssets.length} assets`)
-    alertWait(`에셋 마이그레이션 중... (0 / ${opfsAssets.length})`)
-
-    for (let i = 0; i < opfsAssets.length; i++) {
-        const name = opfsAssets[i]
-        alertWait(`에셋 마이그레이션 중... (${i + 1} / ${opfsAssets.length})`)
-
-        const data = await loadFromWorker('assets/' + name)
-        if (data) {
-            await forageStorage.setItem('assets/' + name, data)
-        }
-    }
-
-    // 마이그레이션 완료 플래그 저장
-    await forageStorage.setItem('__opfs_asset_migration_done__', new Uint8Array([1]))
-    console.log('[Migration] OPFS → IndexedDB migration completed')
-
-    // OPFS 에셋 삭제 (공간 확보)
-    alertWait('OPFS 정리 중...')
-    for (const name of opfsAssets) {
-        await deleteFromWorker('assets/' + name)
-    }
-    console.log('[Migration] OPFS assets cleaned up')
-}
-
-/**
- * Migrates assets from Tauri fs (AppData) to IndexedDB (forageStorage).
- * Called once on app startup if not already migrated.
- * This handles legacy data from before the storage architecture change.
- */
-async function migrateTauriFsToIndexedDB(): Promise<void> {
-    if (!isTauri) return
-
-    // 이미 마이그레이션 완료 체크
-    const migrationDone = await forageStorage.getItem('__taurifs_asset_migration_done__')
-    if (migrationDone) return
-
-    // Tauri fs에 assets 폴더가 있는지 확인
-    try {
-        const assetsExist = await exists('assets', { baseDir: BaseDirectory.AppData })
-        if (!assetsExist) {
-            // assets 폴더가 없으면 마이그레이션 완료로 표시
-            await forageStorage.setItem('__taurifs_asset_migration_done__', new Uint8Array([1]))
-            return
-        }
-
-        const assets = await readDir('assets', { baseDir: BaseDirectory.AppData })
-        if (assets.length === 0) {
-            await forageStorage.setItem('__taurifs_asset_migration_done__', new Uint8Array([1]))
-            return
-        }
-
-        console.log(`[Migration] Starting Tauri fs → IndexedDB migration for ${assets.length} assets`)
-        alertWait(`Tauri fs 에셋 마이그레이션 중... (0 / ${assets.length})`)
-
-        let migratedCount = 0
-        for (let i = 0; i < assets.length; i++) {
-            const asset = assets[i]
-            if (!asset.name || asset.isDirectory) continue
-
-            alertWait(`Tauri fs 에셋 마이그레이션 중... (${i + 1} / ${assets.length})`)
-
-            // IndexedDB에 이미 있는지 확인
-            const key = 'assets/' + asset.name
-            const existing = await forageStorage.getItem(key)
-            if (existing) {
-                continue // 이미 있으면 스킵
-            }
-
-            // Tauri fs에서 읽어서 IndexedDB에 저장
-            try {
-                const data = await readFile('assets/' + asset.name, { baseDir: BaseDirectory.AppData })
-                if (data && data.byteLength > 0) {
-                    await forageStorage.setItem(key, data)
-                    migratedCount++
-                }
-            } catch (e) {
-                console.warn(`[Migration] Failed to migrate asset: ${asset.name}`, e)
-            }
-        }
-
-        // 마이그레이션 완료 플래그 저장
-        await forageStorage.setItem('__taurifs_asset_migration_done__', new Uint8Array([1]))
-        console.log(`[Migration] Tauri fs → IndexedDB migration completed (${migratedCount} assets migrated)`)
-    } catch (e) {
-        console.warn('[Migration] Tauri fs migration failed:', e)
-        // 에러가 나도 완료로 표시 (무한 루프 방지)
-        await forageStorage.setItem('__taurifs_asset_migration_done__', new Uint8Array([1]))
-    }
-}
-
-/**
- * 웹에서 IndexedDB의 DB를 OPFS로 마이그레이션
- * 에셋은 IndexedDB에 유지, DB만 OPFS로 이동
- */
-async function migrateWebDBtoOPFS(): Promise<void> {
-    if (isTauri) return
-
-    // 이미 마이그레이션 완료 체크
-    const migrationDone = await loadFromWorker('__web_db_migration_done__')
-    if (migrationDone) return
-
-    // IndexedDB에서 DB 확인
-    const indexedDBData = await forageStorage.getItem('database/database.bin') as unknown as Uint8Array
-    if (!indexedDBData) {
-        // IndexedDB에 DB가 없으면 마이그레이션 완료로 표시
-        await saveToWorker('__web_db_migration_done__', new Uint8Array([1]))
-        return
-    }
-
-    console.log('[Migration] Starting Web IndexedDB → OPFS migration for DB')
-    alertWait('DB 마이그레이션 중...')
-
-    // DB를 OPFS로 복사
-    await saveToWorker('database/database.bin', indexedDBData)
-
-    // 백업 파일들도 마이그레이션
-    const keys = await forageStorage.keys()
-    const backupKeys = keys.filter(k => k.startsWith('database/dbbackup-'))
-    for (const key of backupKeys) {
-        const backupData = await forageStorage.getItem(key) as unknown as Uint8Array
-        if (backupData) {
-            await saveToWorker(key, backupData)
-        }
-    }
-
-    // 마이그레이션 완료 플래그 저장
-    await saveToWorker('__web_db_migration_done__', new Uint8Array([1]))
-    console.log('[Migration] Web IndexedDB → OPFS migration completed')
-
-    // IndexedDB에서 DB 삭제 (공간 확보)
-    await forageStorage.removeItem('database/database.bin')
-    for (const key of backupKeys) {
-        await forageStorage.removeItem(key)
-    }
-    console.log('[Migration] IndexedDB DB cleaned up')
-}
 
 /**
  * Loads the application data.
@@ -928,26 +744,15 @@ export async function loadData() {
                     appWindow.maximize()
                 }
 
-                // Tauri용 디렉토리 생성 (assets 저장용)
-                if(!await exists('', {baseDir: BaseDirectory.AppData})){
-                    await mkdir('', {baseDir: BaseDirectory.AppData})
-                }
-                if(!await exists('database', {baseDir: BaseDirectory.AppData})){
-                    await mkdir('database', {baseDir: BaseDirectory.AppData})
-                }
-                if(!await exists('assets', {baseDir: BaseDirectory.AppData})){
-                    await mkdir('assets', {baseDir: BaseDirectory.AppData})
-                }
-
                 // OPFS Worker 초기화 (ready 신호까지 대기)
                 await initOPFSWorker()
 
                 // OPFS → IndexedDB 에셋 마이그레이션 (최초 1회)
                 LoadingStatusState.text = "Checking asset migration..."
-                await migrateOPFStoIndexedDB()
+                await migrateOPFSAssetsToIndexedDB()
 
                 // Tauri fs → IndexedDB 에셋 마이그레이션 (레거시 데이터용)
-                await migrateTauriFsToIndexedDB()
+                await migrateTauriFsAssetsToIndexedDB()
 
                 // OPFS에서 먼저 로드 시도
                 LoadingStatusState.text = "Reading Save File..."
@@ -1174,21 +979,6 @@ export async function loadData() {
 }
 
 /**
- * Retrieves fetch data for a given chat ID.
- * 
- * @param {string} id - The chat ID to search for in the fetch log.
- * @returns {fetchLog | null} - The fetch log entry if found, otherwise null.
- */
-export async function getFetchData(id: string) {
-  for (const log of fetchLog) {
-    if (log.chatId === id) {
-      return log;
-    }
-  }
-  return null;
-}
-
-/**
  * Updates the error handling by removing the default handler and adding custom handlers for errors and unhandled promise rejections.
  */
 function updateErrorHandling() {
@@ -1202,293 +992,6 @@ function updateErrorHandling() {
   };
   window.addEventListener('error', errorHandler);
   window.addEventListener('unhandledrejection', rejectHandler);
-}
-
-const knownHostes = ["localhost", "127.0.0.1", "0.0.0.0"];
-
-/**
- * Interface representing the arguments for the global fetch function.
- * 
- * @interface GlobalFetchArgs
- * @property {boolean} [plainFetchForce] - Whether to force plain fetch.
- * @property {any} [body] - The body of the request.
- * @property {{ [key: string]: string }} [headers] - The headers of the request.
- * @property {boolean} [rawResponse] - Whether to return the raw response.
- * @property {'POST' | 'GET'} [method] - The HTTP method to use.
- * @property {AbortSignal} [abortSignal] - The abort signal to cancel the request.
- * @property {boolean} [useRisuToken] - Whether to use the Risu token.
- * @property {string} [chatId] - The chat ID associated with the request.
- */
-interface GlobalFetchArgs {
-  plainFetchForce?: boolean;
-  plainFetchDeforce?: boolean;
-  body?: any;
-  headers?: { [key: string]: string };
-  rawResponse?: boolean;
-  method?: 'POST' | 'GET';
-  abortSignal?: AbortSignal;
-  useRisuToken?: boolean;
-  chatId?: string;
-}
-
-/**
- * Interface representing the result of the global fetch function.
- * 
- * @interface GlobalFetchResult
- * @property {boolean} ok - Whether the request was successful.
- * @property {any} data - The data returned from the request.
- * @property {{ [key: string]: string }} headers - The headers returned from the request.
- */
-interface GlobalFetchResult {
-  ok: boolean;
-  data: any;
-  headers: { [key: string]: string };
-  status: number;
-}
-
-/**
- * Adds a fetch log entry.
- * 
- * @param {Object} arg - The arguments for the fetch log entry.
- * @param {any} arg.body - The body of the request.
- * @param {{ [key: string]: string }} [arg.headers] - The headers of the request.
- * @param {any} arg.response - The response from the request.
- * @param {boolean} arg.success - Whether the request was successful.
- * @param {string} arg.url - The URL of the request.
- * @param {string} [arg.resType] - The response type.
- * @param {string} [arg.chatId] - The chat ID associated with the request.
- * @returns {number} - The index of the added fetch log entry.
- */
-export function addFetchLog(arg: {
-  body: any,
-  headers?: { [key: string]: string },
-  response: any,
-  success: boolean,
-  url: string,
-  resType?: string,
-  chatId?: string
-}): number {
-  fetchLog.unshift({
-    body: typeof (arg.body) === 'string' ? arg.body : JSON.stringify(arg.body, null, 2),
-    header: JSON.stringify(arg.headers ?? {}, null, 2),
-    response: typeof (arg.response) === 'string' ? arg.response : JSON.stringify(arg.response, null, 2),
-    responseType: arg.resType ?? 'json',
-    success: arg.success,
-    date: (new Date()).toLocaleTimeString(),
-    url: arg.url,
-    chatId: arg.chatId
-  });
-  return 0;
-}
-
-/**
- * Performs a global fetch request.
- * 
- * @param {string} url - The URL to fetch.
- * @param {GlobalFetchArgs} [arg={}] - The arguments for the fetch request.
- * @returns {Promise<GlobalFetchResult>} - The result of the fetch request.
- */
-export async function globalFetch(url: string, arg: GlobalFetchArgs = {}): Promise<GlobalFetchResult> {
-  try {
-    const db = getDatabase();
-    const method = arg.method ?? "POST";
-    db.requestmet = "normal";
-
-    if (arg.abortSignal?.aborted) { return { ok: false, data: 'aborted', headers: {}, status: 400 }; }
-
-    const urlHost = new URL(url).hostname
-    const forcePlainFetch = ((knownHostes.includes(urlHost) && !isTauri) || db.usePlainFetch || arg.plainFetchForce) && !arg.plainFetchDeforce
-
-    if (knownHostes.includes(urlHost) && !isTauri && !isNodeServer) {
-      return { ok: false, headers: {}, status:400, data: 'You are trying local request on web version. This is not allowed due to browser security policy. Use the desktop version instead, or use a tunneling service like ngrok and set the CORS to allow all.' };
-    }
-
-    if (forcePlainFetch) {
-      return await fetchWithPlainFetch(url, arg);
-    }
-    //userScriptFetch is provided by userscript
-    if(window.userScriptFetch){
-        return await fetchWithUSFetch(url, arg);
-    }
-    if (isTauri) {
-      return await fetchWithTauri(url, arg);
-    }
-    if (Capacitor.isNativePlatform()) {
-      return await fetchWithCapacitor(url, arg);
-    }
-    return await fetchWithProxy(url, arg);
-
-  } catch (error) {
-    console.error(error);
-    return { ok: false, data: `${error}`, headers: {}, status: 400 };
-  }
-}
-
-/**
- * Adds a fetch log entry in the global fetch log.
- * 
- * @param {any} response - The response data.
- * @param {boolean} success - Indicates if the fetch was successful.
- * @param {string} url - The URL of the fetch request.
- * @param {GlobalFetchArgs} arg - The arguments for the fetch request.
- */
-function addFetchLogInGlobalFetch(response:any, success:boolean, url:string, arg:GlobalFetchArgs){
-    try{
-        fetchLog.unshift({
-            body: JSON.stringify(arg.body, null, 2),
-            header: JSON.stringify(arg.headers ?? {}, null, 2),
-            response: JSON.stringify(response, null, 2),
-            success: success,
-            date: (new Date()).toLocaleTimeString(),
-            url: url,
-            chatId: arg.chatId
-        })
-    }
-    catch{
-        fetchLog.unshift({
-            body: JSON.stringify(arg.body, null, 2),
-            header: JSON.stringify(arg.headers ?? {}, null, 2),
-            response: `${response}`,
-            success: success,
-            date: (new Date()).toLocaleTimeString(),
-            url: url,
-            chatId: arg.chatId
-        })
-    }
-
-    if(fetchLog.length > 20){
-        fetchLog.pop()
-    }
-}
-
-/**
- * Performs a fetch request using plain fetch.
- * 
- * @param {string} url - The URL to fetch.
- * @param {GlobalFetchArgs} arg - The arguments for the fetch request.
- * @returns {Promise<GlobalFetchResult>} - The result of the fetch request.
- */
-async function fetchWithPlainFetch(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
-  try {
-    const headers = { 'Content-Type': 'application/json', ...arg.headers };
-    const response = await fetch(new URL(url), { body: JSON.stringify(arg.body), headers, method: arg.method ?? "POST", signal: arg.abortSignal });
-    const data = arg.rawResponse ? new Uint8Array(await response.arrayBuffer()) : await response.json();
-    const ok = response.ok && response.status >= 200 && response.status < 300;
-    addFetchLogInGlobalFetch(data, ok, url, arg);
-    return { ok, data, headers: Object.fromEntries(response.headers), status: response.status };
-  } catch (error) {
-    return { ok: false, data: `${error}`, headers: {}, status: 400 };
-  }
-}
-
-/**
- * Performs a fetch request using userscript provided fetch.
- * 
- * @param {string} url - The URL to fetch.
- * @param {GlobalFetchArgs} arg - The arguments for the fetch request.
- * @returns {Promise<GlobalFetchResult>} - The result of the fetch request.
- */
-async function fetchWithUSFetch(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
-    try {
-      const headers = { 'Content-Type': 'application/json', ...arg.headers };
-      const response = await userScriptFetch(url, { body: JSON.stringify(arg.body), headers, method: arg.method ?? "POST", signal: arg.abortSignal });
-      const data = arg.rawResponse ? new Uint8Array(await response.arrayBuffer()) : await response.json();
-      const ok = response.ok && response.status >= 200 && response.status < 300;
-      addFetchLogInGlobalFetch(data, ok, url, arg);
-      return { ok, data, headers: Object.fromEntries(response.headers), status: response.status };
-    } catch (error) {
-      return { ok: false, data: `${error}`, headers: {}, status: 400 };
-    }
-  }
-
-/**
- * Performs a fetch request using Tauri.
- * 
- * @param {string} url - The URL to fetch.
- * @param {GlobalFetchArgs} arg - The arguments for the fetch request.
- * @returns {Promise<GlobalFetchResult>} - The result of the fetch request.
- */
-async function fetchWithTauri(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
-    try {
-        const headers = { 'Content-Type': 'application/json', ...arg.headers };
-        const response = await TauriHTTPFetch(new URL(url), { body: JSON.stringify(arg.body), headers, method: arg.method ?? "POST", signal: arg.abortSignal });
-        const data = arg.rawResponse ? new Uint8Array(await response.arrayBuffer()) : await response.json();
-        const ok = response.status >= 200 && response.status < 300;
-        addFetchLogInGlobalFetch(data, ok, url, arg);
-        return { ok, data, headers: Object.fromEntries(response.headers), status: response.status };
-    } catch (error) {
-        
-    }
-}
-
-// Decoupled globalFetch built-in function
-async function fetchWithCapacitor(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
-  const { body, headers = {}, rawResponse } = arg;
-  headers["Content-Type"] = body instanceof URLSearchParams ? "application/x-www-form-urlencoded" : "application/json";
-
-  const res = await CapacitorHttp.request({ url, method: arg.method ?? "POST", headers, data: body, responseType: rawResponse ? "arraybuffer" : "json" });
-
-  addFetchLogInGlobalFetch(rawResponse ? "Uint8Array Response" : res.data, true, url, arg);
-
-  return {
-    ok: true,
-    data: rawResponse ? new Uint8Array(res.data as ArrayBuffer) : res.data,
-    headers: res.headers,
-    status: res.status
-  };
-}
-
-/**
- * Performs a fetch request using a proxy.
- * 
- * @param {string} url - The URL to fetch.
- * @param {GlobalFetchArgs} arg - The arguments for the fetch request.
- * @returns {Promise<GlobalFetchResult>} - The result of the fetch request.
- */
-async function fetchWithProxy(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
-  try {
-    const furl = !isTauri && !isNodeServer ? `${hubURL}/proxy2` : `/proxy2`;
-    arg.headers["Content-Type"] ??= arg.body instanceof URLSearchParams ? "application/x-www-form-urlencoded" : "application/json";
-    const headers = {
-      "risu-header": encodeURIComponent(JSON.stringify(arg.headers)),
-      "risu-url": encodeURIComponent(url),
-      "Content-Type": arg.body instanceof URLSearchParams ? "application/x-www-form-urlencoded" : "application/json",
-      ...(arg.useRisuToken && { "x-risu-tk": "use" }),
-      ...(DBState?.db?.requestLocation && { "risu-location": DBState.db.requestLocation }),
-    };
-
-    // Add risu-auth header for Node.js server
-    if (isNodeServer) {
-      const auth = localStorage.getItem('risuauth');
-      if (auth) {
-        headers["risu-auth"] = auth;
-      }
-    }
-
-    const body = arg.body instanceof URLSearchParams ? arg.body.toString() : JSON.stringify(arg.body);
-
-    const response = await fetch(furl, { body, headers, method: arg.method ?? "POST", signal: arg.abortSignal });
-    const isSuccess = response.ok && response.status >= 200 && response.status < 300;
-
-    if (arg.rawResponse) {
-      const data = new Uint8Array(await response.arrayBuffer());
-      addFetchLogInGlobalFetch("Uint8Array Response", isSuccess, url, arg);
-      return { ok: isSuccess, data, headers: Object.fromEntries(response.headers), status: response.status };
-    }
-
-    const text = await response.text();
-    try {
-      const data = JSON.parse(text);
-      addFetchLogInGlobalFetch(data, isSuccess, url, arg);
-      return { ok: isSuccess, data, headers: Object.fromEntries(response.headers), status: response.status };
-    } catch (error) {
-      const errorMsg = text.startsWith('<!DOCTYPE') ? "Responded HTML. Is your URL, API key, and password correct?" : text;
-      addFetchLogInGlobalFetch(text, false, url, arg);
-      return { ok: false, data: errorMsg, headers: Object.fromEntries(response.headers), status: response.status };
-    }
-  } catch (error) {
-    return { ok: false, data: `${error}`, headers: {}, status: 400 };
-  }
 }
 
 /**
@@ -1863,6 +1366,7 @@ export function checkCharOrder() {
 /**
  * Purges chunks of data that are not needed.
  * Removes files from the assets directory that are not in the list of unpargeable items.
+ * Both Tauri and web use IndexedDB (forageStorage) for asset storage now.
  */
 async function pargeChunks(){
     const db = getDatabase()
@@ -1871,55 +1375,16 @@ async function pargeChunks(){
     }
 
     const unpargeable = new Set(getUnpargeables(db))
-    if(isTauri){
-        const assets = await readDir('assets', {baseDir: BaseDirectory.AppData})
-        console.log(assets)
-        for(const asset of assets){
-            try {
-                const n = getBasename(asset.name)
-                if(unpargeable.has(n)){
-                    console.log('unpargeable', n)
-                }
-                else{
-                    console.log('pargeable', n)
-                    await remove('assets/' + asset.name, {baseDir: BaseDirectory.AppData})
-                }
-            } catch (error) {
-                console.log('error', asset.name)
-            }
+    const indexes = await forageStorage.keys()
+    for(const asset of indexes){
+        if(!asset.startsWith('assets/')){
+            continue
+        }
+        const n = getBasename(asset)
+        if(!unpargeable.has(n)){
+            await forageStorage.removeItem(asset)
         }
     }
-    else{
-        const indexes = await forageStorage.keys()
-        for(const asset of indexes){
-            if(!asset.startsWith('assets/')){
-                continue
-            }
-            const n = getBasename(asset)
-            if(unpargeable.has(n)){
-            }
-            else{
-                await forageStorage.removeItem(asset)
-            }
-        }
-    }
-}
-
-/**
- * Retrieves the request log as a formatted string.
- * 
- * @returns {string} The formatted request log.
- */
-export function getRequestLog(){
-    let logString = ''
-    const b = '\n\`\`\`json\n'
-    const bend = '\n\`\`\`\n'
-
-    for(const log of fetchLog){
-        logString += `## ${log.date}\n\n* Request URL\n\n${b}${log.url}${bend}\n\n* Request Body\n\n${b}${log.body}${bend}\n\n* Request Header\n\n${b}${log.header}${bend}\n\n`
-                    + `* Response Body\n\n${b}${log.response}${bend}\n\n* Response Success\n\n${b}${log.success}${bend}\n\n`
-    }
-    return logString
 }
 
 /**
@@ -2192,426 +1657,6 @@ export class VirtualWriter {
 }
 
 /**
- * Index for fetch operations.
- * @type {number}
- */
-let fetchIndex = 0
-
-/**
- * Stores native fetch data.
- * @type {{ [key: string]: StreamedFetchChunk[] }}
- */
-let nativeFetchData: { [key: string]: StreamedFetchChunk[] } = {}
-
-/**
- * Interface representing a streamed fetch chunk data.
- * @interface
- */
-interface StreamedFetchChunkData {
-    type: 'chunk',
-    body: string,
-    id: string
-}
-
-/**
- * Interface representing a streamed fetch header data.
- * @interface
- */
-interface StreamedFetchHeaderData {
-    type: 'headers',
-    body: { [key: string]: string },
-    id: string,
-    status: number
-}
-
-/**
- * Interface representing a streamed fetch end data.
- * @interface
- */
-interface StreamedFetchEndData {
-    type: 'end',
-    id: string
-}
-
-/**
- * Type representing a streamed fetch chunk.
- * @typedef {StreamedFetchChunkData | StreamedFetchHeaderData | StreamedFetchEndData} StreamedFetchChunk
- */
-type StreamedFetchChunk = StreamedFetchChunkData | StreamedFetchHeaderData | StreamedFetchEndData
-
-/**
- * Interface representing a streamed fetch plugin.
- * @interface
- */
-interface StreamedFetchPlugin {
-    /**
-     * Performs a streamed fetch operation.
-     * @param {Object} options - The options for the fetch operation.
-     * @param {string} options.id - The ID of the fetch operation.
-     * @param {string} options.url - The URL to fetch.
-     * @param {string} options.body - The body of the fetch request.
-     * @param {{ [key: string]: string }} options.headers - The headers of the fetch request.
-     * @returns {Promise<{ error: string, success: boolean }>} - The result of the fetch operation.
-     */
-    streamedFetch(options: { id: string, url: string, body: string, headers: { [key: string]: string } }): Promise<{ "error": string, "success": boolean }>;
-
-    /**
-     * Adds a listener for the specified event.
-     * @param {string} eventName - The name of the event.
-     * @param {(data: StreamedFetchChunk) => void} listenerFunc - The function to call when the event is triggered.
-     */
-    addListener(eventName: 'streamed_fetch', listenerFunc: (data: StreamedFetchChunk) => void): void;
-}
-
-/**
- * Indicates whether streamed fetch listening is active.
- * @type {boolean}
- */
-let streamedFetchListening = false
-
-/**
- * The streamed fetch plugin instance.
- * @type {StreamedFetchPlugin | undefined}
- */
-let capStreamedFetch: StreamedFetchPlugin | undefined
-
-if (isTauri) {
-    listen('streamed_fetch', (event) => {
-        try {
-            const parsed = JSON.parse(event.payload as string)
-            const id = parsed.id
-            nativeFetchData[id]?.push(parsed)
-        } catch (error) {
-            console.error(error)
-        }
-    }).then((v) => {
-        streamedFetchListening = true
-    })
-}
-
-if (Capacitor.isNativePlatform()) {
-    capStreamedFetch = registerPlugin<StreamedFetchPlugin>('CapacitorHttp', CapacitorHttp)
-
-    capStreamedFetch.addListener('streamed_fetch', (data) => {
-        try {
-            nativeFetchData[data.id]?.push(data)
-        } catch (error) {
-            console.error(error)
-        }
-    })
-    streamedFetchListening = true
-}
-
-/**
- * A class to manage a buffer that can be appended to and deappended from.
- */
-export class AppendableBuffer {
-    buffer: Uint8Array
-    deapended: number = 0
-
-    /**
-     * Creates an instance of AppendableBuffer.
-     */
-    constructor() {
-        this.buffer = new Uint8Array(0)
-    }
-
-    /**
-     * Appends data to the buffer.
-     * @param {Uint8Array} data - The data to append.
-     */
-    append(data: Uint8Array) {
-        const newBuffer = new Uint8Array(this.buffer.length + data.length)
-        newBuffer.set(this.buffer, 0)
-        newBuffer.set(data, this.buffer.length)
-        this.buffer = newBuffer
-    }
-
-    /**
-     * Deappends a specified length from the buffer.
-     * @param {number} length - The length to deappend.
-     */
-    deappend(length: number) {
-        this.buffer = this.buffer.slice(length)
-        this.deapended += length
-    }
-
-    /**
-     * Slices the buffer from start to end.
-     * @param {number} start - The start index.
-     * @param {number} end - The end index.
-     * @returns {Uint8Array} - The sliced buffer.
-     */
-    slice(start: number, end: number) {
-        return this.buffer.slice(start - this.deapended, end - this.deapended)
-    }
-
-    /**
-     * Gets the total length of the buffer including deappended length.
-     * @returns {number} - The total length.
-     */
-    length() {
-        return this.buffer.length + this.deapended
-    }
-}
-
-/**
- * Pipes the fetch log to a readable stream.
- * @param {number} fetchLogIndex - The index of the fetch log.
- * @param {ReadableStream<Uint8Array>} readableStream - The readable stream to pipe.
- * @returns {ReadableStream<Uint8Array>} - The new readable stream.
- */
-const pipeFetchLog = (fetchLogIndex: number, readableStream: ReadableStream<Uint8Array>) => {
-    let textDecoderBuffer = new AppendableBuffer()
-    let textDecoderPointer = 0
-    const textDecoder = TextDecoderStream ? (new TextDecoderStream()) : new TransformStream<Uint8Array, string>({
-        transform(chunk, controller) {
-            try {
-                textDecoderBuffer.append(chunk)
-                const decoded = new TextDecoder('utf-8', {
-                    fatal: true
-                }).decode(textDecoderBuffer.buffer)
-                let newString = decoded.slice(textDecoderPointer)
-                textDecoderPointer = decoded.length
-                controller.enqueue(newString)
-            } catch { }
-        }
-    })
-    textDecoder.readable.pipeTo(new WritableStream({
-        write(chunk) {
-            fetchLog[fetchLogIndex].response += chunk
-        }
-    }))
-    const writer = textDecoder.writable.getWriter()
-    return new ReadableStream<Uint8Array>({
-        start(controller) {
-            readableStream.pipeTo(new WritableStream({
-                write(chunk) {
-                    controller.enqueue(chunk)
-                    writer.write(chunk as any)
-                },
-                close() {
-                    controller.close()
-                    writer.close()
-                }
-            }))
-        }
-    })
-}
-
-/**
- * Fetches data from a given URL using native fetch or through a proxy.
- * @param {string} url - The URL to fetch data from.
- * @param {Object} arg - The arguments for the fetch request.
- * @param {string} arg.body - The body of the request.
- * @param {Object} [arg.headers] - The headers of the request.
- * @param {string} [arg.method="POST"] - The HTTP method of the request.
- * @param {AbortSignal} [arg.signal] - The signal to abort the request.
- * @param {boolean} [arg.useRisuTk] - Whether to use Risu token.
- * @param {string} [arg.chatId] - The chat ID associated with the request.
- * @returns {Promise<Object>} - A promise that resolves to an object containing the response body, headers, and status.
- * @returns {ReadableStream<Uint8Array>} body - The response body as a readable stream.
- * @returns {Headers} headers - The response headers.
- * @returns {number} status - The response status code.
- * @throws {Error} - Throws an error if the request is aborted or if there is an error in the response.
- */
-export async function fetchNative(url:string, arg:{
-    body?:string|Uint8Array|ArrayBuffer,
-    headers?:{[key:string]:string},
-    method?:"POST"|"GET"|"PUT"|"DELETE",
-    signal?:AbortSignal,
-    useRisuTk?:boolean,
-    chatId?:string
-}):Promise<Response> {
-
-    console.log(arg.body,'body')
-    if(arg.body === undefined && (arg.method === 'POST' || arg.method === 'PUT') ){
-        throw new Error('Body is required for POST and PUT requests')
-    }
-
-    arg.method = arg.method ?? 'POST'
-
-    let headers = arg.headers ?? {}
-    let realBody:Uint8Array
-
-    if(arg.method === 'GET' || arg.method === 'DELETE'){
-        realBody = undefined
-    }
-    else if(typeof arg.body === 'string'){
-        realBody = new TextEncoder().encode(arg.body)
-    }
-    else if(arg.body instanceof Uint8Array){
-        realBody = arg.body
-    }
-    else if(arg.body instanceof ArrayBuffer){
-        realBody = new Uint8Array(arg.body)
-    }
-    else{
-        throw new Error('Invalid body type')
-    }
-
-    const db = getDatabase()
-    let throughProxy = (!isTauri) && (!isNodeServer) && (!db.usePlainFetch)
-    let fetchLogIndex = addFetchLog({
-        body: new TextDecoder().decode(realBody),
-        headers: arg.headers,
-        response: 'Streamed Fetch',
-        success: true,
-        url: url,
-        resType: 'stream',
-        chatId: arg.chatId,
-    })
-    if(window.userScriptFetch){
-        return await window.userScriptFetch(url,{
-            body: realBody as any,
-            headers: headers,
-            method: arg.method,
-            signal: arg.signal
-        })
-    }
-    else if(isTauri){
-        fetchIndex++
-        if(arg.signal && arg.signal.aborted){
-            throw new Error('aborted')
-        }
-        if(fetchIndex >= 100000){
-            fetchIndex = 0
-        }
-        let fetchId = fetchIndex.toString().padStart(5,'0')
-        nativeFetchData[fetchId] = []
-        let resolved = false
-
-        let error = ''
-        while(!streamedFetchListening){
-            await sleep(100)
-        }
-        if(isTauri){
-            invoke('streamed_fetch', {
-                id: fetchId,
-                url: url,
-                headers: JSON.stringify(headers),
-                body: realBody ? Buffer.from(realBody).toString('base64') : '',
-                method: arg.method
-            }).then((res) => {
-                try {
-                    const parsedRes = JSON.parse(res as string)
-                    if(!parsedRes.success){
-                        error = parsedRes.body
-                        resolved = true
-                    }   
-                } catch (error) {
-                    error = JSON.stringify(error)
-                    resolved = true
-                }
-            })
-        }
-        else if(capStreamedFetch){
-            capStreamedFetch.streamedFetch({
-                id: fetchId,
-                url: url,
-                headers: headers,
-                body: realBody ? Buffer.from(realBody).toString('base64') : '',
-            }).then((res) => {
-                if(!res.success){
-                    error = res.error
-                    resolved = true
-                }
-            })
-        }
-
-        let resHeaders:{[key:string]:string} = null
-        let status = 400
-
-        let readableStream = pipeFetchLog(fetchLogIndex,new ReadableStream<Uint8Array>({
-            async start(controller) {
-                while(!resolved || nativeFetchData[fetchId].length > 0){
-                    if(nativeFetchData[fetchId].length > 0){
-                        const data = nativeFetchData[fetchId].shift()
-                        if(data.type === 'chunk'){
-                            const chunk = Buffer.from(data.body, 'base64')
-                            controller.enqueue(chunk as unknown as Uint8Array)
-                        }
-                        if(data.type === 'headers'){
-                            resHeaders = data.body
-                            status = data.status
-                        }
-                        if(data.type === 'end'){
-                            resolved = true
-                        }
-                    }
-                    await sleep(10)
-                }
-                controller.close()
-            }
-        }))
-
-        while(resHeaders === null && !resolved){
-            await sleep(10)
-        }
-
-        if(resHeaders === null){
-            resHeaders = {}
-        }
-
-        if(error !== ''){
-            throw new Error(error)
-        }
-
-        return new Response(readableStream, {
-            headers: new Headers(resHeaders),
-            status: status
-        })
-
-
-    }
-    else if(throughProxy){
-
-        const r = await fetch(hubURL + `/proxy2`, {
-            body: realBody as any,
-            headers: arg.useRisuTk ? {
-                "risu-header": encodeURIComponent(JSON.stringify(headers)),
-                "risu-url": encodeURIComponent(url),
-                "Content-Type": "application/json",
-                "x-risu-tk": "use",
-                ...(isNodeServer && localStorage.getItem('risuauth') ? { "risu-auth": localStorage.getItem('risuauth') } : {}),
-                ...(DBState?.db?.requestLocation && { "risu-location": DBState.db.requestLocation }),
-            }: {
-                "risu-header": encodeURIComponent(JSON.stringify(headers)),
-                "risu-url": encodeURIComponent(url),
-                "Content-Type": "application/json",
-                ...(isNodeServer && localStorage.getItem('risuauth') ? { "risu-auth": localStorage.getItem('risuauth') } : {}),
-                ...(DBState?.db?.requestLocation && { "risu-location": DBState.db.requestLocation }),
-            },
-            method: arg.method,
-            signal: arg.signal
-        })
-
-        return new Response(r.body, {
-            headers: r.headers,
-            status: r.status
-        })
-    }
-    else{
-        return await fetch(url, {
-            body: realBody as any,
-            headers: headers,
-            method: arg.method,
-            signal: arg.signal,
-        })
-    }
-}
-
-/**
- * Converts a ReadableStream of Uint8Array to a text string.
- * 
- * @param {ReadableStream<Uint8Array>} stream - The readable stream to convert.
- * @returns {Promise<string>} A promise that resolves to the text content of the stream.
- */
-export function textifyReadableStream(stream:ReadableStream<Uint8Array>){
-    return new Response(stream).text()
-}
-
-/**
  * Toggles the fullscreen mode of the document.
  * If the document is currently in fullscreen mode, it exits fullscreen.
  * If the document is not in fullscreen mode, it requests fullscreen with navigation UI hidden.
@@ -2707,21 +1752,19 @@ export class BlankWriter{
 }
 
 export async function loadInternalBackup(){
-    
-    const keys = isTauri ? (await readDir('database', {baseDir: BaseDirectory.AppData})).map((v) => {
-        return v.name
-    }) : (await forageStorage.keys())
+    // Both Tauri and web use OPFS for database storage now
+    const files = await listFromWorker('database')
     let internalBackups:string[] = []
-    for(const key of keys){
-        if(key.includes('dbbackup-')){
-            internalBackups.push(key)
+    for(const file of files){
+        if(file.includes('dbbackup-')){
+            internalBackups.push(file)
         }
     }
 
     const selectOptions = [
         'Cancel',
         ...(internalBackups.map((a) => {
-            return (new Date(parseInt(a.replace('database/dbbackup-', '').replace('dbbackup-','')) * 100)).toLocaleString()
+            return (new Date(parseInt(a.replace('dbbackup-','')) * 100)).toLocaleString()
         }))
     ]
 
@@ -2735,18 +1778,13 @@ export async function loadInternalBackup(){
 
     const selectedBackup = internalBackups[alertResult]
 
-    const data = isTauri ? (
-        await readFile('database/' + selectedBackup, {baseDir: BaseDirectory.AppData})
-    ) : (await forageStorage.getItem(selectedBackup))
+    const data = await loadFromWorker('database/' + selectedBackup)
 
     setDatabase(
         await decodeRisuSave(Buffer.from(data) as unknown as Uint8Array)
     )
 
     await alertNormal('Loaded backup')
-
-    
-
 }
 
 /**
