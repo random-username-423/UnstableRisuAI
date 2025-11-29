@@ -57,3 +57,4 @@ CLAUDE.md
 
 /android
 /src-tauri/gen
+src-tauri/gen/schemas/acl-manifests.json
