@@ -17,7 +17,7 @@ import { alertConfirm, alertError, alertMd, alertNormal, alertNormalWait, alertS
 import { syncDrive } from "./drive/drive";
 import { hasher } from "./parser.svelte";
 import { hubURL } from "./character/characterCards";
-import { decodeRisuSave, RisuSaveEncoder, type toSaveType } from "./storage/risuSave";
+import { decodeRisuSave, RisuSaveEncoder, type toSaveType, encodeChat, decodeChat } from "./storage/risuSave";
 import { AutoStorage } from "./storage/autoStorage";
 import { saveDbKei } from "./kei/backup";
 import { save } from "@tauri-apps/plugin-dialog";
@@ -283,7 +283,8 @@ export async function loadAsset(id:string){
 let lastSave = ''
 let lastBackupTime = 0
 export let saving = $state({
-    state: false
+    state: false,
+    paused: false  // 백업 복원 중 저장 일시정지
 })
 
 // OPFS/IndexedDB Worker (모듈 레벨)
@@ -446,6 +447,100 @@ export async function deleteFromWorker(key: string): Promise<void> {
 }
 
 /**
+ * Loads a chat's full data from individual file (lazy loading).
+ * Updates the chat in the character's chats array with message data.
+ *
+ * @param chaId - Character ID
+ * @param chatId - Chat ID
+ * @returns The loaded chat, or null if not found
+ */
+export async function loadChat(chaId: string, chatId: string): Promise<typeof import('./storage/database.svelte').Chat | null> {
+    const db = getDatabase()
+    const char = db.characters.find(c => c.chaId === chaId)
+    if (!char) {
+        console.warn(`[loadChat] Character not found: ${chaId}`)
+        return null
+    }
+
+    const chatIndex = char.chats.findIndex(c => c.id === chatId)
+    if (chatIndex === -1) {
+        console.warn(`[loadChat] Chat not found: ${chatId}`)
+        return null
+    }
+
+    const chat = char.chats[chatIndex]
+
+    // Already loaded
+    if (chat.message !== undefined) {
+        return chat
+    }
+
+    // Load from file
+    try {
+        const filePath = `database/chats/${chaId}_${chatId}.bin`
+        console.log(`[loadChat] Loading file: ${filePath}`)
+        const data = await loadFromWorker(filePath)
+        console.log(`[loadChat] File load result:`, data ? `${data.byteLength} bytes` : 'null')
+        if (!data) {
+            console.warn(`[loadChat] Chat file not found: ${chaId}_${chatId}.bin`)
+            // Initialize empty message array
+            console.log(`[DEBUG chat.message=[]] globalApi.svelte.ts:loadChat - file not found, chaId=${chaId}, chatId=${chatId}`)
+            chat.message = []
+            return chat
+        }
+
+        const fullChat = await decodeChat(data)
+        if (!fullChat) {
+            console.warn(`[loadChat] Failed to decode chat: ${chatId}`)
+            console.log(`[DEBUG chat.message=[]] globalApi.svelte.ts:loadChat - decode failed, chaId=${chaId}, chatId=${chatId}`)
+            chat.message = []
+            return chat
+        }
+
+        // Update chat with loaded data (preserve metadata, load message)
+        chat.message = fullChat.message || []
+        // Also update other fields that might be stored in the file
+        if (fullChat.note !== undefined) chat.note = fullChat.note
+        if (fullChat.localLore !== undefined) chat.localLore = fullChat.localLore
+        if (fullChat.sdData !== undefined) chat.sdData = fullChat.sdData
+        if (fullChat.supaMemoryData !== undefined) chat.supaMemoryData = fullChat.supaMemoryData
+        if (fullChat.hypaV2Data !== undefined) chat.hypaV2Data = fullChat.hypaV2Data
+        if (fullChat.hypaV3Data !== undefined) chat.hypaV3Data = fullChat.hypaV3Data
+        if (fullChat.lastMemory !== undefined) chat.lastMemory = fullChat.lastMemory
+        if (fullChat.suggestMessages !== undefined) chat.suggestMessages = fullChat.suggestMessages
+        if (fullChat.scriptstate !== undefined) chat.scriptstate = fullChat.scriptstate
+
+        console.log(`[loadChat] Loaded chat ${chatId} for character ${chaId}`)
+        return chat
+    } catch (e) {
+        console.error(`[loadChat] Error loading chat ${chatId}:`, e)
+        console.log(`[DEBUG chat.message=[]] globalApi.svelte.ts:loadChat - catch error, chaId=${chaId}, chatId=${chatId}`)
+        chat.message = []
+        return chat
+    }
+}
+
+/**
+ * Saves a single chat to its individual file.
+ *
+ * @param chaId - Character ID
+ * @param chat - Chat to save
+ */
+export async function saveChat(chaId: string, chat: typeof import('./storage/database.svelte').Chat): Promise<void> {
+    if (!chat.id || !chaId) return
+
+    // Don't save if message is not loaded (nothing to save)
+    if (chat.message === undefined) return
+
+    try {
+        const encodedChat = await encodeChat(chat)
+        await saveToWorker(`database/chats/${chaId}_${chat.id}.bin`, encodedChat)
+    } catch (e) {
+        console.error(`[saveChat] Error saving chat ${chat.id}:`, e)
+    }
+}
+
+/**
  * Saves the current state of the database.
  *
  * @returns {Promise<void>} - A promise that resolves when the database has been saved.
@@ -488,8 +583,11 @@ export async function saveDb(){
     }
 
     let encoder = new RisuSaveEncoder()
+    // Account 동기화 모드에서는 chats 분리 안 함 (기존 형식 유지)
+    const shouldExcludeChats = !forageStorage.isAccount
     await encoder.init(getDatabase(), {
-        compression: forageStorage.isAccount
+        compression: forageStorage.isAccount,
+        excludeChats: shouldExcludeChats
     })
 
     $effect.root(() => {
@@ -561,7 +659,7 @@ export async function saveDb(){
     let lastDbData = new Uint8Array(0)
     await sleep(1000)
     while(true){
-        if(!changed){
+        if(!changed || saving.paused){
             await sleep(500)
             continue
         }
@@ -573,7 +671,8 @@ export async function saveDb(){
             if(requiresFullEncoderReload.state){
                 encoder = new RisuSaveEncoder()
                 await encoder.init(getDatabase(), {
-                    compression: forageStorage.isAccount
+                    compression: forageStorage.isAccount,
+                    excludeChats: shouldExcludeChats
                 })
                 requiresFullEncoderReload.state = false
             }
@@ -611,18 +710,50 @@ export async function saveDb(){
             const shouldBackup = (now - lastBackupTime) >= intervalMs
 
             if(!forageStorage.isAccount && opfsWorker){
-                // 백업용 복사본 생성 (Transferable로 보내면 원본 buffer가 detached됨)
-                const backupData = new Uint8Array(dbData)
                 await saveToWorker('database/database.bin', dbData)
                 if(shouldBackup){
-                    await saveToWorker(`database/dbbackup-${(now/100).toFixed()}.bin`, backupData)
+                    // 백업은 chats 포함한 전체 DB로 저장 (복구용)
+                    const backupEncoder = new RisuSaveEncoder()
+                    await backupEncoder.init(db, {
+                        compression: false,
+                        excludeChats: false // 백업에는 모든 채팅 포함
+                    })
+                    const backupEncoded = backupEncoder.encode()
+                    if(backupEncoded){
+                        const backupData = new Uint8Array(backupEncoded)
+                        await saveToWorker(`database/dbbackup-${(now/100).toFixed()}.bin`, backupData)
+                    }
                     lastBackupTime = now
+                }
+                // 변경된 채팅만 개별 파일로 저장
+                if(shouldExcludeChats && toSave.chat.length > 0){
+                    for(const [chaId, chatId] of toSave.chat){
+                        if(!chatId || !chaId) continue
+                        const char = db.characters.find(c => c.chaId === chaId)
+                        const chat = char?.chats.find(c => c.id === chatId)
+                        // message가 undefined면 로드되지 않은 채팅이므로 저장하지 않음 (파일 덮어쓰기 방지)
+                        if(chat && chat.message !== undefined){
+                            const encodedChat = await encodeChat(chat)
+                            // 파일명에 chaId 포함하여 로드 시 매칭 가능하도록
+                            await saveToWorker(`database/chats/${chaId}_${chatId}.bin`, encodedChat)
+                        }
+                    }
                 }
             }
             else{
                 await forageStorage.setItem('database/database.bin', dbData)
                 if(!forageStorage.isAccount && shouldBackup){
-                    await forageStorage.setItem(`database/dbbackup-${(now/100).toFixed()}.bin`, dbData)
+                    // 백업은 chats 포함한 전체 DB로 저장 (복구용)
+                    const backupEncoder = new RisuSaveEncoder()
+                    await backupEncoder.init(db, {
+                        compression: false,
+                        excludeChats: false // 백업에는 모든 채팅 포함
+                    })
+                    const backupEncoded = backupEncoder.encode()
+                    if(backupEncoded){
+                        const backupData = new Uint8Array(backupEncoded)
+                        await forageStorage.setItem(`database/dbbackup-${(now/100).toFixed()}.bin`, backupData)
+                    }
                     lastBackupTime = now
                 }
                 if(forageStorage.isAccount){

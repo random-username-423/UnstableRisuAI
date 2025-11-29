@@ -15,6 +15,7 @@
     import { exportChat, importChat, exportAllChats } from "src/ts/character/characters";
     import { alertChatOptions, alertConfirm, alertError, alertInput, alertNormal, alertSelect, alertStore } from "src/ts/alert";
     import { findCharacterbyId, parseKeyValue, sleep, sortableOptions } from "src/ts/util";
+    import { loadChat } from "src/ts/globalApi.svelte";
     import { createMultiuserRoom } from "src/ts/sync/multiuser";
     import { getChatBranches } from "src/ts/gui/branches";
     import { getModuleToggles } from "src/ts/process/modules";
@@ -59,6 +60,15 @@
     $effect(() => {
         chara
         loadedCount = INITIAL_LOAD
+    })
+
+    // Load current chat when chatPage changes (lazy loading)
+    $effect(() => {
+        const currentChat = chara.chats?.[chara.chatPage]
+        if (currentChat && currentChat.message === undefined) {
+            // Chat not loaded yet, load it from file
+            loadChat(chara.chaId, currentChat.id)
+        }
     })
 
     const createStb = () => {
@@ -273,9 +283,15 @@
                     <div></div>
                     {:else}
                     {#each chara.chats.filter(chat => chat.folderId == chara.chatFolders[i].id) as chat}
-                    <button data-risu-chat-idx={chara.chats.indexOf(chat)} onclick={() => {
+                    <button data-risu-chat-idx={chara.chats.indexOf(chat)} onclick={async () => {
                         if(!editMode){
-                            chara.chatPage = chara.chats.indexOf(chat)
+                            const chatIndex = chara.chats.indexOf(chat)
+                            const targetChat = chara.chats[chatIndex]
+                            // Load chat data before switching
+                            if (targetChat && targetChat.message === undefined) {
+                                await loadChat(chara.chaId, targetChat.id)
+                            }
+                            chara.chatPage = chatIndex
                             $ReloadGUIPointer += 1
                         }
                     }} class="risu-chats flex items-center text-textcolor border-solid border-0 border-darkborderc p-2 cursor-pointer rounded-md"class:bg-selected={chara.chats.indexOf(chat) === chara.chatPage}>
@@ -382,8 +398,13 @@
         <div class="risu-chat flex flex-col">
             {#each visibleChats as chat, idx}
             {@const originalIndex = chara.chats.indexOf(chat)}
-            <button data-risu-chat-idx={originalIndex} onclick={() => {
+            <button data-risu-chat-idx={originalIndex} onclick={async () => {
                 if(!editMode){
+                    const targetChat = chara.chats[originalIndex]
+                    // Load chat data before switching
+                    if (targetChat && targetChat.message === undefined) {
+                        await loadChat(chara.chaId, targetChat.id)
+                    }
                     chara.chatPage = originalIndex
                     $ReloadGUIPointer += 1
                 }

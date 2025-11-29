@@ -10,6 +10,8 @@ export const isTauri = !!window.__TAURI_INTERNALS__
 //@ts-ignore
 export const isNodeServer = !!globalThis.__NODE__
 
+export const currentUserAgent = navigator.userAgent
+
 export const isMobileUserAgent = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent)
 
 export const currentPlatform = isTauri ? await platform() : 'web';

@@ -19,7 +19,7 @@
     import { stopTTS } from "src/ts/process/tts";
     import MainMenu from '../UI/MainMenu.svelte';
     import AssetInput from './AssetInput.svelte';
-    import { downloadFile } from 'src/ts/globalApi.svelte';
+    import { downloadFile, loadChat } from 'src/ts/globalApi.svelte';
     import { runTrigger } from 'src/ts/process/triggers';
     import { v4 } from 'uuid';
     import { PreUnreroll, Prereroll } from 'src/ts/process/prereroll';
@@ -44,7 +44,18 @@
     let fileInput:string[] = $state([])
 
     let currentCharacter = $derived(DBState.db.characters[$selectedCharID])
-    let currentChat = $derived(currentCharacter?.chats[currentCharacter.chatPage]?.message ?? [])
+    // Don't use ?? [] here - undefined means lazy loading is in progress
+    let currentChatMessages = $derived(currentCharacter?.chats[currentCharacter.chatPage]?.message)
+    let currentChat = $derived(currentChatMessages ?? [])
+
+    // Lazy loading: load chat from file if not loaded yet
+    $effect(() => {
+        if (!currentCharacter) return
+        const chat = currentCharacter.chats?.[currentCharacter.chatPage]
+        if (chat && chat.message === undefined) {
+            loadChat(currentCharacter.chaId, chat.id)
+        }
+    })
 
     async function send(){
         return sendMain(false)
@@ -436,7 +447,7 @@
         <div class="h-full w-full flex flex-col-reverse overflow-y-auto relative default-chat-screen"  onscroll={(e) => {
             //@ts-ignore  
             const scrolled = (e.target.scrollHeight - e.target.clientHeight + e.target.scrollTop)
-            if(scrolled < 100 && DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message.length > loadPages){
+            if(scrolled < 100 && (DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message?.length ?? 0) > loadPages){
                 loadPages += 15
             }
         }}>
@@ -656,7 +667,13 @@
                     <div></div>
                 {/await}
             {:else}
-            
+
+            {#if currentChatMessages === undefined}
+                <!-- Lazy loading in progress -->
+                <div class="w-full flex justify-center text-textcolor2 italic mb-12">
+                    {language.loadingChatData}
+                </div>
+            {:else}
             <Chats
                 messages={currentChat}
                 loadPages={loadPages}
@@ -666,8 +683,9 @@
                 currentUsername={currentUsername}
                 userIcon={userIcon}
             />
+            {/if}
 
-            {#if DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message.length <= loadPages}
+            {#if DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message?.length <= loadPages}
                 {#if DBState.db.characters[$selectedCharID].type !== 'group' }
                     <Chat
                         character={createSimpleCharacter(DBState.db.characters[$selectedCharID])}
@@ -748,9 +766,9 @@
                     {/if}
 
                     <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors"
-                        class:text-textcolor2={(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message.length < 2) || (DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message.length - 1].role !== 'char')}
+                        class:text-textcolor2={(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message?.length < 2) || (DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message?.[(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message?.length ?? 0) - 1]?.role !== 'char')}
                         onclick={() => {
-                            if((DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message.length < 2) || (DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message.length - 1].role !== 'char')){
+                            if((DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message?.length < 2) || (DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message?.[(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message?.length ?? 0) - 1]?.role !== 'char')){
                                 return
                             }
                             sendContinue();

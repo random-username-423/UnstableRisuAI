@@ -1,5 +1,5 @@
 import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear } from "../alert";
-import { LocalWriter, forageStorage, requiresFullEncoderReload, saveToWorker } from "../globalApi.svelte";
+import { LocalWriter, forageStorage, requiresFullEncoderReload, saveToWorker, listFromWorker, deleteFromWorker, saving, loadFromWorker } from "../globalApi.svelte";
 import { isTauri } from "src/ts/env";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
@@ -202,14 +202,32 @@ export async function LoadLocalBackup(){
 
                         if (name === 'database.risudat') {
                             console.log('[LoadLocalBackup] Found database.risudat, processing...');
+
+                            // Pause save loop to prevent overwriting restored backup
+                            saving.paused = true;
+
                             const db = new Uint8Array(data);
                             const dbData = await decodeRisuSave(db);
                             console.log('[LoadLocalBackup] Database decoded');
                             setDatabaseLite(dbData);
                             requiresFullEncoderReload.state = true;
+
+                            // Clear existing chat files (backup has full DB with chats)
+                            try {
+                                const chatFiles = await listFromWorker('database/chats');
+                                for(const file of chatFiles){
+                                    await deleteFromWorker(`database/chats/${file}`);
+                                }
+                                console.log(`[LoadLocalBackup] Cleared ${chatFiles.length} chat files`);
+                            } catch(e) {
+                                console.log('[LoadLocalBackup] No chat files to clear');
+                            }
+
+                            // Save to OPFS (both Tauri and web use OPFS for DB now)
+                            await saveToWorker('database/database.bin', db);
+                            console.log('[LoadLocalBackup] Saved to OPFS worker');
+
                             if (isTauri) {
-                                await saveToWorker('database/database.bin', db);
-                                console.log('[LoadLocalBackup] Saved to worker');
                                 const currentPlatform = await platform();
                                 console.log('[LoadLocalBackup] Platform:', currentPlatform);
                                 alertClear();
@@ -222,7 +240,6 @@ export async function LoadLocalBackup(){
                                     await relaunch();
                                 }
                             } else {
-                                await forageStorage.setItem('database/database.bin', db);
                                 alertClear();
                                 await sleep(50);
                                 location.search = '';

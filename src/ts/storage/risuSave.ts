@@ -1,6 +1,6 @@
 import { Packr, Unpackr, decode } from "msgpackr";
 import * as fflate from "fflate";
-import { presetTemplate, type Database } from "./database.svelte";
+import { presetTemplate, type Database, type Chat } from "./database.svelte";
 
 const packr = new Packr({
     useRecords:false
@@ -81,12 +81,15 @@ export class RisuSaveEncoder {
 
     private blocks: { [key: string]: Uint8Array } = {};
     private compression: boolean = false;
+    private excludeChats: boolean = false;
 
     async init(data:Database,arg:{
         compression?: boolean
+        excludeChats?: boolean
     } = {}){
-        const { compression = false } = arg;
+        const { compression = false, excludeChats = false } = arg;
         this.compression = compression;
+        this.excludeChats = excludeChats;
         let obj:Record<any,any> = {}
         let keys = Object.keys(data)
         for(const key of keys){
@@ -113,9 +116,27 @@ export class RisuSaveEncoder {
             name: 'modules'
         });
         for( const character of data.characters) {
+            let charToSave;
+            if (excludeChats) {
+                // Save only chat metadata (id, name, folderId, etc.) without heavy data
+                const chatsMetadata = character.chats?.map(chat => ({
+                    id: chat.id,
+                    name: chat.name,
+                    folderId: chat.folderId,
+                    bindedPersona: chat.bindedPersona,
+                    modules: chat.modules,
+                    lastDate: chat.lastDate,
+                    fmIndex: chat.fmIndex,
+                    // Note: message, note, localLore, sdData, supaMemoryData, hypaV2Data, hypaV3Data,
+                    // lastMemory, suggestMessages, scriptstate are stored in individual files
+                })) || [];
+                charToSave = { ...character, chats: chatsMetadata };
+            } else {
+                charToSave = character;
+            }
             this.blocks[character.chaId] = await this.encodeBlock({
                 compression,
-                data: JSON.stringify(character),
+                data: JSON.stringify(charToSave),
                 type: RisuSaveType.CHARACTERWITHCHAT,
                 name: character.chaId
             });
@@ -123,7 +144,7 @@ export class RisuSaveEncoder {
         this.blocks['config'] = await this.encodeBlock({
             compression,
             data: JSON.stringify({
-                version: 1
+                version: excludeChats ? 2 : 1  // version 2 = chats separated
             }),
             type: RisuSaveType.CONFIG,
             name: "config"
@@ -147,11 +168,27 @@ export class RisuSaveEncoder {
 
         const savedId = new Set<string>();
         for(const character of data.characters) {
+            let charToSave;
+            if (this.excludeChats) {
+                // Save only chat metadata (id, name, folderId, etc.) without heavy data
+                const chatsMetadata = character.chats?.map(chat => ({
+                    id: chat.id,
+                    name: chat.name,
+                    folderId: chat.folderId,
+                    bindedPersona: chat.bindedPersona,
+                    modules: chat.modules,
+                    lastDate: chat.lastDate,
+                    fmIndex: chat.fmIndex,
+                })) || [];
+                charToSave = { ...character, chats: chatsMetadata };
+            } else {
+                charToSave = character;
+            }
             const index = toSave.character.indexOf(character.chaId);
             if (index !== -1) {
                 this.blocks[character.chaId] = await this.encodeBlock({
                     compression: this.compression,
-                    data: JSON.stringify(character),
+                    data: JSON.stringify(charToSave),
                     type: RisuSaveType.CHARACTERWITHCHAT,
                     name: character.chaId
                 });
@@ -161,7 +198,7 @@ export class RisuSaveEncoder {
             else if(!this.blocks[character.chaId]){
                 this.blocks[character.chaId] = await this.encodeBlock({
                     compression: this.compression,
-                    data: JSON.stringify(character),
+                    data: JSON.stringify(charToSave),
                     type: RisuSaveType.CHARACTERWITHCHAT,
                     name: character.chaId
                 });
@@ -443,3 +480,50 @@ function checkHeader(data: Uint8Array) {
     // All bytes matched
     return header;
   }
+
+const magicChatHeader = new TextEncoder().encode("RISUCHAT\0");
+
+/**
+ * Encodes a Chat object to a compressed binary format
+ */
+export async function encodeChat(chat: Chat): Promise<Uint8Array> {
+    await checkCompressionStreams();
+    const jsonStr = JSON.stringify(chat);
+    const jsonBytes = new TextEncoder().encode(jsonStr);
+
+    const cs = new CompressionStream('gzip');
+    const writer = cs.writable.getWriter();
+    writer.write(jsonBytes);
+    writer.close();
+    const compressedData = await new Response(cs.readable).arrayBuffer();
+
+    const result = new Uint8Array(magicChatHeader.length + compressedData.byteLength);
+    result.set(magicChatHeader, 0);
+    result.set(new Uint8Array(compressedData), magicChatHeader.length);
+    return result;
+}
+
+/**
+ * Decodes a Chat object from compressed binary format
+ */
+export async function decodeChat(data: Uint8Array): Promise<Chat | null> {
+    // Check magic header
+    for (let i = 0; i < magicChatHeader.length; i++) {
+        if (data[i] !== magicChatHeader[i]) {
+            console.error('Invalid chat file header');
+            return null;
+        }
+    }
+
+    await checkCompressionStreams();
+    const compressedData = data.subarray(magicChatHeader.length);
+
+    const ds = new DecompressionStream('gzip');
+    const writer = ds.writable.getWriter();
+    writer.write(compressedData as any);
+    writer.close();
+    const decompressed = await new Response(ds.readable).arrayBuffer();
+
+    const jsonStr = new TextDecoder().decode(decompressed);
+    return JSON.parse(jsonStr) as Chat;
+}

@@ -615,7 +615,8 @@ function convertOffSpecCards(charaData:OldTavernChar|CharacterCardV2Risu, imgp:s
             message: [],
             note: '',
             name: 'Chat 1',
-            localLore: []
+            localLore: [],
+            id: uuidv4()
         }],
         chatPage: 0,
         image: imgp,
@@ -915,7 +916,8 @@ async function importCharacterCardSpec(card:CharacterCardV2Risu|CharacterCardV3,
             message: [],
             note: '',
             name: 'Chat 1',
-            localLore: []
+            localLore: [],
+            id: uuidv4()
         }],
         chatPage: 0,
         image: im,

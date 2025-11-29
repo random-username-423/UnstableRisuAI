@@ -1612,7 +1612,7 @@ interface ComfyConfig{
 export type FormatingOrderItem = 'main'|'jailbreak'|'chats'|'lorebook'|'globalNote'|'authorNote'|'lastChat'|'description'|'postEverything'|'personaPrompt'
 
 export interface Chat{
-    message: Message[]
+    message?: Message[]  // Optional: undefined = not loaded yet (lazy loading)
     note:string
     name:string
     localLore: loreBook[]
@@ -1624,7 +1624,7 @@ export interface Chat{
     isStreaming?:boolean
     scriptstate?:{[key:string]:string|number|boolean}
     modules?:string[]
-    id?:string
+    id:string
     bindedPersona?:string
     fmIndex?:number
     hypaV3Data?:SerializableHypaV3Data

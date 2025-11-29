@@ -1,6 +1,6 @@
 import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../alert";
 import { getDatabase, type Database } from "../storage/database.svelte";
-import { forageStorage, getUnpargeables, openURL, saveToWorker } from "../globalApi.svelte";
+import { forageStorage, getUnpargeables, openURL, saveToWorker, listFromWorker, deleteFromWorker, saving } from "../globalApi.svelte";
 import { isTauri } from "src/ts/env";
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 import { language } from "../../lang";
@@ -431,8 +431,23 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
             errorLogs.forEach(e => console.log(`  ${e}`))
         }
         db.didFirstSetup = true
+
+        // Pause save loop to prevent overwriting restored backup
+        saving.paused = true;
+
         const dbData = encodeRisuSaveLegacy(db, 'compression')
         console.log(`[GoogleDrive Restore] Saving database... (${(dbData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
+
+        // Clear existing chat files (backup has full DB with chats)
+        try {
+            const chatFiles = await listFromWorker('database/chats');
+            for(const file of chatFiles){
+                await deleteFromWorker(`database/chats/${file}`);
+            }
+            console.log(`[GoogleDrive Restore] Cleared ${chatFiles.length} chat files`);
+        } catch(e) {
+            console.log('[GoogleDrive Restore] No chat files to clear');
+        }
 
         if(isTauri){
             await saveToWorker('database/database.bin', dbData)
@@ -449,7 +464,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
             }
         }
         else{
-            await forageStorage.setItem('database/database.bin', dbData)
+            await saveToWorker('database/database.bin', dbData)
             console.log('[GoogleDrive Restore] Restore completed! Refreshing page...')
             alertClear()
             await sleep(50)

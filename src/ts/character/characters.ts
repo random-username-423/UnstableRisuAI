@@ -5,7 +5,7 @@ import { language } from "../../lang";
 import { checkNullish, findCharacterbyId, getUserName, selectMultipleFile, selectSingleFile, sleep } from '../util';
 import { v4 as uuidv4, v4 } from 'uuid';
 import { MobileGUIStack, OpenRealmStore, selectedCharID } from "../stores.svelte";
-import { AppendableBuffer, checkCharOrder, downloadFile, getFileSrc, requiresFullEncoderReload } from "../globalApi.svelte";
+import { AppendableBuffer, checkCharOrder, downloadFile, getFileSrc, loadChat, requiresFullEncoderReload } from "../globalApi.svelte";
 import { updateInlayScreen } from "../process/inlayScreen";
 import { checkImageType, parseMarkdownSafe } from "../parser.svelte";
 import { translateHTML } from "../translator/translator";
@@ -31,7 +31,8 @@ export function createNewGroup(){
             message: [],
             note: '',
             name: 'Chat 1',
-            localLore: []
+            localLore: [],
+            id: uuidv4()
         }],
         chatFolders: [],
         chatPage: 0,
@@ -551,9 +552,8 @@ export function characterFormatUpdate(indexOrCharacter:number|character, arg:{
     if(!cha.chats[cha.chatPage]){
         cha.chatPage = 0
     }
-    if(!cha.chats[cha.chatPage].message){
-        cha.chats[cha.chatPage].message = []
-    }
+    // Note: Don't initialize message to [] here - undefined means lazy loading is needed
+    // The loadChat function will load the actual messages from individual files
     if(!cha.type){
         cha.type = 'character'
     }
@@ -675,7 +675,8 @@ export function createBlankChar():character{
             message: [],
             note: '',
             name: 'Chat 1',
-            localLore: []
+            localLore: [],
+            id: uuidv4()
         }],
         chatFolders: [],
         chatPage: 0,
@@ -880,4 +881,16 @@ export function changeChar(index: number, arg:{
       updateInteraction: true,
     });
     selectedCharID.set(index);
+
+    // Load current chat (lazy loading)
+    const db = getDatabase()
+    const char = db.characters[index]
+    if (char) {
+        const currentChat = char.chats?.[char.chatPage]
+        console.log(`[changeChar] char.chatPage=${char.chatPage}, currentChat.id=${currentChat?.id}, message=${currentChat?.message === undefined ? 'undefined' : `array(${currentChat?.message?.length})`}`)
+        if (currentChat && currentChat.message === undefined) {
+            console.log(`[changeChar] Calling loadChat for chat ${currentChat.id}`)
+            loadChat(char.chaId, currentChat.id)
+        }
+    }
 }

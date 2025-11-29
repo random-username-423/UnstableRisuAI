@@ -168,6 +168,7 @@ async function processCommand(command:string, pipe:string):Promise<false | strin
             }
             for(const e of splited){
                 if(clearMode){
+                    console.log(`[DEBUG chat.message=[]] command.ts:processCommand - clearMode`)
                     currentChat.message = []
                 }
                 currentChat.message.push({

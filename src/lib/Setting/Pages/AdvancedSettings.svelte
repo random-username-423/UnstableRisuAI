@@ -5,8 +5,7 @@
     import { DBState } from 'src/ts/stores.svelte';
     import { alertMd, alertNormal } from "src/ts/alert";
     import { downloadFile, getRequestLog } from "src/ts/globalApi.svelte";
-    import { isNodeServer } from "src/ts/env";
-    import { isTauri } from "src/ts/env";
+    import { isTauri, isNodeServer, currentUserAgent, currentPlatform } from "src/ts/env";
     import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
@@ -662,6 +661,8 @@ Show Statistics
         db.meta = {
             isTauri: isTauri,
             isNodeServer: isNodeServer,
+            currentUserAgent: currentUserAgent,
+            currentPlatform: currentPlatform,
             protocol: location.protocol
         }
 

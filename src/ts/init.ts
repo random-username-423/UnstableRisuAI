@@ -72,6 +72,65 @@ export async function getDbBackups() {
     return backups
 }
 
+/**
+ * Migrates chats from old format (full chats in DB) to new format (individual files).
+ * In new format, DB only contains chat metadata, full data is loaded on demand.
+ */
+async function migrateChatsToFiles(): Promise<void> {
+    const db = getDatabase()
+    if(!db?.characters) return
+
+    // Count total chats that need migration
+    let totalChats = 0
+    for(const char of db.characters){
+        if(!char.chats) continue
+        for(const chat of char.chats){
+            if(chat.message !== undefined && chat.message.length > 0){
+                totalChats++
+            }
+        }
+    }
+
+    if(totalChats === 0){
+        console.log('[migrateChatsToFiles] No migration needed')
+        return
+    }
+
+    console.log(`[migrateChatsToFiles] Migrating ${totalChats} chats to individual files...`)
+    const { encodeChat } = await import('./storage/risuSave')
+
+    let migratedCount = 0
+    for(const char of db.characters){
+        if(!char.chats || !char.chaId) continue
+        for(const chat of char.chats){
+            // Only migrate chats that have message data
+            if(chat.message === undefined || chat.message.length === 0) continue
+
+            if(!chat.id) {
+                chat.id = uuidv4() // Ensure chat has id
+            }
+            try {
+                const encodedChat = await encodeChat(chat)
+                await saveToWorker(`database/chats/${char.chaId}_${chat.id}.bin`, encodedChat)
+                migratedCount++
+                LoadingStatusState.text = `Migrating Chat Files... (${migratedCount}/${totalChats})`
+            } catch(e) {
+                console.error(`[migrateChatsToFiles] Failed to migrate chat ${chat.id}:`, e)
+                migratedCount++
+                LoadingStatusState.text = `Migrating Chat Files... (${migratedCount}/${totalChats})`
+            }
+        }
+    }
+    console.log('[migrateChatsToFiles] Migration complete')
+
+    // 디버그: 저장된 파일 목록 확인
+    try {
+        const savedFiles = await listFromWorker('database/chats')
+        console.log('[migrateChatsToFiles] Files in OPFS after migration:', savedFiles)
+    } catch(e) {
+        console.log('[migrateChatsToFiles] Failed to list files:', e)
+    }
+}
 
 /**
  * Loads the application data.
@@ -124,6 +183,17 @@ export async function loadData() {
                     LoadingStatusState.text = "Decoding Save File..."
                     const decoded = await decodeRisuSave(readed)
                     setDatabase(decoded)
+
+                    // 디버그: 마이그레이션 전 OPFS 파일 목록 확인
+                    try {
+                        const existingFiles = await listFromWorker('database/chats')
+                        console.log('[loadData] OPFS chat files before migration:', existingFiles)
+                    } catch(e) {
+                        console.log('[loadData] No chat files directory yet')
+                    }
+
+                    LoadingStatusState.text = "Loading Chat Files..."
+                    await migrateChatsToFiles()
                 } catch (error) {
                     LoadingStatusState.text = "Reading Backup Files..."
                     const backups = await getDbBackups()
@@ -142,6 +212,8 @@ export async function loadData() {
                                     setDatabase(
                                       await decodeRisuSave(backupData)
                                     )
+                                    LoadingStatusState.text = "Loading Chat Files..."
+                                    await migrateChatsToFiles()
                                     backupLoaded = true
                                 }
                             } catch (error) {
@@ -201,7 +273,8 @@ export async function loadData() {
                     }
                 }
 
-                if(await forageStorage.checkAccountSync()){
+                const isAccountSync = await forageStorage.checkAccountSync()
+                if(isAccountSync){
                     LoadingStatusState.text = "Checking Account Sync..."
                     let gotStorage:Uint8Array = await (forageStorage.realStorage as AccountStorage).getItem('database/database.bin', (v) => {
                         LoadingStatusState.text = `Loading Remote Save File ${(v*100).toFixed(2)}%`
@@ -233,6 +306,10 @@ export async function loadData() {
                             await sleep(10000)
                         }
                     }
+                } else {
+                    // Non-account mode: load chats from individual files
+                    LoadingStatusState.text = "Loading Chat Files..."
+                    await migrateChatsToFiles()
                 }
                 LoadingStatusState.text = "Rechecking Account Sync..."
                 await forageStorage.checkAccountSync()

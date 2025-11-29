@@ -1,13 +1,15 @@
 <script>
     import { alertConfirm, alertError } from "../../ts/alert";
     import { language } from "../../lang";
-    
+    import { v4 as uuidv4 } from 'uuid';
+
     import { DBState } from 'src/ts/stores.svelte';
     import { ReloadGUIPointer, selectedCharID } from "../../ts/stores.svelte";
     import { DownloadIcon, EditIcon, HardDriveUploadIcon, PlusIcon, TrashIcon, XIcon } from "lucide-svelte";
     import { exportChat, importChat } from "../../ts/character/characters";
     import { findCharacterbyId } from "../../ts/util";
     import TextInput from "../UI/GUI/TextInput.svelte";
+    import { deleteFromWorker, forageStorage, loadChat } from "../../ts/globalApi.svelte";
 
     let editMode = $state(false)
     /** @type {{close?: any}} */
@@ -25,8 +27,14 @@
             </div>
         </div>
         {#each DBState.db.characters[$selectedCharID].chats as chat, i}
-            <button onclick={() => {
+            <button onclick={async () => {
                 if(!editMode){
+                    const char = DBState.db.characters[$selectedCharID]
+                    const targetChat = char.chats[i]
+                    // Load chat data before switching
+                    if (targetChat && targetChat.message === undefined) {
+                        await loadChat(char.chaId, targetChat.id)
+                    }
                     DBState.db.characters[$selectedCharID].chatPage = i
                      close()
                 }
@@ -53,13 +61,26 @@
                         }
                         const d = await alertConfirm(`${language.removeConfirm}${chat.name}`)
                         if(d){
+                            // Get chat info before deletion for file cleanup
+                            const chaId = DBState.db.characters[$selectedCharID].chaId
+                            const chatId = chat.id
+
                             DBState.db.characters[$selectedCharID].chatPage = 0
                             let chats = DBState.db.characters[$selectedCharID].chats
                             chats.splice(i, 1)
                             DBState.db.characters[$selectedCharID].chats = chats
+
+                            // Delete the separate chat file if it exists (non-account mode)
+                            if(!forageStorage.isAccount && chaId && chatId){
+                                try {
+                                    await deleteFromWorker(`database/chats/${chaId}_${chatId}.bin`)
+                                } catch(e) {
+                                    // File may not exist for old data, ignore error
+                                }
+                            }
                         }
                     }} onkeydown={() => {
-                        
+
                     }}>
                         <TrashIcon size={18}/>
                     </div>
@@ -72,7 +93,7 @@
                 const len = DBState.db.characters[$selectedCharID].chats.length
                 let chats = DBState.db.characters[$selectedCharID].chats
                 chats.unshift({
-                    message:[], note:'', name:`New Chat ${len + 1}`, localLore:[], fmIndex: -1
+                    message:[], note:'', name:`New Chat ${len + 1}`, localLore:[], fmIndex: -1, id: uuidv4()
                 })
                 if(cha.type === 'group'){
                     cha.characters.map((c) => {

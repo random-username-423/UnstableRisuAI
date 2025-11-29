@@ -55,6 +55,10 @@
     }
 
     async function loadTokenize(chara){
+        // Skip if chat is not fully loaded yet (lazy loading)
+        const currentChat = DBState.db.characters[$selectedCharID]?.chats?.[DBState.db.characters[$selectedCharID]?.chatPage]
+        if(currentChat?.message === undefined) return
+
         const cha = chara
         if(cha.type !== 'group'){
             if(lasttokens.desc !== cha.desc){
@@ -63,15 +67,17 @@
                     tokens.desc = await tokenizeAccurate(cha.desc)
                 }
             }
-            if(lasttokens.firstMsg !==chara.firstMessage){
-                lasttokens.firstMsg = chara.firstMessage
-                tokens.firstMsg = await tokenizeAccurate(chara.firstMessage)
+            if(lasttokens.firstMsg !== chara.firstMessage){
+                if(chara.firstMessage){
+                    lasttokens.firstMsg = chara.firstMessage
+                    tokens.firstMsg = await tokenizeAccurate(chara.firstMessage)
+                }
             }
         }
-        if(lasttokens.localNote !== DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].note){
-            lasttokens.localNote = DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].note
-            tokens.localNote = await tokenizeAccurate(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].note)
-        
+
+        if(lasttokens.localNote !== currentChat.note){
+            lasttokens.localNote = currentChat.note ?? ''
+            tokens.localNote = await tokenizeAccurate(currentChat.note ?? '')
         }
 
     }
