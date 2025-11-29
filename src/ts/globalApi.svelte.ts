@@ -23,7 +23,7 @@ import { saveDbKei } from "./kei/backup";
 import { save } from "@tauri-apps/plugin-dialog";
 import { language } from "src/lang";
 import { AppendableBuffer } from './fetch';
-import { isTauri, isNodeServer } from "src/ts/env";
+import { isTauri, isNodeServer, isMobileTauri } from "src/ts/env";
 
 // Re-export fetch utilities
 export {
@@ -58,10 +58,12 @@ export async function downloadFile(name:string, dat:Uint8Array|ArrayBuffer|strin
         a.remove()
     }
 
-    if(isTauri){
+    if(isTauri && !isMobileTauri){
+        // Desktop Tauri: write to Downloads folder
         await writeFile(name, data, {baseDir: BaseDirectory.Download})
     }
     else{
+        // Web and Mobile Tauri: use blob download
         const blob = new Blob([data], { type: 'application/octet-stream' })
         const url = URL.createObjectURL(blob)
 
@@ -1144,7 +1146,8 @@ export class LocalWriter {
      * @returns {Promise<boolean>} - A promise that resolves to a boolean indicating success.
      */
     async init(name = 'Binary', ext = ['bin']): Promise<boolean> {
-        if (isTauri) {
+        if (isTauri && !isMobileTauri) {
+            // Desktop Tauri: use native save dialog
             const filePath = await save({
                 filters: [{
                     name: name,
@@ -1157,6 +1160,7 @@ export class LocalWriter {
             this.writer = new TauriWriter(filePath)
             return true
         }
+        // Web and Mobile Tauri: use streamsaver
         const streamSaver = await import('streamsaver')
         const writableStream = streamSaver.createWriteStream(name + '.' + ext[0])
         this.writer = writableStream.getWriter()
