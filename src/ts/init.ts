@@ -25,7 +25,8 @@ import { isTauri, isNodeServer } from "src/ts/env";
 import { setDatabase, getDatabase, defaultSdDataFunc } from "./storage/database.svelte";
 import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
 import { checkNullish, changeFullscreen, sleep, getBasename } from "./util";
-import { decodeRisuSave, encodeRisuSaveLegacy } from "./storage/risuSave";
+import { decodeRisuSave, encodeRisuSaveLegacy, decodeCharacters, decodeBotPresets, encodeCharacters, encodeBotPresets } from "./storage/risuSave";
+import { presetTemplate } from "./storage/database.svelte";
 import { migrateOPFSAssetsToIndexedDB, migrateTauriFsAssetsToIndexedDB, migrateWebDBtoOPFS } from './storage/migration';
 import { checkRisuUpdate } from "./update";
 import { loadPlugins } from "./plugins/plugins";
@@ -70,6 +71,81 @@ export async function getDbBackups() {
         await deleteFromWorker(`database/dbbackup-${last}.bin`)
     }
     return backups
+}
+
+/**
+ * Loads characters from characters.bin file.
+ * Returns null if file doesn't exist (needs migration).
+ */
+async function loadCharactersFromFile(): Promise<any[] | null> {
+    try {
+        const data = await loadFromWorker('database/characters.bin')
+        if (!data) return null
+        const characters = await decodeCharacters(data)
+        console.log(`[loadCharactersFromFile] Loaded ${characters?.length ?? 0} characters from characters.bin`)
+        return characters
+    } catch (e) {
+        console.log('[loadCharactersFromFile] Failed to load characters.bin:', e)
+        return null
+    }
+}
+
+/**
+ * Loads bot presets from botpresets.bin file.
+ * Returns null if file doesn't exist (needs migration).
+ */
+async function loadBotPresetsFromFile(): Promise<any[] | null> {
+    try {
+        const data = await loadFromWorker('database/botpresets.bin')
+        if (!data) return null
+        const presets = await decodeBotPresets(data)
+        console.log(`[loadBotPresetsFromFile] Loaded ${presets?.length ?? 0} presets from botpresets.bin`)
+        return presets
+    } catch (e) {
+        console.log('[loadBotPresetsFromFile] Failed to load botpresets.bin:', e)
+        return null
+    }
+}
+
+/**
+ * Migrates characters and botPresets from database.bin to separate files.
+ * Called when characters.bin or botpresets.bin don't exist.
+ */
+async function migrateCharactersAndPresetsToFiles(): Promise<void> {
+    const db = getDatabase()
+
+    // Check if characters.bin exists
+    const charactersData = await loadFromWorker('database/characters.bin')
+    if (!charactersData && db.characters && db.characters.length > 0) {
+        console.log(`[migrateCharactersAndPresetsToFiles] Migrating ${db.characters.length} characters to characters.bin...`)
+        LoadingStatusState.text = `Migrating Characters...`
+        // Save only chat metadata (message content is in individual files)
+        const charactersToSave = db.characters.map(char => {
+            const chatsMetadata = char.chats?.map(chat => ({
+                id: chat.id,
+                name: chat.name,
+                folderId: chat.folderId,
+                bindedPersona: chat.bindedPersona,
+                modules: chat.modules,
+                lastDate: chat.lastDate,
+                fmIndex: chat.fmIndex,
+            })) || [];
+            return { ...char, chats: chatsMetadata };
+        });
+        const encoded = await encodeCharacters(charactersToSave)
+        await saveToWorker('database/characters.bin', encoded)
+        console.log('[migrateCharactersAndPresetsToFiles] Characters migration complete')
+    }
+
+    // Check if botpresets.bin exists
+    const presetsData = await loadFromWorker('database/botpresets.bin')
+    if (!presetsData && db.botPresets && db.botPresets.length > 0) {
+        console.log(`[migrateCharactersAndPresetsToFiles] Migrating ${db.botPresets.length} presets to botpresets.bin...`)
+        LoadingStatusState.text = `Migrating Bot Presets...`
+        const encoded = await encodeBotPresets(db.botPresets)
+        await saveToWorker('database/botpresets.bin', encoded)
+        console.log('[migrateCharactersAndPresetsToFiles] Bot presets migration complete')
+    }
 }
 
 /**
@@ -160,6 +236,9 @@ export async function loadData() {
                 // OPFS에서 먼저 로드 시도
                 LoadingStatusState.text = "Reading Save File..."
                 let readed = await loadFromWorker('database/database.bin')
+                if (readed) {
+                    console.log(`[loadData] database.bin size: ${(readed.byteLength / 1024 / 1024).toFixed(2)} MB`)
+                }
 
                 // OPFS에 데이터가 없으면 기존 파일시스템에서 마이그레이션
                 if (!readed) {
@@ -182,7 +261,31 @@ export async function loadData() {
                     getDbBackups() //this also cleans the backups
                     LoadingStatusState.text = "Decoding Save File..."
                     const decoded = await decodeRisuSave(readed)
+
+                    // Load characters from separate file if exists
+                    LoadingStatusState.text = "Loading Characters..."
+                    const characters = await loadCharactersFromFile()
+                    if (characters) {
+                        decoded.characters = characters
+                    }
+
+                    // Load bot presets from separate file if exists
+                    LoadingStatusState.text = "Loading Bot Presets..."
+                    const presets = await loadBotPresetsFromFile()
+                    if (presets) {
+                        decoded.botPresets = presets
+                    }
+                    // Ensure botPresets has valid default
+                    if (!Array.isArray(decoded.botPresets) || decoded.botPresets.length === 0) {
+                        decoded.botPresets = [presetTemplate]
+                        decoded.botPresetsId = 0
+                    }
+
                     setDatabase(decoded)
+
+                    // Migrate characters and presets to separate files if needed
+                    LoadingStatusState.text = "Checking Data Migration..."
+                    await migrateCharactersAndPresetsToFiles()
 
                     // 디버그: 마이그레이션 전 OPFS 파일 목록 확인
                     try {
@@ -243,6 +346,9 @@ export async function loadData() {
                 // OPFS에서 DB 로드
                 LoadingStatusState.text = "Loading Local Save File..."
                 let gotStorage:Uint8Array = await loadFromWorker('database/database.bin')
+                if (gotStorage) {
+                    console.log(`[loadData] database.bin size: ${(gotStorage.byteLength / 1024 / 1024).toFixed(2)} MB`)
+                }
                 LoadingStatusState.text = "Decoding Local Save File..."
                 if(checkNullish(gotStorage)){
                     gotStorage = encodeRisuSaveLegacy({})
@@ -251,7 +357,72 @@ export async function loadData() {
                 try {
                     const decoded = await decodeRisuSave(gotStorage)
                     console.log(decoded)
+
+                    // 항목별 크기 출력
+                    const sizeOf = (obj: any) => {
+                        try { return new Blob([JSON.stringify(obj)]).size }
+                        catch { return 0 }
+                    }
+                    const allFields = Object.keys(decoded).map(key => ({
+                        key,
+                        size: sizeOf((decoded as any)[key])
+                    })).sort((a, b) => b.size - a.size)
+
+                    console.log(`[loadData] DB breakdown (top 20 fields):`)
+                    allFields.slice(0, 20).forEach(f => {
+                        console.log(`  - ${f.key}: ${(f.size / 1024 / 1024).toFixed(2)} MB`)
+                    })
+
+                    // botPresets 상세
+                    if (decoded.botPresets?.length > 0) {
+                        const presetSizes = decoded.botPresets.map((p: any) => ({
+                            name: p.name || '(unnamed)',
+                            size: sizeOf(p)
+                        })).sort((a: any, b: any) => b.size - a.size).slice(0, 10)
+                        console.log(`  - Top 10 botPresets by size (total ${decoded.botPresets.length}):`)
+                        presetSizes.forEach((p: any, i: number) => {
+                            console.log(`    ${i+1}. ${p.name}: ${(p.size / 1024 / 1024).toFixed(2)} MB`)
+                        })
+                    }
+
+                    // 캐릭터별 상세
+                    if (decoded.characters?.length > 0) {
+                        const charSizes = decoded.characters.map((c: any) => ({
+                            name: c.name,
+                            size: sizeOf(c),
+                            chatsSize: sizeOf(c.chats),
+                            chatsCount: c.chats?.length ?? 0
+                        })).sort((a: any, b: any) => b.size - a.size).slice(0, 10)
+                        console.log(`  - Top 10 characters by size:`)
+                        charSizes.forEach((c: any, i: number) => {
+                            console.log(`    ${i+1}. ${c.name}: ${(c.size / 1024 / 1024).toFixed(2)} MB (chats: ${(c.chatsSize / 1024 / 1024).toFixed(2)} MB, ${c.chatsCount} chats)`)
+                        })
+                    }
+
+                    // Load characters from separate file if exists
+                    LoadingStatusState.text = "Loading Characters..."
+                    const characters = await loadCharactersFromFile()
+                    if (characters) {
+                        decoded.characters = characters
+                    }
+
+                    // Load bot presets from separate file if exists
+                    LoadingStatusState.text = "Loading Bot Presets..."
+                    const presets = await loadBotPresetsFromFile()
+                    if (presets) {
+                        decoded.botPresets = presets
+                    }
+                    // Ensure botPresets has valid default
+                    if (!Array.isArray(decoded.botPresets) || decoded.botPresets.length === 0) {
+                        decoded.botPresets = [presetTemplate]
+                        decoded.botPresetsId = 0
+                    }
+
                     setDatabase(decoded)
+
+                    // Migrate characters and presets to separate files if needed
+                    LoadingStatusState.text = "Checking Data Migration..."
+                    await migrateCharactersAndPresetsToFiles()
                 } catch (error) {
                     console.error(error)
                     const backups = await getDbBackups()

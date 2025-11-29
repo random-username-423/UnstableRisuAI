@@ -17,7 +17,7 @@ import { alertConfirm, alertError, alertMd, alertNormal, alertNormalWait, alertS
 import { syncDrive } from "./drive/drive";
 import { hasher } from "./parser.svelte";
 import { hubURL } from "./character/characterCards";
-import { decodeRisuSave, RisuSaveEncoder, type toSaveType, encodeChat, decodeChat } from "./storage/risuSave";
+import { decodeRisuSave, RisuSaveEncoder, type toSaveType, encodeChat, decodeChat, encodeCharacters, encodeBotPresets } from "./storage/risuSave";
 import { AutoStorage } from "./storage/autoStorage";
 import { saveDbKei } from "./kei/backup";
 import { save } from "@tauri-apps/plugin-dialog";
@@ -585,9 +585,12 @@ export async function saveDb(){
     let encoder = new RisuSaveEncoder()
     // Account 동기화 모드에서는 chats 분리 안 함 (기존 형식 유지)
     const shouldExcludeChats = !forageStorage.isAccount
+    // Account 동기화 모드에서는 characters/presets 분리 안 함
+    const shouldSeparateCharactersAndPresets = !forageStorage.isAccount
     await encoder.init(getDatabase(), {
         compression: forageStorage.isAccount,
-        excludeChats: shouldExcludeChats
+        excludeChats: shouldExcludeChats,
+        separateCharactersAndPresets: shouldSeparateCharactersAndPresets
     })
 
     $effect.root(() => {
@@ -672,7 +675,8 @@ export async function saveDb(){
                 encoder = new RisuSaveEncoder()
                 await encoder.init(getDatabase(), {
                     compression: forageStorage.isAccount,
-                    excludeChats: shouldExcludeChats
+                    excludeChats: shouldExcludeChats,
+                    separateCharactersAndPresets: shouldSeparateCharactersAndPresets
                 })
                 requiresFullEncoderReload.state = false
             }
@@ -738,6 +742,29 @@ export async function saveDb(){
                             await saveToWorker(`database/chats/${chaId}_${chatId}.bin`, encodedChat)
                         }
                     }
+                }
+                // 캐릭터 변경 시 characters.bin 저장
+                if(shouldSeparateCharactersAndPresets && toSave.character.length > 0){
+                    // 채팅 메타데이터만 포함하여 저장 (채팅 본문은 개별 파일)
+                    const charactersToSave = db.characters.map(char => {
+                        const chatsMetadata = char.chats?.map(chat => ({
+                            id: chat.id,
+                            name: chat.name,
+                            folderId: chat.folderId,
+                            bindedPersona: chat.bindedPersona,
+                            modules: chat.modules,
+                            lastDate: chat.lastDate,
+                            fmIndex: chat.fmIndex,
+                        })) || [];
+                        return { ...char, chats: chatsMetadata };
+                    });
+                    const encodedCharacters = await encodeCharacters(charactersToSave)
+                    await saveToWorker('database/characters.bin', encodedCharacters)
+                }
+                // 프리셋 변경 시 botpresets.bin 저장
+                if(shouldSeparateCharactersAndPresets && toSave.botPreset){
+                    const encodedPresets = await encodeBotPresets(db.botPresets)
+                    await saveToWorker('database/botpresets.bin', encodedPresets)
                 }
             }
             else{

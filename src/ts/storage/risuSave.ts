@@ -82,14 +82,17 @@ export class RisuSaveEncoder {
     private blocks: { [key: string]: Uint8Array } = {};
     private compression: boolean = false;
     private excludeChats: boolean = false;
+    private separateCharactersAndPresets: boolean = false;
 
     async init(data:Database,arg:{
         compression?: boolean
         excludeChats?: boolean
+        separateCharactersAndPresets?: boolean
     } = {}){
-        const { compression = false, excludeChats = false } = arg;
+        const { compression = false, excludeChats = false, separateCharactersAndPresets = false } = arg;
         this.compression = compression;
         this.excludeChats = excludeChats;
+        this.separateCharactersAndPresets = separateCharactersAndPresets;
         let obj:Record<any,any> = {}
         let keys = Object.keys(data)
         for(const key of keys){
@@ -103,48 +106,54 @@ export class RisuSaveEncoder {
             type: RisuSaveType.ROOT,
             name: 'root'
         });
-        this.blocks['preset'] = await this.encodeBlock({
-            compression,
-            data: JSON.stringify(data.botPresets),
-            type: RisuSaveType.BOTPRESET,
-            name: 'preset'
-        });
+        // Only include botPresets and characters in database.bin if not separating
+        if (!separateCharactersAndPresets) {
+            this.blocks['preset'] = await this.encodeBlock({
+                compression,
+                data: JSON.stringify(data.botPresets),
+                type: RisuSaveType.BOTPRESET,
+                name: 'preset'
+            });
+        }
         this.blocks['modules'] = await this.encodeBlock({
             compression,
             data: JSON.stringify(data.modules),
             type: RisuSaveType.MODULES,
             name: 'modules'
         });
-        for( const character of data.characters) {
-            let charToSave;
-            if (excludeChats) {
-                // Save only chat metadata (id, name, folderId, etc.) without heavy data
-                const chatsMetadata = character.chats?.map(chat => ({
-                    id: chat.id,
-                    name: chat.name,
-                    folderId: chat.folderId,
-                    bindedPersona: chat.bindedPersona,
-                    modules: chat.modules,
-                    lastDate: chat.lastDate,
-                    fmIndex: chat.fmIndex,
-                    // Note: message, note, localLore, sdData, supaMemoryData, hypaV2Data, hypaV3Data,
-                    // lastMemory, suggestMessages, scriptstate are stored in individual files
-                })) || [];
-                charToSave = { ...character, chats: chatsMetadata };
-            } else {
-                charToSave = character;
+        // Only include characters in database.bin if not separating
+        if (!separateCharactersAndPresets) {
+            for( const character of data.characters) {
+                let charToSave;
+                if (excludeChats) {
+                    // Save only chat metadata (id, name, folderId, etc.) without heavy data
+                    const chatsMetadata = character.chats?.map(chat => ({
+                        id: chat.id,
+                        name: chat.name,
+                        folderId: chat.folderId,
+                        bindedPersona: chat.bindedPersona,
+                        modules: chat.modules,
+                        lastDate: chat.lastDate,
+                        fmIndex: chat.fmIndex,
+                        // Note: message, note, localLore, sdData, supaMemoryData, hypaV2Data, hypaV3Data,
+                        // lastMemory, suggestMessages, scriptstate are stored in individual files
+                    })) || [];
+                    charToSave = { ...character, chats: chatsMetadata };
+                } else {
+                    charToSave = character;
+                }
+                this.blocks[character.chaId] = await this.encodeBlock({
+                    compression,
+                    data: JSON.stringify(charToSave),
+                    type: RisuSaveType.CHARACTERWITHCHAT,
+                    name: character.chaId
+                });
             }
-            this.blocks[character.chaId] = await this.encodeBlock({
-                compression,
-                data: JSON.stringify(charToSave),
-                type: RisuSaveType.CHARACTERWITHCHAT,
-                name: character.chaId
-            });
         }
         this.blocks['config'] = await this.encodeBlock({
             compression,
             data: JSON.stringify({
-                version: excludeChats ? 2 : 1  // version 2 = chats separated
+                version: separateCharactersAndPresets ? 3 : (excludeChats ? 2 : 1)  // version 3 = characters and presets separated
             }),
             type: RisuSaveType.CONFIG,
             name: "config"
@@ -166,56 +175,60 @@ export class RisuSaveEncoder {
             name: 'root'
         });
 
-        const savedId = new Set<string>();
-        for(const character of data.characters) {
-            let charToSave;
-            if (this.excludeChats) {
-                // Save only chat metadata (id, name, folderId, etc.) without heavy data
-                const chatsMetadata = character.chats?.map(chat => ({
-                    id: chat.id,
-                    name: chat.name,
-                    folderId: chat.folderId,
-                    bindedPersona: chat.bindedPersona,
-                    modules: chat.modules,
-                    lastDate: chat.lastDate,
-                    fmIndex: chat.fmIndex,
-                })) || [];
-                charToSave = { ...character, chats: chatsMetadata };
-            } else {
-                charToSave = character;
+        // Only include characters in database.bin if not separating
+        if (!this.separateCharactersAndPresets) {
+            const savedId = new Set<string>();
+            for(const character of data.characters) {
+                let charToSave;
+                if (this.excludeChats) {
+                    // Save only chat metadata (id, name, folderId, etc.) without heavy data
+                    const chatsMetadata = character.chats?.map(chat => ({
+                        id: chat.id,
+                        name: chat.name,
+                        folderId: chat.folderId,
+                        bindedPersona: chat.bindedPersona,
+                        modules: chat.modules,
+                        lastDate: chat.lastDate,
+                        fmIndex: chat.fmIndex,
+                    })) || [];
+                    charToSave = { ...character, chats: chatsMetadata };
+                } else {
+                    charToSave = character;
+                }
+                const index = toSave.character.indexOf(character.chaId);
+                if (index !== -1) {
+                    this.blocks[character.chaId] = await this.encodeBlock({
+                        compression: this.compression,
+                        data: JSON.stringify(charToSave),
+                        type: RisuSaveType.CHARACTERWITHCHAT,
+                        name: character.chaId
+                    });
+                    savedId.add(character.chaId);
+                    toSave.character.splice(index, 1);
+                }
+                else if(!this.blocks[character.chaId]){
+                    this.blocks[character.chaId] = await this.encodeBlock({
+                        compression: this.compression,
+                        data: JSON.stringify(charToSave),
+                        type: RisuSaveType.CHARACTERWITHCHAT,
+                        name: character.chaId
+                    });
+                    savedId.add(character.chaId);
+                }
             }
-            const index = toSave.character.indexOf(character.chaId);
-            if (index !== -1) {
-                this.blocks[character.chaId] = await this.encodeBlock({
-                    compression: this.compression,
-                    data: JSON.stringify(charToSave),
-                    type: RisuSaveType.CHARACTERWITHCHAT,
-                    name: character.chaId
-                });
-                savedId.add(character.chaId);
-                toSave.character.splice(index, 1);
-            }
-            else if(!this.blocks[character.chaId]){
-                this.blocks[character.chaId] = await this.encodeBlock({
-                    compression: this.compression,
-                    data: JSON.stringify(charToSave),
-                    type: RisuSaveType.CHARACTERWITHCHAT,
-                    name: character.chaId
-                });
-                savedId.add(character.chaId);
-            }
-        }
-        if(toSave.character.length > 0){
-            console.log(`Deleting character data: ${toSave.character.join(', ')}`);
-            //probably deleted characters
-            for(const chaId of toSave.character){
-                if(!savedId.has(chaId)){
-                    delete this.blocks[chaId];
+            if(toSave.character.length > 0){
+                console.log(`Deleting character data: ${toSave.character.join(', ')}`);
+                //probably deleted characters
+                for(const chaId of toSave.character){
+                    if(!savedId.has(chaId)){
+                        delete this.blocks[chaId];
+                    }
                 }
             }
         }
 
-        if(toSave.botPreset){
+        // Only include botPresets in database.bin if not separating
+        if(!this.separateCharactersAndPresets && toSave.botPreset){
             this.blocks['preset'] = await this.encodeBlock({
                 compression: this.compression,
                 data: JSON.stringify(data.botPresets),
@@ -482,6 +495,8 @@ function checkHeader(data: Uint8Array) {
   }
 
 const magicChatHeader = new TextEncoder().encode("RISUCHAT\0");
+const magicCharactersHeader = new TextEncoder().encode("RISUCHAR\0");
+const magicBotPresetsHeader = new TextEncoder().encode("RISUBPRE\0");
 
 /**
  * Encodes a Chat object to a compressed binary format
@@ -526,4 +541,96 @@ export async function decodeChat(data: Uint8Array): Promise<Chat | null> {
 
     const jsonStr = new TextDecoder().decode(decompressed);
     return JSON.parse(jsonStr) as Chat;
+}
+
+import type { character, groupChat, botPreset } from "./database.svelte";
+
+/**
+ * Encodes characters array to a compressed binary format
+ */
+export async function encodeCharacters(characters: (character | groupChat)[]): Promise<Uint8Array> {
+    await checkCompressionStreams();
+    const jsonStr = JSON.stringify(characters);
+    const jsonBytes = new TextEncoder().encode(jsonStr);
+
+    const cs = new CompressionStream('gzip');
+    const writer = cs.writable.getWriter();
+    writer.write(jsonBytes);
+    writer.close();
+    const compressedData = await new Response(cs.readable).arrayBuffer();
+
+    const result = new Uint8Array(magicCharactersHeader.length + compressedData.byteLength);
+    result.set(magicCharactersHeader, 0);
+    result.set(new Uint8Array(compressedData), magicCharactersHeader.length);
+    return result;
+}
+
+/**
+ * Decodes characters array from compressed binary format
+ */
+export async function decodeCharacters(data: Uint8Array): Promise<(character | groupChat)[] | null> {
+    // Check magic header
+    for (let i = 0; i < magicCharactersHeader.length; i++) {
+        if (data[i] !== magicCharactersHeader[i]) {
+            console.error('Invalid characters file header');
+            return null;
+        }
+    }
+
+    await checkCompressionStreams();
+    const compressedData = data.subarray(magicCharactersHeader.length);
+
+    const ds = new DecompressionStream('gzip');
+    const writer = ds.writable.getWriter();
+    writer.write(compressedData as any);
+    writer.close();
+    const decompressed = await new Response(ds.readable).arrayBuffer();
+
+    const jsonStr = new TextDecoder().decode(decompressed);
+    return JSON.parse(jsonStr) as (character | groupChat)[];
+}
+
+/**
+ * Encodes botPresets array to a compressed binary format
+ */
+export async function encodeBotPresets(botPresets: botPreset[]): Promise<Uint8Array> {
+    await checkCompressionStreams();
+    const jsonStr = JSON.stringify(botPresets);
+    const jsonBytes = new TextEncoder().encode(jsonStr);
+
+    const cs = new CompressionStream('gzip');
+    const writer = cs.writable.getWriter();
+    writer.write(jsonBytes);
+    writer.close();
+    const compressedData = await new Response(cs.readable).arrayBuffer();
+
+    const result = new Uint8Array(magicBotPresetsHeader.length + compressedData.byteLength);
+    result.set(magicBotPresetsHeader, 0);
+    result.set(new Uint8Array(compressedData), magicBotPresetsHeader.length);
+    return result;
+}
+
+/**
+ * Decodes botPresets array from compressed binary format
+ */
+export async function decodeBotPresets(data: Uint8Array): Promise<botPreset[] | null> {
+    // Check magic header
+    for (let i = 0; i < magicBotPresetsHeader.length; i++) {
+        if (data[i] !== magicBotPresetsHeader[i]) {
+            console.error('Invalid botPresets file header');
+            return null;
+        }
+    }
+
+    await checkCompressionStreams();
+    const compressedData = data.subarray(magicBotPresetsHeader.length);
+
+    const ds = new DecompressionStream('gzip');
+    const writer = ds.writable.getWriter();
+    writer.write(compressedData as any);
+    writer.close();
+    const decompressed = await new Response(ds.readable).arrayBuffer();
+
+    const jsonStr = new TextDecoder().decode(decompressed);
+    return JSON.parse(jsonStr) as botPreset[];
 }
