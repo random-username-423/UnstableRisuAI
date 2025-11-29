@@ -212,7 +212,20 @@ export async function LoadLocalBackup(){
                             setDatabaseLite(dbData);
                             requiresFullEncoderReload.state = true;
 
-                            // Clear existing chat files (backup has full DB with chats)
+                            // Clear existing separated files (backup has full DB with everything)
+                            // This prevents old data from overriding backup data on reload
+                            try {
+                                await deleteFromWorker('database/characters.bin');
+                                console.log('[LoadLocalBackup] Cleared characters.bin');
+                            } catch(e) {
+                                console.log('[LoadLocalBackup] No characters.bin to clear');
+                            }
+                            try {
+                                await deleteFromWorker('database/botpresets.bin');
+                                console.log('[LoadLocalBackup] Cleared botpresets.bin');
+                            } catch(e) {
+                                console.log('[LoadLocalBackup] No botpresets.bin to clear');
+                            }
                             try {
                                 const chatFiles = await listFromWorker('database/chats');
                                 for(const file of chatFiles){

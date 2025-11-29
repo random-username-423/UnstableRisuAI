@@ -1369,5 +1369,25 @@ export const languageKorean = {
     "dynamicRequest": "동적 요청",
     "dynamicOutputPrompt": "동적 출력 프롬프트",
     "vertexAuthError": "Vertex AI 인증 정보가 누락되었습니다.",
-    "required": "필요"
+    "required": "필요",
+
+    // Storage settings - translated by Claude Code
+    "storage": "저장소",
+    "storageOverview": "저장소 현황",
+    "storageUsed": "사용 중",
+    "storageUsedPercent": "사용됨",
+    "storageFiles": "파일 통계",
+    "storageItems": "개",
+    "storageCharacters": "캐릭터",
+    "storageChats": "채팅",
+    "storageAssets": "에셋",
+    "storageBackups": "백업",
+    "storageDatabaseFiles": "데이터베이스 파일",
+    "storageFilesCount": "개 파일",
+    "storageIndividual": "(개별 파일)",
+    "storageEnvironment": "환경",
+    "storagePlatform": "플랫폼",
+    "storageDbLocation": "데이터베이스 위치",
+    "storageAssetLocation": "에셋 위치",
+    "storageRefresh": "새로고침"
 }

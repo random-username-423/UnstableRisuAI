@@ -31,6 +31,11 @@ interface ListMessage {
     dirPath: string
 }
 
+interface ListWithSizesMessage {
+    type: 'listWithSizes'
+    dirPath: string
+}
+
 interface DeleteMessage {
     type: 'delete'
     key: string
@@ -53,6 +58,13 @@ interface ListResponse {
     type: 'list_success' | 'list_error'
     dirPath: string
     files?: string[]
+    error?: string
+}
+
+interface ListWithSizesResponse {
+    type: 'listWithSizes_success' | 'listWithSizes_error'
+    dirPath: string
+    files?: { name: string; size: number }[]
     error?: string
 }
 
@@ -98,7 +110,7 @@ async function getDirectory(dirPath: string): Promise<FileSystemDirectoryHandle 
     }
 }
 
-self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage | DeleteMessage>) => {
+self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage | ListWithSizesMessage | DeleteMessage>) => {
     const { type } = e.data
 
     if (type === 'save') {
@@ -189,6 +201,46 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage 
         } catch (error) {
             const response: ListResponse = {
                 type: 'list_error',
+                dirPath,
+                error: error instanceof Error ? error.message : String(error)
+            }
+            self.postMessage(response)
+        }
+    } else if (type === 'listWithSizes') {
+        const { dirPath } = e.data as ListWithSizesMessage
+        try {
+            const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
+            if (!dir) {
+                const response: ListWithSizesResponse = {
+                    type: 'listWithSizes_success',
+                    dirPath,
+                    files: []
+                }
+                self.postMessage(response)
+                return
+            }
+
+            const files: { name: string; size: number }[] = []
+            for await (const [name, handle] of (dir as any).entries()) {
+                if (handle.kind === 'file') {
+                    try {
+                        const fileHandle = handle as FileSystemFileHandleWithSync
+                        const accessHandle = await fileHandle.createSyncAccessHandle()
+                        const size = accessHandle.getSize()
+                        accessHandle.close()
+                        files.push({ name, size })
+                    } catch {
+                        // 파일 크기를 읽을 수 없으면 0으로 처리
+                        files.push({ name, size: 0 })
+                    }
+                }
+            }
+
+            const response: ListWithSizesResponse = { type: 'listWithSizes_success', dirPath, files }
+            self.postMessage(response)
+        } catch (error) {
+            const response: ListWithSizesResponse = {
+                type: 'listWithSizes_error',
                 dirPath,
                 error: error instanceof Error ? error.message : String(error)
             }

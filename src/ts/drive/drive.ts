@@ -438,7 +438,20 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         const dbData = encodeRisuSaveLegacy(db, 'compression')
         console.log(`[GoogleDrive Restore] Saving database... (${(dbData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
 
-        // Clear existing chat files (backup has full DB with chats)
+        // Clear existing separated files (backup has full DB with everything)
+        // This prevents old data from overriding backup data on reload
+        try {
+            await deleteFromWorker('database/characters.bin');
+            console.log('[GoogleDrive Restore] Cleared characters.bin');
+        } catch(e) {
+            console.log('[GoogleDrive Restore] No characters.bin to clear');
+        }
+        try {
+            await deleteFromWorker('database/botpresets.bin');
+            console.log('[GoogleDrive Restore] Cleared botpresets.bin');
+        } catch(e) {
+            console.log('[GoogleDrive Restore] No botpresets.bin to clear');
+        }
         try {
             const chatFiles = await listFromWorker('database/chats');
             for(const file of chatFiles){

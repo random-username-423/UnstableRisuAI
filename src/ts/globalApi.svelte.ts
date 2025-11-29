@@ -295,6 +295,7 @@ let opfsWorkerReady = false
 let pendingSaves = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
 let pendingLoads = new Map<string, { resolve: (data: Uint8Array | null) => void, reject: (e: Error) => void }>()
 let pendingLists = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
+let pendingListsWithSizes = new Map<string, { resolve: (files: { name: string; size: number }[]) => void, reject: (e: Error) => void }>()
 let pendingDeletes = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
 
 export async function initOPFSWorker(): Promise<void> {
@@ -363,6 +364,19 @@ export async function initOPFSWorker(): Promise<void> {
                     pendingLists.delete(dirPath)
                 }
             }
+            // Handle listWithSizes responses
+            else if (type === 'listWithSizes_success' || type === 'listWithSizes_error') {
+                const { dirPath, files } = e.data
+                const pending = pendingListsWithSizes.get(dirPath)
+                if (pending) {
+                    if (type === 'listWithSizes_success') {
+                        pending.resolve(files || [])
+                    } else {
+                        pending.resolve([])
+                    }
+                    pendingListsWithSizes.delete(dirPath)
+                }
+            }
             // Handle delete responses
             else if (type === 'delete_success' || type === 'delete_error') {
                 const pending = pendingDeletes.get(key)
@@ -429,6 +443,20 @@ export async function listFromWorker(dirPath: string): Promise<string[]> {
     return new Promise((resolve, reject) => {
         pendingLists.set(dirPath, { resolve, reject })
         opfsWorker.postMessage({ type: 'list', dirPath })
+    })
+}
+
+export async function listWithSizesFromWorker(dirPath: string): Promise<{ name: string; size: number }[]> {
+    // Worker가 없으면 자동 초기화
+    if (!opfsWorker) {
+        await initOPFSWorker()
+    }
+    if (!opfsWorker) {
+        return []
+    }
+    return new Promise((resolve, reject) => {
+        pendingListsWithSizes.set(dirPath, { resolve, reject })
+        opfsWorker.postMessage({ type: 'listWithSizes', dirPath })
     })
 }
 
