@@ -1,8 +1,7 @@
 import {
     writeFile,
     BaseDirectory,
-    readFile,
-    exists
+    readFile
 } from "@tauri-apps/plugin-fs"
 import { sleep, getBasename } from "./util"
 import { getDbBackups } from "./init"
@@ -48,32 +47,31 @@ export async function downloadFile(name:string, dat:Uint8Array|ArrayBuffer|strin
         dat = Buffer.from(dat, 'utf-8')
     }
     const data = new Uint8Array(dat)
-    const downloadURL = (data:string, fileName:string) => {
-        const a = document.createElement('a')
-        a.href = data
-        a.download = fileName
-        document.body.appendChild(a)
-        a.style.display = 'none'
-        a.click()
-        a.remove()
-    }
 
     if(isTauri && !isMobileTauri){
         // Desktop Tauri: write to Downloads folder
         await writeFile(name, data, {baseDir: BaseDirectory.Download})
     }
+    else if(isMobileTauri){
+        // Mobile Tauri: use Rust commands to write to /storage/emulated/0/Download/
+        const { invoke } = await import('@tauri-apps/api/core')
+        const path = await invoke('create_download_file', { filename: name })
+        await invoke('append_download_file', { path, data: Array.from(data) })
+    }
     else{
-        // Web and Mobile Tauri: use blob download
+        // Web: use blob download
         const blob = new Blob([data], { type: 'application/octet-stream' })
         const url = URL.createObjectURL(blob)
-
-        downloadURL(url, name)
-
+        const a = document.createElement('a')
+        a.href = url
+        a.download = name
+        document.body.appendChild(a)
+        a.style.display = 'none'
+        a.click()
+        a.remove()
         setTimeout(() => {
             URL.revokeObjectURL(url)
         }, 10000)
-
-        
     }
 }
 
@@ -212,18 +210,26 @@ let appDataDirPath = ''
  * @returns {Promise<Uint8Array>} - A promise that resolves to the data of the image file.
  */
 export async function readImage(data:string) {
+    // Assets are stored in IndexedDB (forageStorage) for all platforms
+    const result = await forageStorage.getItem(data) as unknown as Uint8Array
+    if (result) {
+        return result
+    }
+    // Fallback to Tauri fs for legacy data
     if(isTauri){
-        if(data.startsWith('assets')){
-            if(appDataDirPath === ''){
-                appDataDirPath = await appDataDir();
+        try {
+            if(data.startsWith('assets')){
+                if(appDataDirPath === ''){
+                    appDataDirPath = await appDataDir();
+                }
+                return await readFile(await join(appDataDirPath,data))
             }
-            return await readFile(await join(appDataDirPath,data))
+            return await readFile(data)
+        } catch (e) {
+            return null
         }
-        return await readFile(data)
     }
-    else{
-        return (await forageStorage.getItem(data) as unknown as Uint8Array)
-    }
+    return null
 }
 
 /**
@@ -1105,7 +1111,7 @@ export class TauriWriter{
 
     /**
      * Creates an instance of TauriWriter.
-     * 
+     *
      * @param {string} path - The file path to write to.
      */
     constructor(path: string){
@@ -1114,7 +1120,7 @@ export class TauriWriter{
 
     /**
      * Writes data to the file.
-     * 
+     *
      * @param {Uint8Array} data - The data to write.
      */
     async write(data:Uint8Array) {
@@ -1133,21 +1139,55 @@ export class TauriWriter{
 }
 
 /**
+ * A streaming writer for mobile Tauri that writes directly to Android's Downloads folder.
+ * Uses Rust commands for efficient file I/O without buffering in JS memory.
+ */
+export class MobileTauriWriter{
+    filename: string
+    filePath: string | null = null
+
+    constructor(filename: string){
+        this.filename = filename
+    }
+
+    async write(data:Uint8Array) {
+        const { invoke } = await import('@tauri-apps/api/core')
+
+        if (!this.filePath) {
+            // First write: create file
+            this.filePath = await invoke('create_download_file', {
+                filename: this.filename
+            }) as string
+        }
+
+        // Append data
+        await invoke('append_download_file', {
+            path: this.filePath,
+            data: Array.from(data)
+        })
+    }
+
+    async close(){
+        // File is already written, nothing to do
+    }
+}
+
+/**
  * Class representing a local writer.
  */
 export class LocalWriter {
-    writer: WritableStreamDefaultWriter | TauriWriter
+    writer: WritableStreamDefaultWriter | TauriWriter | MobileTauriWriter
 
     /**
      * Initializes the writer.
-     * 
+     *
      * @param {string} [name='Binary'] - The name of the file.
      * @param {string[]} [ext=['bin']] - The file extensions.
      * @returns {Promise<boolean>} - A promise that resolves to a boolean indicating success.
      */
     async init(name = 'Binary', ext = ['bin']): Promise<boolean> {
         if (isTauri && !isMobileTauri) {
-            // Desktop Tauri: use native save dialog
+            // Desktop Tauri: use native save dialog + streaming writer
             const filePath = await save({
                 filters: [{
                     name: name,
@@ -1160,7 +1200,12 @@ export class LocalWriter {
             this.writer = new TauriWriter(filePath)
             return true
         }
-        // Web and Mobile Tauri: use streamsaver
+        if (isMobileTauri) {
+            // Mobile Tauri: streaming write to /storage/emulated/0/Download/
+            this.writer = new MobileTauriWriter(name + '.' + ext[0])
+            return true
+        }
+        // Web: use streamsaver
         const streamSaver = await import('streamsaver')
         const writableStream = streamSaver.createWriteStream(name + '.' + ext[0])
         this.writer = writableStream.getWriter()

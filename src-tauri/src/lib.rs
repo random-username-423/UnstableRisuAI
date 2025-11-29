@@ -550,6 +550,48 @@ async fn streamed_fetch(
     }
 }
 
+/// Create a new file in Android's Downloads folder (truncates if exists)
+#[tauri::command]
+fn create_download_file(filename: String) -> Result<String, String> {
+    #[cfg(target_os = "android")]
+    {
+        let download_path = format!("/storage/emulated/0/Download/{}", filename);
+        std::fs::File::create(&download_path).map_err(|e| e.to_string())?;
+        Ok(download_path)
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        Err("This command is only available on Android".to_string())
+    }
+}
+
+/// Append data to an existing file
+#[tauri::command]
+fn append_download_file(path: String, data: Vec<u8>) -> Result<(), String> {
+    use std::io::Write;
+    let mut file = std::fs::OpenOptions::new()
+        .append(true)
+        .open(&path)
+        .map_err(|e| e.to_string())?;
+    file.write_all(&data).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+/// Save file to Android's public Downloads folder (one-shot, for small files)
+#[tauri::command]
+fn save_to_downloads(filename: String, data: Vec<u8>) -> Result<String, String> {
+    #[cfg(target_os = "android")]
+    {
+        let download_path = format!("/storage/emulated/0/Download/{}", filename);
+        std::fs::write(&download_path, &data).map_err(|e| e.to_string())?;
+        Ok(download_path)
+    }
+    #[cfg(not(target_os = "android"))]
+    {
+        Err("This command is only available on Android".to_string())
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let mut builder = tauri::Builder::default();
@@ -585,7 +627,10 @@ pub fn run() {
             run_py_server,
             install_py_dependencies,
             streamed_fetch,
-            oauth_login
+            oauth_login,
+            save_to_downloads,
+            create_download_file,
+            append_download_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application")
