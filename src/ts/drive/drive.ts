@@ -1,11 +1,12 @@
 import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../alert";
 import { getDatabase, type Database } from "../storage/database.svelte";
-import { forageStorage, getUnpargeables, isTauri, openURL, saveToWorker } from "../globalApi.svelte";
+import { forageStorage, getUnpargeables, openURL, saveToWorker } from "../globalApi.svelte";
+import { isTauri } from "src/ts/env";
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
 import { platform } from '@tauri-apps/plugin-os';
-import { sleep } from '../util';
+import { sleep, getBasename } from '../util';
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 
 export async function checkDriver(type:'save'|'load'|'loadtauri'|'savetauri'|'reftoken'){
@@ -530,13 +531,6 @@ async function createFileInFolder(accessToken:string, fileName:string, content:U
       console.error("Error creating file:", result);
       throw new Error(result.error.message);
     }
-}
-  
-const baseNameRegex = /\\/g
-function getBasename(data:string){
-    const splited = data.replace(baseNameRegex, '/').split('/')
-    const lasts = splited[splited.length-1]
-    return lasts
 }
 
 async function getFileData(ACCESS_TOKEN:string,fileId:string) {

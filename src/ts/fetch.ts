@@ -10,12 +10,7 @@ import { hubURL } from './character/characterCards'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { fetch as TauriHTTPFetch } from '@tauri-apps/plugin-http'
-
-// Environment detection (duplicated to avoid circular dependency with globalApi)
-//@ts-ignore
-const isTauri = !!window.__TAURI_INTERNALS__
-//@ts-ignore
-const isNodeServer = !!globalThis.__NODE__
+import { isTauri, isNodeServer } from "src/ts/env";
 
 // Declare userScriptFetch on window
 declare global {

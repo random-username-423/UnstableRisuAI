@@ -7,11 +7,9 @@ import { readFile } from "@tauri-apps/plugin-fs"
 import { basename } from "@tauri-apps/api/path"
 import { createBlankChar, getCharImage } from "./character/characters"
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { isTauri } from "./globalApi.svelte"
-import { platform } from '@tauri-apps/plugin-os';
-const appWindow = isTauri ? getCurrentWebviewWindow() : null
+import { isTauri, isMobileTauri } from "src/ts/env";
 
-export const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1
+const appWindow = isTauri ? getCurrentWebviewWindow() : null
 
 export interface Messagec extends Message {
     index: number
@@ -43,6 +41,16 @@ export function sleep(ms: number) {
 
 export function checkNullish(data: any) {
     return data === undefined || data === null
+}
+
+/**
+ * Gets the basename of a given path (cross-platform).
+ * Handles both Windows backslashes and Unix forward slashes.
+ */
+export function getBasename(path: string): string {
+    const normalized = path.replace(/\\/g, '/')
+    const parts = normalized.split('/')
+    return parts[parts.length - 1]
 }
 
 const domSelect = true
@@ -222,10 +230,8 @@ function readFileAsUint8Array(file) {
 }
 
 export async function changeFullscreen() {
-    const currentPlatform = await platform();
-    const isMobile = currentPlatform === 'android' || currentPlatform === 'ios';
 
-    if (isMobile) {
+    if (isMobileTauri) {
         return;
     }
 

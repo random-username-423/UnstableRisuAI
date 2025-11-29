@@ -3,6 +3,7 @@ import { type HypaModel, localModels } from "./hypamemory";
 import { TaskRateLimiter, TaskCanceledError } from "./taskRateLimiter";
 import { runEmbedding } from "../transformers";
 import { globalFetch } from "src/ts/globalApi.svelte";
+import { isMobileUserAgent } from "src/ts/env";
 import { getDatabase } from "src/ts/storage/database.svelte";
 import { appendLastPath } from "src/ts/util";
 
@@ -304,18 +305,14 @@ export class HypaProcessorV2<TMetadata> {
       return 50;
     }
 
-    const isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(
-      navigator.userAgent
-    );
-
     // WebGPU
     if ("gpu" in navigator) {
-      return isMobile ? 5 : 10;
+      return isMobileUserAgent ? 5 : 10;
     }
 
     // WASM
     const cpuCores = navigator.hardwareConcurrency || 4;
-    const baseChunkSize = isMobile ? Math.floor(cpuCores / 2) : cpuCores;
+    const baseChunkSize = isMobileUserAgent ? Math.floor(cpuCores / 2) : cpuCores;
 
     return Math.min(baseChunkSize, 10);
   }

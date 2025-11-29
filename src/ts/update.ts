@@ -2,12 +2,11 @@ import { alertConfirm, alertWait } from "./alert";
 import { language } from "../lang";
 import { platform } from '@tauri-apps/plugin-os';
 import { relaunch } from '@tauri-apps/plugin-process';
+import { isMobileTauri } from "src/ts/env";
 
 export async function checkRisuUpdate(){
-    const currentPlatform = await platform();
-    const isMobile = currentPlatform === 'android' || currentPlatform === 'ios';
-    
-    if(isMobile){
+
+    if(isMobileTauri){
         return;
     }
 

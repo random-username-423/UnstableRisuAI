@@ -2,7 +2,7 @@ import { alertError } from "../alert";
 import { hubURL } from "../character/characterCards";
 import { language } from "../../lang";
 import type { Database } from "../storage/database.svelte";
-import { isTauri } from "../globalApi.svelte";
+import { isTauri } from "src/ts/env";
 import { fetch as TauriFetch } from "@tauri-apps/plugin-http";
 
 /**

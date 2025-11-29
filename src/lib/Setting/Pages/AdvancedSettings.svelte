@@ -4,7 +4,9 @@
     import Button from "src/lib/UI/GUI/Button.svelte";
     import { DBState } from 'src/ts/stores.svelte';
     import { alertMd, alertNormal } from "src/ts/alert";
-    import { downloadFile, getRequestLog, isNodeServer, isTauri } from "src/ts/globalApi.svelte";
+    import { downloadFile, getRequestLog } from "src/ts/globalApi.svelte";
+    import { isNodeServer } from "src/ts/env";
+    import { isTauri } from "src/ts/env";
     import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";

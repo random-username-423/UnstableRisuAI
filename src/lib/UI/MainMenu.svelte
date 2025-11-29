@@ -4,7 +4,7 @@
     import Hub from "./Realm/RealmMain.svelte";
     import { OpenRealmStore } from "src/ts/stores.svelte";
     import { ArrowLeft } from "lucide-svelte";
-    import { getVersionString, isNodeServer, isTauri, openURL } from "src/ts/globalApi.svelte";
+    import { getVersionString, openURL } from "src/ts/globalApi.svelte";
     import { language } from "src/lang";
     import { getRisuHub, hubAdditionalHTML } from "src/ts/character/characterCards";
     import RisuHubIcon from "./Realm/RealmHubIcon.svelte";

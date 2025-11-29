@@ -1,5 +1,6 @@
 import localforage from "localforage"
-import { isNodeServer, replaceDbResources } from "../globalApi.svelte"
+import { replaceDbResources } from "../globalApi.svelte"
+import { isNodeServer } from "src/ts/env";
 import { NodeStorage } from "./nodeStorage"
 import { OpfsStorage } from "./opfsStorage"
 import { alertInput, alertSelect, alertStore } from "../alert"

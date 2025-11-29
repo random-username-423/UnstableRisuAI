@@ -36,7 +36,8 @@ export const defaultCBSRegisterArg: CBSRegisterArg = {
     callInternalFunction: (args: string[]) => {return ''},
     isTauri: false,
     isNodeServer: false,
-    isMobile: false,
+    isMobileUserAgent: false,
+    isMobileTauri: false,
     appVer: '0.0.0',
     getModelInfo: () => ({
         id: 'placeholder',
@@ -108,7 +109,8 @@ export type CBSRegisterArg = {
     callInternalFunction: (args: string[]) => string,
     isTauri: boolean,
     isNodeServer: boolean,
-    isMobile: boolean,
+    isMobileUserAgent: boolean,
+    isMobileTauri: boolean,
     appVer: string,
 }
 
@@ -134,7 +136,8 @@ export function registerCBS(arg:CBSRegisterArg) {
         getSelectedCharID, 
         isTauri, 
         isNodeServer, 
-        isMobile, 
+        isMobileUserAgent,
+        isMobileTauri,
         appVer, 
         getModelInfo,
         callInternalFunction
@@ -1839,7 +1842,7 @@ export function registerCBS(arg:CBSRegisterArg) {
             const db = getDatabase()
             switch(args[0].toLocaleLowerCase()){
                 case 'mobile':{
-                    return isMobile ? '1' : '0'
+                    return isMobileUserAgent ? '1' : '0'
                 }
                 case 'local':{
                     return isTauri ? '1' : '0'

@@ -100,10 +100,10 @@
 <script lang="ts">
     import { textAreaSize, textAreaTextSize } from 'src/ts/gui/guisize'
     import { highlighter, getNewHighlightId, removeHighlight, AllCBS } from 'src/ts/gui/highlight'
-    import { isMobile } from 'src/ts/globalApi.svelte';
-    import { isFirefox, sleep } from 'src/ts/util';
+    import { isMobileUserAgent } from "src/ts/env";
+    import { sleep } from 'src/ts/util';
     import { onDestroy, onMount } from 'svelte';
-  import { disableHighlight } from 'src/ts/stores.svelte';
+    import { disableHighlight } from 'src/ts/stores.svelte';
     interface Props {
         size?: 'xs'|'sm'|'md'|'lg'|'xl'|'default';
         autocomplete?: 'on'|'off';
@@ -147,7 +147,7 @@
     let inputDom: HTMLDivElement = $state()
 
     const autoComplete = () => {
-        if(isMobile){
+        if(isMobileUserAgent){
             return
         }
         //autocomplete

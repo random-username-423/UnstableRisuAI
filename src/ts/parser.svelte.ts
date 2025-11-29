@@ -2,7 +2,8 @@ import DOMPurify from 'dompurify';
 import markdownit from 'markdown-it'
 import { appVer, getCurrentCharacter, getDatabase, type Database, type Message, type character, type customscript, type groupChat, type loreBook, type triggerscript } from './storage/database.svelte';
 import { DBState } from './stores.svelte';
-import { getFileSrc, isMobile, isNodeServer, isTauri } from './globalApi.svelte';
+import { getFileSrc } from './globalApi.svelte';
+import { isTauri, isNodeServer, isMobileUserAgent, isMobileTauri } from "src/ts/env";
 import { processScriptFull } from './process/scripts';
 import { get } from 'svelte/store';
 import css, { type CssAtRuleAST } from '@adobe/css-tools'
@@ -944,7 +945,8 @@ function initMatcher(){
         },
         isTauri: isTauri,
         isNodeServer: isNodeServer,
-        isMobile: false,
+        isMobileUserAgent: isMobileUserAgent,
+        isMobileTauri: isMobileTauri,
         appVer: appVer,
     })
     matcherInitialized = true
