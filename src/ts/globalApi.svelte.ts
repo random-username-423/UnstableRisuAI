@@ -14,6 +14,7 @@ import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { selectedCharID, DBState } from "./stores.svelte";
 import { alertConfirm, alertError, alertMd, alertNormal, alertNormalWait, alertSelect, alertTOS, alertWait, waitAlert } from "./alert";
 import { syncDrive } from "./drive/drive";
+import { syncManager } from "./drive/syncManager";
 import { hasher } from "./parser.svelte";
 import { hubURL } from "./character/characterCards";
 import { decodeRisuSave, RisuSaveEncoder, type toSaveType, encodeChat, decodeChat, encodeCharacters, encodeBotPresets } from "./storage/risuSave";
@@ -568,9 +569,15 @@ export async function saveChat(chaId: string, chat: typeof import('./storage/dat
     // Don't save if message is not loaded (nothing to save)
     if (chat.message === undefined) return
 
+    // Update modifiedAt for sync
+    chat.modifiedAt = Date.now()
+
     try {
         const encodedChat = await encodeChat(chat)
         await saveToWorker(`database/chats/${chaId}_${chat.id}.bin`, encodedChat)
+
+        // Mark for sync (debounced)
+        syncManager.markChatChanged(chaId, chat.id)
     } catch (e) {
         console.error(`[saveChat] Error saving chat ${chat.id}:`, e)
     }
@@ -794,13 +801,23 @@ export async function saveDb(){
                         })) || [];
                         return { ...char, chats: chatsMetadata };
                     });
-                    const encodedCharacters = await encodeCharacters(charactersToSave)
+                    const encodedCharacters = await encodeCharacters(charactersToSave as (character | groupChat)[])
                     await saveToWorker('database/characters.bin', encodedCharacters)
+
+                    // Mark characters for sync (debounced)
+                    for (const chaId of toSave.character) {
+                        if (chaId) {
+                            syncManager.markCharacterChanged(chaId)
+                        }
+                    }
                 }
                 // 프리셋 변경 시 botpresets.bin 저장
                 if(shouldSeparateCharactersAndPresets && toSave.botPreset){
                     const encodedPresets = await encodeBotPresets(db.botPresets)
                     await saveToWorker('database/botpresets.bin', encodedPresets)
+
+                    // Mark bot presets for sync (debounced)
+                    syncManager.markBotPresetsChanged()
                 }
             }
             else{

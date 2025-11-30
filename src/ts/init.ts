@@ -683,6 +683,15 @@ async function checkNewFormat(): Promise<void> {
             v.systemPrompt ??= '';
             v.scenario ??= '';
         }
+
+        // Migrate modifiedAt for sync (set to now if not exists)
+        v.modifiedAt ??= Date.now();
+
+        // Migrate chat modifiedAt
+        for (const chat of v.chats ?? []) {
+            chat.modifiedAt ??= chat.lastDate ?? Date.now();
+        }
+
         return v;
     }).filter((v) => {
         return v !== null;

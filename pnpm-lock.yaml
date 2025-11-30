@@ -20,6 +20,9 @@ importers:
       '@browsermt/bergamot-translator':
         specifier: ^0.4.9
         version: 0.4.9
+      '@choochmeque/tauri-plugin-google-auth-api':
+        specifier: ^0.3.4
+        version: 0.3.4
       '@codemirror/commands':
         specifier: ^6.10.0
         version: 6.10.0
@@ -347,6 +350,9 @@ packages:
 
   '@browsermt/bergamot-translator@0.4.9':
     resolution: {integrity: sha512-bNuuCwM/JnsIYQCKXcYKFT4Qc5vLMoB8Nbvz8ReIgs7xzebK8Sa+R8iEK8mLvNBe/WaZ6zrPaUQilLsRT/ea8Q==}
+
+  '@choochmeque/tauri-plugin-google-auth-api@0.3.4':
+    resolution: {integrity: sha512-EeLAi6RfFOXCYgicZCZ2gvXrvkhFUbxA35wnAqiyBgW40SwAUEW5wCqnxVoeEYnq09BnjH65pkCjBqhBpXN9lQ==}
 
   '@codemirror/autocomplete@6.20.0':
     resolution: {integrity: sha512-bOwvTOIJcG5FVo5gUUupiwYh8MioPLQ4UcqbcRf7UQ98X90tCa9E1kZ3Z7tqwpZxYyOvh1YTYbmZE9RTfTp5hg==}
@@ -2727,6 +2733,10 @@ snapshots:
   '@breezystack/lamejs@1.2.7': {}
 
   '@browsermt/bergamot-translator@0.4.9': {}
+
+  '@choochmeque/tauri-plugin-google-auth-api@0.3.4':
+    dependencies:
+      '@tauri-apps/api': 2.9.0
 
   '@codemirror/autocomplete@6.20.0':
     dependencies:

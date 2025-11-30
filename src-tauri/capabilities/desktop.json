@@ -5,11 +5,16 @@
     "windows",
     "linux"
   ],
+  "local": true,
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "updater:default",
     "process:default",
     "shell:default",
     "http:default",
-    "deep-link:default"
+    "deep-link:default",
+    "google-auth:default"
   ]
 }

@@ -648,6 +648,8 @@ export function setCharacterByIndex(index:number,char:character|groupChat){
     if(!DBState.db.characters){
         DBState.db.characters = []
     }
+    // Update modifiedAt for sync
+    char.modifiedAt = Date.now()
     DBState.db.characters[index] = char
 }
 
@@ -1111,6 +1113,13 @@ export interface Database{
     ImagenAspectRatio:string
     ImagenPersonGeneration:string
     openAIServiceTier:string
+    // Sync settings
+    syncEnabled?:boolean           // Enable real-time sync
+    lastSyncedVersion?:number      // Last synced manifest version
+    lastSyncTime?:number           // Last sync timestamp
+    syncAccessToken?:string        // Google OAuth access token
+    syncRefreshToken?:string       // Google OAuth refresh token
+    syncTokenExpiresAt?:number     // Token expiration timestamp
 }
 
 interface SeparateParameters{
@@ -1303,6 +1312,7 @@ export interface character{
     prebuiltAssetStyle?:string
     prebuiltAssetExclude?:string[]
     modules?:string[]
+    modifiedAt?:number  // For sync: timestamp of last modification
 }
 
 
@@ -1381,6 +1391,7 @@ export interface groupChat{
     prebuiltAssetStyle?:string
     prebuiltAssetExclude?:string[]
     modules?:string[]
+    modifiedAt?:number  // For sync: timestamp of last modification
 }
 
 export interface botPreset{
@@ -1630,6 +1641,7 @@ export interface Chat{
     hypaV3Data?:SerializableHypaV3Data
     folderId?:string
     lastDate?:number
+    modifiedAt?:number  // For sync: timestamp of last modification
 }
 
 export interface ChatFolder{
