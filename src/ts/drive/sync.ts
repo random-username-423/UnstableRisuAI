@@ -19,19 +19,25 @@ export interface SyncManifest {
     version: number;  // Incremented on every change
 
     chats: {
-        [chatId: string]: { modifiedAt: number }
+        [chatId: string]: { modifiedAt: number; fileId?: string }
     };
 
     characters: {
-        [charId: string]: { modifiedAt: number }
+        [charId: string]: { modifiedAt: number; fileId?: string }
     };
 
     settings: {
         modifiedAt: number;
+        fileId?: string;
     };
 
     botPresets: {
         modifiedAt: number;
+        fileId?: string;
+    };
+
+    assets: {
+        [assetName: string]: { fileId: string }
     };
 
     deletedAssets: {
@@ -52,6 +58,9 @@ interface DriveFile {
 const SYNC_FOLDER = 'sync';
 const MANIFEST_FILE = 'manifest.json';
 const TOMBSTONE_DAYS = 30;
+
+// Cached manifest file ID (to avoid repeated listSyncFiles calls)
+let cachedManifestFileId: string | null = null;
 
 // ============================================================================
 // Google Drive API Helpers (for sync folder)
@@ -226,12 +235,28 @@ async function deleteSyncFile(accessToken: string, fileId: string): Promise<void
  */
 export async function downloadManifest(accessToken: string): Promise<SyncManifest | null> {
     try {
+        // Try using cached manifest file ID first
+        if (cachedManifestFileId) {
+            try {
+                const data = await downloadSyncFile(accessToken, cachedManifestFileId);
+                const text = new TextDecoder().decode(data);
+                return JSON.parse(text) as SyncManifest;
+            } catch (e) {
+                // Cache might be stale, clear and try finding again
+                cachedManifestFileId = null;
+            }
+        }
+
+        // Find manifest file (only needed on first call or if cache was stale)
         const files = await listSyncFiles(accessToken);
         const manifestFile = files.find(f => f.name === MANIFEST_FILE);
 
         if (!manifestFile) {
             return null;
         }
+
+        // Cache the file ID for future calls
+        cachedManifestFileId = manifestFile.id;
 
         const data = await downloadSyncFile(accessToken, manifestFile.id);
         const text = new TextDecoder().decode(data);
@@ -246,11 +271,11 @@ export async function downloadManifest(accessToken: string): Promise<SyncManifes
  * Upload manifest to Drive
  */
 export async function uploadManifest(accessToken: string, manifest: SyncManifest): Promise<void> {
-    const files = await listSyncFiles(accessToken);
-    const manifestFile = files.find(f => f.name === MANIFEST_FILE);
-
     const content = new TextEncoder().encode(JSON.stringify(manifest, null, 2));
-    await uploadSyncFile(accessToken, MANIFEST_FILE, content, manifestFile?.id);
+    // Use cached manifest file ID if available
+    const fileId = await uploadSyncFile(accessToken, MANIFEST_FILE, content, cachedManifestFileId || undefined);
+    // Update cache with returned file ID
+    cachedManifestFileId = fileId;
 }
 
 /**
@@ -408,14 +433,13 @@ async function syncDownload(
     }
 
     const db = getDatabase();
-    const files = await listSyncFiles(accessToken);
-    const fileMap = new Map(files.map(f => [f.name, f]));
-
     let downloadCount = 0;
     let skipCount = 0;
 
-    // Download characters
+    // Download characters (using fileId from manifest)
     for (const [charId, serverItem] of Object.entries(serverManifest.characters)) {
+        if (syncManager.isCancelled()) break;
+
         const localItem = localManifest.characters[charId];
 
         if (localItem && localItem.modifiedAt === serverItem.modifiedAt) {
@@ -423,26 +447,31 @@ async function syncDownload(
             continue;
         }
 
-        const fileName = `char_${charId}.json.bin`;
-        const file = fileMap.get(fileName);
-
-        if (file) {
-            try {
-                const data = await downloadSyncFile(accessToken, file.id);
-                const charData = JSON.parse(new TextDecoder().decode(data)) as character | groupChat;
-
-                // Find and update character in DB
-                const index = db.characters.findIndex(c => c.chaId === charId);
-                if (index >= 0) {
-                    db.characters[index] = charData;
-                } else {
-                    db.characters.push(charData);
-                }
-                downloadCount++;
-            } catch (e) {
-                console.error(`[Sync] Failed to download character ${charId}:`, e);
-            }
+        if (!serverItem.fileId) {
+            console.warn(`[Sync] No fileId for character ${charId}, skipping`);
+            continue;
         }
+
+        try {
+            const data = await downloadSyncFile(accessToken, serverItem.fileId);
+            const charData = JSON.parse(new TextDecoder().decode(data)) as character | groupChat;
+
+            // Find and update character in DB
+            const index = db.characters.findIndex(c => c.chaId === charId);
+            if (index >= 0) {
+                db.characters[index] = charData;
+            } else {
+                db.characters.push(charData);
+            }
+            downloadCount++;
+        } catch (e) {
+            console.error(`[Sync] Failed to download character ${charId}:`, e);
+        }
+    }
+
+    if (syncManager.isCancelled()) {
+        console.log('[Sync] Download cancelled');
+        return;
     }
 
     // Delete characters not in server manifest
@@ -450,8 +479,10 @@ async function syncDownload(
         serverManifest.characters[c.chaId] !== undefined
     );
 
-    // Download chats
+    // Download chats (using fileId from manifest)
     for (const [chatKey, serverItem] of Object.entries(serverManifest.chats)) {
+        if (syncManager.isCancelled()) break;
+
         const localItem = localManifest.chats[chatKey];
 
         if (localItem && localItem.modifiedAt === serverItem.modifiedAt) {
@@ -459,26 +490,30 @@ async function syncDownload(
             continue;
         }
 
-        const fileName = `chat_${chatKey}.json.bin`;
-        const file = fileMap.get(fileName);
+        if (!serverItem.fileId) {
+            console.warn(`[Sync] No fileId for chat ${chatKey}, skipping`);
+            continue;
+        }
 
-        if (file) {
-            try {
-                const data = await downloadSyncFile(accessToken, file.id);
-                // Save to local OPFS
-                await saveToWorker(`database/chats/${chatKey}.bin`, data);
-                downloadCount++;
-            } catch (e) {
-                console.error(`[Sync] Failed to download chat ${chatKey}:`, e);
-            }
+        try {
+            const data = await downloadSyncFile(accessToken, serverItem.fileId);
+            // Save to local OPFS
+            await saveToWorker(`database/chats/${chatKey}.bin`, data);
+            downloadCount++;
+        } catch (e) {
+            console.error(`[Sync] Failed to download chat ${chatKey}:`, e);
         }
     }
 
-    // Download settings
-    const settingsFile = fileMap.get('settings.json.bin');
-    if (settingsFile) {
+    if (syncManager.isCancelled()) {
+        console.log('[Sync] Download cancelled');
+        return;
+    }
+
+    // Download settings (using fileId from manifest)
+    if (serverManifest.settings.fileId) {
         try {
-            const data = await downloadSyncFile(accessToken, settingsFile.id);
+            const data = await downloadSyncFile(accessToken, serverManifest.settings.fileId);
             const settings = JSON.parse(new TextDecoder().decode(data));
             // Merge settings (preserve sync-related fields)
             Object.assign(db, settings, {
@@ -491,11 +526,10 @@ async function syncDownload(
         }
     }
 
-    // Download botPresets
-    const presetsFile = fileMap.get('botpresets.json.bin');
-    if (presetsFile) {
+    // Download botPresets (using fileId from manifest)
+    if (serverManifest.botPresets.fileId) {
         try {
-            const data = await downloadSyncFile(accessToken, presetsFile.id);
+            const data = await downloadSyncFile(accessToken, serverManifest.botPresets.fileId);
             const presets = JSON.parse(new TextDecoder().decode(data));
             db.botPresets = presets;
         } catch (e) {
@@ -505,12 +539,12 @@ async function syncDownload(
 
     setDatabase(db);
 
-    // Sync assets
+    // Sync assets (using fileId from manifest)
     alertStore.set({
         type: 'wait',
         msg: language.syncDownloadingAssets || 'Downloading assets...'
     });
-    const assetResult = await syncAssetsDownload(accessToken, files, serverManifest);
+    const assetResult = await syncAssetsDownload(accessToken, serverManifest);
 
     console.log(`[Sync] Download complete: ${downloadCount} downloaded, ${skipCount} skipped, ${assetResult.downloadCount} assets`);
 }
@@ -525,22 +559,26 @@ async function syncUpload(
 ): Promise<void> {
     const db = getDatabase();
     const PARALLEL_UPLOADS = db.driveParallelConnections || 20;
-    const files = await listSyncFiles(accessToken);
-    const fileMap = new Map(files.map(f => [f.name, f]));
 
     // If no server manifest, create one
-    const manifest = serverManifest || {
+    const manifest: SyncManifest = serverManifest || {
         version: 0,
         chats: {},
         characters: {},
         settings: { modifiedAt: 0 },
         botPresets: { modifiedAt: 0 },
+        assets: {},
         deletedAssets: {}
     };
 
+    // Ensure assets object exists (for legacy manifests)
+    if (!manifest.assets) {
+        manifest.assets = {};
+    }
+
     // ========== Build upload lists ==========
 
-    // Characters to upload
+    // Characters to upload (use fileId from manifest)
     type CharUploadItem = { char: character | groupChat; fileName: string; existingFileId?: string };
     const charsToUpload: CharUploadItem[] = [];
 
@@ -550,11 +588,10 @@ async function syncUpload(
             continue;
         }
         const fileName = `char_${char.chaId}.json.bin`;
-        const existingFile = fileMap.get(fileName);
-        charsToUpload.push({ char, fileName, existingFileId: existingFile?.id });
+        charsToUpload.push({ char, fileName, existingFileId: serverItem?.fileId });
     }
 
-    // Chats to upload
+    // Chats to upload (use fileId from manifest)
     type ChatUploadItem = { chatKey: string; chat: Chat; fileName: string; existingFileId?: string };
     const chatsToUpload: ChatUploadItem[] = [];
 
@@ -567,8 +604,7 @@ async function syncUpload(
                 continue;
             }
             const fileName = `chat_${chatKey}.json.bin`;
-            const existingFile = fileMap.get(fileName);
-            chatsToUpload.push({ chatKey, chat, fileName, existingFileId: existingFile?.id });
+            chatsToUpload.push({ chatKey, chat, fileName, existingFileId: serverItem?.fileId });
         }
     }
 
@@ -584,14 +620,14 @@ async function syncUpload(
         let charIndex = 0;
 
         async function uploadOneChar(): Promise<void> {
-            while (charIndex < charsToUpload.length) {
+            while (charIndex < charsToUpload.length && !syncManager.isCancelled()) {
                 const idx = charIndex++;
                 const { char, fileName, existingFileId } = charsToUpload[idx];
 
                 try {
                     const content = new TextEncoder().encode(JSON.stringify(char));
-                    await uploadSyncFile(accessToken, fileName, content, existingFileId);
-                    manifest.characters[char.chaId] = { modifiedAt: char.modifiedAt || Date.now() };
+                    const fileId = await uploadSyncFile(accessToken, fileName, content, existingFileId);
+                    manifest.characters[char.chaId] = { modifiedAt: char.modifiedAt || Date.now(), fileId };
                     uploadedCount++;
                     syncManager.updateProgress(uploadedCount, totalItems, 'characters');
                 } catch (e) {
@@ -605,20 +641,48 @@ async function syncUpload(
         );
     }
 
-    // Delete characters not in local from manifest
+    if (syncManager.isCancelled()) {
+        console.log('[Sync] Upload cancelled');
+        return;
+    }
+
+    // Delete characters not in local from manifest (parallel)
+    const charsToDelete: { charId: string; fileId: string }[] = [];
     for (const charId of Object.keys(manifest.characters)) {
         if (!db.characters.find(c => c.chaId === charId)) {
+            const serverItem = manifest.characters[charId];
+            if (serverItem?.fileId) {
+                charsToDelete.push({ charId, fileId: serverItem.fileId });
+            }
             delete manifest.characters[charId];
-            const fileName = `char_${charId}.json.bin`;
-            const file = fileMap.get(fileName);
-            if (file) {
+        }
+    }
+
+    if (charsToDelete.length > 0) {
+        let charDelIdx = 0;
+        let charDeleted = 0;
+        async function deleteOneChar(): Promise<void> {
+            while (charDelIdx < charsToDelete.length && !syncManager.isCancelled()) {
+                const { charId, fileId } = charsToDelete[charDelIdx++];
                 try {
-                    await deleteSyncFile(accessToken, file.id);
+                    await deleteSyncFile(accessToken, fileId);
+                    charDeleted++;
+                    syncManager.updateProgress(charDeleted, charsToDelete.length, 'deleting');
                 } catch (e) {
                     console.error(`[Sync] Failed to delete character file ${charId}:`, e);
+                    charDeleted++;
+                    syncManager.updateProgress(charDeleted, charsToDelete.length, 'deleting');
                 }
             }
         }
+        await Promise.all(
+            Array.from({ length: Math.min(PARALLEL_UPLOADS, charsToDelete.length) }, () => deleteOneChar())
+        );
+    }
+
+    if (syncManager.isCancelled()) {
+        console.log('[Sync] Upload cancelled');
+        return;
     }
 
     // ========== Parallel chat uploads ==========
@@ -626,7 +690,7 @@ async function syncUpload(
         let chatIndex = 0;
 
         async function uploadOneChat(): Promise<void> {
-            while (chatIndex < chatsToUpload.length) {
+            while (chatIndex < chatsToUpload.length && !syncManager.isCancelled()) {
                 const idx = chatIndex++;
                 const { chatKey, chat, fileName, existingFileId } = chatsToUpload[idx];
 
@@ -645,8 +709,8 @@ async function syncUpload(
                     }
 
                     const content = new TextEncoder().encode(JSON.stringify(chatData));
-                    await uploadSyncFile(accessToken, fileName, content, existingFileId);
-                    manifest.chats[chatKey] = { modifiedAt: chat.modifiedAt || Date.now() };
+                    const fileId = await uploadSyncFile(accessToken, fileName, content, existingFileId);
+                    manifest.chats[chatKey] = { modifiedAt: chat.modifiedAt || Date.now(), fileId };
                     uploadedCount++;
                     syncManager.updateProgress(uploadedCount, totalItems, 'chats');
                 } catch (e) {
@@ -660,7 +724,12 @@ async function syncUpload(
         );
     }
 
-    // Delete chats not in local from manifest
+    if (syncManager.isCancelled()) {
+        console.log('[Sync] Upload cancelled');
+        return;
+    }
+
+    // Delete chats not in local from manifest (parallel)
     const localChatKeys = new Set<string>();
     for (const char of db.characters) {
         for (const chat of char.chats || []) {
@@ -670,20 +739,42 @@ async function syncUpload(
         }
     }
 
+    const chatsToDelete: { chatKey: string; fileId: string }[] = [];
     for (const chatKey of Object.keys(manifest.chats)) {
         if (!localChatKeys.has(chatKey)) {
+            const serverItem = manifest.chats[chatKey];
+            if (serverItem?.fileId) {
+                chatsToDelete.push({ chatKey, fileId: serverItem.fileId });
+            }
             delete manifest.chats[chatKey];
+        }
+    }
 
-            const fileName = `chat_${chatKey}.json.bin`;
-            const file = fileMap.get(fileName);
-            if (file) {
+    if (chatsToDelete.length > 0) {
+        let chatDelIdx = 0;
+        let chatDeleted = 0;
+        async function deleteOneChat(): Promise<void> {
+            while (chatDelIdx < chatsToDelete.length && !syncManager.isCancelled()) {
+                const { chatKey, fileId } = chatsToDelete[chatDelIdx++];
                 try {
-                    await deleteSyncFile(accessToken, file.id);
+                    await deleteSyncFile(accessToken, fileId);
+                    chatDeleted++;
+                    syncManager.updateProgress(chatDeleted, chatsToDelete.length, 'deleting');
                 } catch (e) {
                     console.error(`[Sync] Failed to delete chat file ${chatKey}:`, e);
+                    chatDeleted++;
+                    syncManager.updateProgress(chatDeleted, chatsToDelete.length, 'deleting');
                 }
             }
         }
+        await Promise.all(
+            Array.from({ length: Math.min(PARALLEL_UPLOADS, chatsToDelete.length) }, () => deleteOneChat())
+        );
+    }
+
+    if (syncManager.isCancelled()) {
+        console.log('[Sync] Upload cancelled');
+        return;
     }
 
     // Upload settings (exclude characters, botPresets, and sync fields)
@@ -695,19 +786,17 @@ async function syncUpload(
     delete (settingsToUpload as any).syncEnabled;
 
     const settingsContent = new TextEncoder().encode(JSON.stringify(settingsToUpload));
-    const settingsFile = fileMap.get('settings.json.bin');
-    await uploadSyncFile(accessToken, 'settings.json.bin', settingsContent, settingsFile?.id);
-    manifest.settings.modifiedAt = Date.now();
+    const settingsFileId = await uploadSyncFile(accessToken, 'settings.json.bin', settingsContent, manifest.settings.fileId);
+    manifest.settings = { modifiedAt: Date.now(), fileId: settingsFileId };
 
     // Upload botPresets
     const presetsContent = new TextEncoder().encode(JSON.stringify(db.botPresets));
-    const presetsFile = fileMap.get('botpresets.json.bin');
-    await uploadSyncFile(accessToken, 'botpresets.json.bin', presetsContent, presetsFile?.id);
-    manifest.botPresets.modifiedAt = Date.now();
+    const presetsFileId = await uploadSyncFile(accessToken, 'botpresets.json.bin', presetsContent, manifest.botPresets.fileId);
+    manifest.botPresets = { modifiedAt: Date.now(), fileId: presetsFileId };
 
     // Sync assets (runs in background, no UI blocking)
     console.log('[Sync] Starting asset upload...');
-    const assetResult = await syncAssetsUpload(accessToken, files, manifest, uploadedCount, totalItems);
+    const assetResult = await syncAssetsUpload(accessToken, manifest, uploadedCount, totalItems);
 
     // Increment version - update local first, then server
     // This way, if interrupted between local and server update,
@@ -730,51 +819,48 @@ export async function syncChangedItems(
     changedItems: { type: 'chat' | 'character' | 'settings' | 'botPresets', id?: string }[]
 ): Promise<void> {
     // Check for conflict first
-    if (await checkConflict(accessToken)) {
+    const conflictInfo = await checkConflict(accessToken);
+    if (conflictInfo.hasConflict) {
         alertError(language.syncConflictDetected || 'Sync conflict detected! Another device has made changes.');
         return;
     }
 
     const db = getDatabase();
     const serverManifest = await downloadManifest(accessToken) || createManifestFromLocal();
-    const files = await listSyncFiles(accessToken);
-    const fileMap = new Map(files.map(f => [f.name, f]));
 
     for (const item of changedItems) {
         if (item.type === 'character' && item.id) {
             const char = db.characters.find(c => c.chaId === item.id);
             if (char) {
                 const fileName = `char_${char.chaId}.json.bin`;
-                const existingFile = fileMap.get(fileName);
+                const existingFileId = serverManifest.characters[char.chaId]?.fileId;
                 const content = new TextEncoder().encode(JSON.stringify(char));
-                await uploadSyncFile(accessToken, fileName, content, existingFile?.id);
-                serverManifest.characters[char.chaId] = { modifiedAt: char.modifiedAt || Date.now() };
+                const fileId = await uploadSyncFile(accessToken, fileName, content, existingFileId);
+                serverManifest.characters[char.chaId] = { modifiedAt: char.modifiedAt || Date.now(), fileId };
             }
         } else if (item.type === 'chat' && item.id) {
             // item.id is chatKey (chaId_chatId)
             const fileName = `chat_${item.id}.json.bin`;
-            const existingFile = fileMap.get(fileName);
+            const existingFileId = serverManifest.chats[item.id]?.fileId;
 
             // Load chat from OPFS
             const data = await loadFromWorker(`database/chats/${item.id}.bin`);
             if (data) {
-                await uploadSyncFile(accessToken, fileName, data, existingFile?.id);
+                const fileId = await uploadSyncFile(accessToken, fileName, data, existingFileId);
                 const chat = JSON.parse(new TextDecoder().decode(data));
-                serverManifest.chats[item.id] = { modifiedAt: chat.modifiedAt || Date.now() };
+                serverManifest.chats[item.id] = { modifiedAt: chat.modifiedAt || Date.now(), fileId };
             }
         } else if (item.type === 'settings') {
             const settingsToUpload = { ...db };
             delete (settingsToUpload as any).characters;
             delete (settingsToUpload as any).botPresets;
             const settingsContent = new TextEncoder().encode(JSON.stringify(settingsToUpload));
-            const settingsFile = fileMap.get('settings.json.bin');
-            await uploadSyncFile(accessToken, 'settings.json.bin', settingsContent, settingsFile?.id);
-            serverManifest.settings.modifiedAt = Date.now();
+            const fileId = await uploadSyncFile(accessToken, 'settings.json.bin', settingsContent, serverManifest.settings.fileId);
+            serverManifest.settings = { modifiedAt: Date.now(), fileId };
         } else if (item.type === 'botPresets') {
             const presetsContent = new TextEncoder().encode(JSON.stringify(db.botPresets));
-            const presetsFile = fileMap.get('botpresets.json.bin');
-            await uploadSyncFile(accessToken, 'botpresets.json.bin', presetsContent, presetsFile?.id);
-            serverManifest.botPresets.modifiedAt = Date.now();
+            const fileId = await uploadSyncFile(accessToken, 'botpresets.json.bin', presetsContent, serverManifest.botPresets.fileId);
+            serverManifest.botPresets = { modifiedAt: Date.now(), fileId };
         }
     }
 
@@ -802,6 +888,7 @@ export async function initialSync(accessToken: string): Promise<void> {
     const conflictInfo = await checkConflict(accessToken);
 
     if (conflictInfo.hasConflict) {
+        // Server is newer - show conflict dialog
         const choice = await showConflictDialog(
             conflictInfo.serverVersion,
             conflictInfo.serverTime,
@@ -814,8 +901,11 @@ export async function initialSync(accessToken: string): Promise<void> {
         }
 
         await performSync(accessToken, choice);
+    } else if (conflictInfo.serverVersion === conflictInfo.localVersion) {
+        // Already in sync - nothing to do
+        console.log('[Sync] Already in sync, skipping');
     } else {
-        // No conflict - upload local changes
+        // Local is newer (or first sync) - upload
         await performSync(accessToken, 'upload');
     }
 
@@ -863,12 +953,10 @@ function getLocalAssetList(): string[] {
  */
 async function syncAssetsUpload(
     accessToken: string,
-    files: DriveFile[],
     manifest: SyncManifest,
     baseCount: number,
     grandTotal: number
 ): Promise<{ uploadCount: number; skipCount: number }> {
-    const fileMap = new Map(files.map(f => [f.name, f]));
     const localAssets = getLocalAssetList();
     const db = getDatabase();
     const PARALLEL_UPLOADS = db.driveParallelConnections || 20;
@@ -880,7 +968,7 @@ async function syncAssetsUpload(
     console.log(`[Sync Assets] Local assets to sync: ${localAssets.length}, parallel: ${PARALLEL_UPLOADS}`);
 
     // Build list of assets to upload, track skipped for progress
-    const toUpload: { assetName: string; serverFileName: string }[] = [];
+    const toUpload: { assetName: string; serverFileName: string; existingFileId?: string }[] = [];
 
     for (const assetName of localAssets) {
         const serverFileName = `asset_${assetName}.bin`;
@@ -890,8 +978,8 @@ async function syncAssetsUpload(
             delete manifest.deletedAssets[assetName];
         }
 
-        // Check if already exists on server
-        if (fileMap.has(serverFileName)) {
+        // Check if already exists on server (using manifest.assets)
+        if (manifest.assets[assetName]) {
             skipCount++;
             processedCount++;
             // Update progress for skipped assets too
@@ -908,7 +996,7 @@ async function syncAssetsUpload(
     let currentIndex = 0;
 
     async function uploadOne(): Promise<void> {
-        while (currentIndex < toUpload.length) {
+        while (currentIndex < toUpload.length && !syncManager.isCancelled()) {
             const idx = currentIndex++;
             const { assetName, serverFileName } = toUpload[idx];
 
@@ -921,7 +1009,8 @@ async function syncAssetsUpload(
                     continue;
                 }
 
-                await uploadSyncFile(accessToken, serverFileName, assetData);
+                const fileId = await uploadSyncFile(accessToken, serverFileName, assetData);
+                manifest.assets[assetName] = { fileId };
                 uploadCount++;
                 processedCount++;
                 syncManager.updateProgress(baseCount + processedCount, grandTotal, 'assets');
@@ -944,24 +1033,45 @@ async function syncAssetsUpload(
         );
     }
 
-    // Mark assets that are on server but not in local as deleted (tombstone)
+    // Mark assets that are on server but not in local as deleted (tombstone) - parallel deletion
     const localAssetSet = new Set(localAssets);
-    for (const file of files) {
-        if (!file.name.startsWith('asset_') || !file.name.endsWith('.bin')) continue;
+    const assetsToDelete: { assetName: string; fileId: string }[] = [];
 
-        const assetName = file.name.slice(6, -4);  // Remove 'asset_' prefix and '.bin' suffix
+    for (const assetName of Object.keys(manifest.assets)) {
         if (!localAssetSet.has(assetName) && !manifest.deletedAssets[assetName]) {
             // Asset exists on server but not locally - mark as deleted
             manifest.deletedAssets[assetName] = Date.now();
             console.log(`[Sync Assets] Marked asset as deleted: ${assetName}`);
 
-            // Delete the file from server
-            try {
-                await deleteSyncFile(accessToken, file.id);
-            } catch (e) {
-                console.error(`[Sync Assets] Failed to delete asset file ${assetName}:`, e);
+            const assetInfo = manifest.assets[assetName];
+            if (assetInfo?.fileId) {
+                assetsToDelete.push({ assetName, fileId: assetInfo.fileId });
+            }
+            delete manifest.assets[assetName];
+        }
+    }
+
+    // Delete assets in parallel
+    if (assetsToDelete.length > 0) {
+        let assetDelIdx = 0;
+        let assetDeleted = 0;
+        async function deleteOneAsset(): Promise<void> {
+            while (assetDelIdx < assetsToDelete.length && !syncManager.isCancelled()) {
+                const { assetName, fileId } = assetsToDelete[assetDelIdx++];
+                try {
+                    await deleteSyncFile(accessToken, fileId);
+                    assetDeleted++;
+                    syncManager.updateProgress(assetDeleted, assetsToDelete.length, 'deleting');
+                } catch (e) {
+                    console.error(`[Sync Assets] Failed to delete asset file ${assetName}:`, e);
+                    assetDeleted++;
+                    syncManager.updateProgress(assetDeleted, assetsToDelete.length, 'deleting');
+                }
             }
         }
+        await Promise.all(
+            Array.from({ length: Math.min(PARALLEL_UPLOADS, assetsToDelete.length) }, () => deleteOneAsset())
+        );
     }
 
     console.log(`[Sync Assets] Upload complete: ${uploadCount} uploaded, ${skipCount} skipped`);
@@ -973,11 +1083,16 @@ async function syncAssetsUpload(
  */
 async function syncAssetsDownload(
     accessToken: string,
-    files: DriveFile[],
     manifest: SyncManifest
 ): Promise<{ downloadCount: number; skipCount: number }> {
     const db = getDatabase();
     const PARALLEL_DOWNLOADS = db.driveParallelConnections || 20;
+
+    // Ensure assets object exists (for legacy manifests)
+    if (!manifest.assets) {
+        console.log('[Sync Assets] No assets in manifest, nothing to download');
+        return { downloadCount: 0, skipCount: 0 };
+    }
 
     let downloadCount = 0;
     let skipCount = 0;
@@ -986,14 +1101,10 @@ async function syncAssetsDownload(
     const localAssetKeys = await forageStorage.keys();
     const localAssetSet = new Set(localAssetKeys.filter(k => k.startsWith('assets/')).map(k => k.slice(7)));
 
-    // Build list of assets to download
-    const toDownload: { file: DriveFile; assetName: string }[] = [];
+    // Build list of assets to download (using fileId from manifest)
+    const toDownload: { assetName: string; fileId: string }[] = [];
 
-    for (const file of files) {
-        if (!file.name.startsWith('asset_') || !file.name.endsWith('.bin')) continue;
-
-        const assetName = file.name.slice(6, -4);  // Remove 'asset_' prefix and '.bin' suffix
-
+    for (const [assetName, assetInfo] of Object.entries(manifest.assets)) {
         // Skip if in deleted tombstone
         if (manifest.deletedAssets[assetName]) {
             skipCount++;
@@ -1006,7 +1117,12 @@ async function syncAssetsDownload(
             continue;
         }
 
-        toDownload.push({ file, assetName });
+        if (!assetInfo.fileId) {
+            console.warn(`[Sync Assets] No fileId for asset ${assetName}, skipping`);
+            continue;
+        }
+
+        toDownload.push({ assetName, fileId: assetInfo.fileId });
     }
 
     console.log(`[Sync Assets] Assets to download: ${toDownload.length}, skipping: ${skipCount}, parallel: ${PARALLEL_DOWNLOADS}`);
@@ -1015,12 +1131,12 @@ async function syncAssetsDownload(
     let currentIndex = 0;
 
     async function downloadOne(): Promise<void> {
-        while (currentIndex < toDownload.length) {
+        while (currentIndex < toDownload.length && !syncManager.isCancelled()) {
             const idx = currentIndex++;
-            const { file, assetName } = toDownload[idx];
+            const { assetName, fileId } = toDownload[idx];
 
             try {
-                const data = await downloadSyncFile(accessToken, file.id);
+                const data = await downloadSyncFile(accessToken, fileId);
                 await forageStorage.setItem(`assets/${assetName}`, data);
                 downloadCount++;
 
@@ -1034,9 +1150,11 @@ async function syncAssetsDownload(
     }
 
     // Start parallel downloads
-    await Promise.all(
-        Array.from({ length: Math.min(PARALLEL_DOWNLOADS, toDownload.length) }, () => downloadOne())
-    );
+    if (toDownload.length > 0) {
+        await Promise.all(
+            Array.from({ length: Math.min(PARALLEL_DOWNLOADS, toDownload.length) }, () => downloadOne())
+        );
+    }
 
     // Delete local assets that are in the tombstone
     for (const [assetName, _] of Object.entries(manifest.deletedAssets)) {

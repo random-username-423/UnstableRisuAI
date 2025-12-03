@@ -49,6 +49,7 @@ class SyncManager {
     private status: SyncStatus = 'idle';
     private lastError: string | null = null;
     private progress: SyncProgress | null = null;
+    private cancelled: boolean = false;  // Cancellation flag
 
     // Listeners for UI updates
     private statusListeners: Set<(status: SyncStatus) => void> = new Set();
@@ -282,7 +283,7 @@ class SyncManager {
     }
 
     /**
-     * Cancel pending sync
+     * Cancel pending sync and abort running sync
      */
     cancelPendingSync(): void {
         if (this.debounceTimer) {
@@ -290,6 +291,20 @@ class SyncManager {
             this.debounceTimer = null;
         }
         this.pendingChanges.clear();
+
+        // Set cancellation flag to stop running sync
+        if (this.status === 'syncing') {
+            this.cancelled = true;
+            this.setStatus('idle');
+            console.log('[SyncManager] Sync cancelled');
+        }
+    }
+
+    /**
+     * Check if sync was cancelled (used by sync functions)
+     */
+    isCancelled(): boolean {
+        return this.cancelled;
     }
 
     /**
@@ -313,6 +328,7 @@ class SyncManager {
             return;
         }
 
+        this.cancelled = false;  // Reset cancellation flag
         this.setStatus('syncing');
         const changes = Array.from(this.pendingChanges.values());
         this.pendingChanges.clear();
@@ -383,14 +399,19 @@ class SyncManager {
             return;
         }
 
+        this.cancelled = false;
         this.setStatus('syncing');
 
         try {
             await initialSync(accessToken);
-            this.setStatus('idle');
+            if (!this.cancelled) {
+                this.setStatus('idle');
+            }
         } catch (error) {
-            console.error('[SyncManager] Initial sync failed:', error);
-            this.setStatus('error', error?.toString());
+            if (!this.cancelled) {
+                console.error('[SyncManager] Initial sync failed:', error);
+                this.setStatus('error', error?.toString());
+            }
         }
     }
 
@@ -405,15 +426,20 @@ class SyncManager {
         }
 
         this.cancelPendingSync();
+        this.cancelled = false;
         this.setStatus('syncing');
 
         try {
             await performSync(accessToken, direction);
-            this.setStatus('idle');
+            if (!this.cancelled) {
+                this.setStatus('idle');
+            }
         } catch (error) {
-            console.error('[SyncManager] Force sync failed:', error);
-            this.setStatus('error', error?.toString());
-            alertError(`Sync failed: ${error}`);
+            if (!this.cancelled) {
+                console.error('[SyncManager] Force sync failed:', error);
+                this.setStatus('error', error?.toString());
+                alertError(`Sync failed: ${error}`);
+            }
         }
     }
 

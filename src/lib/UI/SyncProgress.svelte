@@ -43,6 +43,7 @@
             case 'assets': return 'Assets';
             case 'settings': return 'Settings';
             case 'downloading': return 'Downloading';
+            case 'deleting': return 'Deleting';
             default: return phase;
         }
     }
