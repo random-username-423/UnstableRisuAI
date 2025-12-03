@@ -5,7 +5,7 @@ import { checkCharOrder, globalFetch, saveAsset } from "../globalApi.svelte";
 import { isTauri, isNodeServer } from "src/ts/env";
 import { tokenize } from "../tokenizer";
 import { createBlankChar } from "../character/characters";
-import { getDatabase, setDatabase, type character } from "../storage/database.svelte";
+import { getDatabase, setDatabase, type character } from "../data/storage/database.svelte";
 import { sleep } from '../util';
 
 

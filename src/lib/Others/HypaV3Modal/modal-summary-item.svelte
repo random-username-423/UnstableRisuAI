@@ -17,7 +17,7 @@
     getCurrentHypaV3Preset,
   } from "src/ts/process/memory/hypav3";
   import { type OpenAIChat } from "src/ts/process/index.svelte";
-  import { type Message } from "src/ts/storage/database.svelte";
+  import { type Message } from "src/ts/data/storage/database.svelte";
   import { translateHTML } from "src/ts/translator/translator";
   import { alertConfirm } from "src/ts/alert";
   import { DBState, selectedCharID } from "src/ts/stores.svelte";

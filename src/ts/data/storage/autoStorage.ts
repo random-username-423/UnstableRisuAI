@@ -1,9 +1,9 @@
 import localforage from "localforage"
-import { replaceDbResources } from "../globalApi.svelte"
+import { replaceDbResources } from "../../globalApi.svelte"
 import { isNodeServer } from "src/ts/env";
 import { NodeStorage } from "./nodeStorage"
 import { OpfsStorage } from "./opfsStorage"
-import { alertInput, alertSelect, alertStore } from "../alert"
+import { alertInput, alertSelect, alertStore } from "../../alert"
 import { getDatabase, type Database } from "./database.svelte"
 import { AccountStorage } from "./accountStorage"
 import { decodeRisuSave, encodeRisuSaveLegacy } from "./risuSave";

@@ -1,12 +1,12 @@
 import { v4 } from 'uuid';
-import { alertError, alertInput, alertNormal, alertStore, alertWait } from '../alert';
+import { alertError, alertInput, alertNormal, alertStore, alertWait } from '../../alert';
 import { get, writable } from 'svelte/store';
 import { setDatabase, type character, saveImage, type Chat, getCurrentChat, setCurrentChat, getDatabase } from '../storage/database.svelte';
-import { selectedCharID } from '../stores.svelte';
-import { findCharacterIndexbyId, sleep } from '../util';
+import { selectedCharID } from '../../stores.svelte';
+import { findCharacterIndexbyId, sleep } from '../../util';
 import type { DataConnection, Peer } from 'peerjs';
-import { readImage } from '../globalApi.svelte';
-import { doingChat } from '../process/index.svelte';
+import { readImage } from '../../globalApi.svelte';
+import { doingChat } from '../../process/index.svelte';
 
 async function importPeerJS(){
     return await import('peerjs');

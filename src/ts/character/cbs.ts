@@ -1,4 +1,4 @@
-import type { Database, character, loreBook } from '../storage/database.svelte';
+import type { Database, character, loreBook } from '../data/storage/database.svelte';
 import type { CbsConditions } from '../parser.svelte';
 import type { RisuModule } from '../process/modules';
 import type { LLMModel } from '../model/modellist';

@@ -22,7 +22,7 @@
     import { ColorSchemeTypeStore } from "src/ts/gui/colorscheme";
     import Help from "./Help.svelte";
     import { getChatBranches } from "src/ts/gui/branches";
-    import { getCurrentCharacter } from "src/ts/storage/database.svelte";
+    import { getCurrentCharacter } from "src/ts/data/storage/database.svelte";
 
     let showDetails = $state(false);
 

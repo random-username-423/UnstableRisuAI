@@ -1,7 +1,7 @@
 <script lang="ts">
     import { language } from "src/lang";
     import { hubURL } from "src/ts/character/characterCards";
-    import { loadRisuAccountBackup, loadRisuAccountData, saveRisuAccountData } from "src/ts/drive/accounter";
+    import { loadRisuAccountBackup, loadRisuAccountData, saveRisuAccountData } from "src/ts/data/drive/accounter";
 
     import { DBState } from 'src/ts/stores.svelte';
     import Check from "src/lib/UI/GUI/CheckInput.svelte";
@@ -9,12 +9,12 @@
     import { forageStorage, loadInternalBackup, openURL } from "src/ts/globalApi.svelte";
     import { isNodeServer } from "src/ts/env";
     import { isTauri } from "src/ts/env";
-    import { unMigrationAccount } from "src/ts/storage/accountStorage";
-    import { checkDriver } from "src/ts/drive/drive";
-    import { LoadLocalBackup, SaveLocalBackup } from "src/ts/drive/backuplocal";
+    import { unMigrationAccount } from "src/ts/data/storage/accountStorage";
+    import { checkDriver } from "src/ts/data/drive/drive";
+    import { LoadLocalBackup, SaveLocalBackup } from "src/ts/data/drive/backuplocal";
     import Button from "src/lib/UI/GUI/Button.svelte";
-    import { exportAsDataset } from "src/ts/storage/exportAsDataset";
-    import { syncManager } from "src/ts/drive/syncManager";
+    import { exportAsDataset } from "src/ts/data/storage/exportAsDataset";
+    import { syncManager } from "src/ts/data/drive/syncManager";
     import { onMount, onDestroy } from "svelte";
     import { RefreshCwIcon, CloudIcon, UploadIcon, DownloadIcon } from "lucide-svelte";
     import Help from "src/lib/Others/Help.svelte";

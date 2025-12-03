@@ -1,4 +1,4 @@
-import { getCurrentCharacter } from "../storage/database.svelte";
+import { getCurrentCharacter } from "../data/storage/database.svelte";
 
 type ChatBranch = {
     children: Map<string, ChatBranch>,

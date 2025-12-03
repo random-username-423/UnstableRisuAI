@@ -4,7 +4,7 @@
     import Sortable from 'sortablejs/modular/sortable.core.esm.js';
     import { DownloadIcon, PencilIcon, HardDriveUploadIcon, MenuIcon, TrashIcon, GitBranchIcon, SplitIcon, FolderPlusIcon } from "lucide-svelte";
 
-    import type { Chat, ChatFolder, character, groupChat } from "src/ts/storage/database.svelte";
+    import type { Chat, ChatFolder, character, groupChat } from "src/ts/data/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
     import { MobileGUI, ReloadGUIPointer, selectedCharID } from "src/ts/stores.svelte";
 
@@ -16,7 +16,7 @@
     import { alertChatOptions, alertConfirm, alertError, alertInput, alertNormal, alertSelect, alertStore } from "src/ts/alert";
     import { findCharacterbyId, parseKeyValue, sleep, sortableOptions } from "src/ts/util";
     import { loadChat } from "src/ts/globalApi.svelte";
-    import { createMultiuserRoom } from "src/ts/sync/multiuser";
+    import { createMultiuserRoom } from "src/ts/data/sync/multiuser";
     import { getChatBranches } from "src/ts/gui/branches";
     import { getModuleToggles } from "src/ts/process/modules";
     import { language } from "src/lang";

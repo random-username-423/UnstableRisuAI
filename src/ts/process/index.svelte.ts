@@ -1,5 +1,5 @@
 import { get, writable } from "svelte/store";
-import { type character, type MessageGenerationInfo, type Chat, type MessagePresetInfo, changeToPreset, setCurrentChat } from "../storage/database.svelte";
+import { type character, type MessageGenerationInfo, type Chat, type MessagePresetInfo, changeToPreset, setCurrentChat } from "../data/storage/database.svelte";
 import { DBState } from '../stores.svelte';
 import { CharEmotion, selectedCharID } from "../stores.svelte";
 import { ChatTokenizer, tokenize, tokenizeNum } from "../tokenizer";
@@ -20,7 +20,7 @@ import { HypaProcesser } from "./memory/hypamemory";
 import { additionalInformations } from "./embedding/addinfo";
 import { getInlayAsset, supportsInlayImage } from "./files/inlays";
 import { getGenerationModelString } from "./models/modelString";
-import { connectionOpen, peerRevertChat, peerSafeCheck, peerSync } from "../sync/multiuser";
+import { connectionOpen, peerRevertChat, peerSafeCheck, peerSync } from "../data/sync/multiuser";
 import { runInlayScreen } from "./inlayScreen";
 import { addRerolls } from "./prereroll";
 import { runImageEmbedding } from "./transformers";

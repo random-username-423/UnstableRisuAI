@@ -1,7 +1,7 @@
 import { fetchNative, globalFetch, textifyReadableStream } from "src/ts/globalApi.svelte"
 import { language } from "src/lang"
 import { LLMFlags, LLMFormat } from "src/ts/model/modellist"
-import { getDatabase, setDatabase } from "src/ts/storage/database.svelte"
+import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte"
 import { replaceAsync, simplifySchema, sleep } from "src/ts/util"
 import { v4 } from "uuid"
 import { setInlayAsset, writeInlayImage } from "../files/inlays"

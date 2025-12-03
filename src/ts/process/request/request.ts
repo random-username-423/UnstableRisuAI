@@ -4,7 +4,7 @@ import { globalFetch } from "../../globalApi.svelte";
 import { getModelInfo, LLMFlags, LLMFormat, type LLMModel } from "../../model/modellist";
 import { risuChatParser, risuEscape, risuUnescape } from "../../parser.svelte";
 import { pluginProcess, pluginV2 } from "../../plugins/plugins";
-import { getCurrentCharacter, getCurrentChat, getDatabase, type character } from "../../storage/database.svelte";
+import { getCurrentCharacter, getCurrentChat, getDatabase, type character } from "../../data/storage/database.svelte";
 import { tokenizeNum } from "../../tokenizer";
 import { sleep } from '../../util';
 import type { MultiModal, OpenAIChat } from "../index.svelte";

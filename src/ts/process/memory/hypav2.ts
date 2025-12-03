@@ -3,7 +3,7 @@ import {
     type Chat,
     type character,
     type groupChat,
-} from "src/ts/storage/database.svelte";
+} from "src/ts/data/storage/database.svelte";
 import type { OpenAIChat } from "../index.svelte";
 import type { ChatTokenizer } from "src/ts/tokenizer";
 import { requestChatData } from "../request/request";

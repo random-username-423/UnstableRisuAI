@@ -1,6 +1,6 @@
 import { get } from "svelte/store";
 import { CharEmotion, selectedCharID } from "../stores.svelte";
-import { type character, type customscript, type groupChat, type Database, getDatabase, getCurrentCharacter, getCurrentChat } from "../storage/database.svelte";
+import { type character, type customscript, type groupChat, type Database, getDatabase, getCurrentCharacter, getCurrentChat } from "../data/storage/database.svelte";
 import { downloadFile } from "../globalApi.svelte";
 import { alertError, alertNormal } from "../alert";
 import { language } from "src/lang";

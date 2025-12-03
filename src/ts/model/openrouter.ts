@@ -1,4 +1,4 @@
-import { getDatabase } from "../storage/database.svelte"
+import { getDatabase } from "../data/storage/database.svelte"
 
 export async function openRouterModels() {
     try {

@@ -22,19 +22,19 @@ import {
     checkCharOrder
 } from "./globalApi.svelte";
 import { isTauri, isNodeServer } from "src/ts/env";
-import { setDatabase, getDatabase, defaultSdDataFunc } from "./storage/database.svelte";
+import { setDatabase, getDatabase, defaultSdDataFunc } from "./data/storage/database.svelte";
 import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
 import { checkNullish, changeFullscreen, sleep, getBasename } from "./util";
-import { decodeRisuSave, encodeRisuSaveLegacy, decodeCharacters, decodeBotPresets, encodeCharacters, encodeBotPresets } from "./storage/risuSave";
-import { presetTemplate } from "./storage/database.svelte";
-import { migrateOPFSAssetsToIndexedDB, migrateTauriFsAssetsToIndexedDB, migrateWebDBtoOPFS } from './storage/migration';
+import { decodeRisuSave, encodeRisuSaveLegacy, decodeCharacters, decodeBotPresets, encodeCharacters, encodeBotPresets } from "./data/storage/risuSave";
+import { presetTemplate } from "./data/storage/database.svelte";
+import { migrateOPFSAssetsToIndexedDB, migrateTauriFsAssetsToIndexedDB, migrateWebDBtoOPFS } from './data/storage/migration';
 import { checkRisuUpdate } from "./update";
 import { loadPlugins } from "./plugins/plugins";
 import { alertError, alertMd, alertTOS, waitAlert } from "./alert";
-import { checkDriverInit } from "./drive/drive";
+import { checkDriverInit } from "./data/drive/drive";
 import { characterURLImport } from "./character/characterCards";
-import { loadRisuAccountData } from "./drive/accounter";
-import { autoServerBackup } from "./kei/backup";
+import { loadRisuAccountData } from "./data/drive/accounter";
+import { autoServerBackup } from "./data/kei/backup";
 import { updateAnimationSpeed } from "./gui/animation";
 import { updateColorScheme, updateTextThemeAndCSS } from "./gui/colorscheme";
 import { updateGuisize } from "./gui/guisize";
@@ -43,9 +43,9 @@ import { initMobileGesture } from "./hotkey/hotkey";
 import { moduleUpdate } from "./process/modules";
 import { makeColdData } from "./process/coldstorage.svelte";
 import { language } from "src/lang";
-import type { AccountStorage } from "./storage/accountStorage";
+import type { AccountStorage } from "./data/storage/accountStorage";
 import { updateLorebooks } from "./character/characters";
-import { defaultJailbreak, defaultMainPrompt, oldJailbreak, oldMainPrompt } from "./storage/defaultPrompts";
+import { defaultJailbreak, defaultMainPrompt, oldJailbreak, oldMainPrompt } from "./data/storage/defaultPrompts";
 
 const appWindow = isTauri ? getCurrentWebviewWindow() : null
 

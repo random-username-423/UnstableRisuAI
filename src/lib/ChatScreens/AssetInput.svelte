@@ -1,6 +1,6 @@
 <script lang="ts">
     import { FileAudioIcon, PlusIcon } from "lucide-svelte";
-    import { type character, type groupChat } from "src/ts/storage/database.svelte";
+    import { type character, type groupChat } from "src/ts/data/storage/database.svelte";
     import { getFileSrc, saveAsset } from "src/ts/globalApi.svelte";
     import { selectMultipleFile } from "src/ts/util";
     interface Props {

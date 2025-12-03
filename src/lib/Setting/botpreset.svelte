@@ -1,7 +1,7 @@
 <script lang="ts">
     import { alertCardExport, alertConfirm, alertError, alertMd, alertWait } from "../../ts/alert";
     import { language } from "../../lang";
-    import { changeToPreset, copyPreset, downloadPreset, importPreset, getDatabase } from "../../ts/storage/database.svelte";
+    import { changeToPreset, copyPreset, downloadPreset, importPreset, getDatabase } from "../../ts/data/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
     import { CopyIcon, Share2Icon, PencilIcon, HardDriveUploadIcon, PlusIcon, TrashIcon, XIcon, GitCompare } from "lucide-svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";

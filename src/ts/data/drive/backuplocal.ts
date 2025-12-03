@@ -1,11 +1,11 @@
-import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear } from "../alert";
-import { LocalWriter, forageStorage, requiresFullEncoderReload, saveToWorker, listFromWorker, deleteFromWorker, saving, loadFromWorker } from "../globalApi.svelte";
+import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear } from "../../alert";
+import { LocalWriter, forageStorage, requiresFullEncoderReload, saveToWorker, listFromWorker, deleteFromWorker, saving, loadFromWorker } from "../../globalApi.svelte";
 import { isTauri } from "src/ts/env";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { platform } from "@tauri-apps/plugin-os";
-import { sleep } from '../util';
+import { sleep } from '../../util';
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 
 export async function SaveLocalBackup(){

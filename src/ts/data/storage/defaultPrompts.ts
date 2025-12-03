@@ -1,4 +1,4 @@
-import { prebuiltPresets } from "../process/templates/templates"
+import { prebuiltPresets } from "../../process/templates/templates"
 
 export const defaultMainPrompt = prebuiltPresets.OAI.mainPrompt
 export const defaultJailbreak = prebuiltPresets.OAI.jailbreak

@@ -1,17 +1,17 @@
 import { get, writable } from 'svelte/store';
-import { checkNullish, decryptBuffer, encryptBuffer, selectSingleFile } from '../util';
-import { changeLanguage, language } from '../../lang';
-import type { RisuPlugin } from '../plugins/plugins';
-import type {triggerscript as triggerscriptMain} from '../process/triggers';
-import { downloadFile, saveAsset as saveImageGlobal } from '../globalApi.svelte';
+import { checkNullish, decryptBuffer, encryptBuffer, selectSingleFile } from '../../util';
+import { changeLanguage, language } from '../../../lang';
+import type { RisuPlugin } from '../../plugins/plugins';
+import type {triggerscript as triggerscriptMain} from '../../process/triggers';
+import { downloadFile, saveAsset as saveImageGlobal } from '../../globalApi.svelte';
 import { defaultAutoSuggestPrompt, defaultJailbreak, defaultMainPrompt } from './defaultPrompts';
-import { alertError, alertNormal, alertSelect } from '../alert';
-import type { NAISettings } from '../process/models/nai';
-import { prebuiltNAIpresets, prebuiltPresets } from '../process/templates/templates';
-import { defaultColorScheme, type ColorScheme } from '../gui/colorscheme';
-import type { PromptItem, PromptSettings } from '../process/prompt';
-import type { OobaChatCompletionRequestParams } from '../model/ooba';
-import { type HypaV3Settings, type HypaV3Preset, createHypaV3Preset } from '../process/memory/hypav3'
+import { alertError, alertNormal, alertSelect } from '../../alert';
+import type { NAISettings } from '../../process/models/nai';
+import { prebuiltNAIpresets, prebuiltPresets } from '../../process/templates/templates';
+import { defaultColorScheme, type ColorScheme } from '../../gui/colorscheme';
+import type { PromptItem, PromptSettings } from '../../process/prompt';
+import type { OobaChatCompletionRequestParams } from '../../model/ooba';
+import { type HypaV3Settings, type HypaV3Preset, createHypaV3Preset } from '../../process/memory/hypav3'
 
 export let appVer = "166.6.0"
 export let webAppSubVer = ''
@@ -2066,17 +2066,17 @@ export function setPreset(db:Database, newPres: botPreset){
 
 import { encode as encodeMsgpack, decode as decodeMsgpack } from "msgpackr";
 import * as fflate from "fflate";
-import type { OnnxModelFiles } from '../process/transformers';
-import type { RisuModule } from '../process/modules';
-import type { SerializableHypaV2Data } from '../process/memory/hypav2';
-import { decodeRPack, encodeRPack } from '../rpack/rpack_bg';
-import { DBState, selectedCharID } from '../stores.svelte';
-import { LLMFlags, LLMFormat, LLMTokenizer } from '../model/modellist';
-import type { Parameter } from '../process/request/request';
-import type { HypaModel } from '../process/memory/hypamemory';
-import type { SerializableHypaV3Data } from '../process/memory/hypav3';
-import { defaultHotkeys, type Hotkey } from '../hotkey/defaulthotkeys';
-import type { OpenAIChat } from '../process/index.svelte';
+import type { OnnxModelFiles } from '../../process/transformers';
+import type { RisuModule } from '../../process/modules';
+import type { SerializableHypaV2Data } from '../../process/memory/hypav2';
+import { decodeRPack, encodeRPack } from '../../rpack/rpack_bg';
+import { DBState, selectedCharID } from '../../stores.svelte';
+import { LLMFlags, LLMFormat, LLMTokenizer } from '../../model/modellist';
+import type { Parameter } from '../../process/request/request';
+import type { HypaModel } from '../../process/memory/hypamemory';
+import type { SerializableHypaV3Data } from '../../process/memory/hypav3';
+import { defaultHotkeys, type Hotkey } from '../../hotkey/defaulthotkeys';
+import type { OpenAIChat } from '../../process/index.svelte';
 
 export async function downloadPreset(id:number, type:'json'|'risupreset'|'return' = 'json'){
     saveCurrentPreset()

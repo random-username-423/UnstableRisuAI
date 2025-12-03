@@ -4,11 +4,11 @@
  * Implements manifest-based optimistic locking for real-time synchronization.
  */
 
-import { alertError, alertSelect, alertStore } from "../alert";
+import { alertError, alertSelect, alertStore } from "../../alert";
 import { getDatabase, setDatabase, type character, type groupChat, type Chat, type Database } from "../storage/database.svelte";
-import { forageStorage, saveToWorker, loadFromWorker, listFromWorker, getUnpargeables } from "../globalApi.svelte";
-import { sleep, getBasename } from '../util';
-import { language } from "../../lang";
+import { forageStorage, saveToWorker, loadFromWorker, listFromWorker, getUnpargeables } from "../../globalApi.svelte";
+import { sleep, getBasename } from '../../util';
+import { language } from "../../../lang";
 import { syncManager } from "./syncManager";
 
 // ============================================================================

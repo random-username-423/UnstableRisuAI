@@ -5,7 +5,7 @@
     import { CameraIcon, DatabaseIcon, DicesIcon, GlobeIcon, ImagePlusIcon, LanguagesIcon, Laugh, MenuIcon, MicOffIcon, PackageIcon, Plus, RefreshCcwIcon, ReplyIcon, Send, StepForwardIcon, XIcon, BrainIcon } from "lucide-svelte";
     import { selectedCharID, PlaygroundStore, createSimpleCharacter, hypaV3ModalOpen } from "../../ts/stores.svelte";
     import Chat from "./Chat.svelte";
-    import { type Message } from "../../ts/storage/database.svelte";
+    import { type Message } from "../../ts/data/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
     import { getCharImage } from "../../ts/character/characters";
     import { chatProcessStage, doingChat, sendChat } from "../../ts/process/index.svelte";
@@ -27,7 +27,7 @@
     import { postChatFile } from 'src/ts/process/files/multisend';
     import { getInlayAsset } from 'src/ts/process/files/inlays';
     import PlaygroundMenu from '../Playground/PlaygroundMenu.svelte';
-    import { ConnectionOpenStore } from 'src/ts/sync/multiuser';
+    import { ConnectionOpenStore } from 'src/ts/data/sync/multiuser';
     import { coldStorageHeader, preLoadChat } from 'src/ts/process/coldstorage.svelte';
     import Chats from './Chats.svelte';
 

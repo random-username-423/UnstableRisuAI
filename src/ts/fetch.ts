@@ -4,7 +4,7 @@
  */
 
 import { sleep } from './util'
-import { getDatabase } from './storage/database.svelte'
+import { getDatabase } from './data/storage/database.svelte'
 import { DBState } from './stores.svelte'
 import { hubURL } from './character/characterCards'
 import { invoke } from '@tauri-apps/api/core'

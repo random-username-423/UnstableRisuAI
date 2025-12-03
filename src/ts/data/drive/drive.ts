@@ -1,14 +1,14 @@
-import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../alert";
+import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../../alert";
 import { getDatabase, type Database } from "../storage/database.svelte";
-import { forageStorage, getUnpargeables, openURL, saveToWorker, listFromWorker, deleteFromWorker, saving } from "../globalApi.svelte";
+import { forageStorage, getUnpargeables, openURL, saveToWorker, listFromWorker, deleteFromWorker, saving } from "../../globalApi.svelte";
 import { isTauri } from "src/ts/env";
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
-import { language } from "../../lang";
+import { language } from "../../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
 import { platform } from '@tauri-apps/plugin-os';
-import { sleep, getBasename } from '../util';
+import { sleep, getBasename } from '../../util';
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
-import { loadedStore } from "../stores.svelte";
+import { loadedStore } from "../../stores.svelte";
 
 export async function checkDriver(type:'save'|'load'|'loadtauri'|'savetauri'|'reftoken'){
     const CLIENT_ID = '580075990041-l26k2d3c0nemmqiu3d3aag01npfrkn76.apps.googleusercontent.com';

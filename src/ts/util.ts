@@ -1,6 +1,6 @@
 import { get, writable, type Writable } from "svelte/store"
-import type { Database, Message } from "./storage/database.svelte"
-import { getDatabase } from "./storage/database.svelte"
+import type { Database, Message } from "./data/storage/database.svelte"
+import { getDatabase } from "./data/storage/database.svelte"
 import { selectedCharID } from "./stores.svelte"
 import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from "@tauri-apps/plugin-fs"

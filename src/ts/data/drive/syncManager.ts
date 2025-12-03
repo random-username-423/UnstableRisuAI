@@ -16,9 +16,9 @@ import {
     downloadManifest,
     createManifestFromLocal
 } from "./sync";
-import { alertError, alertStore } from "../alert";
-import { language } from "../../lang";
-import { isTauri } from "../env";
+import { alertError, alertStore } from "../../alert";
+import { language } from "../../../lang";
+import { isTauri } from "../../env";
 
 // ============================================================================
 // Types

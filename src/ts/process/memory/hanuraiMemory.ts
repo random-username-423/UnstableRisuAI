@@ -3,7 +3,7 @@ import type { OpenAIChat } from "../index.svelte";
 import { HypaProcesser } from "./hypamemory";
 import { language } from "src/lang";
 import type { ChatTokenizer } from "src/ts/tokenizer";
-import { getDatabase } from "src/ts/storage/database.svelte";
+import { getDatabase } from "src/ts/data/storage/database.svelte";
 
 const maxRecentChatQuery = 4;
 export async function hanuraiMemory(chats:OpenAIChat[],arg:{

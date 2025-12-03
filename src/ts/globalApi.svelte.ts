@@ -9,17 +9,17 @@ import { convertFileSrc } from "@tauri-apps/api/core"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { appDataDir, join } from "@tauri-apps/api/path";
 import {open} from '@tauri-apps/plugin-shell'
-import { setDatabase, type Database, getDatabase, appVer } from "./storage/database.svelte";
+import { setDatabase, type Database, getDatabase, appVer, type Chat, type character, type groupChat } from "./data/storage/database.svelte";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { selectedCharID, DBState } from "./stores.svelte";
 import { alertConfirm, alertError, alertMd, alertNormal, alertNormalWait, alertSelect, alertTOS, alertWait, waitAlert } from "./alert";
-import { syncDrive } from "./drive/drive";
-import { syncManager } from "./drive/syncManager";
+import { syncDrive } from "./data/drive/drive";
+import { syncManager } from "./data/drive/syncManager";
 import { hasher } from "./parser.svelte";
 import { hubURL } from "./character/characterCards";
-import { decodeRisuSave, RisuSaveEncoder, type toSaveType, encodeChat, decodeChat, encodeCharacters, encodeBotPresets } from "./storage/risuSave";
-import { AutoStorage } from "./storage/autoStorage";
-import { saveDbKei } from "./kei/backup";
+import { decodeRisuSave, RisuSaveEncoder, type toSaveType, encodeChat, decodeChat, encodeCharacters, encodeBotPresets } from "./data/storage/risuSave";
+import { AutoStorage } from "./data/storage/autoStorage";
+import { saveDbKei } from "./data/kei/backup";
 import { save } from "@tauri-apps/plugin-dialog";
 import { language } from "src/lang";
 import { AppendableBuffer } from './fetch';
@@ -491,7 +491,7 @@ export async function deleteFromWorker(key: string): Promise<void> {
  * @param chatId - Chat ID
  * @returns The loaded chat, or null if not found
  */
-export async function loadChat(chaId: string, chatId: string): Promise<typeof import('./storage/database.svelte').Chat | null> {
+export async function loadChat(chaId: string, chatId: string): Promise<Chat | null> {
     const db = getDatabase()
     const char = db.characters.find(c => c.chaId === chaId)
     if (!char) {
@@ -563,7 +563,7 @@ export async function loadChat(chaId: string, chatId: string): Promise<typeof im
  * @param chaId - Character ID
  * @param chat - Chat to save
  */
-export async function saveChat(chaId: string, chat: typeof import('./storage/database.svelte').Chat): Promise<void> {
+export async function saveChat(chaId: string, chat: Chat): Promise<void> {
     if (!chat.id || !chaId) return
 
     // Don't save if message is not loaded (nothing to save)

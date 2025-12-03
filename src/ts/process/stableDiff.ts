@@ -1,12 +1,12 @@
 import { get } from "svelte/store"
-import { getDatabase, type character, type NAIImgConfig } from "../storage/database.svelte"
+import { getDatabase, type character, type NAIImgConfig } from "../data/storage/database.svelte"
 import { requestChatData } from "./request/request"
 import { alertError } from "../alert"
 import { fetchNative, globalFetch, readImage } from "../globalApi.svelte"
 import { CharEmotion, DBState } from "../stores.svelte"
 import type { OpenAIChat } from "./index.svelte"
 import { processZip } from "./processzip"
-import { keiServerURL } from "../kei/kei"
+import { keiServerURL } from "../data/kei/kei"
 import { random } from "lodash"
 
 export async function stableDiff(currentChar:character,prompt:string){

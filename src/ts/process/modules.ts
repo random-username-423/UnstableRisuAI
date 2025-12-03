@@ -1,6 +1,6 @@
 import { language } from "src/lang"
 import { alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "../alert"
-import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase, type customscript, type loreBook, type triggerscript } from "../storage/database.svelte"
+import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase, type customscript, type loreBook, type triggerscript } from "../data/storage/database.svelte"
 import { AppendableBuffer, downloadFile, readImage, saveAsset } from "../globalApi.svelte"
 import { isTauri, isNodeServer } from "src/ts/env";
 import { selectSingleFile, sleep } from '../util'

@@ -1,4 +1,4 @@
-import { getDatabase } from "src/ts/storage/database.svelte";
+import { getDatabase } from "src/ts/data/storage/database.svelte";
 
 export function getGenerationModelString(name?:string){
     const db = getDatabase()

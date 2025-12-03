@@ -1,5 +1,5 @@
 import { get, writable } from "svelte/store";
-import { saveImage, setDatabase, type character, type Chat, defaultSdDataFunc, type loreBook, getDatabase, getCharacterByIndex, setCharacterByIndex } from "../storage/database.svelte";
+import { saveImage, setDatabase, type character, type Chat, defaultSdDataFunc, type loreBook, getDatabase, getCharacterByIndex, setCharacterByIndex } from "../data/storage/database.svelte";
 import { alertAddCharacter, alertConfirm, alertError, alertNormal, alertSelect, alertStore, alertWait } from "../alert";
 import { language } from "../../lang";
 import { checkNullish, findCharacterbyId, getUserName, selectMultipleFile, selectSingleFile, sleep } from '../util';
@@ -543,6 +543,7 @@ export function characterFormatUpdate(indexOrCharacter:number|character, arg:{
     let cha = typeof(indexOrCharacter) === 'number' ? getCharacterByIndex(indexOrCharacter) : indexOrCharacter
     if(cha.chats.length === 0){
         cha.chats = [{
+            id: v4(),
             message: [],
             note: '',
             name: 'Chat 1',

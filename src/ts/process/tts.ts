@@ -1,5 +1,5 @@
 import { alertError } from "../alert";
-import { getCurrentCharacter, getDatabase, type character } from "../storage/database.svelte";
+import { getCurrentCharacter, getDatabase, type character } from "../data/storage/database.svelte";
 import { runTranslator, translateVox } from "../translator/translator";
 import { globalFetch, loadAsset } from "../globalApi.svelte";
 import { language } from "src/lang";

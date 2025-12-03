@@ -11,8 +11,8 @@ import { forageStorage } from "../globalApi.svelte"
 import { isTauri, isNodeServer } from "src/ts/env";
 import { DBState } from "../stores.svelte"
 import { hubURL } from "../character/characterCards"
-import type { AccountStorage } from "../storage/accountStorage"
-import type { NodeStorage } from "../storage/nodeStorage"
+import type { AccountStorage } from "../data/storage/accountStorage"
+import type { NodeStorage } from "../data/storage/nodeStorage"
 
 export const coldStorageHeader = '\uEF01COLDSTORAGE\uEF01'
 

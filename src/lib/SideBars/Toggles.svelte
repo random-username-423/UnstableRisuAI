@@ -3,7 +3,7 @@
     import { DBState, MobileGUI } from "src/ts/stores.svelte";
     import { parseToggleSyntax, type sidebarToggle, type sidebarToggleGroup } from "src/ts/util";
     import { language } from "src/lang";
-    import type { character, groupChat } from "src/ts/storage/database.svelte";
+    import type { character, groupChat } from "src/ts/data/storage/database.svelte";
     import Arcodion from '../UI/Arcodion.svelte'
     import CheckInput from "../UI/GUI/CheckInput.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";

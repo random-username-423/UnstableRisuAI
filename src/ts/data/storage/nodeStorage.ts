@@ -1,5 +1,5 @@
 import { language } from "src/lang"
-import { alertInput } from "../alert"
+import { alertInput } from "../../alert"
 
 let auth:string = null
 let authChecked = false

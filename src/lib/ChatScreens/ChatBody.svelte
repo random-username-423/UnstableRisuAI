@@ -6,7 +6,7 @@
     import { getDistance, ParseMarkdown, postTranslationParse, trimMarkdown, type CbsConditions, type simpleCharacterArgument } from "../../ts/parser.svelte"
     import { getLLMCache, translateHTML } from "../../ts/translator/translator"
     import { getModuleAssets } from "src/ts/process/modules";
-    import { getCurrentCharacter } from "src/ts/storage/database.svelte";
+    import { getCurrentCharacter } from "src/ts/data/storage/database.svelte";
     import { getFileSrc } from "src/ts/globalApi.svelte";
 
     interface Props {

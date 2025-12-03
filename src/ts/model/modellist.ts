@@ -9,7 +9,7 @@ export const ProviderSeparatorAfter = new Set([
     'Horde',          // End of local models
 ])
 
-import { getDatabase } from "../storage/database.svelte"
+import { getDatabase } from "../data/storage/database.svelte"
 import {
     LLMFlags,
     LLMFormat,

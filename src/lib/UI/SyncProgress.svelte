@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { syncManager, type SyncProgress } from "src/ts/drive/syncManager";
+    import { syncManager, type SyncProgress } from "src/ts/data/drive/syncManager";
     import { onMount, onDestroy } from "svelte";
     import { RefreshCwIcon } from "lucide-svelte";
 

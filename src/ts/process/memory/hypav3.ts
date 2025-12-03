@@ -11,7 +11,7 @@ import {
   type character,
   type groupChat,
   getDatabase,
-} from "src/ts/storage/database.svelte";
+} from "src/ts/data/storage/database.svelte";
 import { type OpenAIChat } from "../index.svelte";
 import { requestChatData } from "../request/request";
 import { chatCompletion, unloadEngine } from "../webllm";

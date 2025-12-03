@@ -16,7 +16,7 @@
   import { PlusIcon, TrashIcon, ArrowUp, ArrowDown } from "lucide-svelte";
   import { v4 } from "uuid";
   import { MCPClient } from "src/ts/process/mcp/mcplib";
-    import { getDatabase } from "src/ts/storage/database.svelte";
+    import { getDatabase } from "src/ts/data/storage/database.svelte";
 
     let openedModels = $state(new Set<string>())
 
