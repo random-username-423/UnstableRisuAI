@@ -1,12 +1,12 @@
 import { language } from "src/lang";
-import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../alert";
+import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../utils/alert";
 import { requestChatData } from "../process/request/request";
 import { checkCharOrder, globalFetch, saveAsset } from "../globalApi.svelte";
-import { isTauri, isNodeServer } from "src/ts/env";
-import { tokenize } from "../tokenizer";
+import { isTauri, isNodeServer } from "src/ts/utils/env";
+import { tokenize } from "../utils/tokenizer";
 import { createBlankChar } from "../character/characters";
 import { getDatabase, setDatabase, type character } from "../data/storage/database.svelte";
-import { sleep } from '../util';
+import { sleep } from '../utils/util';
 
 
 type creationResult = { ok: false; data:string }|{ok:"creation";data:character}

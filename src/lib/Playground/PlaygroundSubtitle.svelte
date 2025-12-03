@@ -7,9 +7,9 @@
     import { DBState } from "src/ts/stores.svelte";
     import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
     import { requestChatData } from "src/ts/process/request/request";
-    import { selectFileByDom, selectSingleFile, sleep } from "src/ts/util";
-    import { alertError, alertSelect } from "src/ts/alert";
-    import { risuChatParser } from "src/ts/parser.svelte";
+    import { selectFileByDom, selectSingleFile, sleep } from "src/ts/utils/util";
+    import { alertError, alertSelect } from "src/ts/utils/alert";
+    import { risuChatParser } from "src/ts/utils/parser.svelte";
     import { AppendableBuffer, downloadFile, getLanguageCodes, globalFetch } from "src/ts/globalApi.svelte";
     import SliderInput from "../UI/GUI/SliderInput.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";

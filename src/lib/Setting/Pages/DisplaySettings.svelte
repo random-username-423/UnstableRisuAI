@@ -2,7 +2,7 @@
     import { language } from "src/lang";
     import { saveImage } from "src/ts/data/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
-    import { changeFullscreen, selectSingleFile, sleep } from "src/ts/util";
+    import { changeFullscreen, selectSingleFile, sleep } from "src/ts/utils/util";
     import Check from "src/lib/UI/GUI/CheckInput.svelte";
     import Help from "src/lib/Others/Help.svelte";
     import SliderInput from "src/lib/UI/GUI/SliderInput.svelte";
@@ -18,7 +18,7 @@
   import Arcodion from "src/lib/UI/Arcodion.svelte";
   import Button from "src/lib/UI/GUI/Button.svelte";
   import { CustomGUISettingMenuStore } from "src/ts/stores.svelte";
-  import { alertError } from "src/ts/alert";
+  import { alertError } from "src/ts/utils/alert";
 
     const onSchemeInputChange = (e:Event) => {
         changeColorScheme((e.target as HTMLInputElement).value)

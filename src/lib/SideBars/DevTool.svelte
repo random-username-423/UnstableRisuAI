@@ -4,15 +4,15 @@
     import NumberInput from "../UI/GUI/NumberInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
     import { getRequestLog } from "src/ts/globalApi.svelte";
-    import { alertMd, alertWait } from "src/ts/alert";
+    import { alertMd, alertWait } from "src/ts/utils/alert";
     import Arcodion from "../UI/Arcodion.svelte";
-    import { getCharToken, getChatToken } from "src/ts/tokenizer";
+    import { getCharToken, getChatToken } from "src/ts/utils/tokenizer";
     import { tokenizePreset } from "src/ts/process/prompt";
     
     import { DBState } from 'src/ts/stores.svelte';
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import { HardDriveUploadIcon, PlusIcon, TrashIcon } from "lucide-svelte";
-    import { selectSingleFile } from "src/ts/util";
+    import { selectSingleFile } from "src/ts/utils/util";
     import { doingChat, previewFormated, previewBody, sendChat } from "src/ts/process/index.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import { applyChatTemplate, chatTemplates } from "src/ts/process/templates/chatTemplate";

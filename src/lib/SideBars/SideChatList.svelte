@@ -13,8 +13,8 @@
     import TextInput from "../UI/GUI/TextInput.svelte";
 
     import { exportChat, importChat, exportAllChats } from "src/ts/character/characters";
-    import { alertChatOptions, alertConfirm, alertError, alertInput, alertNormal, alertSelect, alertStore } from "src/ts/alert";
-    import { findCharacterbyId, parseKeyValue, sleep, sortableOptions } from "src/ts/util";
+    import { alertChatOptions, alertConfirm, alertError, alertInput, alertNormal, alertSelect, alertStore } from "src/ts/utils/alert";
+    import { findCharacterbyId, parseKeyValue, sleep, sortableOptions } from "src/ts/utils/util";
     import { loadChat } from "src/ts/globalApi.svelte";
     import { createMultiuserRoom } from "src/ts/data/sync/multiuser";
     import { getChatBranches } from "src/ts/gui/branches";

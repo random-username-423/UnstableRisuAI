@@ -2,10 +2,10 @@
     import Check from "src/lib/UI/GUI/CheckInput.svelte";
     import { language } from "src/lang";
     import Help from "src/lib/Others/Help.svelte";
-    import { selectSingleFile } from "src/ts/util";
+    import { selectSingleFile } from "src/ts/utils/util";
     import { DBState, selectedCharID } from 'src/ts/stores.svelte';
     import { saveAsset, downloadFile } from "src/ts/globalApi.svelte";
-    import { isTauri } from "src/ts/env";
+    import { isTauri } from "src/ts/utils/env";
     import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
@@ -17,9 +17,9 @@
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import { untrack } from "svelte";
     import { tokenizePreset } from "src/ts/process/prompt";
-    import { getCharToken } from "src/ts/tokenizer";
+    import { getCharToken } from "src/ts/utils/tokenizer";
     import { PlusIcon, PencilIcon, TrashIcon, DownloadIcon, HardDriveUploadIcon } from "lucide-svelte";
-    import { alertError, alertInput, alertConfirm, alertNormal } from "src/ts/alert";
+    import { alertError, alertInput, alertConfirm, alertNormal } from "src/ts/utils/alert";
     import { createHypaV3Preset } from "src/ts/process/memory/hypav3";
 
     let submenu = $state(DBState.db.useLegacyGUI ? -1 : 0);

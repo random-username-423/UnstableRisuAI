@@ -40,10 +40,10 @@
     import SidebarAvatar from "./SidebarAvatar.svelte";
     import BaseRoundedButton from "../UI/BaseRoundedButton.svelte";
     import { get } from "svelte/store";
-    import { getCharacterIndexObject, selectSingleFile } from "src/ts/util";
+    import { getCharacterIndexObject, selectSingleFile } from "src/ts/utils/util";
     import { v4 } from "uuid";
     import { checkCharOrder, getFileSrc, saveAsset } from "src/ts/globalApi.svelte";
-    import { alertInput, alertSelect } from "src/ts/alert";
+    import { alertInput, alertSelect } from "src/ts/utils/alert";
     import SideChatList from "./SideChatList.svelte";
     import { ConnectionIsHost, ConnectionOpenStore, RoomIdStore } from "src/ts/data/sync/multiuser";
   import { sideBarSize } from "src/ts/gui/guisize";

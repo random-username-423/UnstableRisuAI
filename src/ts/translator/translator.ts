@@ -2,14 +2,14 @@ import { get } from "svelte/store"
 import { translatorPlugin } from "../plugins/plugins"
 import { getDatabase, type character, type customscript, type groupChat } from "../data/storage/database.svelte"
 import { globalFetch } from "../globalApi.svelte"
-import { isTauri, isNodeServer } from "src/ts/env";
-import { alertError } from "../alert"
+import { isTauri, isNodeServer } from "src/ts/utils/env";
+import { alertError } from "../utils/alert"
 import { requestChatData } from "../process/request/request"
 import { doingChat, type OpenAIChat } from "../process/index.svelte"
-import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../parser.svelte"
+import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../utils/parser.svelte"
 import { selectedCharID } from "../stores.svelte"
 import { getModuleRegexScripts } from "../process/modules"
-import { getNodetextToSentence, sleep } from "../util"
+import { getNodetextToSentence, sleep } from "../utils/util"
 import { processScriptFull } from "../process/scripts"
 import localforage from "localforage"
 import sendSound from '../../etc/send.mp3'

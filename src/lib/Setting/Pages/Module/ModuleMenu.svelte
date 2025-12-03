@@ -13,9 +13,9 @@
     import Help from "src/lib/Others/Help.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import { getFileSrc, openURL, saveAsset, downloadFile } from "src/ts/globalApi.svelte";
-    import { alertNormal, alertError } from "src/ts/alert";
+    import { alertNormal, alertError } from "src/ts/utils/alert";
     import { exportRegex, importRegex } from "src/ts/process/scripts";
-    import { selectMultipleFile } from "src/ts/util";
+    import { selectMultipleFile } from "src/ts/utils/util";
     
     import { DBState } from 'src/ts/stores.svelte';
   import { v4 } from "uuid";

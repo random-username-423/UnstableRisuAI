@@ -1,9 +1,9 @@
 <script lang="ts">
     import { Template } from '@huggingface/jinja';
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
-    import { risuChatParser } from 'src/ts/parser.svelte';
+    import { risuChatParser } from 'src/ts/utils/parser.svelte';
     import { language } from 'src/lang';
-    import { sleep } from 'src/ts/util';
+    import { sleep } from 'src/ts/utils/util';
     let input = $state("");
     let output = $state("");
     const onInput = async () => {

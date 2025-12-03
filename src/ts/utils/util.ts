@@ -1,13 +1,13 @@
 import { get, writable, type Writable } from "svelte/store"
-import type { Database, Message } from "./data/storage/database.svelte"
-import { getDatabase } from "./data/storage/database.svelte"
-import { selectedCharID } from "./stores.svelte"
+import type { Database, Message } from "../data/storage/database.svelte"
+import { getDatabase } from "../data/storage/database.svelte"
+import { selectedCharID } from "../stores.svelte"
 import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from "@tauri-apps/plugin-fs"
 import { basename } from "@tauri-apps/api/path"
-import { createBlankChar, getCharImage } from "./character/characters"
+import { createBlankChar, getCharImage } from "../character/characters"
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-import { isTauri, isMobileTauri } from "src/ts/env";
+import { isTauri, isMobileTauri } from "src/ts/utils/env";
 
 const appWindow = isTauri ? getCurrentWebviewWindow() : null
 

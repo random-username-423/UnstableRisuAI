@@ -1,9 +1,9 @@
-import { getChatVar, hasher, setChatVar, getGlobalChatVar, type simpleCharacterArgument, risuChatParser } from "../parser.svelte";
+import { getChatVar, hasher, setChatVar, getGlobalChatVar, type simpleCharacterArgument, risuChatParser } from "../utils/parser.svelte";
 import { LuaEngine, LuaFactory } from "wasmoon";
 import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase, type Chat, type character, type groupChat, type triggerscript } from "../data/storage/database.svelte";
 import { get } from "svelte/store";
 import { ReloadChatPointer, ReloadGUIPointer, selectedCharID } from "../stores.svelte";
-import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "../alert";
+import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "../utils/alert";
 import { HypaProcesser } from "./memory/hypamemory";
 import { generateAIImage } from "./stableDiff";
 import { writeInlayImage, getInlayAsset } from "./files/inlays";
@@ -12,10 +12,10 @@ import { requestChatData } from "./request/request";
 import { v4 } from "uuid";
 import { getModuleLorebooks, getModuleTriggers } from "./modules";
 import { Mutex } from './mutex';
-import { tokenize } from "../tokenizer";
+import { tokenize } from "../utils/tokenizer";
 import { fetchNative, readImage } from "../globalApi.svelte";
 import { loadLoreBookV3Prompt } from './lorebook.svelte';
-import { getPersonaPrompt, getUserName, getUserIcon } from '../util';
+import { getPersonaPrompt, getUserName, getUserIcon } from '../utils/util';
 let luaFactory:LuaFactory
 let ScriptingSafeIds = new Set<string>()
 let ScriptingEditDisplayIds = new Set<string>()

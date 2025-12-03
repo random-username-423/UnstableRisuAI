@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { alertMd } from "src/ts/alert";
+    import { alertMd } from "src/ts/utils/alert";
     import { shareRealmCardData } from "src/ts/realm";
     import { downloadPreset } from "src/ts/data/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
     import { selectedCharID, ShowRealmFrameStore } from "src/ts/stores.svelte";
-    import { sleep } from "src/ts/util";
+    import { sleep } from "src/ts/utils/util";
     import { onDestroy, onMount } from "svelte";
 
     const close =  () => {

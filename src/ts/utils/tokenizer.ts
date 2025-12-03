@@ -1,13 +1,13 @@
 import type { Tiktoken } from "@dqbd/tiktoken";
 import type { Tokenizer } from "@mlc-ai/web-tokenizers";
-import { type groupChat, type character, type Chat, getCurrentCharacter, getDatabase } from "./data/storage/database.svelte";
-import type { MultiModal, OpenAIChat } from "./process/index.svelte";
-import { supportsInlayImage } from "./process/files/inlays";
+import { type groupChat, type character, type Chat, getCurrentCharacter, getDatabase } from "../data/storage/database.svelte";
+import type { MultiModal, OpenAIChat } from "../process/index.svelte";
+import { supportsInlayImage } from "../process/files/inlays";
 import { risuChatParser } from "./parser.svelte";
-import { tokenizeGGUFModel } from "./process/models/local";
-import { globalFetch } from "./globalApi.svelte";
-import { getModelInfo, LLMTokenizer, type LLMModel } from "./model/modellist";
-import { pluginV2 } from "./plugins/plugins";
+import { tokenizeGGUFModel } from "../process/models/local";
+import { globalFetch } from "../globalApi.svelte";
+import { getModelInfo, LLMTokenizer, type LLMModel } from "../model/modellist";
+import { pluginV2 } from "../plugins/plugins";
 import type { GemmaTokenizer } from "@huggingface/transformers";
 import { LRUMap } from 'mnemonist';
 

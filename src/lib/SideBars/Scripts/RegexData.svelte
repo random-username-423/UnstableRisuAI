@@ -1,7 +1,7 @@
 <script lang="ts">
     import { XIcon } from "lucide-svelte";
     import { language } from "src/lang";
-    import { alertConfirm } from "src/ts/alert";
+    import { alertConfirm } from "src/ts/utils/alert";
     import type { customscript } from "src/ts/data/storage/database.svelte";
     import Check from "../../UI/GUI/CheckInput.svelte";
     import TextInput from "../../UI/GUI/TextInput.svelte";

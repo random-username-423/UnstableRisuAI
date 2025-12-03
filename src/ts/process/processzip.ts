@@ -1,8 +1,8 @@
 import { AppendableBuffer, saveAsset, type LocalWriter, type VirtualWriter } from "../globalApi.svelte";
-import { isTauri, isNodeServer } from "src/ts/env";
+import { isTauri, isNodeServer } from "src/ts/utils/env";
 import * as fflate from "fflate";
-import { sleep } from '../util';
-import { alertStore } from "../alert";
+import { sleep } from '../utils/util';
+import { alertStore } from "../utils/alert";
 
 export async function processZip(dataArray: Uint8Array): Promise<string> {
     const jszip = await import("jszip");

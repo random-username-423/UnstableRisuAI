@@ -1,7 +1,7 @@
 import localforage from "localforage";
 import { v4 } from "uuid";
 import { getDatabase } from "../../data/storage/database.svelte";
-import { checkImageType } from "../../parser.svelte";
+import { checkImageType } from "../../utils/parser.svelte";
 import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
 
 const inlayImageExts = [

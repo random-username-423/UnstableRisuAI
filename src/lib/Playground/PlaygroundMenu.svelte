@@ -6,7 +6,7 @@
     import PlaygroundTokenizer from "./PlaygroundTokenizer.svelte";
     import PlaygroundJinja from "./PlaygroundJinja.svelte";
     import PlaygroundSyntax from "./PlaygroundSyntax.svelte";
-    import { findCharacterIndexbyId } from "src/ts/util";
+    import { findCharacterIndexbyId } from "src/ts/utils/util";
     import { characterFormatUpdate, createBlankChar } from "src/ts/character/characters";
     import { type character } from "src/ts/data/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';

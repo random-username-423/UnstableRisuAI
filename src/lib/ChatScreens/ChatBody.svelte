@@ -1,9 +1,9 @@
 <script lang="ts">
     import { isEqual } from "lodash"
     import { DBState } from 'src/ts/stores.svelte'
-    import { sleep } from "src/ts/util"
-    import { alertError } from "../../ts/alert"
-    import { getDistance, ParseMarkdown, postTranslationParse, trimMarkdown, type CbsConditions, type simpleCharacterArgument } from "../../ts/parser.svelte"
+    import { sleep } from "src/ts/utils/util"
+    import { alertError } from "../../ts/utils/alert"
+    import { getDistance, ParseMarkdown, postTranslationParse, trimMarkdown, type CbsConditions, type simpleCharacterArgument } from "../../ts/utils/parser.svelte"
     import { getLLMCache, translateHTML } from "../../ts/translator/translator"
     import { getModuleAssets } from "src/ts/process/modules";
     import { getCurrentCharacter } from "src/ts/data/storage/database.svelte";

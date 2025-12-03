@@ -1,9 +1,9 @@
 import { get } from "svelte/store";
 import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentChat, setDatabase } from "../data/storage/database.svelte";
 import { selectedCharID } from "../stores.svelte";
-import { alertInput, alertMd, alertNormal, alertSelect, alertToast } from "../alert";
+import { alertInput, alertMd, alertNormal, alertSelect, alertToast } from "../utils/alert";
 import { sayTTS } from "./tts";
-import { risuChatParser } from "../parser.svelte";
+import { risuChatParser } from "../utils/parser.svelte";
 import { sendChat } from "./index.svelte";
 import { loadLoreBookV3Prompt } from "./lorebook.svelte";
 import { runTrigger } from "./triggers";

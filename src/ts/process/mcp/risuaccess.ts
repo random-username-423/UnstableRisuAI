@@ -2,8 +2,8 @@ import { getCurrentCharacter, type character, type groupChat, type loreBook } fr
 import { MCPClientLike } from "./internalmcp";
 import type { MCPTool, RPCToolCallContent } from "./mcplib";
 import { DBState } from "src/ts/stores.svelte";
-import { pickHashRand } from "src/ts/util";
-import { alertConfirm } from "src/ts/alert";
+import { pickHashRand } from "src/ts/utils/util";
+import { alertConfirm } from "src/ts/utils/alert";
 import { language } from "src/lang";
 
 

@@ -3,9 +3,9 @@ import { type HypaModel, localModels } from "./hypamemory";
 import { TaskRateLimiter, TaskCanceledError } from "./taskRateLimiter";
 import { runEmbedding } from "../transformers";
 import { globalFetch } from "src/ts/globalApi.svelte";
-import { isMobileUserAgent } from "src/ts/env";
+import { isMobileUserAgent } from "src/ts/utils/env";
 import { getDatabase } from "src/ts/data/storage/database.svelte";
-import { appendLastPath } from "src/ts/util";
+import { appendLastPath } from "src/ts/utils/util";
 
 export interface HypaProcessorV2Options {
   model?: HypaModel;

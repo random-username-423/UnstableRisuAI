@@ -4,7 +4,7 @@
  */
 
 import { exists, readDir, readFile, remove, BaseDirectory } from '@tauri-apps/plugin-fs'
-import { alertWait } from '../../alert'
+import { alertWait } from '../../utils/alert'
 import {
     forageStorage,
     initOPFSWorker,
@@ -13,7 +13,7 @@ import {
     deleteFromWorker,
     saveToWorker
 } from '../../globalApi.svelte'
-import { isTauri } from "src/ts/env";
+import { isTauri } from "src/ts/utils/env";
 
 /**
  * Migrates assets from OPFS to IndexedDB (forageStorage).

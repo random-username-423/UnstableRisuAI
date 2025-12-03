@@ -5,7 +5,7 @@
 
 import { get } from "svelte/store";
 import { BaseDirectory, readFile, exists } from "@tauri-apps/plugin-fs";
-import { isMobileTauri } from "src/ts/env";
+import { isMobileTauri } from "src/ts/utils/env";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -21,16 +21,16 @@ import {
     updateHeightMode,
     checkCharOrder
 } from "./globalApi.svelte";
-import { isTauri, isNodeServer } from "src/ts/env";
+import { isTauri, isNodeServer } from "src/ts/utils/env";
 import { setDatabase, getDatabase, defaultSdDataFunc } from "./data/storage/database.svelte";
 import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
-import { checkNullish, changeFullscreen, sleep, getBasename } from "./util";
+import { checkNullish, changeFullscreen, sleep, getBasename } from "./utils/util";
 import { decodeRisuSave, encodeRisuSaveLegacy, decodeCharacters, decodeBotPresets, encodeCharacters, encodeBotPresets } from "./data/storage/risuSave";
 import { presetTemplate } from "./data/storage/database.svelte";
 import { migrateOPFSAssetsToIndexedDB, migrateTauriFsAssetsToIndexedDB, migrateWebDBtoOPFS } from './data/storage/migration';
-import { checkRisuUpdate } from "./update";
+import { checkRisuUpdate } from "./utils/update";
 import { loadPlugins } from "./plugins/plugins";
-import { alertError, alertMd, alertTOS, waitAlert } from "./alert";
+import { alertError, alertMd, alertTOS, waitAlert } from "./utils/alert";
 import { checkDriverInit } from "./data/drive/drive";
 import { characterURLImport } from "./character/characterCards";
 import { loadRisuAccountData } from "./data/drive/accounter";
@@ -38,7 +38,7 @@ import { autoServerBackup } from "./data/kei/backup";
 import { updateAnimationSpeed } from "./gui/animation";
 import { updateColorScheme, updateTextThemeAndCSS } from "./gui/colorscheme";
 import { updateGuisize } from "./gui/guisize";
-import { startObserveDom } from "./observer.svelte";
+import { startObserveDom } from "./utils/observer.svelte";
 import { initMobileGesture } from "./hotkey/hotkey";
 import { moduleUpdate } from "./process/modules";
 import { makeColdData } from "./process/coldstorage.svelte";

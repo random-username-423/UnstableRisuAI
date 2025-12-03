@@ -3,11 +3,11 @@
     import { DBState } from 'src/ts/stores.svelte';
     import { onMount } from "svelte";
     import { forageStorage, listFromWorker, listWithSizesFromWorker, loadFromWorker } from "src/ts/globalApi.svelte";
-    import { isTauri } from "src/ts/env";
+    import { isTauri } from "src/ts/utils/env";
     import { getDbBackups } from "src/ts/init";
     import { RefreshCwIcon, Trash2Icon, DatabaseIcon, ImageIcon, MessageSquareIcon, FileIcon, HardDriveIcon, UsersIcon } from "lucide-svelte";
     import Button from "src/lib/UI/GUI/Button.svelte";
-    import { alertConfirm, alertNormal } from "src/ts/alert";
+    import { alertConfirm, alertNormal } from "src/ts/utils/alert";
 
     interface StorageInfo {
         totalUsage: number;

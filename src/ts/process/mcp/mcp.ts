@@ -2,12 +2,12 @@ import { getDatabase } from "src/ts/data/storage/database.svelte";
 import { MCPClient, type JsonRPC, type MCPTool, type RPCToolCallContent } from "./mcplib";
 import { DBState } from "src/ts/stores.svelte";
 import { getModuleMcps } from "../modules";
-import { alertError, alertInput, alertNormal } from "src/ts/alert";
+import { alertError, alertInput, alertNormal } from "src/ts/utils/alert";
 import { v4 } from "uuid";
 import type { MCPClientLike } from "./internalmcp";
 import localforage from "localforage";
-import { isTauri } from "src/ts/env";
-import { sleep } from "src/ts/util";
+import { isTauri } from "src/ts/utils/env";
+import { sleep } from "src/ts/utils/util";
 
 export type MCPToolWithURL = MCPTool & {
     mcpURL: string;

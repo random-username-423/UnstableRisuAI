@@ -3,13 +3,13 @@
     import { v4 } from "uuid";
     import { language } from "../../../lang";
     import { getCurrentCharacter, getCurrentChat, type loreBook } from "../../../ts/data/storage/database.svelte";
-    import { alertConfirm, alertInput, alertMd } from "../../../ts/alert";
+    import { alertConfirm, alertInput, alertMd } from "../../../ts/utils/alert";
     import Check from "../../UI/GUI/CheckInput.svelte";
     import Help from "../../Others/Help.svelte";
     import TextInput from "../../UI/GUI/TextInput.svelte";
     import NumberInput from "../../UI/GUI/NumberInput.svelte";
     import TextAreaInput from "../../UI/GUI/TextAreaInput.svelte";
-    import { tokenizeAccurate } from "src/ts/tokenizer";
+    import { tokenizeAccurate } from "src/ts/utils/tokenizer";
     import { DBState } from "src/ts/stores.svelte";
     import LoreBookList from "./LoreBookList.svelte";
 

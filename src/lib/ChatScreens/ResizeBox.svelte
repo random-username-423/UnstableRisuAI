@@ -3,7 +3,7 @@
     import { onMount } from 'svelte';
     import EmotionBox from './EmotionBox.svelte';
     import TransitionImage from './TransitionImage.svelte';
-    import { getEmotion } from '../../ts/util';
+    import { getEmotion } from '../../ts/utils/util';
     
     import { DBState } from 'src/ts/stores.svelte';
 

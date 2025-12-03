@@ -8,7 +8,7 @@
     import { DownloadIcon, Edit, TrashIcon, Globe, Share2Icon, PlusIcon, HardDriveUpload, Waypoints } from "lucide-svelte";
     import { v4 } from "uuid";
     import { tooltip } from "src/ts/gui/tooltip";
-    import { alertCardExport, alertConfirm, alertError } from "src/ts/alert";
+    import { alertCardExport, alertConfirm, alertError } from "src/ts/utils/alert";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import { ShowRealmFrameStore } from "src/ts/stores.svelte";
     import { onDestroy } from "svelte";

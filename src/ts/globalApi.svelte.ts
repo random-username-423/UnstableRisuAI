@@ -3,7 +3,7 @@ import {
     BaseDirectory,
     readFile
 } from "@tauri-apps/plugin-fs"
-import { sleep, getBasename } from "./util"
+import { sleep, getBasename } from "./utils/util"
 import { getDbBackups } from "./init"
 import { convertFileSrc } from "@tauri-apps/api/core"
 import { v4 as uuidv4, v4 } from 'uuid';
@@ -12,18 +12,18 @@ import {open} from '@tauri-apps/plugin-shell'
 import { setDatabase, type Database, getDatabase, appVer, type Chat, type character, type groupChat } from "./data/storage/database.svelte";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { selectedCharID, DBState } from "./stores.svelte";
-import { alertConfirm, alertError, alertMd, alertNormal, alertNormalWait, alertSelect, alertTOS, alertWait, waitAlert } from "./alert";
+import { alertConfirm, alertError, alertMd, alertNormal, alertNormalWait, alertSelect, alertTOS, alertWait, waitAlert } from "./utils/alert";
 import { syncDrive } from "./data/drive/drive";
 import { syncManager } from "./data/drive/syncManager";
-import { hasher } from "./parser.svelte";
+import { hasher } from "./utils/parser.svelte";
 import { hubURL } from "./character/characterCards";
 import { decodeRisuSave, RisuSaveEncoder, type toSaveType, encodeChat, decodeChat, encodeCharacters, encodeBotPresets } from "./data/storage/risuSave";
 import { AutoStorage } from "./data/storage/autoStorage";
 import { saveDbKei } from "./data/kei/backup";
 import { save } from "@tauri-apps/plugin-dialog";
 import { language } from "src/lang";
-import { AppendableBuffer } from './fetch';
-import { isTauri, isNodeServer, isMobileTauri } from "src/ts/env";
+import { AppendableBuffer } from './utils/fetch';
+import { isTauri, isNodeServer, isMobileTauri } from "src/ts/utils/env";
 
 // Re-export fetch utilities
 export {
@@ -36,7 +36,7 @@ export {
     AppendableBuffer,
     type GlobalFetchArgs,
     type GlobalFetchResult
-} from './fetch';
+} from './utils/fetch';
 
 export const forageStorage = new AutoStorage()
 export const googleBuild = false

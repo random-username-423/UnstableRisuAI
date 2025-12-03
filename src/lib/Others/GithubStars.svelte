@@ -1,7 +1,7 @@
 <script lang="ts">
     import { HomeIcon, MailIcon, MaximizeIcon, WalletIcon } from "lucide-svelte";
     import { openURL, toggleFullscreen } from "src/ts/globalApi.svelte";
-    import { isTauri } from "src/ts/env";
+    import { isTauri } from "src/ts/utils/env";
 
 </script>
 <svelte:head>

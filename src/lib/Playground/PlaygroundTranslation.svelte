@@ -8,7 +8,7 @@
     import { getLanguageCodes } from "src/ts/globalApi.svelte";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import CheckInput from "../UI/GUI/CheckInput.svelte";
-    import { tokenize } from "src/ts/tokenizer";
+    import { tokenize } from "src/ts/utils/tokenizer";
 
 
     const userPreferedLang = navigator.language.split('-')[0]

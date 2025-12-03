@@ -1,7 +1,7 @@
 import { setPreset, type botPreset, setDatabase, getDatabase } from "src/ts/data/storage/database.svelte";
 import { defaultAutoSuggestPrefixOoba, defaultAutoSuggestPrompt, defaultAutoSuggestPromptOoba } from "src/ts/data/storage/defaultPrompts";
 import { prebuiltPresets } from "./templates";
-import { alertConfirm, alertSelect } from "src/ts/alert";
+import { alertConfirm, alertSelect } from "src/ts/utils/alert";
 import { language } from "src/lang";
 
 export async function setRecommended(model: string, ask:'ask'|'force') {

@@ -6,12 +6,12 @@
     import { selectedCharID } from "../../ts/stores.svelte";
     import { translate } from "src/ts/translator/translator";
     import { CopyIcon, LanguagesIcon, RefreshCcwIcon } from "lucide-svelte";
-    import { alertConfirm } from "src/ts/alert";
+    import { alertConfirm } from "src/ts/utils/alert";
     import { language } from "src/lang";
-    import { getUserName, replacePlaceholders } from "../../ts/util";
+    import { getUserName, replacePlaceholders } from "../../ts/utils/util";
     import { onDestroy } from 'svelte';
     import { get } from "svelte/store";
-    import { ParseMarkdown } from "src/ts/parser.svelte";
+    import { ParseMarkdown } from "src/ts/utils/parser.svelte";
 
     interface Props {
         send: () => any;

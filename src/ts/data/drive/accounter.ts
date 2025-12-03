@@ -1,6 +1,6 @@
 import { hubURL } from "../../character/characterCards"
 import { getDatabase, setDatabase } from "../storage/database.svelte"
-import { alertConfirm, alertError, alertMd, alertNormal, alertSelect, alertWait } from "../../alert"
+import { alertConfirm, alertError, alertMd, alertNormal, alertSelect, alertWait } from "../../utils/alert"
 import { AppendableBuffer } from "../../globalApi.svelte"
 import { decodeRisuSave } from "../storage/risuSave"
 import { language } from "src/lang"

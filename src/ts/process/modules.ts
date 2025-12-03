@@ -1,13 +1,13 @@
 import { language } from "src/lang"
-import { alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "../alert"
+import { alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "../utils/alert"
 import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase, type customscript, type loreBook, type triggerscript } from "../data/storage/database.svelte"
 import { AppendableBuffer, downloadFile, readImage, saveAsset } from "../globalApi.svelte"
-import { isTauri, isNodeServer } from "src/ts/env";
-import { selectSingleFile, sleep } from '../util'
+import { isTauri, isNodeServer } from "src/ts/utils/env";
+import { selectSingleFile, sleep } from '../utils/util'
 import { v4 } from "uuid"
 import { convertExternalLorebook } from "./lorebook.svelte"
 import { decodeRPack, encodeRPack } from "../rpack/rpack_bg"
-import { convertImage } from "../parser.svelte"
+import { convertImage } from "../utils/parser.svelte"
 import { HideIconStore, moduleBackgroundEmbedding, ReloadGUIPointer } from "../stores.svelte"
 import {get} from "svelte/store"
 

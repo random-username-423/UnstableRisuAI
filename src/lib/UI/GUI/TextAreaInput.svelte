@@ -100,8 +100,8 @@
 <script lang="ts">
     import { textAreaSize, textAreaTextSize } from 'src/ts/gui/guisize'
     import { highlighter, getNewHighlightId, removeHighlight, AllCBS } from 'src/ts/gui/highlight'
-    import { isMobileUserAgent } from "src/ts/env";
-    import { sleep } from 'src/ts/util';
+    import { isMobileUserAgent } from "src/ts/utils/env";
+    import { sleep } from 'src/ts/utils/util';
     import { onDestroy, onMount } from 'svelte';
     import { disableHighlight } from 'src/ts/stores.svelte';
     interface Props {

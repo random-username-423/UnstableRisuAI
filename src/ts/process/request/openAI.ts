@@ -2,17 +2,17 @@ import { language } from "src/lang"
 import { applyParameters, setObjectValue, type OpenAIChatExtra, type OpenAIContents, type OpenAIToolCall, type Parameter, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
 import { getDatabase } from "src/ts/data/storage/database.svelte"
 import { LLMFlags, LLMFormat } from "src/ts/model/modellist"
-import { strongBan, tokenizeNum } from "src/ts/tokenizer"
+import { strongBan, tokenizeNum } from "src/ts/utils/tokenizer"
 import { getFreeOpenRouterModel } from "src/ts/model/openrouter"
 import { addFetchLog, fetchNative, globalFetch, textifyReadableStream } from "src/ts/globalApi.svelte"
-import { isTauri, isNodeServer } from "src/ts/env";
+import { isTauri, isNodeServer } from "src/ts/utils/env";
 import type { OpenAIChatFull } from "../index.svelte"
 import { extractJSON, getOpenAIJSONSchema } from "../templates/jsonSchema"
 import { applyChatTemplate } from "../templates/chatTemplate"
 import { supportsInlayImage } from "../files/inlays"
-import { replaceAsync, simplifySchema } from "src/ts/util"
+import { replaceAsync, simplifySchema } from "src/ts/utils/util"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { alertError, alertNormal, alertWait, showHypaV2Alert } from "src/ts/alert";
+import { alertError, alertNormal, alertWait, showHypaV2Alert } from "src/ts/utils/alert";
 
 
 interface OAIResponseInputItem {

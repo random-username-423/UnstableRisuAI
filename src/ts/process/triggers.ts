@@ -1,12 +1,12 @@
-import { parseChatML, risuChatParser } from "../parser.svelte";
+import { parseChatML, risuChatParser } from "../utils/parser.svelte";
 import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase, type Chat, type character } from "../data/storage/database.svelte";
-import { tokenize } from "../tokenizer";
+import { tokenize } from "../utils/tokenizer";
 import { getModuleTriggers } from "./modules";
 import { get } from "svelte/store";
 import { ReloadChatPointer, ReloadGUIPointer, selectedCharID, CurrentTriggerIdStore } from "../stores.svelte";
 import { processMultiCommand } from "./command";
-import { parseKeyValue, sleep } from "../util";
-import { alertError, alertInput, alertNormal, alertSelect } from "../alert";
+import { parseKeyValue, sleep } from "../utils/util";
+import { alertError, alertInput, alertNormal, alertSelect } from "../utils/alert";
 import type { OpenAIChat } from "./index.svelte";
 import { HypaProcesser } from "./memory/hypamemory";
 import { requestChatData, type OpenAIChatExtra } from "./request/request";

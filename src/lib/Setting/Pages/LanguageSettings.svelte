@@ -3,13 +3,13 @@
     import { changeLanguage, language } from "src/lang";
     
     import { DBState } from 'src/ts/stores.svelte';
-    import { sleep } from "src/ts/util";
+    import { sleep } from "src/ts/utils/util";
     import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
     import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";
-    import { alertNormal, alertSelect, alertConfirm } from "src/ts/alert";
+    import { alertNormal, alertSelect, alertConfirm } from "src/ts/utils/alert";
     import { downloadFile } from "src/ts/globalApi.svelte";
-    import { isTauri } from "src/ts/env";
+    import { isTauri } from "src/ts/utils/env";
     import { languageEnglish } from "src/lang/en";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";

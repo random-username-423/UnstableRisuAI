@@ -7,8 +7,8 @@
     import { DBState } from 'src/ts/stores.svelte';
     import { customProviderStore } from "src/ts/plugins/plugins";
     import { downloadFile, getModelMaxContext } from "src/ts/globalApi.svelte";
-    import { isTauri } from "src/ts/env";
-    import { tokenizeAccurate, tokenizerList } from "src/ts/tokenizer";
+    import { isTauri } from "src/ts/utils/env";
+    import { tokenizeAccurate, tokenizerList } from "src/ts/utils/tokenizer";
     import ModelList from "src/lib/UI/ModelList.svelte";
     import DropList from "src/lib/SideBars/DropList.svelte";
     import { PlusIcon, TrashIcon, HardDriveUploadIcon, DownloadIcon, UploadIcon } from "lucide-svelte";
@@ -20,14 +20,14 @@
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
     import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
     import { openRouterModels } from "src/ts/model/openrouter";
-    import { alertConfirm } from "src/ts/alert";
+    import { alertConfirm } from "src/ts/utils/alert";
     import OobaSettings from "./OobaSettings.svelte";
     import Arcodion from "src/lib/UI/Arcodion.svelte";
     import OpenrouterSettings from "./OpenrouterSettings.svelte";
     import ChatFormatSettings from "./ChatFormatSettings.svelte";
     import PromptSettings from "./PromptSettings.svelte";
     import { openPresetList } from "src/ts/stores.svelte";
-    import { selectSingleFile } from "src/ts/util";
+    import { selectSingleFile } from "src/ts/utils/util";
   import { getModelInfo, LLMFlags, LLMFormat, LLMProvider } from "src/ts/model/modellist";
   import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
   import RegexList from "src/lib/SideBars/Scripts/RegexList.svelte";

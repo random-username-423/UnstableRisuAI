@@ -2,7 +2,7 @@
     
     import { DBState } from 'src/ts/stores.svelte';
     import { CharEmotion } from '../../ts/stores.svelte';
-    import { getEmotion } from '../../ts/util';
+    import { getEmotion } from '../../ts/utils/util';
 </script>
 
 {#await getEmotion(DBState.db,$CharEmotion, 'contain') then images}

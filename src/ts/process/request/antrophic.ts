@@ -3,15 +3,15 @@ import { HttpRequest } from "@smithy/protocol-http"
 import { SignatureV4 } from "@smithy/signature-v4"
 import { fetchNative, globalFetch, textifyReadableStream } from "src/ts/globalApi.svelte"
 import { LLMFormat } from "src/ts/model/modellist"
-import { registerClaudeObserver } from "src/ts/observer.svelte"
+import { registerClaudeObserver } from "src/ts/utils/observer.svelte"
 import { getDatabase } from "src/ts/data/storage/database.svelte"
-import { replaceAsync, simplifySchema, sleep } from "src/ts/util"
+import { replaceAsync, simplifySchema, sleep } from "src/ts/utils/util"
 import { v4 } from "uuid"
 import type { MultiModal } from "../index.svelte"
 import { extractJSON } from "../templates/jsonSchema"
 import { applyParameters, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { tokenize } from "src/ts/tokenizer"
+import { tokenize } from "src/ts/utils/tokenizer"
 
 interface Claude3TextBlock {
     type: 'text',

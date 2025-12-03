@@ -2,7 +2,7 @@
   import { untrack } from "svelte";
   import { ChevronUpIcon, ChevronDownIcon } from "lucide-svelte";
   import { type SerializableSummary } from "src/ts/process/memory/hypav3";
-  import { alertNormalWait } from "src/ts/alert";
+  import { alertNormalWait } from "src/ts/utils/alert";
   import { DBState, selectedCharID } from "src/ts/stores.svelte";
   import { language } from "src/lang";
   import ModalHeader from "./HypaV3Modal/modal-header.svelte";

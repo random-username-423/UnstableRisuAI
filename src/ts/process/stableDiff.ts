@@ -1,7 +1,7 @@
 import { get } from "svelte/store"
 import { getDatabase, type character, type NAIImgConfig } from "../data/storage/database.svelte"
 import { requestChatData } from "./request/request"
-import { alertError } from "../alert"
+import { alertError } from "../utils/alert"
 import { fetchNative, globalFetch, readImage } from "../globalApi.svelte"
 import { CharEmotion, DBState } from "../stores.svelte"
 import type { OpenAIChat } from "./index.svelte"

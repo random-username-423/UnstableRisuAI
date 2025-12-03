@@ -1,7 +1,7 @@
 <script lang="ts">
     import { PlusIcon, XIcon } from "lucide-svelte";
     import { language } from "src/lang";
-    import { alertConfirm } from "src/ts/alert";
+    import { alertConfirm } from "src/ts/utils/alert";
     import type { triggerscript } from "src/ts/data/storage/database.svelte";
     import TextInput from "../../UI/GUI/TextInput.svelte";
     import SelectInput from "../../UI/GUI/SelectInput.svelte";

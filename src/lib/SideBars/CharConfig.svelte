@@ -1,6 +1,6 @@
 <script lang="ts">
     import { language } from "../../lang";
-    import { tokenizeAccurate } from "../../ts/tokenizer";
+    import { tokenizeAccurate } from "../../ts/utils/tokenizer";
     import { saveImage as saveAsset, type Database, type character, type groupChat } from "../../ts/data/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
     import { CharConfigSubMenu, MobileGUI, ShowRealmFrameStore, selectedCharID, hypaV3ModalOpen } from "../../ts/stores.svelte";
@@ -8,9 +8,9 @@
     import Check from "../UI/GUI/CheckInput.svelte";
     import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/character/characters";
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
-    import { alertConfirm, alertMd, alertNormal, alertSelectChar, alertTOS, showHypaV2Alert } from "../../ts/alert";
+    import { alertConfirm, alertMd, alertNormal, alertSelectChar, alertTOS, showHypaV2Alert } from "../../ts/utils/alert";
     import BarIcon from "./BarIcon.svelte";
-    import { findCharacterbyId, getAuthorNoteDefaultText, parseKeyValue, selectMultipleFile, selectSingleFile } from "../../ts/util";
+    import { findCharacterbyId, getAuthorNoteDefaultText, parseKeyValue, selectMultipleFile, selectSingleFile } from "../../ts/utils/util";
     import { onDestroy } from "svelte";
     import {includes, isEqual} from 'lodash'
     import Help from "../Others/Help.svelte";

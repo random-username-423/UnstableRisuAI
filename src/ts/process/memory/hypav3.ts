@@ -15,9 +15,9 @@ import {
 import { type OpenAIChat } from "../index.svelte";
 import { requestChatData } from "../request/request";
 import { chatCompletion, unloadEngine } from "../webllm";
-import { parseChatML } from "src/ts/parser.svelte";
+import { parseChatML } from "src/ts/utils/parser.svelte";
 import { hypaV3ProgressStore } from "src/ts/stores.svelte";
-import { type ChatTokenizer } from "src/ts/tokenizer";
+import { type ChatTokenizer } from "src/ts/utils/tokenizer";
 
 export interface HypaV3Preset {
   name: string;

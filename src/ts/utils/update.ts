@@ -1,8 +1,8 @@
 import { alertConfirm, alertWait } from "./alert";
-import { language } from "../lang";
+import { language } from "../../lang";
 import { platform } from '@tauri-apps/plugin-os';
 import { relaunch } from '@tauri-apps/plugin-process';
-import { isMobileTauri } from "src/ts/env";
+import { isMobileTauri } from "src/ts/utils/env";
 
 export async function checkRisuUpdate(){
 

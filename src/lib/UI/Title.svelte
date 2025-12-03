@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { alertMd } from "src/ts/alert";
+    import { alertMd } from "src/ts/utils/alert";
     
     import { DBState } from 'src/ts/stores.svelte';
     import { openURL } from "src/ts/globalApi.svelte";

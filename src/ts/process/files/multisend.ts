@@ -3,9 +3,9 @@ import { selectedCharID } from 'src/ts/stores.svelte';
 import { get } from 'svelte/store';
 import { doingChat, sendChat } from '../index.svelte';
 import { downloadFile } from 'src/ts/globalApi.svelte';
-import { isTauri } from "src/ts/env";
+import { isTauri } from "src/ts/utils/env";
 import { HypaProcesser } from '../memory/hypamemory';
-import { BufferToText as BufferToText, selectSingleFile, sleep } from 'src/ts/util';
+import { BufferToText as BufferToText, selectSingleFile, sleep } from 'src/ts/utils/util';
 import { postInlayAsset } from './inlays';
 
 type sendFileArg = {

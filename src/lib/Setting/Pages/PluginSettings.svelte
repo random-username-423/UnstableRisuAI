@@ -1,7 +1,7 @@
 <script lang="ts">
     import { PlusIcon, TrashIcon, LinkIcon } from "lucide-svelte";
     import { language } from "src/lang";
-    import { alertConfirm } from "src/ts/alert";
+    import { alertConfirm } from "src/ts/utils/alert";
 
     import { DBState } from "src/ts/stores.svelte";
     import { importPlugin } from "src/ts/plugins/plugins";

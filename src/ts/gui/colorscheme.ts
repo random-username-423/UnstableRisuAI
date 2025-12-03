@@ -1,8 +1,8 @@
 import { get, writable } from "svelte/store";
 import { getDatabase, setDatabase } from "../data/storage/database.svelte";
 import { downloadFile } from "../globalApi.svelte";
-import { BufferToText, selectSingleFile } from '../util';
-import { alertError } from "../alert";
+import { BufferToText, selectSingleFile } from '../utils/util';
+import { alertError } from "../utils/alert";
 import { CustomCSSStore, SafeModeStore } from "../stores.svelte";
 
 export interface ColorScheme{

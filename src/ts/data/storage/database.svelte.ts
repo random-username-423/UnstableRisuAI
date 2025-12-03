@@ -1,11 +1,11 @@
 import { get, writable } from 'svelte/store';
-import { checkNullish, decryptBuffer, encryptBuffer, selectSingleFile } from '../../util';
+import { checkNullish, decryptBuffer, encryptBuffer, selectSingleFile } from '../../utils/util';
 import { changeLanguage, language } from '../../../lang';
 import type { RisuPlugin } from '../../plugins/plugins';
 import type {triggerscript as triggerscriptMain} from '../../process/triggers';
 import { downloadFile, saveAsset as saveImageGlobal } from '../../globalApi.svelte';
 import { defaultAutoSuggestPrompt, defaultJailbreak, defaultMainPrompt } from './defaultPrompts';
-import { alertError, alertNormal, alertSelect } from '../../alert';
+import { alertError, alertNormal, alertSelect } from '../../utils/alert';
 import type { NAISettings } from '../../process/models/nai';
 import { prebuiltNAIpresets, prebuiltPresets } from '../../process/templates/templates';
 import { defaultColorScheme, type ColorScheme } from '../../gui/colorscheme';

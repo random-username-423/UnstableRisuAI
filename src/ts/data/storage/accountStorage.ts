@@ -2,12 +2,12 @@ import { writable } from "svelte/store"
 import { getDatabase } from "./database.svelte"
 import { hubURL } from "../../character/characterCards"
 import localforage from "localforage"
-import { alertLogin, alertNormalWait, alertStore, alertWait } from "../../alert"
+import { alertLogin, alertNormalWait, alertStore, alertWait } from "../../utils/alert"
 import { AppendableBuffer, forageStorage, getUnpargeables } from "../../globalApi.svelte"
 import { encodeRisuSaveLegacy } from "./risuSave"
 import { v4 } from "uuid"
 import { language } from "src/lang"
-import { sleep } from "../../util"
+import { sleep } from "../../utils/util"
 
 export const AccountWarning = writable('')
 const risuSession = Date.now().toFixed(0)

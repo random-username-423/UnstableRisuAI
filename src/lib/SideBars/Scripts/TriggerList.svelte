@@ -3,10 +3,10 @@
     import type { triggerscript } from "src/ts/data/storage/database.svelte";
     import TriggerData from "./TriggerData.svelte";
     import Sortable from "sortablejs";
-    import { sleep, sortableOptions } from "src/ts/util";
+    import { sleep, sortableOptions } from "src/ts/utils/util";
     import { onDestroy, onMount } from "svelte";
     import { language } from "src/lang";
-    import { alertConfirm } from "src/ts/alert";
+    import { alertConfirm } from "src/ts/utils/alert";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import Button from "src/lib/UI/GUI/Button.svelte";
     import { openURL } from "src/ts/globalApi.svelte";

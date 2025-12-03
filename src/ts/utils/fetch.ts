@@ -4,13 +4,13 @@
  */
 
 import { sleep } from './util'
-import { getDatabase } from './data/storage/database.svelte'
-import { DBState } from './stores.svelte'
-import { hubURL } from './character/characterCards'
+import { getDatabase } from '../data/storage/database.svelte'
+import { DBState } from '../stores.svelte'
+import { hubURL } from '../character/characterCards'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { fetch as TauriHTTPFetch } from '@tauri-apps/plugin-http'
-import { isTauri, isNodeServer } from "src/ts/env";
+import { isTauri, isNodeServer } from "src/ts/utils/env";
 
 // Declare userScriptFetch on window
 declare global {

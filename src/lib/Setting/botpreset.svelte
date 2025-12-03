@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { alertCardExport, alertConfirm, alertError, alertMd, alertWait } from "../../ts/alert";
+    import { alertCardExport, alertConfirm, alertError, alertMd, alertWait } from "../../ts/utils/alert";
     import { language } from "../../lang";
     import { changeToPreset, copyPreset, downloadPreset, importPreset, getDatabase } from "../../ts/data/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';

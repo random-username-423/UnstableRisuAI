@@ -1,9 +1,9 @@
 <script lang="ts">
     import { language } from "src/lang";
-    import { alertConfirm, alertError, alertInput, alertNormal } from "src/ts/alert";
+    import { alertConfirm, alertError, alertInput, alertNormal } from "src/ts/utils/alert";
     import { checkDriver } from "src/ts/data/drive/drive";
     import { syncManager } from "src/ts/data/drive/syncManager";
-    import { isNodeServer, isTauri } from "src/ts/env";
+    import { isNodeServer, isTauri } from "src/ts/utils/env";
     import { DBState } from "src/ts/stores.svelte";
     import { onMount, onDestroy } from "svelte";
     import { CloudIcon, RefreshCwIcon, UploadIcon, DownloadIcon, InfoIcon } from "lucide-svelte";

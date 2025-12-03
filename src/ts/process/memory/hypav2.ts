@@ -5,12 +5,12 @@ import {
     type groupChat,
 } from "src/ts/data/storage/database.svelte";
 import type { OpenAIChat } from "../index.svelte";
-import type { ChatTokenizer } from "src/ts/tokenizer";
+import type { ChatTokenizer } from "src/ts/utils/tokenizer";
 import { requestChatData } from "../request/request";
 import { HypaProcesser } from "./hypamemory";
 import { globalFetch } from "src/ts/globalApi.svelte";
 import { runSummarizer } from "../transformers";
-import { parseChatML } from "src/ts/parser.svelte";
+import { parseChatML } from "src/ts/utils/parser.svelte";
 
 export interface HypaV2Data {
     lastMainChunkID: number; // can be removed, but exists to more readability of the code.

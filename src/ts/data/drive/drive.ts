@@ -1,12 +1,12 @@
-import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../../alert";
+import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../../utils/alert";
 import { getDatabase, type Database } from "../storage/database.svelte";
 import { forageStorage, getUnpargeables, openURL, saveToWorker, listFromWorker, deleteFromWorker, saving } from "../../globalApi.svelte";
-import { isTauri } from "src/ts/env";
+import { isTauri } from "src/ts/utils/env";
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 import { language } from "../../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
 import { platform } from '@tauri-apps/plugin-os';
-import { sleep, getBasename } from '../../util';
+import { sleep, getBasename } from '../../utils/util';
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { loadedStore } from "../../stores.svelte";
 

@@ -1,6 +1,6 @@
 import type { OpenAIChat } from "./index.svelte";
 import { getDatabase } from "../data/storage/database.svelte";
-import { getUserName } from "../util";
+import { getUserName } from "../utils/util";
 
 export function multiChatReplacer(){
 

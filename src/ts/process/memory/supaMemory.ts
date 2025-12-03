@@ -1,13 +1,13 @@
 import type { OpenAIChat } from "../index.svelte";
 import { getDatabase, type Chat, type character, type groupChat } from "../../data/storage/database.svelte";
-import { tokenize, type ChatTokenizer } from "../../tokenizer";
+import { tokenize, type ChatTokenizer } from "../../utils/tokenizer";
 import { requestChatData } from "../request/request";
 import { HypaProcesser } from "./hypamemory";
 import { stringlizeChat } from "../stringlize";
 import { globalFetch } from "src/ts/globalApi.svelte";
 import { runSummarizer } from "../transformers";
-import { getUserName } from "src/ts/util";
-import { parseChatML } from "src/ts/parser.svelte";
+import { getUserName } from "src/ts/utils/util";
+import { parseChatML } from "src/ts/utils/parser.svelte";
 
 export async function supaMemory(
         chats:OpenAIChat[],

@@ -1,5 +1,5 @@
 <script>
-    import { alertConfirm, alertError } from "../../ts/alert";
+    import { alertConfirm, alertError } from "../../ts/utils/alert";
     import { language } from "../../lang";
     import { v4 as uuidv4 } from 'uuid';
 
@@ -7,7 +7,7 @@
     import { ReloadGUIPointer, selectedCharID } from "../../ts/stores.svelte";
     import { DownloadIcon, EditIcon, HardDriveUploadIcon, PlusIcon, TrashIcon, XIcon } from "lucide-svelte";
     import { exportChat, importChat } from "../../ts/character/characters";
-    import { findCharacterbyId } from "../../ts/util";
+    import { findCharacterbyId } from "../../ts/utils/util";
     import TextInput from "../UI/GUI/TextInput.svelte";
     import { deleteFromWorker, forageStorage, loadChat } from "../../ts/globalApi.svelte";
 

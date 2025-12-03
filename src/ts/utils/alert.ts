@@ -1,9 +1,9 @@
 import { get, writable } from "svelte/store"
 import { sleep } from "./util"
-import { language } from "../lang"
+import { language } from "../../lang"
 import { isNodeServer, isTauri } from "./env"
 import { getDatabase, type MessageGenerationInfo } from "./data/storage/database.svelte"
-import { alertStore as alertStoreImported } from "./stores.svelte"
+import { alertStore as alertStoreImported } from "../stores.svelte"
 
 export interface alertData{
     type: 'error'|'normal'|'none'|'ask'|'wait'|'selectChar'

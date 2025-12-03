@@ -1,9 +1,9 @@
-import { alertError } from "../alert";
+import { alertError } from "../utils/alert";
 import { getCurrentCharacter, getDatabase, type character } from "../data/storage/database.svelte";
 import { runTranslator, translateVox } from "../translator/translator";
 import { globalFetch, loadAsset } from "../globalApi.svelte";
 import { language } from "src/lang";
-import { sleep } from "../util";
+import { sleep } from "../utils/util";
 import { runVITS } from "./transformers";
 
 let sourceNode:AudioBufferSourceNode = null

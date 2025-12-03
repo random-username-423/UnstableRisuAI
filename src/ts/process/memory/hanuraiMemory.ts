@@ -1,8 +1,8 @@
-import { alertError } from "src/ts/alert";
+import { alertError } from "src/ts/utils/alert";
 import type { OpenAIChat } from "../index.svelte";
 import { HypaProcesser } from "./hypamemory";
 import { language } from "src/lang";
-import type { ChatTokenizer } from "src/ts/tokenizer";
+import type { ChatTokenizer } from "src/ts/utils/tokenizer";
 import { getDatabase } from "src/ts/data/storage/database.svelte";
 
 const maxRecentChatQuery = 4;

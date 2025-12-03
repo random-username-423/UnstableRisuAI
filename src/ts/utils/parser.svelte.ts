@@ -1,18 +1,18 @@
 import DOMPurify from 'dompurify';
 import markdownit from 'markdown-it'
-import { appVer, getCurrentCharacter, getDatabase, type Database, type Message, type character, type customscript, type groupChat, type loreBook, type triggerscript } from './data/storage/database.svelte';
-import { DBState } from './stores.svelte';
-import { getFileSrc } from './globalApi.svelte';
-import { isTauri, isNodeServer, isMobileUserAgent, isMobileTauri } from "src/ts/env";
-import { processScriptFull } from './process/scripts';
+import { appVer, getCurrentCharacter, getDatabase, type Database, type Message, type character, type customscript, type groupChat, type loreBook, type triggerscript } from '../data/storage/database.svelte';
+import { DBState } from '../stores.svelte';
+import { getFileSrc } from '../globalApi.svelte';
+import { isTauri, isNodeServer, isMobileUserAgent, isMobileTauri } from "src/ts/utils/env";
+import { processScriptFull } from '../process/scripts';
 import { get } from 'svelte/store';
 import css, { type CssAtRuleAST } from '@adobe/css-tools'
-import { SizeStore, selectedCharID } from './stores.svelte';
-import { calcString } from './process/infunctions';
+import { SizeStore, selectedCharID } from '../stores.svelte';
+import { calcString } from '../process/infunctions';
 import { findCharacterbyId, getPersonaPrompt, getUserIcon, getUserName, parseKeyValue, pickHashRand, replaceAsync} from './util';
-import { getInlayAsset, getInlayAssetBlob } from './process/files/inlays';
-import { getModuleAssets, getModuleLorebooks, getModules, type RisuModule } from './process/modules';
-import type { OpenAIChat } from './process/index.svelte';
+import { getInlayAsset, getInlayAssetBlob } from '../process/files/inlays';
+import { getModuleAssets, getModuleLorebooks, getModules, type RisuModule } from '../process/modules';
+import type { OpenAIChat } from '../process/index.svelte';
 import hljs from 'highlight.js/lib/core'
 import 'highlight.js/styles/atom-one-dark.min.css'
 import { language } from 'src/lang';
@@ -20,8 +20,8 @@ import airisu from '../etc/airisu.cbs?raw'
 import cbsIntro from '../etc/docs/cbs_intro.cbs?raw'
 import cbsDocs from '../etc/docs/cbs_docs.cbs?raw'
 import docsText from '../etc/docs/docs_text.cbs?raw'
-import { getModelInfo, type LLMModel } from './model/modellist';
-import { registerCBS, type matcherArg, type RegisterCallback } from './character/cbs';
+import { getModelInfo, type LLMModel } from '../model/modellist';
+import { registerCBS, type matcherArg, type RegisterCallback } from '../character/cbs';
 
 const markdownItOptions = {
     html: true,

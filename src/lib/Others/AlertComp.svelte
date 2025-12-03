@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { alertGenerationInfoStore } from "../../ts/alert";
+    import { alertGenerationInfoStore } from "../../ts/utils/alert";
     
     import { DBState } from 'src/ts/stores.svelte';
     import { getCharImage } from '../../ts/character/characters';
-    import { ParseMarkdown } from '../../ts/parser.svelte';
+    import { ParseMarkdown } from '../../ts/utils/parser.svelte';
     import BarIcon from '../SideBars/BarIcon.svelte';
     import { ChevronRightIcon, User } from 'lucide-svelte';
     import { hubURL, isCharacterHasAssets } from 'src/ts/character/characterCards';
@@ -16,7 +16,7 @@
     import { language } from 'src/lang';
     import { getFetchData } from 'src/ts/globalApi.svelte';
     import { alertStore, selectedCharID } from "src/ts/stores.svelte";
-    import { tokenize } from "src/ts/tokenizer";
+    import { tokenize } from "src/ts/utils/tokenizer";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import ModuleChatMenu from "../Setting/Pages/Module/ModuleChatMenu.svelte";
     import { ColorSchemeTypeStore } from "src/ts/gui/colorscheme";

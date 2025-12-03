@@ -1,13 +1,13 @@
 import { get, writable } from "svelte/store";
 import { saveImage, setDatabase, type character, type Chat, defaultSdDataFunc, type loreBook, getDatabase, getCharacterByIndex, setCharacterByIndex } from "../data/storage/database.svelte";
-import { alertAddCharacter, alertConfirm, alertError, alertNormal, alertSelect, alertStore, alertWait } from "../alert";
+import { alertAddCharacter, alertConfirm, alertError, alertNormal, alertSelect, alertStore, alertWait } from "../utils/alert";
 import { language } from "../../lang";
-import { checkNullish, findCharacterbyId, getUserName, selectMultipleFile, selectSingleFile, sleep } from '../util';
+import { checkNullish, findCharacterbyId, getUserName, selectMultipleFile, selectSingleFile, sleep } from '../utils/util';
 import { v4 as uuidv4, v4 } from 'uuid';
 import { MobileGUIStack, OpenRealmStore, selectedCharID } from "../stores.svelte";
 import { AppendableBuffer, checkCharOrder, downloadFile, getFileSrc, loadChat, requiresFullEncoderReload } from "../globalApi.svelte";
 import { updateInlayScreen } from "../process/inlayScreen";
-import { checkImageType, parseMarkdownSafe } from "../parser.svelte";
+import { checkImageType, parseMarkdownSafe } from "../utils/parser.svelte";
 import { translateHTML } from "../translator/translator";
 import { doingChat } from "../process/index.svelte";
 import { importCharacter } from "./characterCards";

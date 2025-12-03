@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { encode } from "src/ts/tokenizer";
+    import { encode } from "src/ts/utils/tokenizer";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import { language } from 'src/lang';
 
