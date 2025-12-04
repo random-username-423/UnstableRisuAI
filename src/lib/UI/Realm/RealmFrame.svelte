@@ -63,8 +63,8 @@
             const encodedPredata = predata.buf
             const encodedPredataName = new TextEncoder().encode(predata.data.name + '.risup')
             data = {
-                data: encodedPredata.buffer,
-                name: encodedPredataName.buffer
+                data: encodedPredata.buffer as ArrayBuffer,
+                name: encodedPredataName.buffer as ArrayBuffer
             }
         }
         else if($ShowRealmFrameStore.startsWith('module')){
@@ -74,8 +74,8 @@
             const encodedPredata = new TextEncoder().encode(JSON.stringify(predata))
             const encodedPredataName = new TextEncoder().encode(predata.name + '.json')
             data = {
-                data: encodedPredata.buffer,
-                name: encodedPredataName.buffer
+                data: encodedPredata.buffer as ArrayBuffer,
+                name: encodedPredataName.buffer as ArrayBuffer
             }
         }
         else{

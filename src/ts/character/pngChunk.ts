@@ -1,13 +1,13 @@
 import { Buffer } from 'buffer';
 import crc32 from 'crc/crc32';
 import { AppendableBuffer, VirtualWriter, type LocalWriter } from '../globalApi.svelte';
-import { blobToUint8Array } from '../utils/util';
+import { blobToUint8Array, getArrayBuffer } from '../utils/util';
 
 class StreamChunkWriter{
-    constructor(private data:Uint8Array, private writer:LocalWriter|WritableStreamDefaultWriter<Uint8Array>|VirtualWriter){
+    constructor(private data:Uint8Array<ArrayBuffer>, private writer:LocalWriter|WritableStreamDefaultWriter<Uint8Array>|VirtualWriter){
 
     }
-    async pushData(data:Uint8Array){
+    async pushData(data:Uint8Array<ArrayBuffer>){
         await this.writer.write(data)
     }
     async init(){
@@ -66,7 +66,7 @@ class StreamChunkWriter{
         await this.pushData(keyData)
         await this.pushData(new Uint8Array([0]))
         await this.pushData(value)
-        const crc = crc32(Buffer.concat([type,keyData,new Uint8Array([0]),value]))
+        const crc = crc32(Buffer.from(Buffer.concat([type,keyData,new Uint8Array([0]),value])))
         await this.pushData(new Uint8Array([
             crc / 0x1000000 % 0x100,
             crc / 0x10000 % 0x100,
@@ -75,11 +75,11 @@ class StreamChunkWriter{
         ]))
     }
     async end() {
-        const length = new Uint8Array((new Uint32Array([0])).buffer)
+        const length = new Uint8Array(getArrayBuffer((new Uint32Array([0])).buffer))
         const type = new TextEncoder().encode('IEND')
         await this.pushData(length)
         await this.pushData(type)
-        const crc = crc32(type)
+        const crc = crc32(Buffer.from(type))
         await this.pushData(new Uint8Array([
             crc / 0x1000000 % 0x100,
             crc / 0x10000 % 0x100,
@@ -100,7 +100,7 @@ export const PngChunk = {
             const typeString = new TextDecoder().decode(type)
             if(arg.checkCrc){
                 const crc = data[pos+8+len] * 0x1000000 + data[pos+9+len] * 0x10000 + data[pos+10+len] * 0x100 + data[pos+11+len]
-                const crcCheck = crc32(data.slice(pos+4,pos+8+len))
+                const crcCheck = crc32(Buffer.from(data.slice(pos+4,pos+8+len)))
                 if(crc !== crcCheck){
                     throw new Error('crc check failed')
                 }
@@ -186,7 +186,7 @@ export const PngChunk = {
             if(arg.checkCrc && !(data instanceof ReadableStream)){ //crc check is not supported for stream
                 const dataPart = await slice(pos+8+len,pos+12+len)
                 const crc = dataPart[0] * 0x1000000 + dataPart[1] * 0x10000 + dataPart[2] * 0x100 + dataPart[3]
-                const crcCheck = crc32(await slice(pos+4,pos+8+len))
+                const crcCheck = crc32(Buffer.from(await slice(pos+4,pos+8+len)))
                 if(crc !== crcCheck){
                     throw new Error('crc check failed')
                 }
@@ -290,7 +290,7 @@ export const PngChunk = {
             await pushData(keyData)
             await pushData(new Uint8Array([0]))
             await pushData(value)
-            const crc = crc32(Buffer.concat([type,keyData,new Uint8Array([0]),value]))
+            const crc = crc32(Buffer.from(Buffer.concat([type,keyData,new Uint8Array([0]),value])))
             await pushData(new Uint8Array([
                 crc / 0x1000000 % 0x100,
                 crc / 0x10000 % 0x100,
@@ -300,11 +300,11 @@ export const PngChunk = {
         }
         //create IEND chunk
         {
-            const length = new Uint8Array((new Uint32Array([0])).buffer)
+            const length = new Uint8Array(getArrayBuffer((new Uint32Array([0])).buffer))
             const type = new TextEncoder().encode('IEND')
             await pushData(length)
             await pushData(type)
-            const crc = crc32(type)
+            const crc = crc32(Buffer.from(type))
             await pushData(new Uint8Array([
                 crc / 0x1000000 % 0x100,
                 crc / 0x10000 % 0x100,

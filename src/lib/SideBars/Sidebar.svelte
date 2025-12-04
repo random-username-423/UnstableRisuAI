@@ -531,7 +531,7 @@
                         return
                       }
 
-                      const folderImageData = await saveAsset(folderImage.data)
+                      const folderImageData = await saveAsset(folderImage.data as Uint8Array<ArrayBuffer>)
 
                       oder.imgFile = folderImageData
                       oder.img = await getFileSrc(folderImageData)

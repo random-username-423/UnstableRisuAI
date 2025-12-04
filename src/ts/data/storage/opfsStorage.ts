@@ -2,7 +2,7 @@ export class OpfsStorage{
 
     opfs:FileSystemDirectoryHandle
 
-    async setItem(key:string, value:Uint8Array) {
+    async setItem(key:string, value:Uint8Array<ArrayBuffer>) {
         await this.Init()
         const handle = await this.opfs.getFileHandle(Buffer.from(key, 'utf-8').toString('hex'), {
             create: true

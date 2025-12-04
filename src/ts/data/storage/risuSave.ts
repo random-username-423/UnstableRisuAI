@@ -30,10 +30,10 @@ async function checkCompressionStreams(){
     }
 }
 
-export function encodeRisuSaveLegacy(data:any, compression:'noCompression'|'compression' = 'noCompression'){
-    let encoded:Uint8Array = packr.encode(data)
+export function encodeRisuSaveLegacy(data:any, compression:'noCompression'|'compression' = 'noCompression'): Uint8Array<ArrayBuffer> {
+    let encoded:Uint8Array<ArrayBuffer> = packr.encode(data) as Uint8Array<ArrayBuffer>
     if(compression === 'compression'){
-        encoded = fflate.compressSync(encoded)
+        encoded = fflate.compressSync(encoded) as Uint8Array<ArrayBuffer>
         const result = new Uint8Array(encoded.length + magicCompressedHeader.length);
         result.set(magicCompressedHeader, 0)
         result.set(encoded, magicCompressedHeader.length)
@@ -501,7 +501,7 @@ const magicBotPresetsHeader = new TextEncoder().encode("RISUBPRE\0");
 /**
  * Encodes a Chat object to a compressed binary format
  */
-export async function encodeChat(chat: Chat): Promise<Uint8Array> {
+export async function encodeChat(chat: Chat): Promise<Uint8Array<ArrayBuffer>> {
     await checkCompressionStreams();
     const jsonStr = JSON.stringify(chat);
     const jsonBytes = new TextEncoder().encode(jsonStr);
@@ -512,7 +512,7 @@ export async function encodeChat(chat: Chat): Promise<Uint8Array> {
     writer.close();
     const compressedData = await new Response(cs.readable).arrayBuffer();
 
-    const result = new Uint8Array(magicChatHeader.length + compressedData.byteLength);
+    const result = new Uint8Array(magicChatHeader.length + compressedData.byteLength) as Uint8Array<ArrayBuffer>;
     result.set(magicChatHeader, 0);
     result.set(new Uint8Array(compressedData), magicChatHeader.length);
     return result;
@@ -548,7 +548,7 @@ import type { character, groupChat, botPreset } from "./database.svelte";
 /**
  * Encodes characters array to a compressed binary format
  */
-export async function encodeCharacters(characters: (character | groupChat)[]): Promise<Uint8Array> {
+export async function encodeCharacters(characters: (character | groupChat)[]): Promise<Uint8Array<ArrayBuffer>> {
     await checkCompressionStreams();
     const jsonStr = JSON.stringify(characters);
     const jsonBytes = new TextEncoder().encode(jsonStr);
@@ -559,7 +559,7 @@ export async function encodeCharacters(characters: (character | groupChat)[]): P
     writer.close();
     const compressedData = await new Response(cs.readable).arrayBuffer();
 
-    const result = new Uint8Array(magicCharactersHeader.length + compressedData.byteLength);
+    const result = new Uint8Array(magicCharactersHeader.length + compressedData.byteLength) as Uint8Array<ArrayBuffer>;
     result.set(magicCharactersHeader, 0);
     result.set(new Uint8Array(compressedData), magicCharactersHeader.length);
     return result;
@@ -593,7 +593,7 @@ export async function decodeCharacters(data: Uint8Array): Promise<(character | g
 /**
  * Encodes botPresets array to a compressed binary format
  */
-export async function encodeBotPresets(botPresets: botPreset[]): Promise<Uint8Array> {
+export async function encodeBotPresets(botPresets: botPreset[]): Promise<Uint8Array<ArrayBuffer>> {
     await checkCompressionStreams();
     const jsonStr = JSON.stringify(botPresets);
     const jsonBytes = new TextEncoder().encode(jsonStr);
@@ -604,7 +604,7 @@ export async function encodeBotPresets(botPresets: botPreset[]): Promise<Uint8Ar
     writer.close();
     const compressedData = await new Response(cs.readable).arrayBuffer();
 
-    const result = new Uint8Array(magicBotPresetsHeader.length + compressedData.byteLength);
+    const result = new Uint8Array(magicBotPresetsHeader.length + compressedData.byteLength) as Uint8Array<ArrayBuffer>;
     result.set(magicBotPresetsHeader, 0);
     result.set(new Uint8Array(compressedData), magicBotPresetsHeader.length);
     return result;

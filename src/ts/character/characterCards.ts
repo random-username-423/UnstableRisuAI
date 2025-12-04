@@ -1,7 +1,7 @@
 import { get, writable, type Writable } from "svelte/store"
 import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertSelect, alertStore, alertTOS, alertWait } from "../utils/alert"
 import { defaultSdDataFunc, type character, setDatabase, type customscript, type loreSettings, type loreBook, type triggerscript, importPreset, type groupChat, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite, appVer } from "../data/storage/database.svelte"
-import { checkNullish, decryptBuffer, encryptBuffer, isKnownUri, selectFileByDom, selectMultipleFile, sleep } from '../utils/util'
+import { checkNullish, decryptBuffer, encryptBuffer, getArrayBuffer, isKnownUri, selectFileByDom, selectMultipleFile, sleep } from '../utils/util'
 import { language } from "src/lang"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { characterFormatUpdate } from "./characters"
@@ -217,7 +217,7 @@ export async function importCharacterProcess(f:{
                     const res = await Promise.all(queueFetch)
                     for(let i=0;i<res.length;i++){
                         if(res[i].status !== 200){
-                            const assetId = await saveAsset(queueFetchData[i])
+                            const assetId = await saveAsset(queueFetchData[i] as Uint8Array<ArrayBuffer>)
                             assets[queueFetchKey[i]] = assetId
                         }
                         else{
@@ -232,7 +232,7 @@ export async function importCharacterProcess(f:{
             }
 
 
-            const assetId = await saveAsset(assetData)
+            const assetId = await saveAsset(assetData as Uint8Array<ArrayBuffer>)
             assets[assetIndex] = assetId
         }
     }
@@ -241,7 +241,7 @@ export async function importCharacterProcess(f:{
         const res = await Promise.all(queueFetch)
         for(let i=0;i<res.length;i++){
             if(res[i].status !== 200){
-                const assetId = await saveAsset(queueFetchData[i])
+                const assetId = await saveAsset(queueFetchData[i] as Uint8Array<ArrayBuffer>)
                 assets[queueFetchKey[i]] = assetId
             }
             else{
@@ -330,7 +330,7 @@ export async function importCharacterProcess(f:{
     if(parsed.spec !== 'chara_card_v2' && parsed.spec !== 'chara_card_v3'){
         const charaData:OldTavernChar = JSON.parse(Buffer.from(readedChara, 'base64').toString('utf-8'))
         console.log(charaData)
-        const imgp = await saveAsset(img)
+        const imgp = await saveAsset(img as Uint8Array<ArrayBuffer>)
         db.characters.push(convertOffSpecCards(charaData, imgp))
         setDatabaseLite(db)
         alertNormal(language.importedCharacter)
@@ -688,7 +688,7 @@ async function importCharacterCardSpec(card:CharacterCardV2Risu|CharacterCardV3,
 
     const data = card.data
     console.log(card)
-    let im = img ? await saveAsset(img) : undefined
+    let im = img ? await saveAsset(img as Uint8Array<ArrayBuffer>) : undefined
     let db = getDatabase()
 
     const risuext = safeStructuredClone(data.extensions.risuai)
@@ -1209,7 +1209,9 @@ export async function exportCharacterCard(char:character, type:'png'|'json'|'cha
     const spec:'v2'|'v3' = arg.spec ?? 'v2' //backward compatibility
     try{
         char.image = ''
-        img = type === 'png' ? (await reencodeImage(img)) : img
+        if (img && type === 'png') {
+            img = await reencodeImage(img)
+        }
         const localWriter = arg.writer ?? (new LocalWriter())
         if(!arg.writer && type !== 'json'){
             const nameExt = {
@@ -1661,7 +1663,7 @@ export async function shareRisuHub2(char:character, arg:{
     
         const fetchPromise = fetch(hubURL + '/hub/realm/upload', {
             method: "POST",
-            body: writer.buf.buffer,
+            body: getArrayBuffer(writer.buf.buffer),
             headers: {
                 "Content-Type": 'image/png',
                 "x-risu-api-version": "4",

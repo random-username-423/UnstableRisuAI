@@ -30,7 +30,8 @@ export async function convertPdfToImages(pdfBuffer: ArrayBuffer, options?: {
         
         const renderContext = {
             canvasContext: context,
-            viewport: viewport
+            viewport: viewport,
+            canvas: null
         }
         
         await page.render(renderContext).promise

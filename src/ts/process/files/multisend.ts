@@ -284,7 +284,7 @@ export async function postChatFile(query:string|{
         case 'webm':
         case 'mpeg':
         case 'avi':{
-            const postData = await postInlayAsset(file)
+            const postData = await postInlayAsset({name: file.name, data: file.data as Uint8Array<ArrayBuffer>})
             if(!postData){
                 return null
             }

@@ -23,7 +23,7 @@ const inlayStorage = localforage.createInstance({
 
 export async function postInlayAsset(img:{
     name:string,
-    data:Uint8Array
+    data:Uint8Array<ArrayBuffer>
 }){
 
     const extention = img.name.split('.').at(-1)
@@ -204,7 +204,7 @@ export function supportsInlayImage(){
     return getModelInfo(db.aiModel).flags.includes(LLMFlags.hasImageInput)
 }
 
-export async function reencodeImage(img:Uint8Array){
+export async function reencodeImage(img:Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>> {
     if(checkImageType(img) === 'PNG'){
         return img
     }
@@ -220,5 +220,5 @@ export async function reencodeImage(img:Uint8Array){
     ctx.drawImage(imgObj, 0, 0, drawWidth, drawHeight)
     const b64 = canvas.toDataURL('image/png').split(',')[1]
     const b = Buffer.from(b64, 'base64')
-    return b
+    return b as Uint8Array<ArrayBuffer>
 }

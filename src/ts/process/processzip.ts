@@ -1,12 +1,12 @@
 import { AppendableBuffer, saveAsset, type LocalWriter, type VirtualWriter } from "../globalApi.svelte";
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import * as fflate from "fflate";
-import { sleep } from '../utils/util';
+import { getArrayBuffer, sleep } from '../utils/util';
 import { alertStore } from "../utils/alert";
 
 export async function processZip(dataArray: Uint8Array): Promise<string> {
     const jszip = await import("jszip");
-    const blob = new Blob([dataArray], { type: "application/zip" });
+    const blob = new Blob([getArrayBuffer(dataArray)], { type: "application/zip" });
     const zip = new jszip.default();
     const zipData = await zip.loadAsync(blob);
 
@@ -47,7 +47,7 @@ export class CharXWriter{
         if(!ctx){
             return
         }
-        const imgBlob = new Blob([img], {type: 'image/jpeg'})
+        const imgBlob = new Blob([getArrayBuffer(img)], {type: 'image/jpeg'})
         const imgURL = URL.createObjectURL(imgBlob)
         const imgElement = document.createElement('img')
         imgElement.src = imgURL
@@ -129,7 +129,7 @@ export class CharXReader{
                     }
                     else{
                         this.assetPromises.push((async () => {
-                            const assetId = await saveAsset(assetData)
+                            const assetId = await saveAsset(assetData as Uint8Array<ArrayBuffer>)
                             this.assets[assetIndex] = assetId
                         })())
                     }

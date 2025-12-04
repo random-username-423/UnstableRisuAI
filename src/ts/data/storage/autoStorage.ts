@@ -14,7 +14,7 @@ export class AutoStorage{
 
     realStorage:LocalForage|NodeStorage|OpfsStorage|AccountStorage
 
-    async setItem(key:string, value:Uint8Array):Promise<string|null> {
+    async setItem(key:string, value:Uint8Array<ArrayBuffer>):Promise<string|null> {
         await this.Init()
         if(this.isAccount){
             return await (this.realStorage as AccountStorage).setItem(key, value)
@@ -79,7 +79,7 @@ export class AutoStorage{
                     type: "wait",
                     msg: `Migrating your data...(${i}/${keys.length})`
                 })
-                const rkey = await accountStorage.setItem(key,await this.realStorage.getItem(key))
+                const rkey = await accountStorage.setItem(key,await this.realStorage.getItem(key) as Uint8Array<ArrayBuffer>)
                 if(rkey !== key){
                     replaced[key] = rkey
                 }

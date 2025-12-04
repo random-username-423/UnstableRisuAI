@@ -140,7 +140,7 @@ async function listSyncFiles(accessToken: string): Promise<DriveFile[]> {
 /**
  * Create or update a file in sync folder
  */
-async function uploadSyncFile(accessToken: string, fileName: string, content: Uint8Array, existingFileId?: string): Promise<string> {
+async function uploadSyncFile(accessToken: string, fileName: string, content: Uint8Array<ArrayBuffer>, existingFileId?: string): Promise<string> {
     const folderId = await getSyncFolderId(accessToken);
 
     if (existingFileId) {
@@ -194,7 +194,7 @@ async function uploadSyncFile(accessToken: string, fileName: string, content: Ui
 /**
  * Download a file from sync folder
  */
-async function downloadSyncFile(accessToken: string, fileId: string): Promise<Uint8Array> {
+async function downloadSyncFile(accessToken: string, fileId: string): Promise<Uint8Array<ArrayBuffer>> {
     const response = await fetch(
         `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
         {
@@ -206,7 +206,7 @@ async function downloadSyncFile(accessToken: string, fileId: string): Promise<Ui
         throw new Error(`Failed to download file: ${response.status}`);
     }
 
-    return new Uint8Array(await response.arrayBuffer());
+    return new Uint8Array(await response.arrayBuffer()) as Uint8Array<ArrayBuffer>;
 }
 
 /**
@@ -289,6 +289,7 @@ export function createManifestFromLocal(): SyncManifest {
         characters: {},
         settings: { modifiedAt: Date.now() },
         botPresets: { modifiedAt: Date.now() },
+        assets: {},
         deletedAssets: {}
     };
 
@@ -846,7 +847,7 @@ export async function syncChangedItems(
             // Load chat from OPFS
             const data = await loadFromWorker(`database/chats/${item.id}.bin`);
             if (data) {
-                const fileId = await uploadSyncFile(accessToken, fileName, data, existingFileId);
+                const fileId = await uploadSyncFile(accessToken, fileName, data as Uint8Array<ArrayBuffer>, existingFileId);
                 const chat = JSON.parse(new TextDecoder().decode(data));
                 serverManifest.chats[item.id] = { modifiedAt: chat.modifiedAt || Date.now(), fileId };
             }
@@ -1001,7 +1002,7 @@ async function syncAssetsUpload(
             const { assetName, serverFileName } = toUpload[idx];
 
             try {
-                const assetData = await forageStorage.getItem(`assets/${assetName}`) as Uint8Array | null;
+                const assetData = await forageStorage.getItem(`assets/${assetName}`) as Uint8Array<ArrayBuffer> | null;
                 if (!assetData) {
                     console.warn(`[Sync Assets] Asset not found in IndexedDB: ${assetName}`);
                     processedCount++;
@@ -1137,7 +1138,7 @@ async function syncAssetsDownload(
 
             try {
                 const data = await downloadSyncFile(accessToken, fileId);
-                await forageStorage.setItem(`assets/${assetName}`, data);
+                await forageStorage.setItem(`assets/${assetName}`, data as Uint8Array<ArrayBuffer>);
                 downloadCount++;
 
                 if (downloadCount % 10 === 0) {

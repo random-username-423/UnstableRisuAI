@@ -195,7 +195,7 @@
             }
             enc.append(mp3encoder.flush())
 
-            const file2 = new File([enc.buffer], 'audio.mp3', {
+            const file2 = new File([enc.buffer as Uint8Array<ArrayBuffer>], 'audio.mp3', {
                 type: 'audio/mp3'
             })
 
@@ -227,8 +227,12 @@
                     {
                         device: device,
                         progress_callback: (progress) => {
+                            if (progress.status === 'ready') {
+                                outputText = `Ready: ${progress.task} - ${progress.model}`
+                                return
+                            }
                             stats[progress.name + progress.file] = progress
-                            outputText = Object.values(stats).map(v => `${v.name}-${v.file}: ${progress.status} ${v.progress ? `[${v.progress.toFixed(2)}%]` : ''}`).join('\n')
+                            outputText = Object.values(stats).map(v => `${v.name}-${v.file}: ${v.status} ${v.progress ? `[${v.progress.toFixed(2)}%]` : ''}`).join('\n')
                         },
                         dtype: 'q8'
                     },

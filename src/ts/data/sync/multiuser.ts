@@ -309,7 +309,7 @@ export async function joinMultiuserRoom(){
                     break
                 }
                 case 'receive-asset':{
-                    saveImage(data.data, data.id)
+                    saveImage(data.data as Uint8Array<ArrayBuffer>, data.id)
                     break
                 }
                 case 'receive-chat':{

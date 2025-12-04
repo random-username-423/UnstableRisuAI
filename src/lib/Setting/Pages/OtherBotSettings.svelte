@@ -367,7 +367,7 @@
                         const imageData = img.data;
                         
                         DBState.db.NAIImgConfig.character_base64image = Buffer.from(imageData).toString('base64');
-                        const saveId = await saveAsset(imageData)
+                        const saveId = await saveAsset(imageData as Uint8Array<ArrayBuffer>)
                         DBState.db.NAIImgConfig.character_image = saveId
                         console.log('Character image set:', DBState.db.NAIImgConfig.character_image)
                     }}>
@@ -447,7 +447,7 @@
                             return null
                         }
                         DBState.db.NAIImgConfig.base64image = Buffer.from(img.data).toString('base64');
-                        const saveId = await saveAsset(img.data)
+                        const saveId = await saveAsset(img.data as Uint8Array<ArrayBuffer>)
                         DBState.db.NAIImgConfig.image = saveId
                     }}>
                         {#if !DBState.db.NAIImgConfig.image || DBState.db.NAIImgConfig.image === ''}

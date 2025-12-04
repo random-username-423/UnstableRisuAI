@@ -22,7 +22,7 @@ import {
     checkCharOrder
 } from "./globalApi.svelte";
 import { isTauri, isNodeServer } from "src/ts/utils/env";
-import { setDatabase, getDatabase, defaultSdDataFunc } from "./data/storage/database.svelte";
+import { setDatabase, getDatabase, defaultSdDataFunc, type character, type groupChat } from "./data/storage/database.svelte";
 import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
 import { checkNullish, changeFullscreen, sleep, getBasename } from "./utils/util";
 import { decodeRisuSave, encodeRisuSaveLegacy, decodeCharacters, decodeBotPresets, encodeCharacters, encodeBotPresets } from "./data/storage/risuSave";
@@ -132,7 +132,7 @@ async function migrateCharactersAndPresetsToFiles(): Promise<void> {
             })) || [];
             return { ...char, chats: chatsMetadata };
         });
-        const encoded = await encodeCharacters(charactersToSave)
+        const encoded = await encodeCharacters(charactersToSave as (character | groupChat)[])
         await saveToWorker('database/characters.bin', encoded)
         console.log('[migrateCharactersAndPresetsToFiles] Characters migration complete')
     }
@@ -173,7 +173,7 @@ async function migrateChatsToFiles(): Promise<void> {
     }
 
     console.log(`[migrateChatsToFiles] Migrating ${totalChats} chats to individual files...`)
-    const { encodeChat } = await import('./storage/risuSave')
+    const { encodeChat } = await import('./data/storage/risuSave')
 
     let migratedCount = 0
     for(const char of db.characters){
@@ -345,7 +345,7 @@ export async function loadData() {
 
                 // OPFS에서 DB 로드
                 LoadingStatusState.text = "Loading Local Save File..."
-                let gotStorage:Uint8Array = await loadFromWorker('database/database.bin')
+                let gotStorage:Uint8Array<ArrayBuffer> = await loadFromWorker('database/database.bin') as Uint8Array<ArrayBuffer>
                 if (gotStorage) {
                     console.log(`[loadData] database.bin size: ${(gotStorage.byteLength / 1024 / 1024).toFixed(2)} MB`)
                 }
@@ -452,7 +452,7 @@ export async function loadData() {
                     })
                     if(checkNullish(gotStorage)){
                         gotStorage = encodeRisuSaveLegacy({})
-                        await forageStorage.setItem('database/database.bin', gotStorage)
+                        await forageStorage.setItem('database/database.bin', gotStorage as Uint8Array<ArrayBuffer>)
                     }
                     try {
                         setDatabase(

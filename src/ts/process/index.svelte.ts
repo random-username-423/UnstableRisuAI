@@ -955,7 +955,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             multimodals: multimodal,
             thoughts: thoughts,
             encryptedThinking: (pastThinkingSend !== 0 && msg.encryptedThinking)
-                ? msg.encryptedThinking.filter(et => et.tokens && et.tokens > 0)
+                ? msg.encryptedThinking.filter((et): et is { provider: string; data: any; tokens: number } => et.tokens != null && et.tokens > 0)
                 : undefined
         }
         if(chat.multimodals.length === 0){

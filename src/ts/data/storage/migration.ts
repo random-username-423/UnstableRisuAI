@@ -38,7 +38,7 @@ export async function migrateOPFSAssetsToIndexedDB(): Promise<void> {
 
         const data = await loadFromWorker('assets/' + name)
         if (data) {
-            await forageStorage.setItem('assets/' + name, data)
+            await forageStorage.setItem('assets/' + name, data as Uint8Array<ArrayBuffer>)
         }
     }
 
@@ -123,7 +123,7 @@ export async function migrateWebDBtoOPFS(): Promise<void> {
     const indexedDBData = await forageStorage.getItem('database/database.bin') as unknown as Uint8Array
     if (!indexedDBData) {
         // IndexedDB에 DB가 없으면 마이그레이션 완료로 표시
-        await saveToWorker('__web_db_migration_done__', new Uint8Array([1]))
+        await saveToWorker('__web_db_migration_done__', new Uint8Array([1]) as Uint8Array<ArrayBuffer>)
         return
     }
 
@@ -131,20 +131,20 @@ export async function migrateWebDBtoOPFS(): Promise<void> {
     alertWait('DB 마이그레이션 중...')
 
     // DB를 OPFS로 복사
-    await saveToWorker('database/database.bin', indexedDBData)
+    await saveToWorker('database/database.bin', indexedDBData as Uint8Array<ArrayBuffer>)
 
     // 백업 파일들도 마이그레이션
     const keys = await forageStorage.keys()
     const backupKeys = keys.filter(k => k.startsWith('database/dbbackup-'))
     for (const key of backupKeys) {
-        const backupData = await forageStorage.getItem(key) as unknown as Uint8Array
+        const backupData = await forageStorage.getItem(key) as unknown as Uint8Array<ArrayBuffer>
         if (backupData) {
             await saveToWorker(key, backupData)
         }
     }
 
     // 마이그레이션 완료 플래그 저장
-    await saveToWorker('__web_db_migration_done__', new Uint8Array([1]))
+    await saveToWorker('__web_db_migration_done__', new Uint8Array([1]) as Uint8Array<ArrayBuffer>)
     console.log('[Migration] Web IndexedDB → OPFS migration completed')
 
     // IndexedDB에서 DB 삭제 (공간 확보)

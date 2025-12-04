@@ -391,7 +391,7 @@ export function getAuthorNoteDefaultText() {
 
 }
 
-export async function encryptBuffer(data: Uint8Array, keys: string) {
+export async function encryptBuffer(data: Uint8Array<ArrayBuffer>, keys: string) {
     // hash the key to get a fixed length key value
     const keyArray = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(keys))
 
@@ -416,7 +416,7 @@ export async function encryptBuffer(data: Uint8Array, keys: string) {
     return result
 }
 
-export async function decryptBuffer(data: Uint8Array, keys: string) {
+export async function decryptBuffer(data: Uint8Array<ArrayBuffer>, keys: string) {
     // hash the key to get a fixed length key value
     const keyArray = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(keys))
 
@@ -1222,4 +1222,15 @@ export const jsonOutputTrimmer = (data: string) => {
         data = data.slice(7, -3).trim()
     }
     return data.trim()
+}
+
+/**
+ * Helper to cast Uint8Array buffer to ArrayBuffer, bypassing SharedArrayBuffer type check.
+ * Use this when you are sure the buffer is not shared.
+ */
+export function getArrayBuffer(array: Uint8Array | ArrayBufferLike): ArrayBuffer {
+    if (array instanceof Uint8Array) {
+        return array.buffer as ArrayBuffer;
+    }
+    return array as ArrayBuffer;
 }

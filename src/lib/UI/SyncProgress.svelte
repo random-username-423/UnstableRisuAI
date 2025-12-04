@@ -14,7 +14,7 @@
     let posY = $state(16);  // top offset in px
     let dragOffsetX = 0;
     let dragOffsetY = 0;
-    let widgetEl: HTMLDivElement | null = null;
+    let widgetEl = $state<HTMLDivElement | null>(null);
 
     const WIDGET_WIDTH = 200;  // min-w-[200px]
     const WIDGET_HEIGHT = 80;  // approximate height

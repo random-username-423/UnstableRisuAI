@@ -96,12 +96,12 @@ async function setColdStorageItem(key:string, value:any) {
 
     const fflate = await import('fflate')
     const json = JSON.stringify(value)
-    const compressed = await (new Promise<Uint8Array>((resolve, reject) => {   
+    const compressed = await (new Promise<Uint8Array<ArrayBuffer>>((resolve, reject) => {
         fflate.compress(new TextEncoder().encode(json), (err, compressed) => {
             if (err) {
                 reject(err)
             }
-            resolve(compressed)
+            resolve(compressed as Uint8Array<ArrayBuffer>)
         })
     }))
     

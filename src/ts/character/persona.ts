@@ -15,7 +15,7 @@ export async function selectUserImg() {
     }
     const img = selected.data
     let db = getDatabase()
-    const imgp = await saveImage(img)
+    const imgp = await saveImage(img as Uint8Array<ArrayBuffer>)
     db.userIcon = imgp
     db.personas[db.selectedPersona] = {
         name: db.username,
@@ -83,9 +83,9 @@ export async function exportUserPersona() {
 
     await sleep(10)
 
-    img = (await PngChunk.write(await reencodeImage(img), {
+    img = (await PngChunk.write(await reencodeImage(img as Uint8Array<ArrayBuffer>), {
         "persona": Buffer.from(JSON.stringify(card)).toString('base64')
-    })) as Uint8Array
+    })) as Uint8Array<ArrayBuffer>
 
     alertStore.set({
         type: 'wait',
@@ -123,7 +123,7 @@ export async function importUserPersona() {
             let db = getDatabase()
             db.personas.push({
                 name: data.name,
-                icon: await saveImage(await reencodeImage(v.data)),
+                icon: await saveImage(await reencodeImage(v.data as Uint8Array<ArrayBuffer>)),
                 personaPrompt: data.personaPrompt,
                 note: data.note,
                 id: v4()

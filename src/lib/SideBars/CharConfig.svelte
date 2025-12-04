@@ -600,7 +600,7 @@
                                         const img = f.data
                                         const name = f.name
                                         const extension = name.split('.').pop().toLowerCase()
-                                        const imgp = await saveAsset(img,'', extension)
+                                        const imgp = await saveAsset(img as Uint8Array<ArrayBuffer>,'', extension)
                                         DBState.db.characters[$selectedCharID].additionalAssets.push([name, imgp, extension])
                                         DBState.db.characters[$selectedCharID].additionalAssets = DBState.db.characters[$selectedCharID].additionalAssets
                                     }
@@ -902,7 +902,7 @@
                 if(!audio){
                     return null
                 }
-                const saveId = await saveAsset(audio.data)
+                const saveId = await saveAsset(audio.data as Uint8Array<ArrayBuffer>)
                 DBState.db.characters[$selectedCharID].gptSoVitsConfig.ref_audio_data = {
                     fileName: audio.name,
                     assetId: saveId

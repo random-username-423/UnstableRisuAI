@@ -767,7 +767,7 @@ function decodeStyle(text:string){
     })
 }
 
-export async function hasher(data:Uint8Array){
+export async function hasher(data:Uint8Array<ArrayBuffer>){
     return Buffer.from(await crypto.subtle.digest("SHA-256", data)).toString('hex');
 }
 

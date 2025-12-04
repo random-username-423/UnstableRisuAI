@@ -263,7 +263,7 @@
                     DBState.db.customBackground = ''
                     return
                 }
-                const img = await saveImage(d.data)
+                const img = await saveImage(d.data as Uint8Array<ArrayBuffer>)
                 DBState.db.customBackground = img
             }
             else{

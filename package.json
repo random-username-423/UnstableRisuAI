@@ -75,7 +75,7 @@
     "node-html-parser": "^7.0.1",
     "ollama": "^0.6.3",
     "openid-client": "^6.8.1",
-    "pdfjs-dist": "^5.4.394",
+    "pdfjs-dist": "^5.4.449",
     "peerjs": "^1.5.5",
     "png-chunk-text": "^1.0.0",
     "png-chunks-encode": "^1.0.0",

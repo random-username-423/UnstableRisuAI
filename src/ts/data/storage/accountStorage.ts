@@ -19,7 +19,7 @@ export class AccountStorage{
     auth:string
     usingSync:boolean
 
-    async setItem(key:string, value:Uint8Array) {
+    async setItem(key:string, value:Uint8Array<ArrayBuffer>) {
         this.checkAuth()
         let da:Response
 

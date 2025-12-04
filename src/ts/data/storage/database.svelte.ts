@@ -1488,7 +1488,7 @@ export interface botPreset{
         model: string[]
     }
     fallbackWhenBlankResponse?: boolean
-    verbosity:number
+    verbosity?:number
     dynamicOutput?:DynamicOutput
 }
 
@@ -2098,7 +2098,7 @@ export async function downloadPreset(id:number, type:'json'|'risupreset'|'return
             presetVersion: 2,
             type: 'preset',
             preset: await encryptBuffer(
-                encodeMsgpack(pres),
+                encodeMsgpack(pres) as Uint8Array<ArrayBuffer>,
                 'risupreset'
             )
         }))

@@ -208,11 +208,11 @@ let appDataDirPath = ''
  * Reads an image file and returns its data.
  * 
  * @param {string} data - The path to the image file.
- * @returns {Promise<Uint8Array>} - A promise that resolves to the data of the image file.
+ * @returns {Promise<Uint8Array<ArrayBuffer> | null>} - A promise that resolves to the data of the image file.
  */
-export async function readImage(data:string) {
+export async function readImage(data:string): Promise<Uint8Array<ArrayBuffer> | null> {
     // Assets are stored in IndexedDB (forageStorage) for all platforms
-    const result = await forageStorage.getItem(data) as unknown as Uint8Array
+    const result = await forageStorage.getItem(data) as unknown as Uint8Array<ArrayBuffer>
     if (result) {
         return result
     }
@@ -223,9 +223,9 @@ export async function readImage(data:string) {
                 if(appDataDirPath === ''){
                     appDataDirPath = await appDataDir();
                 }
-                return await readFile(await join(appDataDirPath,data))
+                return await readFile(await join(appDataDirPath,data)) as Uint8Array<ArrayBuffer>
             }
-            return await readFile(data)
+            return await readFile(data) as Uint8Array<ArrayBuffer>
         } catch (e) {
             return null
         }
@@ -241,7 +241,7 @@ export async function readImage(data:string) {
  * @param {string} [fileName=''] - The name of the asset file.
  * @returns {Promise<string>} - A promise that resolves to the path of the saved asset file.
  */
-export async function saveAsset(data:Uint8Array, customId:string = '', fileName:string = ''){
+export async function saveAsset(data:Uint8Array<ArrayBuffer>, customId:string = '', fileName:string = ''){
     let id = ''
     if(customId !== ''){
         id = customId
@@ -270,18 +270,18 @@ export async function saveAsset(data:Uint8Array, customId:string = '', fileName:
  * Loads an asset file with the given ID.
  * 
  * @param {string} id - The ID of the asset file to load.
- * @returns {Promise<Uint8Array>} - A promise that resolves to the data of the loaded asset file.
+ * @returns {Promise<Uint8Array<ArrayBuffer> | null>} - A promise that resolves to the data of the loaded asset file.
  */
-export async function loadAsset(id:string){
+export async function loadAsset(id:string): Promise<Uint8Array<ArrayBuffer> | null> {
     // Tauri와 웹 모두 IndexedDB (forageStorage) 사용
-    const data = await forageStorage.getItem(id) as unknown as Uint8Array
+    const data = await forageStorage.getItem(id) as unknown as Uint8Array<ArrayBuffer>
     if (data) {
         return data
     }
     // 폴백: Tauri fs (마이그레이션 전 레거시 데이터용)
     if (isTauri) {
         try {
-            return await readFile(id, {baseDir: BaseDirectory.AppData})
+            return await readFile(id, {baseDir: BaseDirectory.AppData}) as Uint8Array<ArrayBuffer>
         } catch {
             return null
         }
@@ -410,7 +410,7 @@ export async function initOPFSWorker(): Promise<void> {
     }
 }
 
-export async function saveToWorker(key: string, data: Uint8Array): Promise<void> {
+export async function saveToWorker(key: string, data: Uint8Array<ArrayBuffer>): Promise<void> {
     // Worker가 없으면 자동 초기화 (백업 복원 시에도 OPFS 사용)
     if (!opfsWorker) {
         await initOPFSWorker()

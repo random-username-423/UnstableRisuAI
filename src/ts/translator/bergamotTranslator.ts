@@ -1,5 +1,6 @@
 import { LatencyOptimisedTranslator, TranslatorBacking } from "@browsermt/bergamot-translator";
 import { gunzipSync } from 'fflate';
+import { getArrayBuffer } from "../utils/util";
 
 // Cache Translations Models
 class CacheDB {
@@ -104,19 +105,19 @@ class FirefoxBacking extends TranslatorBacking {
         });
         // Decompress GZip
         const buffer = await res.arrayBuffer();
-        const decomp = await decompressGZip(buffer);
+        const decomp = await decompressGZip(getArrayBuffer(buffer));
         await this.cache.save(url, checksum, decomp);
         return decomp;
     }
 }
 
-async function decompressGZip(buffer:ArrayBuffer) {
+async function decompressGZip(buffer:ArrayBuffer): Promise<ArrayBuffer> {
     if (typeof DecompressionStream !== "undefined") {
         const decompressor = new DecompressionStream('gzip');
         const stream = new Response(buffer).body.pipeThrough(decompressor);
         return await new Response(stream).arrayBuffer();
     } else {    // GZip decompression fallback
-        return gunzipSync(new Uint8Array(buffer)).buffer;
+        return gunzipSync(new Uint8Array(buffer)).buffer as ArrayBuffer;
     }
 }
 
