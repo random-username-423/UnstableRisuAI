@@ -16,10 +16,10 @@ import type { OpenAIChat } from '../process/index.svelte';
 import hljs from 'highlight.js/lib/core'
 import 'highlight.js/styles/atom-one-dark.min.css'
 import { language } from 'src/lang';
-import airisu from '../etc/airisu.cbs?raw'
-import cbsIntro from '../etc/docs/cbs_intro.cbs?raw'
-import cbsDocs from '../etc/docs/cbs_docs.cbs?raw'
-import docsText from '../etc/docs/docs_text.cbs?raw'
+import airisu from '../../etc/airisu.cbs?raw'
+import cbsIntro from '../../etc/docs/cbs_intro.cbs?raw'
+import cbsDocs from '../../etc/docs/cbs_docs.cbs?raw'
+import docsText from '../../etc/docs/docs_text.cbs?raw'
 import { getModelInfo, type LLMModel } from '../model/modellist';
 import { registerCBS, type matcherArg, type RegisterCallback } from '../character/cbs';
 

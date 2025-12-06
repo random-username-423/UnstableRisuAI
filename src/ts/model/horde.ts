@@ -17,7 +17,7 @@ let modelList:HordeModel[]|'loading' = null
 // modelList = []
 
 export async function getHordeModels():Promise<HordeModel[]> {
-    
+
     if(modelList === null){
         try {
             modelList = 'loading'
@@ -27,7 +27,7 @@ export async function getHordeModels():Promise<HordeModel[]> {
             return res
         } catch (error) {
             modelList = null
-            return []        
+            return []
         }
     }
     else if(modelList === 'loading'){

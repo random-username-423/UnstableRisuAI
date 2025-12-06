@@ -54,9 +54,12 @@ Cargo.lock
 # Claude Code
 .claude/
 CLAUDE.md
+
+# Gemini CLI
 .gemini/
 GEMINI.md
 
+# Etc
 /android
 /src-tauri/gen
 src-tauri/gen/schemas/acl-manifests.json

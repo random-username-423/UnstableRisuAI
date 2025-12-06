@@ -2,7 +2,6 @@ import localforage from "localforage"
 import { replaceDbResources } from "../../globalApi.svelte"
 import { isNodeServer } from "src/ts/utils/env";
 import { NodeStorage } from "./nodeStorage"
-import { OpfsStorage } from "./opfsStorage"
 import { alertInput, alertSelect, alertStore } from "../../utils/alert"
 import { getDatabase, type Database } from "./database.svelte"
 import { AccountStorage } from "./accountStorage"
@@ -12,7 +11,7 @@ import { language } from "src/lang"
 export class AutoStorage{
     isAccount:boolean = false
 
-    realStorage:LocalForage|NodeStorage|OpfsStorage|AccountStorage
+    realStorage:LocalForage|NodeStorage|AccountStorage
 
     async setItem(key:string, value:Uint8Array<ArrayBuffer>):Promise<string|null> {
         await this.Init()
@@ -38,6 +37,7 @@ export class AutoStorage{
     }
 
     async checkAccountSync(){
+        await this.Init()
         let db = getDatabase()
         if(this.isAccount){
             return true
@@ -127,43 +127,6 @@ export class AutoStorage{
                 console.log("using node storage")
                 this.realStorage = new NodeStorage()
                 return
-            }
-            else if(window.navigator?.storage?.getDirectory &&
-                    FileSystemFileHandle?.prototype?.createWritable &&
-                    localStorage.getItem('opfs_flag!') === "able"){
-                console.log("using opfs storage")
-
-                const forage = localforage.createInstance({
-                    name: "risuai"
-                })
-
-                const i = await forage.getItem("database/database.bin")
-
-                if((!i) || (await forage.getItem("migrated"))){
-                    this.realStorage = new OpfsStorage()
-                    return
-                }
-                else if(!(await forage.getItem("denied_opfs"))){
-                    console.log("migrating")
-                    const keys = await forage.keys()
-                    let i = 0;
-                    const opfs = new OpfsStorage()
-                    for(const key of keys){
-                        alertStore.set({
-                            type: "wait",
-                            msg: `Migrating your data...(${i}/${keys.length})`
-                        })
-                        await opfs.setItem(key,await forage.getItem(key))
-                        i += 1
-                    }
-                    this.realStorage = opfs
-                    alertStore.set({
-                        type: "none",
-                        msg: ""
-                    })
-                    await forage.setItem("migrated", true)
-                    return
-                }
             }
             console.log("using forage storage")
             this.realStorage = localforage.createInstance({
