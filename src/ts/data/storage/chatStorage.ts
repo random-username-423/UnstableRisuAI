@@ -89,11 +89,10 @@ export async function saveChat(chaId: string, chat: Chat): Promise<void> {
     // Don't save if message is not loaded (nothing to save)
     if (chat.message === undefined) return
 
-    // Update modifiedAt for sync
-    chat.modifiedAt = Date.now()
-
     try {
-        const encodedChat = await encodeChat(chat)
+        // Set modifiedAt on a shallow copy to avoid triggering reactive updates
+        const chatToSave = { ...chat, modifiedAt: Date.now() }
+        const encodedChat = await encodeChat(chatToSave)
         await saveToWorker(`database/chats/${chaId}_${chat.id}.bin`, encodedChat)
 
         // Mark for sync (debounced)

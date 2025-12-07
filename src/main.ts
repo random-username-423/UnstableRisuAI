@@ -7,7 +7,7 @@ import "core-js/actual"
 console.info('[RisuAI] Initializing...')
 
 import "./ts/data/storage/database.svelte"
-import {declareTest} from "./test/runTest"
+import { declareTest } from "./test/runTest"
 import App from "./App.svelte";
 import { loadData } from "./ts/init";
 import { initHotkey } from "./ts/hotkey/hotkey";

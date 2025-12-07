@@ -1,16 +1,15 @@
 import { sleep } from "../../utils/util"
 import { getDbBackups } from "../../init"
-import { v4 } from 'uuid'
 import { getDatabase } from "./database.svelte"
-import { selectedCharID, DBState } from "../../stores.svelte"
-import { alertConfirm, alertNormalWait } from "../../utils/alert"
+import { selIdState, DBState } from "../../stores.svelte"
 import { syncDrive } from "../drive/drive"
 import { RisuSaveEncoder, type toSaveType } from "./risuSave"
 import { saveMainData } from "./dbStorage"
 import { forageStorage } from "./autoStorage"
 import { saveDbKei } from "../kei/backup"
-import { language } from "src/lang"
 import { initOPFSWorker } from './opfsWorkerClient.svelte'
+import { tabSyncManager } from "./tabSyncManager"
+import { autoSaveErrorHandler } from "./autoSaveErrorHandler"
 
 let lastBackupTime = 0
 
@@ -30,32 +29,19 @@ export let requiresFullEncoderReload = $state({
  * @returns {Promise<void>} - A promise that resolves when the database has been saved.
  */
 export async function saveDb() {
+    // ============================================================
+    // Stage 1: 초기화
+    // ============================================================
     let changed = false
     syncDrive()
-    let gotChannel = false
-    const sessionID = v4()
-    let channel: BroadcastChannel
-    if (window.BroadcastChannel) {
-        channel = new BroadcastChannel('risu-db')
-    }
 
-    // Initialize worker if not already done
+    // Stage 1-1: 탭 동기화 매니저 초기화
+    tabSyncManager.init()
+
+    // Stage 1-2: OPFS Worker 초기화
     await initOPFSWorker()
 
-    if (channel) {
-        channel.onmessage = async (ev) => {
-            if (ev.data === sessionID) {
-                return
-            }
-            if (!gotChannel) {
-                gotChannel = true
-                alertNormalWait(language.activeTabChange).then(() => {
-                    location.reload()
-                })
-            }
-        }
-    }
-
+    // Stage 1-3: 변경 추적 객체 초기화
     const changeTracker: toSaveType = {
         character: [],
         chat: [],
@@ -63,6 +49,7 @@ export async function saveDb() {
         modules: false
     }
 
+    // Stage 1-4: RisuSaveEncoder 초기화
     let encoder = new RisuSaveEncoder()
     // Account 동기화 모드에서는 chats 분리 안 함 (기존 형식 유지)
     const shouldExcludeChats = !forageStorage.isAccount
@@ -74,16 +61,14 @@ export async function saveDb() {
         separateCharactersAndPresets: shouldSeparateCharactersAndPresets
     })
 
+    // ============================================================
+    // Stage 2: 변경 감지 설정 ($effect.root)
+    // ============================================================
     $effect.root(() => {
-        let selIdState = $state(0)
-
         const debounceTime = 500 // 500 milliseconds
         let saveTimeout: ReturnType<typeof setTimeout> | null = null
 
-        selectedCharID.subscribe((v) => {
-            selIdState = v
-        })
-
+        // 디바운스 함수: 500ms 후에 changed = true 설정
         function saveTimeoutExecute() {
             if (saveTimeout) {
                 clearTimeout(saveTimeout)
@@ -93,54 +78,68 @@ export async function saveDb() {
             }, debounceTime)
         }
 
+        // Stage 2-1: botPresets 변경 감지
         $effect(() => {
             DBState.db.botPresetsId
             DBState.db.botPresets.length
             changeTracker.botPreset = true
             saveTimeoutExecute()
         })
+
+        // Stage 2-2: modules 변경 감지
         $effect(() => {
             $state.snapshot(DBState.db.modules)
             changeTracker.modules = true
             saveTimeoutExecute()
         })
+
+        // Stage 2-3: DB 전체 + 현재 캐릭터/채팅 변경 감지
         $effect(() => {
+            // DB의 characters, botPresets, modules 외 모든 필드 감지
             for (const key in DBState.db) {
                 if (key !== 'characters' && key !== 'botPresets' && key !== 'modules') {
                     $state.snapshot(DBState.db[key])
                 }
             }
-            if (DBState?.db?.characters?.[selIdState]) {
-                for (const key in DBState.db.characters[selIdState]) {
+            // 현재 선택된 캐릭터의 변경 감지
+            const charIndex = selIdState.selId
+            if (DBState?.db?.characters?.[charIndex]) {
+                const currentChar = DBState.db.characters[charIndex]
+                for (const key in currentChar) {
                     if (key !== 'chats') {
-                        $state.snapshot(DBState.db.characters[selIdState][key])
+                        $state.snapshot(currentChar[key])
                     }
                 }
                 // Track chats length and current chat only (not all chats) for performance
-                const chats = DBState.db.characters[selIdState].chats
+                const chats = currentChar.chats
                 chats?.length
-                const currentChatPage = DBState.db.characters[selIdState].chatPage
+                const currentChatPage = currentChar.chatPage
                 const currentChat = chats?.[currentChatPage]
                 if (currentChat) {
                     $state.snapshot(currentChat)
                 }
-                if (changeTracker.character[0] !== DBState.db.characters[selIdState]?.chaId) {
-                    changeTracker.character.unshift(DBState.db.characters[selIdState]?.chaId)
+                // 변경된 캐릭터 ID 추적
+                if (changeTracker.character[0] !== currentChar?.chaId) {
+                    changeTracker.character.unshift(currentChar?.chaId)
                 }
+                // 변경된 채팅 ID 추적
                 if (
-                    changeTracker.chat[0]?.[0] !== DBState.db.characters[selIdState]?.chaId ||
-                    changeTracker.chat[0]?.[1] !== DBState.db.characters[selIdState]?.chats[DBState.db.characters[selIdState]?.chatPage].id
+                    changeTracker.chat[0]?.[0] !== currentChar?.chaId ||
+                    changeTracker.chat[0]?.[1] !== currentChar?.chats[currentChar?.chatPage].id
                 ) {
-                    changeTracker.chat.unshift([DBState.db.characters[selIdState]?.chaId, DBState.db.characters[selIdState]?.chats[DBState.db.characters[selIdState]?.chatPage].id])
+                    changeTracker.chat.unshift([currentChar?.chaId, currentChar?.chats[currentChar?.chatPage].id])
                 }
             }
             saveTimeoutExecute()
         })
     })
 
-    let savetrys = 0
+    // ============================================================
+    // Stage 3: 무한 저장 루프
+    // ============================================================
     await sleep(1000)
     while (true) {
+        // Stage 3-1: 변경 없거나 일시정지 상태면 대기
         if (!changed || saving.paused) {
             await sleep(500)
             continue
@@ -149,6 +148,7 @@ export async function saveDb() {
         saving.state = true
         changed = false
         try {
+            // Stage 3-2: encoder 재초기화 필요 시 처리
             if (requiresFullEncoderReload.state) {
                 encoder = new RisuSaveEncoder()
                 await encoder.init(getDatabase(), {
@@ -159,25 +159,28 @@ export async function saveDb() {
                 requiresFullEncoderReload.state = false
             }
 
+            // Stage 3-3: changeTracker 복사 후 리셋
             let toSave = safeStructuredClone(changeTracker)
             changeTracker.character = changeTracker.character.length === 0 ? [] : [changeTracker.character[0]]
             changeTracker.chat = changeTracker.chat.length === 0 ? [] : [changeTracker.chat[0]]
             changeTracker.botPreset = false
             changeTracker.modules = false
-            if (gotChannel) {
-                // Data is saved in other tab
+
+            // Stage 3-4: 다른 탭에서 저장 중이면 스킵
+            if (tabSyncManager.isOtherTabSaving) {
                 await sleep(1000)
                 continue
             }
-            if (channel) {
-                channel.postMessage(sessionID)
-            }
+            tabSyncManager.notifySaving()
+
+            // Stage 3-5: DB 유효성 검사
             let db = getDatabase()
             if (!db.characters) {
                 await sleep(1000)
                 continue
             }
 
+            // Stage 3-6: 인코딩
             await encoder.set(db, toSave)
             const encoded = encoder.encode()
             if (!encoded) {
@@ -185,11 +188,13 @@ export async function saveDb() {
                 continue
             }
             const dbData = new Uint8Array(encoded)
+
+            // Stage 3-7: 백업 여부 결정
             const now = Date.now()
             const intervalMs = (db.dbBackupIntervalMinutes ?? 10) * 60 * 1000
             const shouldBackup = (now - lastBackupTime) >= intervalMs
 
-            // Delegate to dbStorage for actual file saving
+            // Stage 3-8: 실제 파일 저장 (dbStorage로 위임)
             const result = await saveMainData({
                 db,
                 dbData,
@@ -202,24 +207,24 @@ export async function saveDb() {
 
             if (result.backedUp) {
                 lastBackupTime = now
+                // 백업이 생성됐을 때만 오래된 백업 정리
+                await getDbBackups()
             }
 
+            // Stage 3-9: 후처리
             // Account mode delay
             if (forageStorage.isAccount) {
                 await sleep(3000)
             }
-            if (!forageStorage.isAccount) {
-                await getDbBackups()
-            }
-            savetrys = 0
+            autoSaveErrorHandler.onSuccess()
             await saveDbKei()
             await sleep(500)
         } catch (error) {
-            savetrys += 1
-            if (savetrys > 4) {
-                await alertConfirm(`DBSaveError: ${error.message ?? error}. report to the developer.`)
-            } else {
-                console.error(error)
+            // Stage 3-10: 에러 처리
+            const action = await autoSaveErrorHandler.onError(error)
+            if (action === 'completeFail') {
+                // 완전 실패 시 더 긴 대기
+                await sleep(5000)
             }
         }
 
