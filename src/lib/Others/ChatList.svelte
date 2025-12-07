@@ -9,7 +9,7 @@
     import { exportChat, importChat } from "../../ts/character/characters"
     import { findCharacterbyId } from "../../ts/utils/util"
     import TextInput from "../UI/GUI/TextInput.svelte"
-    import { forageStorage } from "./autoStorage"
+    import { forageStorage } from "src/ts/data/storage/autoStorage"
     import { loadChat } from "src/ts/data/storage/chatStorage"
     import { deleteFromWorker } from "../../ts/data/storage/opfsWorkerClient.svelte"
 
