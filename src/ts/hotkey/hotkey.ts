@@ -10,7 +10,6 @@ import { getRequestLog } from "../utils/fetch"
 
 export function initHotkey(){
     document.addEventListener('keydown', async (ev) => {
-        console.log(document.activeElement)
         if(
             !ev.ctrlKey &&
             !ev.altKey &&

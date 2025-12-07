@@ -127,6 +127,27 @@ export async function SaveLocalBackup(){
         }
     }
 
+    // Backup chat files from OPFS (one by one to avoid memory issues)
+    try {
+        const chatFiles = await listFromWorker('database/chats')
+        console.log(`[LocalBackup] Found ${chatFiles.length} chat files to backup`)
+        for (let i = 0; i < chatFiles.length; i++) {
+            const file = chatFiles[i]
+            alertWait(`Saving local Backup... (Chat ${i + 1}/${chatFiles.length})`)
+            try {
+                const data = await loadFromWorker(`database/chats/${file}`)
+                if (data && data.byteLength > 0) {
+                    await writer.writeBackup(`chats/${file}`, data)
+                }
+            } catch (e) {
+                console.warn(`[LocalBackup] Failed to backup chat file ${file}:`, e)
+            }
+        }
+        console.log(`[LocalBackup] Backed up ${chatFiles.length} chat files`)
+    } catch (e) {
+        console.log('[LocalBackup] No chat files to backup or error:', e)
+    }
+
     const dbData = encodeRisuSaveLegacy(getDatabase(), 'compression')
 
     alertWait(`Saving local Backup... (Saving database)`) 
@@ -262,6 +283,11 @@ export async function LoadLocalBackup(){
                                 location.search = '';
                             }
                             return;
+                        } else if (name.startsWith('chats/')) {
+                            // 채팅 파일은 OPFS에 저장
+                            const chatFileName = name.slice(6) // 'chats/' 제거
+                            await saveToWorker(`database/chats/${chatFileName}`, new Uint8Array(data));
+                            console.log(`[LoadLocalBackup] Restored chat file: ${chatFileName}`);
                         } else {
                             // 에셋은 IndexedDB (forageStorage)에 저장 (Tauri와 웹 모두 동일)
                             await forageStorage.setItem('assets/' + name, data);

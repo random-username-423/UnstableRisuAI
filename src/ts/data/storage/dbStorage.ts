@@ -44,7 +44,9 @@ export async function saveMainData(options: SaveMainDataOptions): Promise<SaveMa
             const backupEncoded = backupEncoder.encode()
             if (backupEncoded) {
                 const backupData = new Uint8Array(backupEncoded)
-                await saveToWorker(`database/dbbackup-${(now / 100).toFixed()}.bin`, backupData)
+                const backupName = `database/dbbackup-${(now / 100).toFixed()}.bin`
+                await saveToWorker(backupName, backupData)
+                console.log(`[dbStorage] Internal backup created: ${backupName} (${(backupData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
             }
             backedUp = true
         }
@@ -107,7 +109,9 @@ export async function saveMainData(options: SaveMainDataOptions): Promise<SaveMa
             const backupEncoded = backupEncoder.encode()
             if (backupEncoded) {
                 const backupData = new Uint8Array(backupEncoded)
-                await forageStorage.setItem(`database/dbbackup-${(now / 100).toFixed()}.bin`, backupData)
+                const backupName = `database/dbbackup-${(now / 100).toFixed()}.bin`
+                await forageStorage.setItem(backupName, backupData)
+                console.log(`[dbStorage] Internal backup created (forageStorage): ${backupName} (${(backupData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
             }
             backedUp = true
         }
