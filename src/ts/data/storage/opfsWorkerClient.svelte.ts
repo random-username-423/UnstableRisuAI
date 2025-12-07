@@ -19,6 +19,9 @@ let pendingLoads = new Map<string, { resolve: (data: Uint8Array | null) => void,
 let pendingLists = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
 let pendingListsWithSizes = new Map<string, { resolve: (files: { name: string; size: number }[]) => void, reject: (e: Error) => void }>()
 let pendingDeletes = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
+let pendingListsRecursive = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
+let pendingListsWithSizesRecursive = new Map<string, { resolve: (files: { path: string; size: number }[]) => void, reject: (e: Error) => void }>()
+let pendingDeleteDirectories = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
 
 export class OPFSNotSupportedError extends Error {
     constructor() {
@@ -134,6 +137,45 @@ export async function initOPFSWorker(): Promise<void> {
                 pendingDeletes.delete(key)
             }
         }
+        // Handle listRecursive responses
+        else if (type === 'listRecursive_success' || type === 'listRecursive_error') {
+            const { dirPath, files } = e.data
+            const pending = pendingListsRecursive.get(dirPath)
+            if (pending) {
+                if (type === 'listRecursive_success') {
+                    pending.resolve(files || [])
+                } else {
+                    pending.resolve([])
+                }
+                pendingListsRecursive.delete(dirPath)
+            }
+        }
+        // Handle listWithSizesRecursive responses
+        else if (type === 'listWithSizesRecursive_success' || type === 'listWithSizesRecursive_error') {
+            const { dirPath, files } = e.data
+            const pending = pendingListsWithSizesRecursive.get(dirPath)
+            if (pending) {
+                if (type === 'listWithSizesRecursive_success') {
+                    pending.resolve(files || [])
+                } else {
+                    pending.resolve([])
+                }
+                pendingListsWithSizesRecursive.delete(dirPath)
+            }
+        }
+        // Handle deleteDirectory responses
+        else if (type === 'deleteDirectory_success' || type === 'deleteDirectory_error') {
+            const { dirPath } = e.data
+            const pending = pendingDeleteDirectories.get(dirPath)
+            if (pending) {
+                if (type === 'deleteDirectory_success') {
+                    pending.resolve()
+                } else {
+                    pending.reject(new Error(error || 'Unknown delete directory error'))
+                }
+                pendingDeleteDirectories.delete(dirPath)
+            }
+        }
     }
     opfsWorker.onerror = (e) => {
         console.error('OPFS worker error:', e)
@@ -237,4 +279,54 @@ export async function deleteFromWorker(key: string): Promise<void> {
  */
 export function isWorkerReady(): boolean {
     return opfsWorker !== null && opfsWorkerReady
+}
+
+/**
+ * 재귀적으로 디렉토리 내 모든 파일 목록 조회 (하위 디렉토리 포함)
+ * 반환값은 상대 경로 (예: "chaId/chatId.bin")
+ */
+export async function listRecursiveFromWorker(dirPath: string): Promise<string[]> {
+    if (!opfsWorker) {
+        await initOPFSWorker()
+    }
+    if (!opfsWorker) {
+        return []
+    }
+    return new Promise((resolve, reject) => {
+        pendingListsRecursive.set(dirPath, { resolve, reject })
+        opfsWorker.postMessage({ type: 'listRecursive', dirPath })
+    })
+}
+
+/**
+ * 재귀적으로 디렉토리 내 모든 파일 목록과 크기 조회 (하위 디렉토리 포함)
+ * 반환값은 상대 경로 (예: { path: "chaId/chatId.bin", size: 1234 })
+ */
+export async function listWithSizesRecursiveFromWorker(dirPath: string): Promise<{ path: string; size: number }[]> {
+    if (!opfsWorker) {
+        await initOPFSWorker()
+    }
+    if (!opfsWorker) {
+        return []
+    }
+    return new Promise((resolve, reject) => {
+        pendingListsWithSizesRecursive.set(dirPath, { resolve, reject })
+        opfsWorker.postMessage({ type: 'listWithSizesRecursive', dirPath })
+    })
+}
+
+/**
+ * 디렉토리와 그 안의 모든 파일/하위 디렉토리를 재귀적으로 삭제
+ */
+export async function deleteDirectoryFromWorker(dirPath: string): Promise<void> {
+    if (!opfsWorker) {
+        await initOPFSWorker()
+    }
+    if (!opfsWorker) {
+        return
+    }
+    return new Promise((resolve, reject) => {
+        pendingDeleteDirectories.set(dirPath, { resolve, reject })
+        opfsWorker.postMessage({ type: 'deleteDirectory', dirPath })
+    })
 }

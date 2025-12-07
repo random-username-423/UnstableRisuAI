@@ -17,6 +17,7 @@ import {
     loadFromWorker,
     saveToWorker,
     listFromWorker,
+    listRecursiveFromWorker,
     deleteFromWorker
 } from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { getUnpargeables } from 'src/ts/utils/dbUtils'
@@ -404,7 +405,7 @@ async function migrateChatsToFiles(): Promise<void> {
             }
             try {
                 const encodedChat = await encodeChat(chat)
-                await saveToWorker(`database/chats/${char.chaId}_${chat.id}.bin`, encodedChat)
+                await saveToWorker(`database/chats/${char.chaId}/${chat.id}.bin`, encodedChat)
                 migratedCount++
                 LoadingStatusState.text = `Migrating Chat Files... (${migratedCount}/${totalChats})`
             } catch (e) {
@@ -418,7 +419,7 @@ async function migrateChatsToFiles(): Promise<void> {
 
     // 디버그: 저장된 파일 목록 확인
     try {
-        const savedFiles = await listFromWorker('database/chats')
+        const savedFiles = await listRecursiveFromWorker('database/chats')
         console.log('[migrateChatsToFiles] Files in OPFS after migration:', savedFiles)
     } catch (e) {
         console.log('[migrateChatsToFiles] Failed to list files:', e)

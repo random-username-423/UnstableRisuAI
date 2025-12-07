@@ -500,8 +500,9 @@ async function syncDownload(
 
         try {
             const data = await downloadSyncFile(accessToken, serverItem.fileId);
-            // Save to local OPFS
-            await saveToWorker(`database/chats/${chatKey}.bin`, data);
+            // Save to local OPFS (chatKey is "chaId_chatId", convert to "chaId/chatId")
+            const [chaId, chatId] = chatKey.split('_')
+            await saveToWorker(`database/chats/${chaId}/${chatId}.bin`, data);
             downloadCount++;
         } catch (e) {
             console.error(`[Sync] Failed to download chat ${chatKey}:`, e);
@@ -699,10 +700,12 @@ async function syncUpload(
 
                 try {
                     // Load chat content from OPFS if not loaded
+                    // chatKey is "chaId_chatId", convert to "chaId/chatId" for file path
+                    const [chaId, chatId] = chatKey.split('_')
                     let chatData = chat;
                     if (chat.message === undefined) {
                         try {
-                            const data = await loadFromWorker(`database/chats/${chatKey}.bin`);
+                            const data = await loadFromWorker(`database/chats/${chaId}/${chatId}.bin`);
                             if (data) {
                                 chatData = JSON.parse(new TextDecoder().decode(data));
                             }
@@ -842,12 +845,13 @@ export async function syncChangedItems(
                 serverManifest.characters[char.chaId] = { modifiedAt: char.modifiedAt || Date.now(), fileId };
             }
         } else if (item.type === 'chat' && item.id) {
-            // item.id is chatKey (chaId_chatId)
+            // item.id is chatKey (chaId_chatId), convert to chaId/chatId for file path
+            const [chaId, chatId] = item.id.split('_')
             const fileName = `chat_${item.id}.json.bin`;
             const existingFileId = serverManifest.chats[item.id]?.fileId;
 
             // Load chat from OPFS
-            const data = await loadFromWorker(`database/chats/${item.id}.bin`);
+            const data = await loadFromWorker(`database/chats/${chaId}/${chatId}.bin`);
             if (data) {
                 const fileId = await uploadSyncFile(accessToken, fileName, data as Uint8Array<ArrayBuffer>, existingFileId);
                 const chat = JSON.parse(new TextDecoder().decode(data));

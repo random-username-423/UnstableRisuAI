@@ -3,7 +3,7 @@
     import { DBState } from "src/ts/stores.svelte"
     import { onMount } from "svelte"
     import { forageStorage } from "src/ts/data/storage/autoStorage"
-    import { listWithSizesFromWorker, loadFromWorker } from "src/ts/data/storage/opfsWorkerClient.svelte"
+    import { listWithSizesFromWorker, listWithSizesRecursiveFromWorker, loadFromWorker } from "src/ts/data/storage/opfsWorkerClient.svelte"
     import { isTauri } from "src/ts/utils/env"
     import { getDbBackups } from "src/ts/init"
     import { RefreshCwIcon, Trash2Icon, DatabaseIcon, ImageIcon, MessageSquareIcon, FileIcon, HardDriveIcon, UsersIcon } from "lucide-svelte"
@@ -113,9 +113,9 @@
                     }
                 }
 
-                // Chat files
+                // Chat files (nested structure: chaId/chatId.bin)
                 try {
-                    const chatFiles = await listWithSizesFromWorker("database/chats")
+                    const chatFiles = await listWithSizesRecursiveFromWorker("database/chats")
                     info.chatFileCount = chatFiles.length
                     info.chatsSize = chatFiles.reduce((sum, f) => sum + f.size, 0)
                 } catch (e) {

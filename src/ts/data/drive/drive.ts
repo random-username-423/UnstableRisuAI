@@ -3,7 +3,7 @@ import { getDatabase, type Database } from "../storage/database.svelte";
 import { saving } from "src/ts/data/storage/autoSaveManager.svelte";
 import { openURL } from "../../utils/util";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
-import { saveToWorker, listFromWorker, deleteFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
+import { saveToWorker, listFromWorker, deleteFromWorker, deleteDirectoryFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { getUnpargeables } from 'src/ts/utils/dbUtils'
 import { isTauri } from "src/ts/utils/env";
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
@@ -459,11 +459,9 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
             console.log('[GoogleDrive Restore] No botpresets.bin to clear');
         }
         try {
-            const chatFiles = await listFromWorker('database/chats');
-            for (const file of chatFiles) {
-                await deleteFromWorker(`database/chats/${file}`);
-            }
-            console.log(`[GoogleDrive Restore] Cleared ${chatFiles.length} chat files`);
+            // Delete entire chats directory (nested structure: chaId/chatId.bin)
+            await deleteDirectoryFromWorker('database/chats');
+            console.log('[GoogleDrive Restore] Cleared chat files directory');
         } catch (e) {
             console.log('[GoogleDrive Restore] No chat files to clear');
         }

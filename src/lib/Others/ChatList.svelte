@@ -87,7 +87,7 @@
                                 // Delete the separate chat file if it exists (non-account mode)
                                 if (!forageStorage.isAccount && chaId && chatId) {
                                     try {
-                                        await deleteFromWorker(`database/chats/${chaId}_${chatId}.bin`)
+                                        await deleteFromWorker(`database/chats/${chaId}/${chatId}.bin`)
                                     } catch (e) {
                                         // File may not exist for old data, ignore error
                                     }

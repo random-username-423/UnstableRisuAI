@@ -60,12 +60,12 @@ export async function loadChat(chaId: string, chatId: string): Promise<Chat | nu
  */
 async function loadChatInternal(chaId: string, chatId: string, chat: Chat): Promise<Chat | null> {
     try {
-        const filePath = `database/chats/${chaId}_${chatId}.bin`
+        const filePath = `database/chats/${chaId}/${chatId}.bin`
         console.log(`[loadChat] Loading file: ${filePath}`)
         const data = await loadFromWorker(filePath)
         console.log(`[loadChat] File load result:`, data ? `${data.byteLength} bytes` : 'null')
         if (!data) {
-            console.warn(`[loadChat] Chat file not found: ${chaId}_${chatId}.bin`)
+            console.warn(`[loadChat] Chat file not found: ${chaId}/${chatId}.bin`)
             // Initialize empty message array
             console.log(`[DEBUG chat.message=[]] chatStorage.ts:loadChat - file not found, chaId=${chaId}, chatId=${chatId}`)
             chat.message = []
@@ -119,7 +119,7 @@ export async function saveChat(chaId: string, chat: Chat): Promise<void> {
         // Set modifiedAt on a shallow copy to avoid triggering reactive updates
         const chatToSave = { ...chat, modifiedAt: Date.now() }
         const encodedChat = await encodeChat(chatToSave)
-        await saveToWorker(`database/chats/${chaId}_${chat.id}.bin`, encodedChat)
+        await saveToWorker(`database/chats/${chaId}/${chat.id}.bin`, encodedChat)
 
         // Mark for sync (debounced)
         syncManager.markChatChanged(chaId, chat.id)

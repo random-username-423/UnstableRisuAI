@@ -41,6 +41,21 @@ interface DeleteMessage {
     key: string
 }
 
+interface ListRecursiveMessage {
+    type: 'listRecursive'
+    dirPath: string
+}
+
+interface ListWithSizesRecursiveMessage {
+    type: 'listWithSizesRecursive'
+    dirPath: string
+}
+
+interface DeleteDirectoryMessage {
+    type: 'deleteDirectory'
+    dirPath: string
+}
+
 interface SaveResponse {
     type: 'success' | 'error'
     key: string
@@ -71,6 +86,26 @@ interface ListWithSizesResponse {
 interface DeleteResponse {
     type: 'delete_success' | 'delete_error'
     key: string
+    error?: string
+}
+
+interface ListRecursiveResponse {
+    type: 'listRecursive_success' | 'listRecursive_error'
+    dirPath: string
+    files?: string[]  // 상대 경로 (예: "chaId/chatId.bin")
+    error?: string
+}
+
+interface ListWithSizesRecursiveResponse {
+    type: 'listWithSizesRecursive_success' | 'listWithSizesRecursive_error'
+    dirPath: string
+    files?: { path: string; size: number }[]  // 상대 경로
+    error?: string
+}
+
+interface DeleteDirectoryResponse {
+    type: 'deleteDirectory_success' | 'deleteDirectory_error'
+    dirPath: string
     error?: string
 }
 
@@ -110,7 +145,50 @@ async function getDirectory(dirPath: string): Promise<FileSystemDirectoryHandle 
     }
 }
 
-self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage | ListWithSizesMessage | DeleteMessage>) => {
+// 재귀적으로 모든 파일 경로를 수집
+async function listFilesRecursive(dir: FileSystemDirectoryHandle, prefix: string = ''): Promise<string[]> {
+    const files: string[] = []
+    for await (const [name, handle] of (dir as any).entries()) {
+        const path = prefix ? `${prefix}/${name}` : name
+        if (handle.kind === 'file') {
+            files.push(path)
+        } else if (handle.kind === 'directory') {
+            const subFiles = await listFilesRecursive(handle, path)
+            files.push(...subFiles)
+        }
+    }
+    return files
+}
+
+// 재귀적으로 모든 파일 경로와 크기를 수집
+async function listFilesWithSizesRecursive(dir: FileSystemDirectoryHandle, prefix: string = ''): Promise<{ path: string; size: number }[]> {
+    const files: { path: string; size: number }[] = []
+    for await (const [name, handle] of (dir as any).entries()) {
+        const path = prefix ? `${prefix}/${name}` : name
+        if (handle.kind === 'file') {
+            try {
+                const fileHandle = handle as FileSystemFileHandleWithSync
+                const accessHandle = await fileHandle.createSyncAccessHandle()
+                const size = accessHandle.getSize()
+                accessHandle.close()
+                files.push({ path, size })
+            } catch {
+                files.push({ path, size: 0 })
+            }
+        } else if (handle.kind === 'directory') {
+            const subFiles = await listFilesWithSizesRecursive(handle, path)
+            files.push(...subFiles)
+        }
+    }
+    return files
+}
+
+// 디렉토리를 재귀적으로 삭제
+async function deleteDirectoryRecursive(parentDir: FileSystemDirectoryHandle, dirName: string): Promise<void> {
+    await parentDir.removeEntry(dirName, { recursive: true })
+}
+
+self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage | ListWithSizesMessage | DeleteMessage | ListRecursiveMessage | ListWithSizesRecursiveMessage | DeleteDirectoryMessage>) => {
     const { type } = e.data
 
     if (type === 'save') {
@@ -275,6 +353,99 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage 
             const response: DeleteResponse = {
                 type: 'delete_error',
                 key,
+                error: error instanceof Error ? error.message : String(error)
+            }
+            self.postMessage(response)
+        }
+    } else if (type === 'listRecursive') {
+        const { dirPath } = e.data as ListRecursiveMessage
+        try {
+            const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
+            if (!dir) {
+                const response: ListRecursiveResponse = {
+                    type: 'listRecursive_success',
+                    dirPath,
+                    files: []
+                }
+                self.postMessage(response)
+                return
+            }
+
+            const files = await listFilesRecursive(dir)
+            const response: ListRecursiveResponse = { type: 'listRecursive_success', dirPath, files }
+            self.postMessage(response)
+        } catch (error) {
+            const response: ListRecursiveResponse = {
+                type: 'listRecursive_error',
+                dirPath,
+                error: error instanceof Error ? error.message : String(error)
+            }
+            self.postMessage(response)
+        }
+    } else if (type === 'listWithSizesRecursive') {
+        const { dirPath } = e.data as ListWithSizesRecursiveMessage
+        try {
+            const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
+            if (!dir) {
+                const response: ListWithSizesRecursiveResponse = {
+                    type: 'listWithSizesRecursive_success',
+                    dirPath,
+                    files: []
+                }
+                self.postMessage(response)
+                return
+            }
+
+            const files = await listFilesWithSizesRecursive(dir)
+            const response: ListWithSizesRecursiveResponse = { type: 'listWithSizesRecursive_success', dirPath, files }
+            self.postMessage(response)
+        } catch (error) {
+            const response: ListWithSizesRecursiveResponse = {
+                type: 'listWithSizesRecursive_error',
+                dirPath,
+                error: error instanceof Error ? error.message : String(error)
+            }
+            self.postMessage(response)
+        }
+    } else if (type === 'deleteDirectory') {
+        const { dirPath } = e.data as DeleteDirectoryMessage
+        try {
+            const parts = dirPath.split('/').filter(p => p)
+            if (parts.length === 0) {
+                // 루트 삭제는 허용하지 않음
+                const response: DeleteDirectoryResponse = {
+                    type: 'deleteDirectory_error',
+                    dirPath,
+                    error: 'Cannot delete root directory'
+                }
+                self.postMessage(response)
+                return
+            }
+
+            const dirName = parts.pop()!
+            const parentPath = parts.join('/')
+            const parentDir = parentPath ? await getDirectory(parentPath) : await getRoot()
+
+            if (!parentDir) {
+                // 부모 디렉토리가 없으면 이미 삭제된 것으로 성공 처리
+                const response: DeleteDirectoryResponse = { type: 'deleteDirectory_success', dirPath }
+                self.postMessage(response)
+                return
+            }
+
+            await deleteDirectoryRecursive(parentDir, dirName)
+            const response: DeleteDirectoryResponse = { type: 'deleteDirectory_success', dirPath }
+            self.postMessage(response)
+        } catch (error) {
+            // 디렉토리가 없어도 성공으로 처리 (이미 삭제된 상태)
+            if (error instanceof Error && error.name === 'NotFoundError') {
+                const response: DeleteDirectoryResponse = { type: 'deleteDirectory_success', dirPath }
+                self.postMessage(response)
+                return
+            }
+            const response: DeleteDirectoryResponse = {
+                type: 'deleteDirectory_error',
+                dirPath,
                 error: error instanceof Error ? error.message : String(error)
             }
             self.postMessage(response)

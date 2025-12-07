@@ -3,7 +3,7 @@ import { Buffer } from "buffer";
 import { saving, requiresFullEncoderReload } from "src/ts/data/storage/autoSaveManager.svelte";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
 import { LocalWriter } from "src/ts/utils/writers";
-import { saveToWorker, listFromWorker, deleteFromWorker, loadFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
+import { saveToWorker, listFromWorker, listRecursiveFromWorker, deleteFromWorker, deleteDirectoryFromWorker, loadFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { isTauri } from "src/ts/utils/env";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite, setDatabase } from "../storage/database.svelte";
@@ -128,11 +128,12 @@ export async function SaveLocalBackup(){
     }
 
     // Backup chat files from OPFS (one by one to avoid memory issues)
+    // Uses listRecursiveFromWorker for nested directory structure (chaId/chatId.bin)
     try {
-        const chatFiles = await listFromWorker('database/chats')
+        const chatFiles = await listRecursiveFromWorker('database/chats')
         console.log(`[LocalBackup] Found ${chatFiles.length} chat files to backup`)
         for (let i = 0; i < chatFiles.length; i++) {
-            const file = chatFiles[i]
+            const file = chatFiles[i]  // 상대 경로: "chaId/chatId.bin"
             alertWait(`Saving local Backup... (Chat ${i + 1}/${chatFiles.length})`)
             try {
                 const data = await loadFromWorker(`database/chats/${file}`)
@@ -252,11 +253,9 @@ export async function LoadLocalBackup(){
                                 console.log('[LoadLocalBackup] No botpresets.bin to clear');
                             }
                             try {
-                                const chatFiles = await listFromWorker('database/chats');
-                                for(const file of chatFiles){
-                                    await deleteFromWorker(`database/chats/${file}`);
-                                }
-                                console.log(`[LoadLocalBackup] Cleared ${chatFiles.length} chat files`);
+                                // Delete entire chats directory (nested structure: chaId/chatId.bin)
+                                await deleteDirectoryFromWorker('database/chats');
+                                console.log('[LoadLocalBackup] Cleared chat files directory');
                             } catch(e) {
                                 console.log('[LoadLocalBackup] No chat files to clear');
                             }
