@@ -1,6 +1,10 @@
 import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../../utils/alert";
 import { getDatabase, type Database } from "../storage/database.svelte";
-import { forageStorage, getUnpargeables, openURL, saveToWorker, listFromWorker, deleteFromWorker, saving } from "../../globalApi.svelte";
+import { saving } from "../../globalApi.svelte";
+import { openURL } from "../../utils/util";
+import { forageStorage } from "src/ts/data/storage/autoStorage";
+import { saveToWorker, listFromWorker, deleteFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
+import { getUnpargeables } from 'src/ts/utils/dbUtils'
 import { isTauri } from "src/ts/utils/env";
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 import { language } from "../../../lang";

@@ -13,7 +13,8 @@ import { v4 } from "uuid";
 import { getModuleLorebooks, getModuleTriggers } from "./modules";
 import { Mutex } from './mutex';
 import { tokenize } from "../utils/tokenizer";
-import { fetchNative, readImage } from "../globalApi.svelte";
+import { readImage } from "../utils/fileIO";
+import { fetchNative } from "../utils/fetch";
 import { loadLoreBookV3Prompt } from './lorebook.svelte';
 import { getPersonaPrompt, getUserName, getUserIcon } from '../utils/util';
 let luaFactory:LuaFactory

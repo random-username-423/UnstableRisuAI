@@ -1,4 +1,4 @@
-import { fetchNative, globalFetch, textifyReadableStream } from "src/ts/globalApi.svelte"
+import { fetchNative, globalFetch, textifyReadableStream, addFetchLog } from "src/ts/utils/fetch"
 import { language } from "src/lang"
 import { LLMFlags, LLMFormat } from "src/ts/model/modellist"
 import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte"
@@ -10,7 +10,6 @@ import { extractJSON, getGeneralJSONSchema } from "../templates/jsonSchema"
 import { applyParameters, type Parameter, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
 import { alertError, alertNormal, alertWait, showHypaV2Alert } from "src/ts/utils/alert";
-import { addFetchLog } from "src/ts/globalApi.svelte"
 
 type GeminiFunctionCall = {
     id?: string;

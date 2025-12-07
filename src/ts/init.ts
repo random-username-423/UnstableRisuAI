@@ -5,23 +5,25 @@
 
 import { get } from "svelte/store";
 import { BaseDirectory, readFile, exists } from "@tauri-apps/plugin-fs";
-import { isMobileTauri } from "src/ts/utils/env";
 import { v4 as uuidv4 } from 'uuid';
 
 import {
-    forageStorage,
+    saveDb
+} from "./globalApi.svelte";
+import { forageStorage } from "src/ts/data/storage/autoStorage";
+
+import {
     initOPFSWorker,
     OPFSNotSupportedError,
     OPFSInitializationError,
     loadFromWorker,
     saveToWorker,
     listFromWorker,
-    deleteFromWorker,
-    getUnpargeables,
-    saveDb,
-    updateHeightMode,
-    checkCharOrder
-} from "./globalApi.svelte";
+    deleteFromWorker
+} from 'src/ts/data/storage/opfsWorkerClient.svelte'
+import { getUnpargeables } from 'src/ts/utils/dbUtils'
+import { checkCharOrder } from 'src/ts/character/characters'
+import { updateHeightMode } from 'src/ts/gui/guisize'
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import { setDatabase, getDatabase, defaultSdDataFunc, type character, type groupChat } from "./data/storage/database.svelte";
 import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";

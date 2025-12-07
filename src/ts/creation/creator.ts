@@ -1,7 +1,9 @@
 import { language } from "src/lang";
 import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../utils/alert";
 import { requestChatData } from "../process/request/request";
-import { checkCharOrder, globalFetch, saveAsset } from "../globalApi.svelte";
+import { saveAsset } from "../utils/fileIO";
+import { globalFetch } from "../utils/fetch";
+import { checkCharOrder } from 'src/ts/character/characters'
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import { tokenize } from "../utils/tokenizer";
 import { createBlankChar } from "../character/characters";

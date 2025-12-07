@@ -1,6 +1,6 @@
 import { get, writable } from "svelte/store";
 import { getDatabase, setDatabase } from "../data/storage/database.svelte";
-import { downloadFile } from "../globalApi.svelte";
+import { downloadFile } from "../utils/fileIO";
 import { BufferToText, selectSingleFile } from '../utils/util';
 import { alertError } from "../utils/alert";
 import { CustomCSSStore, SafeModeStore } from "../stores.svelte";

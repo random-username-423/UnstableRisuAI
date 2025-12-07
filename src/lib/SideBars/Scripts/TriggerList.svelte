@@ -9,7 +9,7 @@
     import { alertConfirm } from "src/ts/utils/alert";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import Button from "src/lib/UI/GUI/Button.svelte";
-    import { openURL } from "src/ts/globalApi.svelte";
+    import { openURL } from "src/ts/utils/util";
     import { hubURL } from "src/ts/character/characterCards";
     import { PlusIcon } from "lucide-svelte";
     import TriggerV2List from "./TriggerList2.svelte";

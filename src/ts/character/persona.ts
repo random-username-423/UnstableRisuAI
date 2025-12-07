@@ -2,7 +2,8 @@ import { get } from "svelte/store"
 import { getDatabase, saveImage, setDatabase } from "../data/storage/database.svelte"
 import { getUserName, selectSingleFile, sleep } from '../utils/util'
 import { alertError, alertNormal, alertStore } from "../utils/alert"
-import { AppendableBuffer, downloadFile, readImage } from "../globalApi.svelte"
+import { downloadFile, readImage } from "../utils/fileIO"
+import { AppendableBuffer } from "../utils/fetch"
 import { language } from "src/lang"
 import { reencodeImage } from "../process/files/inlays"
 import { PngChunk } from './pngChunk'

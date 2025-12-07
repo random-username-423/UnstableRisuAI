@@ -1,6 +1,6 @@
 import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte"
 import type { OpenAIChat } from "../index.svelte"
-import { globalFetch } from "src/ts/globalApi.svelte"
+import { globalFetch } from "src/ts/utils/fetch"
 import { alertError, alertInput, alertNormal, alertWait } from "src/ts/utils/alert"
 import { getUserName, sleep } from "src/ts/utils/util"
 

@@ -16,7 +16,7 @@
     import MobileBody from './lib/Mobile/MobileBody.svelte';
     import MobileFooter from './lib/Mobile/MobileFooter.svelte';
     import CustomGUISettingMenu from './lib/Setting/Pages/CustomGUISettingMenu.svelte';
-    import { checkCharOrder } from './ts/globalApi.svelte';
+    import { checkCharOrder } from 'src/ts/character/characters'
     import { hypaV3ModalOpen, hypaV3ProgressStore } from "./ts/stores.svelte";
     import AprilFools from './lib/Others/AprilFools.svelte';
     import HypaV3Modal from './lib/Others/HypaV3Modal.svelte';

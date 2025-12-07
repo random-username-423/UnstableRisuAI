@@ -1,6 +1,6 @@
 import { MCPClientLike } from "./internalmcp";
 import type { MCPTool, RPCToolCallContent } from "./mcplib";
-import { fetchNative } from "../../globalApi.svelte";
+import { fetchNative } from "../../utils/fetch";
 import { alertInput } from "../../utils/alert";
 import localforage from "localforage";
 

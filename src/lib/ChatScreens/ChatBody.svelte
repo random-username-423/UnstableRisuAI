@@ -7,7 +7,7 @@
     import { getLLMCache, translateHTML } from "../../ts/translator/translator"
     import { getModuleAssets } from "src/ts/process/modules";
     import { getCurrentCharacter } from "src/ts/data/storage/database.svelte";
-    import { getFileSrc } from "src/ts/globalApi.svelte";
+    import { getFileSrc } from "src/ts/utils/fileIO";
 
     interface Props {
         character?: simpleCharacterArgument|string|null

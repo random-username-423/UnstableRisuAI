@@ -4,7 +4,7 @@ import { alertError, alertMd, alertPluginConfirm } from "../utils/alert";
 import { getCurrentCharacter, getDatabase, setDatabaseLite } from "../data/storage/database.svelte";
 import { checkNullish, selectSingleFile, sleep } from '../utils/util';
 import type { OpenAIChat } from "../process/index.svelte";
-import { fetchNative, globalFetch } from "../globalApi.svelte";
+import { fetchNative, globalFetch } from "../utils/fetch";
 import { selectedCharID } from "../stores.svelte";
 import type { ScriptMode } from "../process/scripts";
 

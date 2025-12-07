@@ -31,7 +31,7 @@ import { getGlobalChatVar, parseChatML } from "../utils/parser.svelte";
 import { getModelInfo, LLMFlags } from "../model/modellist";
 import { hypaMemoryV3 } from "./memory/hypav3";
 import { getModuleAssets, getModuleToggles } from "./modules";
-import { getFileSrc, readImage } from "../globalApi.svelte";
+import { getFileSrc, readImage } from "../utils/fileIO";
 
 export interface OpenAIChat{
     role: 'system'|'user'|'assistant'|'function'

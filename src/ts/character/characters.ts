@@ -5,7 +5,9 @@ import { language } from "../../lang";
 import { checkNullish, findCharacterbyId, getUserName, selectMultipleFile, selectSingleFile, sleep } from '../utils/util';
 import { v4 as uuidv4, v4 } from 'uuid';
 import { MobileGUIStack, OpenRealmStore, selectedCharID } from "../stores.svelte";
-import { AppendableBuffer, checkCharOrder, downloadFile, getFileSrc, loadChat, requiresFullEncoderReload } from "../globalApi.svelte";
+import { loadChat, requiresFullEncoderReload } from "../globalApi.svelte";
+import { downloadFile, getFileSrc } from "../utils/fileIO";
+import { AppendableBuffer } from "../utils/fetch";
 import { updateInlayScreen } from "../process/inlayScreen";
 import { checkImageType, parseMarkdownSafe } from "../utils/parser.svelte";
 import { translateHTML } from "../translator/translator";
@@ -894,4 +896,74 @@ export function changeChar(index: number, arg:{
             loadChat(char.chaId, currentChat.id)
         }
     }
+}
+
+/**
+ * Checks and updates the character order in the database.
+ * Ensures that all characters are properly ordered and removes any invalid entries.
+ */
+export function checkCharOrder() {
+    let db = getDatabase()
+    db.characterOrder = db.characterOrder ?? []
+    let ordered = []
+    for(let i=0;i<db.characterOrder.length;i++){
+        const folder =db.characterOrder[i]
+        if(typeof(folder) !== 'string' && folder){
+            for(const f of folder.data){
+                ordered.push(f)
+            }
+        }
+        if(typeof(folder) === 'string'){
+            ordered.push(folder)
+        }
+    }
+
+    let charIdList:string[] = []
+
+    for(let i=0;i<db.characters.length;i++){
+        const char = db.characters[i]
+        const charId = char.chaId
+        if(!char.trashTime){
+            charIdList.push(charId)
+        }
+        if(!ordered.includes(charId)){
+            if(charId !== '§temp' && charId !== '§playground' && !char.trashTime){
+                db.characterOrder.push(charId)
+            }
+        }
+    }
+
+
+    for(let i=0;i<db.characterOrder.length;i++){
+        const data =db.characterOrder[i]
+        if(typeof(data) !== 'string'){
+            if(!data){
+                db.characterOrder.splice(i,1)
+                i--;
+                continue
+            }
+            if(data.data.length === 0){
+                db.characterOrder.splice(i,1)
+                i--;
+                continue
+            }
+            for(let i2=0;i2<data.data.length;i2++){
+                const data2 = data.data[i2]
+                if(!charIdList.includes(data2)){
+                    data.data.splice(i2,1)
+                    i2--;
+                }
+            }
+            db.characterOrder[i] = data
+        }
+        else{
+            if(!charIdList.includes(data)){
+                db.characterOrder.splice(i,1)
+                i--;
+            }
+        }
+    }
+
+
+    setDatabase(db)
 }

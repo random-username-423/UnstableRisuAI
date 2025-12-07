@@ -1,51 +1,52 @@
 <script lang="ts">
-    import { language } from "src/lang";
-    import { DBState } from 'src/ts/stores.svelte';
-    import { onMount } from "svelte";
-    import { forageStorage, listFromWorker, listWithSizesFromWorker, loadFromWorker } from "src/ts/globalApi.svelte";
-    import { isTauri } from "src/ts/utils/env";
-    import { getDbBackups } from "src/ts/init";
-    import { RefreshCwIcon, Trash2Icon, DatabaseIcon, ImageIcon, MessageSquareIcon, FileIcon, HardDriveIcon, UsersIcon } from "lucide-svelte";
-    import Button from "src/lib/UI/GUI/Button.svelte";
-    import { alertConfirm, alertNormal } from "src/ts/utils/alert";
+    import { language } from "src/lang"
+    import { DBState } from "src/ts/stores.svelte"
+    import { onMount } from "svelte"
+    import { forageStorage } from "src/ts/data/storage/autoStorage"
+    import { listWithSizesFromWorker, loadFromWorker } from "src/ts/data/storage/opfsWorkerClient.svelte"
+    import { isTauri } from "src/ts/utils/env"
+    import { getDbBackups } from "src/ts/init"
+    import { RefreshCwIcon, Trash2Icon, DatabaseIcon, ImageIcon, MessageSquareIcon, FileIcon, HardDriveIcon, UsersIcon } from "lucide-svelte"
+    import Button from "src/lib/UI/GUI/Button.svelte"
+    import { alertConfirm, alertNormal } from "src/ts/utils/alert"
 
     interface StorageInfo {
-        totalUsage: number;
-        quota: number;
-        dbSize: number;
-        charactersSize: number;
-        botPresetsSize: number;
-        backupsSize: number;
-        backupCount: number;
-        chatsSize: number;
-        chatFileCount: number;
-        assetsSize: number;
-        assetCount: number;
-        characterCount: number;
-        totalChatCount: number;
+        totalUsage: number
+        quota: number
+        dbSize: number
+        charactersSize: number
+        botPresetsSize: number
+        backupsSize: number
+        backupCount: number
+        chatsSize: number
+        chatFileCount: number
+        assetsSize: number
+        assetCount: number
+        characterCount: number
+        totalChatCount: number
     }
 
-    let storageInfo = $state<StorageInfo | null>(null);
-    let loading = $state(true);
-    let error = $state<string | null>(null);
+    let storageInfo = $state<StorageInfo | null>(null)
+    let loading = $state(true)
+    let error = $state<string | null>(null)
 
     function formatBytes(bytes: number): string {
-        if (bytes === 0) return '0 B';
-        if (bytes < 0) return '0 B';
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-        const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        if (bytes === 0) return "0 B"
+        if (bytes < 0) return "0 B"
+        const k = 1024
+        const sizes = ["B", "KB", "MB", "GB", "TB"]
+        const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1)
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
     }
 
     function formatPercent(used: number, total: number): string {
-        if (total === 0) return '0%';
-        return ((used / total) * 100).toFixed(1) + '%';
+        if (total === 0) return "0%"
+        return ((used / total) * 100).toFixed(1) + "%"
     }
 
     async function loadStorageInfo() {
-        loading = true;
-        error = null;
+        loading = true
+        error = null
 
         try {
             const info: StorageInfo = {
@@ -62,50 +63,50 @@
                 assetCount: 0,
                 characterCount: DBState.db?.characters?.length ?? 0,
                 totalChatCount: 0,
-            };
+            }
 
             // Count total chats from all characters
             if (DBState.db?.characters) {
                 for (const char of DBState.db.characters) {
-                    info.totalChatCount += char.chats?.length ?? 0;
+                    info.totalChatCount += char.chats?.length ?? 0
                 }
             }
 
             // Get browser storage estimate
             if (navigator.storage && navigator.storage.estimate) {
-                const estimate = await navigator.storage.estimate();
-                info.totalUsage = estimate.usage ?? 0;
-                info.quota = 15 * 1024 * 1024 * 1024; // 15GB 하드코딩
+                const estimate = await navigator.storage.estimate()
+                info.totalUsage = estimate.usage ?? 0
+                info.quota = 15 * 1024 * 1024 * 1024 // 15GB 하드코딩
             }
 
             // Get OPFS file sizes
             try {
                 // Database file
-                const dbData = await loadFromWorker('database/database.bin');
+                const dbData = await loadFromWorker("database/database.bin")
                 if (dbData) {
-                    info.dbSize = dbData.byteLength;
+                    info.dbSize = dbData.byteLength
                 }
 
                 // Characters file
-                const charsData = await loadFromWorker('database/characters.bin');
+                const charsData = await loadFromWorker("database/characters.bin")
                 if (charsData) {
-                    info.charactersSize = charsData.byteLength;
+                    info.charactersSize = charsData.byteLength
                 }
 
                 // Bot presets file
-                const presetsData = await loadFromWorker('database/botpresets.bin');
+                const presetsData = await loadFromWorker("database/botpresets.bin")
                 if (presetsData) {
-                    info.botPresetsSize = presetsData.byteLength;
+                    info.botPresetsSize = presetsData.byteLength
                 }
 
                 // Backup files
-                const backups = await getDbBackups();
-                info.backupCount = backups.length;
+                const backups = await getDbBackups()
+                info.backupCount = backups.length
                 for (const backup of backups) {
                     try {
-                        const backupData = await loadFromWorker(`database/dbbackup-${backup}.bin`);
+                        const backupData = await loadFromWorker(`database/dbbackup-${backup}.bin`)
                         if (backupData) {
-                            info.backupsSize += backupData.byteLength;
+                            info.backupsSize += backupData.byteLength
                         }
                     } catch (e) {
                         // Ignore individual backup errors
@@ -114,54 +115,54 @@
 
                 // Chat files
                 try {
-                    const chatFiles = await listWithSizesFromWorker('database/chats');
-                    info.chatFileCount = chatFiles.length;
-                    info.chatsSize = chatFiles.reduce((sum, f) => sum + f.size, 0);
+                    const chatFiles = await listWithSizesFromWorker("database/chats")
+                    info.chatFileCount = chatFiles.length
+                    info.chatsSize = chatFiles.reduce((sum, f) => sum + f.size, 0)
                 } catch (e) {
                     // No chat directory
                 }
             } catch (e) {
-                console.error('[StorageSettings] OPFS error:', e);
+                console.error("[StorageSettings] OPFS error:", e)
             }
 
             // Get IndexedDB asset sizes
             try {
-                const keys = await forageStorage.keys();
-                const assetKeys = keys.filter(key => key && key.startsWith('assets/'));
-                info.assetCount = assetKeys.length;
+                const keys = await forageStorage.keys()
+                const assetKeys = keys.filter((key) => key && key.startsWith("assets/"))
+                info.assetCount = assetKeys.length
 
                 // Sample a few assets to estimate average size
-                const sampleSize = Math.min(10, assetKeys.length);
-                let sampleTotal = 0;
+                const sampleSize = Math.min(10, assetKeys.length)
+                let sampleTotal = 0
                 for (let i = 0; i < sampleSize; i++) {
                     try {
-                        const data = await forageStorage.getItem(assetKeys[i]) as unknown as Uint8Array;
+                        const data = (await forageStorage.getItem(assetKeys[i])) as unknown as Uint8Array
                         if (data) {
-                            sampleTotal += data.byteLength;
+                            sampleTotal += data.byteLength
                         }
                     } catch (e) {
                         // Ignore
                     }
                 }
                 if (sampleSize > 0) {
-                    const avgSize = sampleTotal / sampleSize;
-                    info.assetsSize = Math.round(avgSize * assetKeys.length);
+                    const avgSize = sampleTotal / sampleSize
+                    info.assetsSize = Math.round(avgSize * assetKeys.length)
                 }
             } catch (e) {
-                console.error('[StorageSettings] IndexedDB error:', e);
+                console.error("[StorageSettings] IndexedDB error:", e)
             }
 
-            storageInfo = info;
+            storageInfo = info
         } catch (e) {
-            error = e instanceof Error ? e.message : String(e);
+            error = e instanceof Error ? e.message : String(e)
         } finally {
-            loading = false;
+            loading = false
         }
     }
 
     onMount(() => {
-        loadStorageInfo();
-    });
+        loadStorageInfo()
+    })
 </script>
 
 <h2 class="mb-2 text-2xl font-bold mt-2">{language.storage}</h2>
@@ -194,7 +195,8 @@
                 ></div>
             </div>
             <div class="text-xs text-textcolor2 mt-1">
-                {formatPercent(storageInfo.totalUsage, storageInfo.quota)} {language.storageUsedPercent}
+                {formatPercent(storageInfo.totalUsage, storageInfo.quota)}
+                {language.storageUsedPercent}
             </div>
         </div>
     </div>
@@ -221,7 +223,11 @@
                 <MessageSquareIcon size={16} />
                 <div>
                     <div class="text-sm font-medium">{language.storageChats}</div>
-                    <div class="text-sm">{storageInfo.totalChatCount} {language.storageItems}{#if storageInfo.chatsSize > 0} ({formatBytes(storageInfo.chatsSize)}){/if}</div>
+                    <div class="text-sm">
+                        {storageInfo.totalChatCount}
+                        {language.storageItems}{#if storageInfo.chatsSize > 0}
+                            ({formatBytes(storageInfo.chatsSize)}){/if}
+                    </div>
                 </div>
             </div>
 
@@ -268,7 +274,9 @@
             {#if storageInfo.chatFileCount > 0}
                 <div class="flex justify-between">
                     <span class="text-textcolor2">chats/ ({storageInfo.chatFileCount} {language.storageFilesCount})</span>
-                    <span>{#if storageInfo.chatsSize > 0}{formatBytes(storageInfo.chatsSize)}{:else}{language.storageIndividual}{/if}</span>
+                    <span
+                        >{#if storageInfo.chatsSize > 0}{formatBytes(storageInfo.chatsSize)}{:else}{language.storageIndividual}{/if}</span
+                    >
                 </div>
             {/if}
         </div>
@@ -284,7 +292,7 @@
         <div class="space-y-2 text-sm">
             <div class="flex justify-between">
                 <span class="text-textcolor2">{language.storagePlatform}</span>
-                <span>{isTauri ? 'Tauri (Desktop)' : 'Web Browser'}</span>
+                <span>{isTauri ? "Tauri (Desktop)" : "Web Browser"}</span>
             </div>
             <div class="flex justify-between">
                 <span class="text-textcolor2">{language.storageDbLocation}</span>

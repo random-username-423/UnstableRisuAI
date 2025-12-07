@@ -6,7 +6,9 @@
 
 import { alertError, alertSelect, alertStore } from "../../utils/alert";
 import { getDatabase, setDatabase, type character, type groupChat, type Chat, type Database } from "../storage/database.svelte";
-import { forageStorage, saveToWorker, loadFromWorker, listFromWorker, getUnpargeables } from "../../globalApi.svelte";
+import { forageStorage } from "src/ts/data/storage/autoStorage";
+import { saveToWorker, loadFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
+import { getUnpargeables } from 'src/ts/utils/dbUtils'
 import { sleep, getBasename } from '../../utils/util';
 import { language } from "../../../lang";
 import { syncManager } from "./syncManager";

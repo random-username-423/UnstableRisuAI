@@ -10,7 +10,7 @@
     import Button from "src/lib/UI/GUI/Button.svelte";
     import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import Help from "src/lib/Others/Help.svelte";
-    import { openURL } from "src/ts/globalApi.svelte";
+    import { openURL } from "src/ts/utils/util";
 
     type SyncStatus = 'idle' | 'syncing' | 'error' | 'conflict';
     let syncStatus = $state<SyncStatus>('idle');

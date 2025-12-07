@@ -1,7 +1,5 @@
-import { get } from "svelte/store";
 import { exportCharacterCard } from "./character/characterCards";
-import { VirtualWriter } from "./globalApi.svelte";
-import { isTauri } from "src/ts/utils/env";
+import { VirtualWriter } from "./utils/writers";
 import { getCurrentCharacter, getDatabase, type character } from "./data/storage/database.svelte";
 import { alertStore } from "./utils/alert";
 

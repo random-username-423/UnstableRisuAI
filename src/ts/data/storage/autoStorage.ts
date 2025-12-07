@@ -1,5 +1,5 @@
 import localforage from "localforage"
-import { replaceDbResources } from "../../globalApi.svelte"
+import { replaceDbResources } from "../../utils/dbUtils"
 import { isNodeServer } from "src/ts/utils/env";
 import { NodeStorage } from "./nodeStorage"
 import { alertInput, alertSelect, alertStore } from "../../utils/alert"
@@ -137,3 +137,9 @@ export class AutoStorage{
 
     listItem = this.keys
 }
+
+/**
+ * Singleton instance of AutoStorage.
+ * Automatically selects the appropriate storage backend based on the environment.
+ */
+export const forageStorage = new AutoStorage()

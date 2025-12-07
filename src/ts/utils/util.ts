@@ -3,6 +3,7 @@ import type { Database, Message } from "../data/storage/database.svelte"
 import { getDatabase } from "../data/storage/database.svelte"
 import { selectedCharID } from "../stores.svelte"
 import { open } from '@tauri-apps/plugin-dialog'
+import { open as openShell } from '@tauri-apps/plugin-shell'
 import { readFile } from "@tauri-apps/plugin-fs"
 import { basename } from "@tauri-apps/api/path"
 import { createBlankChar, getCharImage } from "../character/characters"
@@ -1233,4 +1234,129 @@ export function getArrayBuffer(array: Uint8Array | ArrayBufferLike): ArrayBuffer
         return array.buffer as ArrayBuffer;
     }
     return array as ArrayBuffer;
+}
+
+/**
+ * Toggles the fullscreen mode of the document (DOM fullscreen, not Tauri window).
+ * If the document is currently in fullscreen mode, it exits fullscreen.
+ * If the document is not in fullscreen mode, it requests fullscreen with navigation UI hidden.
+ */
+export function toggleDomFullscreen(){
+    const fullscreenElement = document.fullscreenElement
+    fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen({
+        navigationUI: "hide"
+    })
+}
+
+/**
+ * Removes non-Latin characters from a string, replaces multiple spaces with a single space, and trims the string.
+ *
+ * @param {string} data - The input string to be processed.
+ * @returns {string} The processed string with non-Latin characters removed, multiple spaces replaced by a single space, and trimmed.
+ */
+export function trimNonLatin(data:string){
+    return data .replace(/[^\x00-\x7F]/g, "")
+                .replace(/ +/g, ' ')
+                .trim()
+}
+
+/**
+ * Opens a URL in the appropriate environment.
+ *
+ * @param {string} url - The URL to open.
+ */
+export function openURL(url:string){
+    if(isTauri){
+        openShell(url)
+    }
+    else{
+        window.open(url, "_blank")
+    }
+}
+
+/**
+ * Gets the maximum context length for a given model.
+ *
+ * @param {string} model - The model name.
+ * @returns {number|undefined} The maximum context length, or undefined if the model is not recognized.
+ */
+export function getModelMaxContext(model:string):number|undefined{
+    if(model.startsWith('gpt35')){
+        if(model.includes('16k')){
+            return 16000
+        }
+        return 4000
+    }
+    if(model.startsWith('gpt4')){
+        if(model.includes('turbo')){
+            return 128000
+        }
+        if(model.includes('32k')){
+            return 32000
+        }
+        return 8000
+    }
+
+    return undefined
+}
+
+/**
+ * A debugging class for performance measurement.
+ */
+export class PerformanceDebugger{
+    kv:{[key:string]:number[]} = {}
+    startTime:number
+    endTime:number
+
+    /**
+     * Starts the timing measurement.
+     */
+    start(){
+        this.startTime = performance.now()
+    }
+
+    /**
+     * Ends the timing measurement and records the time difference.
+     *
+     * @param {string} key - The key to associate with the recorded time.
+     */
+    endAndRecord(key:string){
+        this.endTime = performance.now()
+        if(!this.kv[key]){
+            this.kv[key] = []
+        }
+        this.kv[key].push(this.endTime - this.startTime)
+    }
+
+    /**
+     * Ends the timing measurement, records the time difference, and starts a new timing measurement.
+     *
+     * @param {string} key - The key to associate with the recorded time.
+     */
+    endAndRecordAndStart(key:string){
+        this.endAndRecord(key)
+        this.start()
+    }
+
+    /**
+     * Logs the average time for each key to the console.
+     */
+    log(){
+        let table:{[key:string]:number} = {}
+
+        for(const key in this.kv){
+            table[key] = this.kv[key].reduce((a,b) => a + b, 0) / this.kv[key].length
+        }
+
+        console.table(table)
+    }
+
+    combine(other:PerformanceDebugger){
+        for(const key in other.kv){
+            if(!this.kv[key]){
+                this.kv[key] = []
+            }
+            this.kv[key].push(...other.kv[key])
+        }
+    }
 }

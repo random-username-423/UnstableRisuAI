@@ -19,7 +19,8 @@
     import { stopTTS } from "src/ts/process/tts";
     import MainMenu from '../UI/MainMenu.svelte';
     import AssetInput from './AssetInput.svelte';
-    import { downloadFile, loadChat } from 'src/ts/globalApi.svelte';
+    import { loadChat } from 'src/ts/globalApi.svelte';
+    import { downloadFile } from 'src/ts/utils/fileIO';
     import { runTrigger } from 'src/ts/process/triggers';
     import { v4 } from 'uuid';
     import { PreUnreroll, Prereroll } from 'src/ts/process/prereroll';

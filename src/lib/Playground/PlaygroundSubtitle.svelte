@@ -10,7 +10,9 @@
     import { selectFileByDom, selectSingleFile, sleep } from "src/ts/utils/util";
     import { alertError, alertSelect } from "src/ts/utils/alert";
     import { risuChatParser } from "src/ts/utils/parser.svelte";
-    import { AppendableBuffer, downloadFile, getLanguageCodes, globalFetch } from "src/ts/globalApi.svelte";
+    import { getLanguageCodes } from "src/ts/globalApi.svelte";
+    import { downloadFile } from "src/ts/utils/fileIO";
+    import { AppendableBuffer, globalFetch } from "src/ts/utils/fetch";
     import SliderInput from "../UI/GUI/SliderInput.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import OptionInput from "../UI/GUI/OptionInput.svelte";

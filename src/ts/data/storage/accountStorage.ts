@@ -3,7 +3,8 @@ import { getDatabase } from "./database.svelte"
 import { hubURL } from "../../character/characterCards"
 import localforage from "localforage"
 import { alertLogin, alertNormalWait, alertStore, alertWait } from "../../utils/alert"
-import { AppendableBuffer, forageStorage, getUnpargeables } from "../../globalApi.svelte"
+import { forageStorage } from "src/ts/data/storage/autoStorage";
+import { getUnpargeables } from 'src/ts/utils/dbUtils'
 import { encodeRisuSaveLegacy } from "./risuSave"
 import { v4 } from "uuid"
 import { language } from "src/lang"

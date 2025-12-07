@@ -7,7 +7,7 @@ import {
     readDir,
     remove
 } from "@tauri-apps/plugin-fs"
-import { forageStorage } from "../globalApi.svelte"
+import { forageStorage } from "src/ts/data/storage/autoStorage";
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import { DBState } from "../stores.svelte"
 import { hubURL } from "../character/characterCards"

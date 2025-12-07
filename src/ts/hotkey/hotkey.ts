@@ -6,7 +6,7 @@ import { language } from "src/lang"
 import { updateTextThemeAndCSS } from "../gui/colorscheme"
 import { defaultHotkeys } from "./defaulthotkeys"
 import { doingChat, previewBody, sendChat } from "../process/index.svelte"
-import { getRequestLog } from "../globalApi.svelte"
+import { getRequestLog } from "../utils/fetch"
 
 export function initHotkey(){
     document.addEventListener('keydown', async (ev) => {

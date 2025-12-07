@@ -2,7 +2,7 @@ import localforage from "localforage";
 import { type HypaModel, localModels } from "./hypamemory";
 import { TaskRateLimiter, TaskCanceledError } from "./taskRateLimiter";
 import { runEmbedding } from "../transformers";
-import { globalFetch } from "src/ts/globalApi.svelte";
+import { globalFetch } from "src/ts/utils/fetch";
 import { isMobileUserAgent } from "src/ts/utils/env";
 import { getDatabase } from "src/ts/data/storage/database.svelte";
 import { appendLastPath } from "src/ts/utils/util";

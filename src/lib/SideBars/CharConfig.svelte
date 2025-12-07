@@ -10,13 +10,11 @@
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
     import { alertConfirm, alertMd, alertNormal, alertSelectChar, alertTOS, showHypaV2Alert } from "../../ts/utils/alert";
     import BarIcon from "./BarIcon.svelte";
-    import { findCharacterbyId, getAuthorNoteDefaultText, parseKeyValue, selectMultipleFile, selectSingleFile } from "../../ts/utils/util";
-    import { onDestroy } from "svelte";
-    import {includes, isEqual} from 'lodash'
+    import { findCharacterbyId, getAuthorNoteDefaultText, selectMultipleFile, selectSingleFile } from "../../ts/utils/util";
     import Help from "../Others/Help.svelte";
-    import { exportChar, hubURL } from "src/ts/character/characterCards";
+    import { exportChar } from "src/ts/character/characterCards";
     import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices, FixNAITTS } from "src/ts/process/tts";
-    import { checkCharOrder, getFileSrc, openURL } from "src/ts/globalApi.svelte";
+    import { getFileSrc } from "src/ts/utils/fileIO";
     import { addGroupChar, rmCharFromGroup } from "src/ts/process/group";
     import TextInput from "../UI/GUI/TextInput.svelte";
     import NumberInput from "../UI/GUI/NumberInput.svelte";

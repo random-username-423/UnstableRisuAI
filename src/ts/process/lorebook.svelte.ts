@@ -6,7 +6,7 @@ import { tokenize } from "../utils/tokenizer";
 import { checkNullish, findCharacterbyId, pickHashRand, selectSingleFile, sfc32 } from '../utils/util';
 import { alertError, alertNormal } from "../utils/alert";
 import { language } from "../../lang";
-import { downloadFile } from "../globalApi.svelte";
+import { downloadFile } from "../utils/fileIO";
 import { getModuleLorebooks } from "./modules";
 import { CCardLib } from "@risuai/ccardlib";
 import { getChatVar, setChatVar } from "../utils/parser.svelte";

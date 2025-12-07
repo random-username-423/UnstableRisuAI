@@ -1,8 +1,12 @@
-import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear } from "../../utils/alert";
-import { LocalWriter, forageStorage, requiresFullEncoderReload, saveToWorker, listFromWorker, deleteFromWorker, saving, loadFromWorker } from "../../globalApi.svelte";
+import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear, alertSelect } from "../../utils/alert";
+import { Buffer } from "buffer";
+import { requiresFullEncoderReload, saving, } from "../../globalApi.svelte";
+import { forageStorage } from "src/ts/data/storage/autoStorage";
+import { LocalWriter } from "src/ts/utils/writers";
+import { saveToWorker, listFromWorker, deleteFromWorker, loadFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { isTauri } from "src/ts/utils/env";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
-import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
+import { getDatabase, setDatabaseLite, setDatabase } from "../storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { platform } from "@tauri-apps/plugin-os";
 import { sleep } from '../../utils/util';
@@ -284,4 +288,40 @@ export async function LoadLocalBackup(){
         console.error(error);
         alertError('Failed, Is file corrupted?')
     }
+}
+
+export async function loadInternalBackup(){
+    // Both Tauri and web use OPFS for database storage now
+    const files = await listFromWorker('database')
+    let internalBackups:string[] = []
+    for(const file of files){
+        if(file.includes('dbbackup-')){
+            internalBackups.push(file)
+        }
+    }
+
+    const selectOptions = [
+        'Cancel',
+        ...(internalBackups.map((a) => {
+            return (new Date(parseInt(a.replace('dbbackup-','')) * 100)).toLocaleString()
+        }))
+    ]
+
+    const alertResult = parseInt(
+        await alertSelect(selectOptions)
+    ) - 1
+
+    if(alertResult === -1){
+        return
+    }
+
+    const selectedBackup = internalBackups[alertResult]
+
+    const data = await loadFromWorker('database/' + selectedBackup)
+
+    setDatabase(
+        await decodeRisuSave(Buffer.from(data) as unknown as Uint8Array)
+    )
+
+    await alertNormal('Loaded backup')
 }

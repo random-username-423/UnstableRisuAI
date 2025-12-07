@@ -1,4 +1,6 @@
-import { AppendableBuffer, saveAsset, type LocalWriter, type VirtualWriter } from "../globalApi.svelte";
+import { saveAsset } from "../utils/fileIO";
+import { AppendableBuffer } from "../utils/fetch";
+import { type LocalWriter, type VirtualWriter} from 'src/ts/utils/writers'
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import * as fflate from "fflate";
 import { getArrayBuffer, sleep } from '../utils/util';

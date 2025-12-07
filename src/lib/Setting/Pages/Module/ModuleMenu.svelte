@@ -12,7 +12,8 @@
     import Check from "src/lib/UI/GUI/CheckInput.svelte";
     import Help from "src/lib/Others/Help.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
-    import { getFileSrc, openURL, saveAsset, downloadFile } from "src/ts/globalApi.svelte";
+    import { getFileSrc, saveAsset, downloadFile } from "src/ts/utils/fileIO";
+    import { openURL } from "src/ts/utils/util";
     import { alertNormal, alertError } from "src/ts/utils/alert";
     import { exportRegex, importRegex } from "src/ts/process/scripts";
     import { selectMultipleFile } from "src/ts/utils/util";

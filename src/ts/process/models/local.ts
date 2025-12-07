@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { globalFetch } from "src/ts/globalApi.svelte";
+import { globalFetch } from "src/ts/utils/fetch";
 import { sleep } from "src/ts/utils/util";
 import * as path from "@tauri-apps/api/path";
 import { exists, readTextFile } from "@tauri-apps/plugin-fs";

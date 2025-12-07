@@ -5,14 +5,14 @@
 
 import { exists, readDir, readFile, remove, BaseDirectory } from '@tauri-apps/plugin-fs'
 import { alertWait } from '../../utils/alert'
+import { forageStorage } from "src/ts/data/storage/autoStorage";
 import {
-    forageStorage,
     initOPFSWorker,
     listFromWorker,
     loadFromWorker,
     deleteFromWorker,
     saveToWorker
-} from '../../globalApi.svelte'
+} from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { isTauri } from "src/ts/utils/env";
 
 /**

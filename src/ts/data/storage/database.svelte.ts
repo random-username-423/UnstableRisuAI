@@ -3,7 +3,7 @@ import { checkNullish, decryptBuffer, encryptBuffer, selectSingleFile } from '..
 import { changeLanguage, language } from '../../../lang';
 import type { RisuPlugin } from '../../plugins/plugins';
 import type {triggerscript as triggerscriptMain} from '../../process/triggers';
-import { downloadFile, saveAsset as saveImageGlobal } from '../../globalApi.svelte';
+import { downloadFile, saveAsset as saveImageGlobal } from '../../utils/fileIO';
 import { defaultAutoSuggestPrompt, defaultJailbreak, defaultMainPrompt } from './defaultPrompts';
 import { alertError, alertNormal, alertSelect } from '../../utils/alert';
 import type { NAISettings } from '../../process/models/nai';
@@ -13,7 +13,8 @@ import type { PromptItem, PromptSettings } from '../../process/prompt';
 import type { OobaChatCompletionRequestParams } from '../../model/ooba';
 import { type HypaV3Settings, type HypaV3Preset, createHypaV3Preset } from '../../process/memory/hypav3'
 
-export let appVer = "166.6.0"
+// Re-export from env.ts for backwards compatibility
+export { appVer } from '../../utils/env'
 export let webAppSubVer = ''
 
 

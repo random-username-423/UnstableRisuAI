@@ -2,7 +2,7 @@ import DOMPurify from 'dompurify';
 import markdownit from 'markdown-it'
 import { appVer, getCurrentCharacter, getDatabase, type Database, type Message, type character, type customscript, type groupChat, type loreBook, type triggerscript } from '../data/storage/database.svelte';
 import { DBState } from '../stores.svelte';
-import { getFileSrc } from '../globalApi.svelte';
+import { getFileSrc } from './fileIO';
 import { isTauri, isNodeServer, isMobileUserAgent, isMobileTauri } from "src/ts/utils/env";
 import { processScriptFull } from '../process/scripts';
 import { get } from 'svelte/store';

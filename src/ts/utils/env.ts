@@ -18,3 +18,22 @@ export const currentPlatform = isTauri ? await platform() : 'web';
 export const isMobileTauri = currentPlatform === 'android' || currentPlatform === 'ios';
 
 export const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
+
+// App version and build info
+export const appVer = "166.6.0"
+export const googleBuild = false
+
+/**
+ * Gets the version string for display in UI.
+ * Returns different strings based on the hostname.
+ */
+export function getVersionString(): string {
+    let versionString = appVer
+    if(window.location.hostname === 'nightly.risuai.xyz'){
+        versionString = 'Nightly Build'
+    }
+    if(window.location.hostname === 'stable.risuai.xyz'){
+        versionString += ' (Stable)';
+    }
+    return versionString
+}
