@@ -26,6 +26,8 @@ import { AppendableBuffer } from './utils/fetch';
 import { isTauri, isNodeServer, isMobileTauri } from "src/ts/utils/env";
 import {
     initOPFSWorker,
+    OPFSNotSupportedError,
+    OPFSInitializationError,
     saveToWorker,
     loadFromWorker,
     listFromWorker,
@@ -37,6 +39,8 @@ import {
 // Re-export OPFS Worker Client
 export {
     initOPFSWorker,
+    OPFSNotSupportedError,
+    OPFSInitializationError,
     saveToWorker,
     loadFromWorker,
     listFromWorker,

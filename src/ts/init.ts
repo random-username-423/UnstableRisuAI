@@ -11,6 +11,8 @@ import { v4 as uuidv4 } from 'uuid';
 import {
     forageStorage,
     initOPFSWorker,
+    OPFSNotSupportedError,
+    OPFSInitializationError,
     loadFromWorker,
     saveToWorker,
     listFromWorker,
@@ -26,7 +28,7 @@ import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingS
 import { checkNullish, changeFullscreen, sleep, getBasename } from "./utils/util";
 import { decodeRisuSave, encodeRisuSaveLegacy, decodeCharacters, decodeBotPresets, encodeCharacters, encodeBotPresets } from "./data/storage/risuSave";
 import { presetTemplate } from "./data/storage/database.svelte";
-import { migrateOPFSAssetsToIndexedDB, migrateTauriFsAssetsToIndexedDB, migrateWebDBtoOPFS } from './data/storage/migration';
+import { migrateOPFSAssetsToIndexedDB, migrateTauriFsAssetsToIndexedDB, migrateTauriDbToOPFS, migrateWebDBtoOPFS } from './data/storage/migration';
 import { checkRisuUpdate } from "./utils/update";
 import { loadPlugins } from "./plugins/plugins";
 import { alertError, alertMd, alertTOS, waitAlert } from "./utils/alert";
@@ -62,6 +64,7 @@ export async function loadData() {
         if (isTauri) {
             await migrateOPFSAssetsToIndexedDB()
             await migrateTauriFsAssetsToIndexedDB()
+            await migrateTauriDbToOPFS()
         } else {
             await migrateWebDBtoOPFS()
         }
@@ -73,101 +76,41 @@ export async function loadData() {
             console.log(`[loadData] database.bin size: ${(rawData.byteLength / 1024 / 1024).toFixed(2)} MB`)
         }
 
-        // Tauri: TauriFs 폴백
-        if (!rawData && isTauri) {
-            console.log('[OPFS] No data in OPFS, checking filesystem for migration...')
-            if (await exists('database/database.bin', { baseDir: BaseDirectory.AppData })) {
-                LoadingStatusState.text = "Migrating from filesystem to OPFS..."
-                rawData = await readFile('database/database.bin', { baseDir: BaseDirectory.AppData })
-                console.log('[OPFS] Migrated data from filesystem')
-            }
-        }
-
         // 없으면 새로 생성
         if (!rawData || checkNullish(rawData)) {
-            console.log('[OPFS] No existing data, creating new database')
+            console.log('[loadData] No existing data, creating new database')
             rawData = encodeRisuSaveLegacy({})
             if (!isTauri) {
                 await saveToWorker('database/database.bin', rawData as Uint8Array<ArrayBuffer>)
             }
         }
 
-        // 4단계: 디코딩 & 환경별 후처리
+        // 4단계: 디코딩
+        try {
+            LoadingStatusState.text = "Decoding Save File..."
+            await decodeAndSetupDatabase(rawData, true)  // enableDebugLog
+            LoadingStatusState.text = "Loading Chat Files..."
+            await migrateChatsToFiles()
+        } catch (error) {
+            console.error(error)
+            await tryRestoreFromBackups({ useTauriFsFallback: isTauri, runChatMigration: true, errorMessage: "Forage: Your save file is corrupted" })
+        }
+
         if (isTauri) {
-            try {
-                LoadingStatusState.text = "Cleaning Unnecessary Files..."
-                getDbBackups()
-                await decodeAndSetupDatabase(rawData)
-
-                // 디버그: 마이그레이션 전 OPFS 파일 목록 확인
-                try {
-                    const existingFiles = await listFromWorker('database/chats')
-                    console.log('[loadData] OPFS chat files before migration:', existingFiles)
-                } catch (e) {
-                    console.log('[loadData] No chat files directory yet')
-                }
-
-                LoadingStatusState.text = "Loading Chat Files..."
-                await migrateChatsToFiles()
-            } catch (error) {
-                await tryRestoreFromBackups({ useTauriFsFallback: true, runChatMigration: true })
-            }
-
             // 5단계: Tauri 전용 - 업데이트 체크
             LoadingStatusState.text = "Checking Update..."
             await checkRisuUpdate()
             await changeFullscreen()
+        }
 
-        } else {
-            try {
-                LoadingStatusState.text = "Decoding Save File..."
-                await decodeAndSetupDatabase(rawData, true) // enableDebugLog for web
-            } catch (error) {
-                console.error(error)
-                await tryRestoreFromBackups({ errorMessage: "Forage: Your save file is corrupted" })
-            }
 
+        if (!isTauri) {
             // 5단계: Web 전용 - 계정 동기화 & 기타
-            const isAccountSync = await forageStorage.checkAccountSync()
-            if (isAccountSync) {
-                LoadingStatusState.text = "Checking Account Sync..."
-                let gotStorage: Uint8Array = await (forageStorage.realStorage as AccountStorage).getItem('database/database.bin', (v) => {
-                    LoadingStatusState.text = `Loading Remote Save File ${(v * 100).toFixed(2)}%`
-                })
-                if (checkNullish(gotStorage)) {
-                    gotStorage = encodeRisuSaveLegacy({})
-                    await forageStorage.setItem('database/database.bin', gotStorage as Uint8Array<ArrayBuffer>)
-                }
-                try {
-                    setDatabase(
-                        await decodeRisuSave(gotStorage)
-                    )
-                } catch (error) {
-                    const backups = await getDbBackups()
-                    let backupLoaded = false
-                    for (const backup of backups) {
-                        try {
-                            LoadingStatusState.text = `Reading Backup File ${backup}...`
-                            const backupData: Uint8Array = await forageStorage.getItem(`database/dbbackup-${backup}.bin`) as unknown as Uint8Array
-                            setDatabase(
-                                await decodeRisuSave(backupData)
-                            )
-                            backupLoaded = true
-                        } catch (error) { }
-                    }
-                    if (!backupLoaded) {
-                        // throw "Your save file is corrupted"
-                        await autoServerBackup()
-                        await sleep(10000)
-                    }
-                }
-            } else {
-                // Non-account mode: load chats from individual files
-                LoadingStatusState.text = "Loading Chat Files..."
-                await migrateChatsToFiles()
-            }
-            LoadingStatusState.text = "Rechecking Account Sync..."
-            await forageStorage.checkAccountSync()
+            // const isAccountSync = await forageStorage.checkAccountSync()
+            // if (isAccountSync) {
+            //     await loadFromAccountSync()
+            // }
+
             LoadingStatusState.text = "Checking Drive Sync..."
             const isDriverMode = await checkDriverInit()
             if (isDriverMode) {
@@ -180,18 +123,33 @@ export async function loadData() {
             if (getDatabase().didFirstSetup) {
                 characterURLImport()
             }
+
         }
 
+        // 6단계: 공통 로직
         await finalizeLoading();
 
     } catch (error) {
+        if (error instanceof OPFSNotSupportedError) {
+            // OPFS 미지원 시 로딩 화면에 에러 표시하고 앱 중단
+            LoadingStatusState.text = "Your browser does not support OPFS (Origin Private File System).\nPlease use a modern browser like Chrome, Edge, or Firefox."
+            console.error('[loadData] OPFS not supported:', error)
+            return
+        }
+        if (error instanceof OPFSInitializationError) {
+            // OPFS 초기화 실패 시 로딩 화면에 에러 표시하고 앱 중단
+            LoadingStatusState.text = "Failed to initialize storage.\nPlease try refreshing the page or clearing browser cache."
+            console.error('[loadData] OPFS initialization failed:', error)
+            return
+        }
         alertError(error)
     }
 
 }
 
 /**
- * Gets database backup timestamps from OPFS, cleaning up old backups.
+ * Gets database backup timestamps from OPFS.
+ * Deletes backups exceeding maxBackups limit (default 20).
  */
 export async function getDbBackups() {
     let db = getDatabase()
@@ -498,8 +456,8 @@ async function finalizeLoading(): Promise<void> {
     } catch (error) {
 
     }
-    LoadingStatusState.text = "Checking For Format Update..."
-    await checkNewFormat()
+    LoadingStatusState.text = "Normalizing Database..."
+    await normalizeDatabase()
     const db = getDatabase();
 
     LoadingStatusState.text = "Updating States..."
@@ -535,6 +493,41 @@ async function finalizeLoading(): Promise<void> {
                 location.reload()
             }
         })
+    }
+}
+
+/**
+ * Loads database from account sync (remote storage).
+ * Called when user has account sync enabled.
+ */
+async function loadFromAccountSync(): Promise<void> {
+    LoadingStatusState.text = "Checking Account Sync..."
+    let gotStorage: Uint8Array = await (forageStorage.realStorage as AccountStorage).getItem('database/database.bin', (v) => {
+        LoadingStatusState.text = `Loading Remote Save File ${(v * 100).toFixed(2)}%`
+    })
+    if (checkNullish(gotStorage)) {
+        gotStorage = encodeRisuSaveLegacy({})
+        await forageStorage.setItem('database/database.bin', gotStorage as Uint8Array<ArrayBuffer>)
+    }
+    try {
+        setDatabase(await decodeRisuSave(gotStorage))
+    } catch (error) {
+        // Try to restore from backups
+        const backups = await getDbBackups()
+        let backupLoaded = false
+        for (const backup of backups) {
+            try {
+                LoadingStatusState.text = `Reading Backup File ${backup}...`
+                const backupData: Uint8Array = await forageStorage.getItem(`database/dbbackup-${backup}.bin`) as unknown as Uint8Array
+                setDatabase(await decodeRisuSave(backupData))
+                backupLoaded = true
+                break
+            } catch (error) { }
+        }
+        if (!backupLoaded) {
+            await autoServerBackup()
+            await sleep(10000)
+        }
     }
 }
 
@@ -623,9 +616,9 @@ function updateErrorHandling() {
 }
 
 /**
- * Checks and migrates database format to the latest version.
+ * Normalizes database by applying default values, migrating legacy formats, and filtering invalid entries.
  */
-async function checkNewFormat(): Promise<void> {
+async function normalizeDatabase(): Promise<void> {
     let db = getDatabase();
 
     // Check data integrity

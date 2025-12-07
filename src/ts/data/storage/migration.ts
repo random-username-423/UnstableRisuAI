@@ -156,12 +156,64 @@ export async function migrateWebDBtoOPFS(): Promise<void> {
 }
 
 /**
+ * Tauri fs의 database.bin을 OPFS로 마이그레이션
+ * 에셋은 IndexedDB로, DB는 OPFS로 이동하는 구조
+ */
+export async function migrateTauriDbToOPFS(): Promise<void> {
+    if (!isTauri) return
+
+    // OPFS에 이미 database.bin이 있으면 마이그레이션 불필요
+    const opfsData = await loadFromWorker('database/database.bin')
+    if (opfsData) return
+
+    // Tauri fs에 database.bin이 있는지 확인
+    try {
+        const dbExists = await exists('database/database.bin', { baseDir: BaseDirectory.AppData })
+        if (!dbExists) return
+
+        console.log('[Migration] Starting Tauri fs → OPFS migration for database')
+        alertWait('DB 마이그레이션 중...')
+
+        // database.bin 마이그레이션
+        const dbData = await readFile('database/database.bin', { baseDir: BaseDirectory.AppData })
+        if (dbData && dbData.byteLength > 0) {
+            await saveToWorker('database/database.bin', dbData as Uint8Array<ArrayBuffer>)
+            console.log(`[Migration] Migrated database.bin (${(dbData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
+        }
+
+        // 백업 파일들도 마이그레이션
+        const databaseDirExists = await exists('database', { baseDir: BaseDirectory.AppData })
+        if (databaseDirExists) {
+            const files = await readDir('database', { baseDir: BaseDirectory.AppData })
+            const backupFiles = files.filter(f => f.name?.startsWith('dbbackup-'))
+
+            for (const file of backupFiles) {
+                if (!file.name) continue
+                try {
+                    const backupData = await readFile('database/' + file.name, { baseDir: BaseDirectory.AppData })
+                    if (backupData && backupData.byteLength > 0) {
+                        await saveToWorker('database/' + file.name, backupData as Uint8Array<ArrayBuffer>)
+                    }
+                } catch (e) {
+                    console.warn(`[Migration] Failed to migrate backup: ${file.name}`, e)
+                }
+            }
+        }
+
+        console.log('[Migration] Tauri fs → OPFS migration completed')
+    } catch (e) {
+        console.warn('[Migration] Tauri fs DB migration failed:', e)
+    }
+}
+
+/**
  * Run all necessary migrations based on environment
  */
 export async function runMigrations(): Promise<void> {
     if (isTauri) {
         await migrateOPFSAssetsToIndexedDB()
         await migrateTauriFsAssetsToIndexedDB()
+        await migrateTauriDbToOPFS()
     } else {
         await migrateWebDBtoOPFS()
     }

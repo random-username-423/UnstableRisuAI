@@ -20,9 +20,32 @@ let pendingLists = new Map<string, { resolve: (files: string[]) => void, reject:
 let pendingListsWithSizes = new Map<string, { resolve: (files: { name: string; size: number }[]) => void, reject: (e: Error) => void }>()
 let pendingDeletes = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
 
+export class OPFSNotSupportedError extends Error {
+    constructor() {
+        super('OPFS is not supported in this browser')
+        this.name = 'OPFSNotSupportedError'
+    }
+}
+
+export class OPFSInitializationError extends Error {
+    constructor(cause?: Error) {
+        super('Failed to initialize OPFS Worker')
+        this.name = 'OPFSInitializationError'
+        this.cause = cause
+    }
+}
+
 export async function initOPFSWorker(): Promise<void> {
     if (opfsWorker || isNodeServer) return
 
+    // OPFS 지원 여부 체크 (실제 호출로 확인)
+    try {
+        await navigator.storage.getDirectory()
+    } catch (e) {
+        throw new OPFSNotSupportedError()
+    }
+
+    // Worker 초기화
     try {
         // Vite의 ?worker 쿼리로 Worker 번들링
         // Tauri와 Web 모두 OPFS Worker 사용 (DB 저장용)
@@ -45,81 +68,81 @@ export async function initOPFSWorker(): Promise<void> {
             opfsWorker!.addEventListener('message', readyHandler, { once: true })
         })
 
-        opfsWorker.onmessage = (e) => {
-            const { type, key, error, data } = e.data
+    opfsWorker.onmessage = (e) => {
+        const { type, key, error, data } = e.data
 
-            // Handle save responses
-            if (type === 'success' || type === 'error') {
-                const pending = pendingSaves.get(key)
-                if (pending) {
-                    if (type === 'success') {
-                        pending.resolve()
-                    } else {
-                        pending.reject(new Error(error || 'Unknown save error'))
-                    }
-                    pendingSaves.delete(key)
+        // Handle save responses
+        if (type === 'success' || type === 'error') {
+            const pending = pendingSaves.get(key)
+            if (pending) {
+                if (type === 'success') {
+                    pending.resolve()
+                } else {
+                    pending.reject(new Error(error || 'Unknown save error'))
                 }
-            }
-            // Handle load responses
-            else if (type === 'load_success' || type === 'load_error') {
-                const pending = pendingLoads.get(key)
-                if (pending) {
-                    if (type === 'load_success') {
-                        pending.resolve(data || null)
-                    } else {
-                        // File not found is not an error, just return null
-                        pending.resolve(null)
-                    }
-                    pendingLoads.delete(key)
-                }
-            }
-            // Handle list responses
-            else if (type === 'list_success' || type === 'list_error') {
-                const { dirPath, files } = e.data
-                const pending = pendingLists.get(dirPath)
-                if (pending) {
-                    if (type === 'list_success') {
-                        pending.resolve(files || [])
-                    } else {
-                        pending.resolve([])
-                    }
-                    pendingLists.delete(dirPath)
-                }
-            }
-            // Handle listWithSizes responses
-            else if (type === 'listWithSizes_success' || type === 'listWithSizes_error') {
-                const { dirPath, files } = e.data
-                const pending = pendingListsWithSizes.get(dirPath)
-                if (pending) {
-                    if (type === 'listWithSizes_success') {
-                        pending.resolve(files || [])
-                    } else {
-                        pending.resolve([])
-                    }
-                    pendingListsWithSizes.delete(dirPath)
-                }
-            }
-            // Handle delete responses
-            else if (type === 'delete_success' || type === 'delete_error') {
-                const pending = pendingDeletes.get(key)
-                if (pending) {
-                    if (type === 'delete_success') {
-                        pending.resolve()
-                    } else {
-                        pending.reject(new Error(error || 'Unknown delete error'))
-                    }
-                    pendingDeletes.delete(key)
-                }
+                pendingSaves.delete(key)
             }
         }
-        opfsWorker.onerror = (e) => {
-            console.error('OPFS worker error:', e)
+        // Handle load responses
+        else if (type === 'load_success' || type === 'load_error') {
+            const pending = pendingLoads.get(key)
+            if (pending) {
+                if (type === 'load_success') {
+                    pending.resolve(data || null)
+                } else {
+                    // File not found is not an error, just return null
+                    pending.resolve(null)
+                }
+                pendingLoads.delete(key)
+            }
         }
-        console.log('[OPFS] Worker initialized successfully')
-    } catch (e) {
-        console.warn('Failed to initialize OPFS worker, falling back to main thread:', e)
+        // Handle list responses
+        else if (type === 'list_success' || type === 'list_error') {
+            const { dirPath, files } = e.data
+            const pending = pendingLists.get(dirPath)
+            if (pending) {
+                if (type === 'list_success') {
+                    pending.resolve(files || [])
+                } else {
+                    pending.resolve([])
+                }
+                pendingLists.delete(dirPath)
+            }
+        }
+        // Handle listWithSizes responses
+        else if (type === 'listWithSizes_success' || type === 'listWithSizes_error') {
+            const { dirPath, files } = e.data
+            const pending = pendingListsWithSizes.get(dirPath)
+            if (pending) {
+                if (type === 'listWithSizes_success') {
+                    pending.resolve(files || [])
+                } else {
+                    pending.resolve([])
+                }
+                pendingListsWithSizes.delete(dirPath)
+            }
+        }
+        // Handle delete responses
+        else if (type === 'delete_success' || type === 'delete_error') {
+            const pending = pendingDeletes.get(key)
+            if (pending) {
+                if (type === 'delete_success') {
+                    pending.resolve()
+                } else {
+                    pending.reject(new Error(error || 'Unknown delete error'))
+                }
+                pendingDeletes.delete(key)
+            }
+        }
+    }
+    opfsWorker.onerror = (e) => {
+        console.error('OPFS worker error:', e)
+    }
+    console.log('[OPFS] Worker initialized successfully')
+} catch (e) {
         opfsWorker = null
         opfsWorkerReady = false
+        throw new OPFSInitializationError(e instanceof Error ? e : undefined)
     }
 }
 
