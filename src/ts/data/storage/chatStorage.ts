@@ -3,9 +3,13 @@ import { encodeChat, decodeChat } from "./risuSave"
 import { saveToWorker, loadFromWorker } from "./opfsWorkerClient.svelte"
 import { syncManager } from "../drive/syncManager"
 
+// Cache for in-progress loadChat calls to prevent duplicate concurrent loads
+const loadingPromises = new Map<string, Promise<Chat | null>>()
+
 /**
  * Loads a chat's full data from individual file (lazy loading).
  * Updates the chat in the character's chats array with message data.
+ * Uses Promise caching to prevent duplicate concurrent loads.
  *
  * @param chaId - Character ID
  * @param chatId - Chat ID
@@ -32,7 +36,29 @@ export async function loadChat(chaId: string, chatId: string): Promise<Chat | nu
         return chat
     }
 
-    // Load from file
+    // Check if already loading - return existing promise to prevent duplicate loads
+    const cacheKey = `${chaId}_${chatId}`
+    const existingPromise = loadingPromises.get(cacheKey)
+    if (existingPromise) {
+        console.log(`[loadChat] Already loading ${cacheKey}, returning existing promise`)
+        return existingPromise
+    }
+
+    // Create and cache the loading promise
+    const loadPromise = loadChatInternal(chaId, chatId, chat)
+    loadingPromises.set(cacheKey, loadPromise)
+
+    try {
+        return await loadPromise
+    } finally {
+        loadingPromises.delete(cacheKey)
+    }
+}
+
+/**
+ * Internal function that performs the actual chat loading.
+ */
+async function loadChatInternal(chaId: string, chatId: string, chat: Chat): Promise<Chat | null> {
     try {
         const filePath = `database/chats/${chaId}_${chatId}.bin`
         console.log(`[loadChat] Loading file: ${filePath}`)
