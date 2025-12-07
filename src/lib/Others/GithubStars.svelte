@@ -1,6 +1,6 @@
 <script lang="ts">
     import { HomeIcon, MailIcon, MaximizeIcon, WalletIcon } from "lucide-svelte";
-    import { toggleFullscreen } from "src/ts/globalApi.svelte";
+    import { toggleDomFullscreen } from 'src/ts/utils/util'
     import { openURL } from "src/ts/utils/util";
     import { isTauri } from "src/ts/utils/env";
 
@@ -36,7 +36,7 @@
   </button>
   {#if !isTauri}
     <button class="text-textcolor" onclick={() => {
-      toggleFullscreen()
+      toggleDomFullscreen()
     }}>
       <MaximizeIcon size={24} />
     </button>

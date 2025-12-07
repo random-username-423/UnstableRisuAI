@@ -5,7 +5,8 @@
     import { LLMCacheStorage, runTranslator } from "src/ts/translator/translator";
     import Button from "../UI/GUI/Button.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
-    import { getLanguageCodes } from "src/ts/globalApi.svelte";
+    import { DBState } from "src/ts/stores.svelte";
+    import { getLanguageCodes } from "src/ts/utils/languageCodes";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import CheckInput from "../UI/GUI/CheckInput.svelte";
     import { tokenize } from "src/ts/utils/tokenizer";
@@ -27,7 +28,7 @@
 
 <span>{language.sourceLanguage}</span>
 <SelectInput bind:value={sourceLang}>
-    {#each getLanguageCodes() as lang}
+    {#each getLanguageCodes(DBState.db.language) as lang}
         <OptionInput value={lang.code}>{lang.name}</OptionInput>
     {/each}
 </SelectInput>
@@ -35,7 +36,7 @@
 
 <span>{language.translatorLanguage}</span>
 <SelectInput bind:value={outputLang}>
-    {#each getLanguageCodes() as lang}
+    {#each getLanguageCodes(DBState.db.language) as lang}
         <OptionInput value={lang.code}>{lang.name}</OptionInput>
     {/each}
 </SelectInput>

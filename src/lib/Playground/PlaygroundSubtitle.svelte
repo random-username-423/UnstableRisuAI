@@ -10,7 +10,7 @@
     import { selectFileByDom, selectSingleFile, sleep } from "src/ts/utils/util";
     import { alertError, alertSelect } from "src/ts/utils/alert";
     import { risuChatParser } from "src/ts/utils/parser.svelte";
-    import { getLanguageCodes } from "src/ts/globalApi.svelte";
+    import { getLanguageCodes } from "src/ts/utils/languageCodes";
     import { downloadFile } from "src/ts/utils/fileIO";
     import { AppendableBuffer, globalFetch } from "src/ts/utils/fetch";
     import SliderInput from "../UI/GUI/SliderInput.svelte";
@@ -438,7 +438,7 @@
     <span class="text-textcolor text-lg mt-4">{language.sourceLanguage}</span>
     <SelectInput value={sourceLang === null ? 'auto' : sourceLang}>
         <OptionInput value="auto">Auto</OptionInput>
-        {#each getLanguageCodes() as lang}
+        {#each getLanguageCodes(DBState.db.language) as lang}
             <OptionInput value={lang.code}>{lang.name}</OptionInput>
         {/each}
     </SelectInput>

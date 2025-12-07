@@ -1,23 +1,25 @@
 <script lang="ts">
-  import { AlertOctagon, SaveIcon } from "lucide-svelte";
-  import { alertMd } from "src/ts/utils/alert";
-  import { saving } from "src/ts/globalApi.svelte";
-  import { AccountWarning } from "src/ts/data/storage/accountStorage";
-  import { DBState } from "src/ts/stores.svelte";
-
+    import { AlertOctagon, SaveIcon } from "lucide-svelte"
+    import { alertMd } from "src/ts/utils/alert"
+    import { saving } from "src/ts/data/storage/autoSaveManager.svelte"
+    import { AccountWarning } from "src/ts/data/storage/accountStorage"
+    import { DBState } from "src/ts/stores.svelte"
 </script>
 
 {#if DBState?.db?.showSavingIcon && saving.state}
-  <div
-    class="absolute top-3 right-3 z-10 text-white p-2 rounded bg-gradient-to-br from-blue-500 to-purple-800 saving-animation pointer-events-none opacity-15"
-  >
-    <SaveIcon size={24} />
-  </div>
+    <div
+        class="absolute top-3 right-3 z-10 text-white p-2 rounded bg-gradient-to-br from-blue-500 to-purple-800 saving-animation pointer-events-none opacity-15"
+    >
+        <SaveIcon size={24} />
+    </div>
 {:else if $AccountWarning}
-  <button class="absolute top-3 right-3 z-10 text-white bg-red-800 hover:bg-red-600 p-2 rounded" onclick={() =>{
-      alertMd($AccountWarning)
-      $AccountWarning = ''
-  }}>
-      <AlertOctagon size={24} />
-  </button>
+    <button
+        class="absolute top-3 right-3 z-10 text-white bg-red-800 hover:bg-red-600 p-2 rounded"
+        onclick={() => {
+            alertMd($AccountWarning)
+            $AccountWarning = ""
+        }}
+    >
+        <AlertOctagon size={24} />
+    </button>
 {/if}

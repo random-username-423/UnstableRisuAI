@@ -1,6 +1,6 @@
 import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear, alertSelect } from "../../utils/alert";
 import { Buffer } from "buffer";
-import { requiresFullEncoderReload, saving, } from "../../globalApi.svelte";
+import { saving, requiresFullEncoderReload } from "src/ts/data/storage/autoSaveManager.svelte";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
 import { LocalWriter } from "src/ts/utils/writers";
 import { saveToWorker, listFromWorker, deleteFromWorker, loadFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'

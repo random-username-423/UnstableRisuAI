@@ -7,9 +7,7 @@ import { get } from "svelte/store";
 import { BaseDirectory, readFile, exists } from "@tauri-apps/plugin-fs";
 import { v4 as uuidv4 } from 'uuid';
 
-import {
-    saveDb
-} from "./globalApi.svelte";
+import { saveDb } from "src/ts/data/storage/autoSaveManager.svelte";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
 
 import {

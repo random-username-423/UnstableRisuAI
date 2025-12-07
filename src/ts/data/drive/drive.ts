@@ -1,6 +1,6 @@
 import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../../utils/alert";
 import { getDatabase, type Database } from "../storage/database.svelte";
-import { saving } from "../../globalApi.svelte";
+import { saving } from "src/ts/data/storage/autoSaveManager.svelte";
 import { openURL } from "../../utils/util";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
 import { saveToWorker, listFromWorker, deleteFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
@@ -14,39 +14,39 @@ import { sleep, getBasename } from '../../utils/util';
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { loadedStore } from "../../stores.svelte";
 
-export async function checkDriver(type:'save'|'load'|'loadtauri'|'savetauri'|'reftoken'){
+export async function checkDriver(type: 'save' | 'load' | 'loadtauri' | 'savetauri' | 'reftoken') {
     const CLIENT_ID = '580075990041-l26k2d3c0nemmqiu3d3aag01npfrkn76.apps.googleusercontent.com';
     const REDIRECT_URI = type === 'reftoken' ? 'https://sv.risuai.xyz/drive' : "https://risuai.xyz/"
     const SCOPE = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
     const encodedRedirectUri = encodeURIComponent(REDIRECT_URI);
     const authorizationUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodedRedirectUri}&scope=${SCOPE}&response_type=code&state=${type}`;
-    
 
-    if(type === 'reftoken'){
+
+    if (type === 'reftoken') {
         const authorizationUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodedRedirectUri}&scope=${SCOPE}&response_type=code&state=${"accesstauri"}&access_type=offline&prompt=consent`;
         return authorizationUrl
     }
 
-    if(type === 'save' || type === 'load'){
+    if (type === 'save' || type === 'load') {
         location.href = (authorizationUrl);
     }
-    else{
-        
+    else {
+
         try {
-            if(isTauri){
+            if (isTauri) {
                 openURL(authorizationUrl)
             }
-            else{
+            else {
                 window.open(authorizationUrl)
             }
             let code = await alertInput(language.pasteAuthCode)
-            if(code.includes(' ')){
+            if (code.includes(' ')) {
                 code = code.substring(code.lastIndexOf(' ')).trim()
             }
-            if(type === 'loadtauri'){
+            if (type === 'loadtauri') {
                 await loadDrive(code, 'backup')
             }
-            else{
+            else {
                 await backupDrive(code)
             }
         } catch (error) {
@@ -61,57 +61,57 @@ export async function checkDriverInit() {
     try {
         const loc = new URLSearchParams(location.search)
         const code = loc.get('code')
-    
-        if(code){
+
+        if (code) {
             const res = await fetch(`/drive?code=${encodeURIComponent(code)}`)
-            if(res.status >= 200 && res.status < 300){
-                const json:{
-                    access_token:string,
-                    expires_in:number
+            if (res.status >= 200 && res.status < 300) {
+                const json: {
+                    access_token: string,
+                    expires_in: number
                 } = await res.json()
                 const da = loc.get('state')
-                if(da === 'save'){
+                if (da === 'save') {
                     await backupDrive(json.access_token)
                 }
-                else if(da === 'load'){
+                else if (da === 'load') {
                     await loadDrive(json.access_token, 'backup')
                 }
-                else if(da === 'savetauri' || da === 'loadtauri' || da === 'synctauri'){
+                else if (da === 'savetauri' || da === 'loadtauri' || da === 'synctauri') {
                     loadedStore.set(true)  // Hide loading screen
                     alertStore.set({
                         type: 'wait2',
                         msg: `Copy and paste this Auth Code: ${json.access_token}`
                     })
                 }
-                else if(da === 'accesstauri'){
+                else if (da === 'accesstauri') {
                     alertStore.set({
                         type: 'wait2',
                         msg: JSON.stringify(json)
                     })
                 }
             }
-            else{
+            else {
                 alertError(await res.text())
                 location.search = ''
             }
             return true
         }
-        else{
+        else {
             return false
-        }   
+        }
     } catch (error) {
         console.error(error)
         alertError(`Backup Error: ${error}`)
         const currentURL = new URL(location.href)
         currentURL.search = ''
-        window.history.replaceState( {} , "", currentURL.href );
+        window.history.replaceState({}, "", currentURL.href);
         await sleep(100000)
         return false
     }
 }
 
-let lastSaved:number = parseInt(localStorage.getItem('risu_lastsaved') ?? '-1')
-let BackupDb:Database = null
+let lastSaved: number = parseInt(localStorage.getItem('risu_lastsaved') ?? '-1')
+let BackupDb: Database = null
 
 
 export async function syncDrive() {
@@ -120,7 +120,7 @@ export async function syncDrive() {
 }
 
 
-async function backupDrive(ACCESS_TOKEN:string) {
+async function backupDrive(ACCESS_TOKEN: string) {
     alertStore.set({
         type: "wait",
         msg: "Uploading Backup... (Fetching file list)"
@@ -128,7 +128,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
     await sleep(10)  // UI 업데이트 대기
 
     console.log('[GoogleDrive Backup] Starting backup...')
-    const files:DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
+    const files: DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
     console.log(`[GoogleDrive Backup] Found ${files.length} existing files in Drive`)
 
     const fileNames = files.map((d) => {
@@ -235,13 +235,13 @@ async function backupDrive(ACCESS_TOKEN:string) {
 }
 
 type DriveFile = {
-    mimeType:string
-    name:string
+    mimeType: string
+    name: string
     id: string
 }
 
-async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<void|"noSync"> {
-    if(mode === 'backup'){
+async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise<void | "noSync"> {
+    if (mode === 'backup') {
         alertStore.set({
             type: "wait",
             msg: "Loading Backup... (Fetching file list)"
@@ -249,18 +249,18 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         await sleep(10)  // UI 업데이트 대기
     }
     console.log(`[GoogleDrive Restore] Starting restore (mode: ${mode})...`)
-    const files:DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
+    const files: DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
     console.log(`[GoogleDrive Restore] Found ${files.length} files in Drive`)
-    let foragekeys:string[] = []
+    let foragekeys: string[] = []
     let loadedForageKeys = false
     let db = getDatabase()
 
     // IndexedDB (forageStorage)에서 에셋 확인 (Tauri와 웹 모두 동일)
-    async function checkImageExists(images:string) {
-        if(db?.account?.useSync){
+    async function checkImageExists(images: string) {
+        if (db?.account?.useSync) {
             return false
         }
-        if(!loadedForageKeys){
+        if (!loadedForageKeys) {
             foragekeys = await forageStorage.keys()
             loadedForageKeys = true
         }
@@ -271,61 +271,61 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
     })
 
 
-    let dbs:[DriveFile,number][] = []
+    let dbs: [DriveFile, number][] = []
     let noSyncData = true
 
-    if(mode === 'backup'){
-        for(const f of files){
-            if(f.name.endsWith("-database.risudat")){
+    if (mode === 'backup') {
+        for (const f of files) {
+            if (f.name.endsWith("-database.risudat")) {
                 const tm = parseInt(f.name.split('-')[0])
-                if(isNaN(tm)){
+                if (isNaN(tm)) {
                     continue
                 }
-                else{
-                    dbs.push([f,tm])
+                else {
+                    dbs.push([f, tm])
                 }
             }
         }
-        dbs.sort((a,b) => {
+        dbs.sort((a, b) => {
             return b[1] - a[1]
         })
     }
-    else if(mode === 'sync'){
-        for(const f of files){
-            if(f.name.endsWith("-database.risudat2")){
+    else if (mode === 'sync') {
+        for (const f of files) {
+            if (f.name.endsWith("-database.risudat2")) {
                 const tm = parseInt(f.name.split('-')[0])
-                if(isNaN(tm)){
+                if (isNaN(tm)) {
                     continue
                 }
-                else{
-                    if(tm > lastSaved){
-                        dbs.push([f,tm])
+                else {
+                    if (tm > lastSaved) {
+                        dbs.push([f, tm])
                     }
                     noSyncData = false
                 }
             }
         }
-        dbs.sort((a,b) => {
+        dbs.sort((a, b) => {
             return b[1] - a[1]
         })
     }
 
-    if(noSyncData && mode === 'sync'){
+    if (noSyncData && mode === 'sync') {
         return 'noSync'
     }
 
-    if(dbs.length !== 0){
-        if(mode === 'sync'){
+    if (dbs.length !== 0) {
+        if (mode === 'sync') {
             alertStore.set({
                 type: "wait",
                 msg: "Sync Data..."
             })
         }
-        async function getDbFromList(){
-            let selectables:string[] = []
-            for(let i=0;i<dbs.length;i++){
+        async function getDbFromList() {
+            let selectables: string[] = []
+            for (let i = 0; i < dbs.length; i++) {
                 selectables.push(`Backup saved in ${(new Date(dbs[i][1] * 1000)).toLocaleString()}`)
-                if(selectables.length > 7){
+                if (selectables.length > 7) {
                     break
                 }
             }
@@ -338,11 +338,11 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
             })
             await sleep(10)
 
-            const decompressedDb:Database = await decodeRisuSave(await getFileData(ACCESS_TOKEN, selectedDb.id))
+            const decompressedDb: Database = await decodeRisuSave(await getFileData(ACCESS_TOKEN, selectedDb.id))
             return decompressedDb
         }
-    
-        const db:Database = mode === 'backup' ? await getDbFromList() : JSON.parse(Buffer.from(await getFileData(ACCESS_TOKEN, dbs[0][0].id)).toString('utf-8'))
+
+        const db: Database = mode === 'backup' ? await getDbFromList() : JSON.parse(Buffer.from(await getFileData(ACCESS_TOKEN, dbs[0][0].id)).toString('utf-8'))
         lastSaved = Date.now()
         localStorage.setItem('risu_lastsaved', `${lastSaved}`)
         const requiredImages = (getUnpargeables(db))
@@ -353,7 +353,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         console.log(`[GoogleDrive Restore] Sample of Drive files (first 10):`, sampleFiles)
 
         const PARALLEL_DOWNLOADS = getDatabase().driveParallelConnections || 20
-        let errorLogs:string[] = []
+        let errorLogs: string[] = []
         let downloadedCount = 0
         let skippedCount = 0
         let notFoundCount = 0
@@ -432,7 +432,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         console.log(`  - Downloaded: ${downloadedCount}`)
         console.log(`  - Skipped (already exists): ${skippedCount}`)
         console.log(`  - Not found in Drive: ${notFoundCount}`)
-        if(errorLogs.length > 0){
+        if (errorLogs.length > 0) {
             console.log(`[GoogleDrive Restore] Not found assets (first ${errorLogs.length}):`)
             errorLogs.forEach(e => console.log(`  ${e}`))
         }
@@ -449,32 +449,32 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         try {
             await deleteFromWorker('database/characters.bin');
             console.log('[GoogleDrive Restore] Cleared characters.bin');
-        } catch(e) {
+        } catch (e) {
             console.log('[GoogleDrive Restore] No characters.bin to clear');
         }
         try {
             await deleteFromWorker('database/botpresets.bin');
             console.log('[GoogleDrive Restore] Cleared botpresets.bin');
-        } catch(e) {
+        } catch (e) {
             console.log('[GoogleDrive Restore] No botpresets.bin to clear');
         }
         try {
             const chatFiles = await listFromWorker('database/chats');
-            for(const file of chatFiles){
+            for (const file of chatFiles) {
                 await deleteFromWorker(`database/chats/${file}`);
             }
             console.log(`[GoogleDrive Restore] Cleared ${chatFiles.length} chat files`);
-        } catch(e) {
+        } catch (e) {
             console.log('[GoogleDrive Restore] No chat files to clear');
         }
 
-        if(isTauri){
+        if (isTauri) {
             await saveToWorker('database/database.bin', dbData)
             console.log('[GoogleDrive Restore] Restore completed! Relaunching app...')
             const currentPlatform = await platform()
             alertClear()
             await sleep(50)
-            if(currentPlatform === 'android' || currentPlatform === 'ios'){
+            if (currentPlatform === 'android' || currentPlatform === 'ios') {
                 // Mobile: Ask user to manually restart (process plugin not supported)
                 alertNormal('Backup loaded successfully!\nPlease close and reopen the app.')
                 return
@@ -482,7 +482,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
                 relaunch()
             }
         }
-        else{
+        else {
             await saveToWorker('database/database.bin', dbData)
             console.log('[GoogleDrive Restore] Restore completed! Refreshing page...')
             alertClear()
@@ -490,29 +490,29 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
             location.search = ''
         }
     }
-    else if(mode === 'backup'){
+    else if (mode === 'backup') {
         location.search = ''
     }
 }
 
-function checkImageExist(image:string){
+function checkImageExist(image: string) {
 
 }
 
 
-function formatKeys(name:string) {
-    return getBasename(name).replace(/\_/g, '__').replace(/\./g,'_d').replace(/\//,'_s') + '.png'
+function formatKeys(name: string) {
+    return getBasename(name).replace(/\_/g, '__').replace(/\./g, '_d').replace(/\//, '_s') + '.png'
 }
 
-function newFormatKeys(name:string) {
+function newFormatKeys(name: string) {
     let n = getBasename(name)
     const bf = Buffer.from(n).toString('hex')
     return n + '.bin'
 }
 
-async function getFilesInFolder(ACCESS_TOKEN:string, nextPageToken=''): Promise<DriveFile[]> {
+async function getFilesInFolder(ACCESS_TOKEN: string, nextPageToken = ''): Promise<DriveFile[]> {
     const url = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&pageSize=300` + nextPageToken;
-    
+
     const response = await fetch(url, {
         method: 'GET',
         headers: {
@@ -520,69 +520,69 @@ async function getFilesInFolder(ACCESS_TOKEN:string, nextPageToken=''): Promise<
             'Content-Type': 'application/json',
         },
     });
-    
+
     if (response.ok) {
         const data = await response.json();
-        if(data.nextPageToken){
+        if (data.nextPageToken) {
             return (data.files as DriveFile[]).concat(await getFilesInFolder(ACCESS_TOKEN, `&pageToken=${data.nextPageToken}`))
         }
         return data.files as DriveFile[];
     } else {
-        throw(`Error: ${response.status}`);
+        throw (`Error: ${response.status}`);
     }
 }
 
-async function createFileInFolder(accessToken:string, fileName:string, content:Uint8Array, mimeType = 'application/octet-stream') {
+async function createFileInFolder(accessToken: string, fileName: string, content: Uint8Array, mimeType = 'application/octet-stream') {
     const metadata = {
-      name: fileName,
-      mimeType: mimeType,
-      parents: ["appDataFolder"],
+        name: fileName,
+        mimeType: mimeType,
+        parents: ["appDataFolder"],
     };
-  
+
     const body = new FormData();
     body.append(
-      "metadata",
-      new Blob([JSON.stringify(metadata)], { type: "application/json" })
+        "metadata",
+        new Blob([JSON.stringify(metadata)], { type: "application/json" })
     );
     body.append("file", new Blob([content as BlobPart], { type: mimeType }));
-  
+
     const response = await fetch(
-      "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: body,
-      }
+        "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
+        {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+            body: body,
+        }
     );
-  
+
     const result = await response.json();
-  
+
     if (response.ok) {
-      return result;
+        return result;
     } else {
-      console.error("Error creating file:", result);
-      throw new Error(result.error.message);
+        console.error("Error creating file:", result);
+        throw new Error(result.error.message);
     }
 }
 
-async function getFileData(ACCESS_TOKEN:string,fileId:string) {
+async function getFileData(ACCESS_TOKEN: string, fileId: string) {
     const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
-  
+
     const request = {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${ACCESS_TOKEN}`
-      }
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${ACCESS_TOKEN}`
+        }
     };
-  
+
     const response = await fetch(url, request);
-  
+
     if (response.ok) {
-      const data = new Uint8Array(await response.arrayBuffer());
-      return data;
+        const data = new Uint8Array(await response.arrayBuffer());
+        return data;
     } else {
         throw "Error in response when reading files in folder"
     }
-  }
+}
