@@ -11,7 +11,7 @@ import { prebuiltNAIpresets, prebuiltPresets } from '../../process/templates/tem
 import { defaultColorScheme, type ColorScheme } from '../../gui/colorscheme';
 import type { PromptItem, PromptSettings } from '../../process/prompt';
 import type { OobaChatCompletionRequestParams } from '../../model/ooba';
-import { type HypaV3Settings, type HypaV3Preset, createHypaV3Preset } from '../../process/memory/hypav3'
+import { type HypaV3Settings, type HypaV3Preset, createHypaV3Preset } from '../../process/memory/hypav3Types'
 
 // Re-export from env.ts for backwards compatibility
 export { appVer } from '../../utils/env'
@@ -2075,7 +2075,7 @@ import { DBState, selectedCharID } from '../../stores.svelte';
 import { LLMFlags, LLMFormat, LLMTokenizer } from '../../model/modellist';
 import type { Parameter } from '../../process/request/request';
 import type { HypaModel } from '../../process/memory/hypamemory';
-import type { SerializableHypaV3Data } from '../../process/memory/hypav3';
+import type { SerializableHypaV3Data } from '../../process/memory/hypav3Types';
 import { defaultHotkeys, type Hotkey } from '../../hotkey/defaulthotkeys';
 import type { OpenAIChat } from '../../process/index.svelte';
 
