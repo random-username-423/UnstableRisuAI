@@ -1,29 +1,19 @@
-import { sleep, getBasename } from "./utils/util"
+import { sleep } from "./utils/util"
 import { getDbBackups } from "./init"
 import { v4 } from 'uuid';
-import { setDatabase, type Database, getDatabase, type Chat, type character, type groupChat } from "./data/storage/database.svelte";
+import { getDatabase } from "./data/storage/database.svelte";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { selectedCharID, DBState } from "./stores.svelte";
-import { alertConfirm, alertNormal, alertNormalWait } from "./utils/alert";
+import { alertConfirm, alertNormalWait } from "./utils/alert";
 import { syncDrive } from "./data/drive/drive";
-import { syncManager } from "./data/drive/syncManager";
-import { decodeRisuSave, RisuSaveEncoder, type toSaveType, encodeCharacters, encodeBotPresets } from "./data/storage/risuSave";
+import { RisuSaveEncoder, type toSaveType } from "./data/storage/risuSave";
 import { loadChat, saveChat } from "./data/storage/chatStorage";
+import { saveMainData } from "./data/storage/dbStorage";
 import { forageStorage } from "./data/storage/autoStorage";
 import { saveDbKei } from "./data/kei/backup";
 import { language } from "src/lang";
 import { isTauri } from "src/ts/utils/env";
-import {
-    initOPFSWorker,
-    OPFSNotSupportedError,
-    OPFSInitializationError,
-    saveToWorker,
-    loadFromWorker,
-    listFromWorker,
-    listWithSizesFromWorker,
-    deleteFromWorker,
-    isWorkerReady
-} from './data/storage/opfsWorkerClient.svelte'
+import { initOPFSWorker } from './data/storage/opfsWorkerClient.svelte'
 
 
 const appWindow = isTauri ? getCurrentWebviewWindow() : null
@@ -205,92 +195,28 @@ export async function saveDb(){
                 continue
             }
             const dbData = new Uint8Array(encoded)
-            // Tauri와 웹 모두 OPFS Worker 사용
-            // Worker를 사용하면 메인 스레드 블로킹 없음
             const now = Date.now()
             const intervalMs = (db.dbBackupIntervalMinutes ?? 10) * 60 * 1000
             const shouldBackup = (now - lastBackupTime) >= intervalMs
 
-            if(!forageStorage.isAccount && isWorkerReady()){
-                await saveToWorker('database/database.bin', dbData)
-                if(shouldBackup){
-                    // 백업은 chats 포함한 전체 DB로 저장 (복구용)
-                    const backupEncoder = new RisuSaveEncoder()
-                    await backupEncoder.init(db, {
-                        compression: false,
-                        excludeChats: false // 백업에는 모든 채팅 포함
-                    })
-                    const backupEncoded = backupEncoder.encode()
-                    if(backupEncoded){
-                        const backupData = new Uint8Array(backupEncoded)
-                        await saveToWorker(`database/dbbackup-${(now/100).toFixed()}.bin`, backupData)
-                    }
-                    lastBackupTime = now
-                }
-                // 변경된 채팅만 개별 파일로 저장
-                if(shouldExcludeChats && toSave.chat.length > 0){
-                    for(const [chaId, chatId] of toSave.chat){
-                        if(!chatId || !chaId) continue
-                        const char = db.characters.find(c => c.chaId === chaId)
-                        const chat = char?.chats.find(c => c.id === chatId)
-                        if(chat){
-                            await saveChat(chaId, chat)
-                        }
-                    }
-                }
-                // 캐릭터 변경 시 characters.bin 저장
-                if(shouldSeparateCharactersAndPresets && toSave.character.length > 0){
-                    // 채팅 메타데이터만 포함하여 저장 (채팅 본문은 개별 파일)
-                    const charactersToSave = db.characters.map(char => {
-                        const chatsMetadata = char.chats?.map(chat => ({
-                            id: chat.id,
-                            name: chat.name,
-                            folderId: chat.folderId,
-                            bindedPersona: chat.bindedPersona,
-                            modules: chat.modules,
-                            lastDate: chat.lastDate,
-                            fmIndex: chat.fmIndex,
-                        })) || [];
-                        return { ...char, chats: chatsMetadata };
-                    });
-                    const encodedCharacters = await encodeCharacters(charactersToSave as (character | groupChat)[])
-                    await saveToWorker('database/characters.bin', encodedCharacters)
+            // Delegate to dbStorage for actual file saving
+            const result = await saveMainData({
+                db,
+                dbData,
+                toSave,
+                shouldExcludeChats,
+                shouldSeparateCharactersAndPresets,
+                shouldBackup,
+                now
+            })
 
-                    // Mark characters for sync (debounced)
-                    for (const chaId of toSave.character) {
-                        if (chaId) {
-                            syncManager.markCharacterChanged(chaId)
-                        }
-                    }
-                }
-                // 프리셋 변경 시 botpresets.bin 저장
-                if(shouldSeparateCharactersAndPresets && toSave.botPreset){
-                    const encodedPresets = await encodeBotPresets(db.botPresets)
-                    await saveToWorker('database/botpresets.bin', encodedPresets)
-
-                    // Mark bot presets for sync (debounced)
-                    syncManager.markBotPresetsChanged()
-                }
+            if (result.backedUp) {
+                lastBackupTime = now
             }
-            else{
-                await forageStorage.setItem('database/database.bin', dbData)
-                if(!forageStorage.isAccount && shouldBackup){
-                    // 백업은 chats 포함한 전체 DB로 저장 (복구용)
-                    const backupEncoder = new RisuSaveEncoder()
-                    await backupEncoder.init(db, {
-                        compression: false,
-                        excludeChats: false // 백업에는 모든 채팅 포함
-                    })
-                    const backupEncoded = backupEncoder.encode()
-                    if(backupEncoded){
-                        const backupData = new Uint8Array(backupEncoded)
-                        await forageStorage.setItem(`database/dbbackup-${(now/100).toFixed()}.bin`, backupData)
-                    }
-                    lastBackupTime = now
-                }
-                if(forageStorage.isAccount){
-                    await sleep(3000)
-                }
+
+            // Account mode delay
+            if (forageStorage.isAccount) {
+                await sleep(3000)
             }
             if(!forageStorage.isAccount){
                 await getDbBackups()
