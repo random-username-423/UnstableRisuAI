@@ -1,6 +1,6 @@
 import { Packr, Unpackr, decode } from "msgpackr";
 import * as fflate from "fflate";
-import { presetTemplate, type Database, type Chat } from "./database.svelte";
+import { type Database, type Chat } from "./database.svelte";
 
 const packr = new Packr({
     useRecords:false
@@ -389,11 +389,7 @@ export class RisuSaveDecoder {
                 }
             }
         }
-        //to fix botpreset bugs
-        if(!Array.isArray(db.botPresets) || db.botPresets.length === 0){
-            db.botPresets = [presetTemplate]
-            db.botPresetsId = 0
-        }
+        // Note: botPresets validation is handled in init.ts after loading botpresets.bin
         console.log('Decoded RisuSave data', db);
         return db;
     }
