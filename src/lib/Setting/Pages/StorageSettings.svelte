@@ -10,8 +10,10 @@
     import Button from "src/lib/UI/GUI/Button.svelte"
     import { alertConfirm, alertNormal } from "src/ts/utils/alert"
     import OPFSExplorer from "./OPFSExplorer.svelte"
+    import IndexedDBExplorer from "./IndexedDBExplorer.svelte"
 
     let showExplorer = $state(false)
+    let showIndexedDBExplorer = $state(false)
 
     interface StorageInfo {
         totalUsage: number
@@ -362,11 +364,19 @@
         </Button>
         <Button onclick={() => showExplorer = true}>
             <FolderOpenIcon size={16} />
-            {language.openOPFSExplorer || "Open File Explorer"}
+            {language.openOPFSExplorer || "Open OPFS Explorer"}
+        </Button>
+        <Button onclick={() => showIndexedDBExplorer = true}>
+            <FolderOpenIcon size={16} />
+            {language.openIndexedDBExplorer || "Open IndexedDB Explorer"}
         </Button>
     </div>
 {/if}
 
 {#if showExplorer}
     <OPFSExplorer close={() => showExplorer = false} />
+{/if}
+
+{#if showIndexedDBExplorer}
+    <IndexedDBExplorer close={() => showIndexedDBExplorer = false} />
 {/if}

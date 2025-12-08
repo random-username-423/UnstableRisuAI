@@ -1420,6 +1420,9 @@ export const languageKorean = {
     "storageRefresh": "새로고침",
     "storageCalculating": "계산 중...",
     "openOPFSExplorer": "OPFS 탐색기 열기",
+    "openIndexedDBExplorer": "IndexedDB 탐색기 열기",
+    "indexedDBAllDatabases": "모든 데이터베이스",
+    "indexedDBOf": "/",
     "opfsRoot": "루트",
     "opfsEmpty": "빈 폴더"
 }
