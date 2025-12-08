@@ -121,7 +121,7 @@ export class LocalWriter {
      * @param {Uint8Array} data - The data to write.
      */
     async writeBackup(name: string, data: Uint8Array): Promise<void> {
-        const encodedName = new TextEncoder().encode(getBasename(name))
+        const encodedName = new TextEncoder().encode(name)
         const nameLength = new Uint32Array([encodedName.byteLength])
         await this.writer.write(new Uint8Array(nameLength.buffer))
         await this.writer.write(encodedName)

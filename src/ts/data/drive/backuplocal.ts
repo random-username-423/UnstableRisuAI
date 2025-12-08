@@ -172,156 +172,217 @@ export async function SaveLocalBackup(){
     }
 }
 
-export async function LoadLocalBackup(){
+/**
+ * Opens a file picker dialog and returns the selected file.
+ */
+async function selectBackupFile(): Promise<File | null> {
+    return new Promise((resolve) => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = '.bin'
+        input.onchange = () => {
+            const file = input.files?.[0] ?? null
+            input.remove()
+            resolve(file)
+        }
+        input.click()
+    })
+}
+
+interface BackupItem {
+    name: string
+    data: Uint8Array<ArrayBuffer>
+}
+
+interface ParseProgress {
+    bytesRead: number
+    fileSize: number
+    itemCount: number
+}
+
+/**
+ * Parses a backup file stream and yields individual backup items.
+ */
+async function* parseBackupStream(
+    file: File,
+    onProgress?: (progress: ParseProgress) => void
+): AsyncGenerator<BackupItem> {
+    const reader = file.stream().getReader()
+    let bytesRead = 0
+    let remainingBuffer = new Uint8Array()
+    let itemCount = 0
+
+    while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        bytesRead += value.length
+        onProgress?.({ bytesRead, fileSize: file.size, itemCount })
+
+        // Append new data to remaining buffer
+        const newBuffer = new Uint8Array(remainingBuffer.length + value.length)
+        newBuffer.set(remainingBuffer)
+        newBuffer.set(value, remainingBuffer.length)
+        remainingBuffer = newBuffer
+
+        // Parse complete items from buffer
+        let offset = 0
+        while (offset + 4 <= remainingBuffer.length) {
+            const nameLength = new Uint32Array(remainingBuffer.slice(offset, offset + 4).buffer)[0]
+            if (offset + 4 + nameLength > remainingBuffer.length) break
+
+            const nameBuffer = remainingBuffer.slice(offset + 4, offset + 4 + nameLength)
+            const name = new TextDecoder().decode(nameBuffer)
+
+            if (offset + 4 + nameLength + 4 > remainingBuffer.length) break
+
+            const dataLength = new Uint32Array(
+                remainingBuffer.slice(offset + 4 + nameLength, offset + 4 + nameLength + 4).buffer
+            )[0]
+
+            if (offset + 4 + nameLength + 4 + dataLength > remainingBuffer.length) break
+
+            const data = remainingBuffer.slice(
+                offset + 4 + nameLength + 4,
+                offset + 4 + nameLength + 4 + dataLength
+            )
+
+            itemCount++
+            yield { name, data: new Uint8Array(data) as Uint8Array<ArrayBuffer> }
+
+            offset += 4 + nameLength + 4 + dataLength
+        }
+
+        remainingBuffer = remainingBuffer.slice(offset)
+    }
+}
+
+/**
+ * Restores the database from backup data and restarts the app.
+ */
+async function restoreDatabase(data: Uint8Array<ArrayBuffer>, hasChatsFiles: boolean): Promise<void> {
+    console.log('[LoadLocalBackup] Found database.risudat, processing...')
+
+    saving.paused = true
+
+    alertWait('Loading local Backup... (Decoding database...)')
+    const dbData = await decodeRisuSave(data)
+    console.log('[LoadLocalBackup] Database decoded')
+    setDatabaseLite(dbData)
+    requiresFullEncoderReload.state = true
+
+    // Clear existing separated files
+    alertWait('Loading local Backup... (Clearing old files...)')
+
     try {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.bin';
-        input.onchange = async () => {
-            if (!input.files || input.files.length === 0) {
-                input.remove();
-                return;
+        await deleteFromWorker('database/characters.bin')
+        console.log('[LoadLocalBackup] Cleared characters.bin')
+    } catch {
+        console.log('[LoadLocalBackup] No characters.bin to clear')
+    }
+
+    try {
+        await deleteFromWorker('database/botpresets.bin')
+        console.log('[LoadLocalBackup] Cleared botpresets.bin')
+    } catch {
+        console.log('[LoadLocalBackup] No botpresets.bin to clear')
+    }
+
+    // Only delete chats directory if backup doesn't have separate chat files
+    // If backup has chats/ files, they were already restored and should be kept
+    if (!hasChatsFiles) {
+        try {
+            await deleteDirectoryFromWorker('database/chats')
+            console.log('[LoadLocalBackup] Cleared chat files directory')
+        } catch {
+            console.log('[LoadLocalBackup] No chat files to clear')
+        }
+    }
+
+    alertWait('Loading local Backup... (Saving database...)')
+    await saveToWorker('database/database.bin', data)
+    console.log('[LoadLocalBackup] Saved to OPFS worker')
+
+    await restartApp()
+}
+
+/**
+ * Restarts the app after backup restoration.
+ */
+async function restartApp(): Promise<void> {
+    alertWait('Loading local Backup... (Restarting...)')
+
+    if (isTauri) {
+        const currentPlatform = await platform()
+        console.log('[LoadLocalBackup] Platform:', currentPlatform)
+        alertClear()
+        await sleep(50)
+
+        if (currentPlatform === 'android' || currentPlatform === 'ios') {
+            alertNormal('Backup loaded successfully!\nPlease close and reopen the app.')
+        } else {
+            await relaunch()
+        }
+    } else {
+        alertClear()
+        await sleep(50)
+        location.search = ''
+    }
+}
+
+export async function LoadLocalBackup() {
+    try {
+        const file = await selectBackupFile()
+        if (!file) return
+
+        let itemCount = 0
+        let hasChatsFiles = false
+        let databaseItem: BackupItem | null = null
+
+        const updateProgress = (progress: ParseProgress) => {
+            const percent = ((progress.bytesRead / progress.fileSize) * 100).toFixed(2)
+            alertWait(`Loading local Backup... (Reading: ${percent}% / Saved: ${itemCount} items)`)
+        }
+
+        for await (const item of parseBackupStream(file, updateProgress)) {
+            if (item.name === 'database.risudat') {
+                // Save for last - process after all other items
+                databaseItem = item
+                continue
             }
-            const file = input.files[0];
-            input.remove();
 
-            try {
-                const reader = file.stream().getReader();
-                const CHUNK_SIZE = 1024 * 1024; // 1MB chunk size
-                let bytesRead = 0;
-                let remainingBuffer = new Uint8Array();
-                let itemCount = 0;
+            if (item.name.startsWith('chats/')) {
+                hasChatsFiles = true
+                const chatFileName = item.name.slice(6) // Remove 'chats/' prefix
+                await saveToWorker(`database/chats/${chatFileName}`, item.data)
+                console.log(`[LoadLocalBackup] Restored chat file: ${chatFileName}`)
+            } else {
+                // Assets go to IndexedDB
+                // Backward compatibility: old backups have filename only, new backups have full path
+                const assetKey = item.name.startsWith('assets/') ? item.name : 'assets/' + item.name
+                await forageStorage.setItem(assetKey, item.data)
+            }
 
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) {
-                        break;
-                    }
+            itemCount++
 
-                    bytesRead += value.length;
-                    const progress = ((bytesRead / file.size) * 100).toFixed(2);
-                    alertWait(`Loading local Backup... (Reading: ${progress}% / Saved: ${itemCount} items)`);
-
-                    const newBuffer = new Uint8Array(remainingBuffer.length + value.length);
-                    newBuffer.set(remainingBuffer);
-                    newBuffer.set(value, remainingBuffer.length);
-                    remainingBuffer = newBuffer;
-
-                    let offset = 0;
-                    while (offset + 4 <= remainingBuffer.length) {
-                        const nameLength = new Uint32Array(remainingBuffer.slice(offset, offset + 4).buffer)[0];
-
-                        if (offset + 4 + nameLength > remainingBuffer.length) {
-                            break;
-                        }
-                        const nameBuffer = remainingBuffer.slice(offset + 4, offset + 4 + nameLength);
-                        const name = new TextDecoder().decode(nameBuffer);
-
-                        if (offset + 4 + nameLength + 4 > remainingBuffer.length) {
-                            break;
-                        }
-                        const dataLength = new Uint32Array(remainingBuffer.slice(offset + 4 + nameLength, offset + 4 + nameLength + 4).buffer)[0];
-
-                        if (offset + 4 + nameLength + 4 + dataLength > remainingBuffer.length) {
-                            break;
-                        }
-                        const data = remainingBuffer.slice(offset + 4 + nameLength + 4, offset + 4 + nameLength + 4 + dataLength);
-
-                        if (name === 'database.risudat') {
-                            console.log('[LoadLocalBackup] Found database.risudat, processing...');
-
-                            // Pause save loop to prevent overwriting restored backup
-                            saving.paused = true;
-
-                            alertWait('Loading local Backup... (Decoding database...)');
-                            const db = new Uint8Array(data);
-                            const dbData = await decodeRisuSave(db);
-                            console.log('[LoadLocalBackup] Database decoded');
-                            setDatabaseLite(dbData);
-                            requiresFullEncoderReload.state = true;
-
-                            // Clear existing separated files (backup has full DB with everything)
-                            // This prevents old data from overriding backup data on reload
-                            alertWait('Loading local Backup... (Clearing old files...)');
-                            try {
-                                await deleteFromWorker('database/characters.bin');
-                                console.log('[LoadLocalBackup] Cleared characters.bin');
-                            } catch(e) {
-                                console.log('[LoadLocalBackup] No characters.bin to clear');
-                            }
-                            try {
-                                await deleteFromWorker('database/botpresets.bin');
-                                console.log('[LoadLocalBackup] Cleared botpresets.bin');
-                            } catch(e) {
-                                console.log('[LoadLocalBackup] No botpresets.bin to clear');
-                            }
-                            try {
-                                // Delete entire chats directory (nested structure: chaId/chatId.bin)
-                                await deleteDirectoryFromWorker('database/chats');
-                                console.log('[LoadLocalBackup] Cleared chat files directory');
-                            } catch(e) {
-                                console.log('[LoadLocalBackup] No chat files to clear');
-                            }
-
-                            // Save to OPFS (both Tauri and web use OPFS for DB now)
-                            alertWait('Loading local Backup... (Saving database...)');
-                            await saveToWorker('database/database.bin', db);
-                            console.log('[LoadLocalBackup] Saved to OPFS worker');
-
-                            alertWait('Loading local Backup... (Restarting...)');
-                            if (isTauri) {
-                                const currentPlatform = await platform();
-                                console.log('[LoadLocalBackup] Platform:', currentPlatform);
-                                alertClear();
-                                await sleep(50);
-                                if (currentPlatform === 'android' || currentPlatform === 'ios') {
-                                    // Mobile: Ask user to manually restart (process plugin not supported)
-                                    alertNormal('Backup loaded successfully!\nPlease close and reopen the app.');
-                                    return;
-                                } else {
-                                    await relaunch();
-                                }
-                            } else {
-                                alertClear();
-                                await sleep(50);
-                                location.search = '';
-                            }
-                            return;
-                        } else if (name.startsWith('chats/')) {
-                            // 채팅 파일은 OPFS에 저장
-                            const chatFileName = name.slice(6) // 'chats/' 제거
-                            await saveToWorker(`database/chats/${chatFileName}`, new Uint8Array(data));
-                            console.log(`[LoadLocalBackup] Restored chat file: ${chatFileName}`);
-                        } else {
-                            // 에셋은 IndexedDB (forageStorage)에 저장 (Tauri와 웹 모두 동일)
-                            await forageStorage.setItem('assets/' + name, data);
-                        }
-                        itemCount++;
-                        // UI 업데이트를 위해 100개마다 yield
-                        if (itemCount % 100 === 0) {
-                            alertWait(`Loading local Backup... (Reading: ${progress}% / Saved: ${itemCount} items)`);
-                            await sleep(0);
-                            if (forageStorage.isAccount) {
-                                await sleep(1000);
-                            }
-                        }
-
-                        offset += 4 + nameLength + 4 + dataLength;
-                    }
-                    remainingBuffer = remainingBuffer.slice(offset);
+            if (itemCount % 100 === 0) {
+                await sleep(0) // Yield for UI updates
+                if (forageStorage.isAccount) {
+                    await sleep(1000)
                 }
-
-                alertNormal('Success');
-            } catch (error) {
-                console.error('[LoadLocalBackup] Error:', error);
-                alertError(`Failed to load backup: ${error?.message || error}`);
             }
-        };
+        }
 
-        input.click();
+        // Process database last
+        if (databaseItem) {
+            await restoreDatabase(databaseItem.data, hasChatsFiles)
+            return
+        }
+
+        alertNormal('Success')
     } catch (error) {
-        console.error(error);
-        alertError('Failed, Is file corrupted?')
+        console.error('[LoadLocalBackup] Error:', error)
+        alertError(`Failed to load backup: ${error?.message || error}`)
     }
 }
 

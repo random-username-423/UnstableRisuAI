@@ -374,12 +374,25 @@ async function migrateChatsToFiles(): Promise<void> {
     const db = getDatabase()
     if (!db?.characters) return
 
-    // Count total chats that need migration
+    // Get existing chat files to skip already migrated chats
+    let existingFiles = new Set<string>()
+    try {
+        const files = await listRecursiveFromWorker('database/chats')
+        existingFiles = new Set(files)
+        console.log(`[migrateChatsToFiles] Found ${existingFiles.size} existing chat files`)
+    } catch {
+        // No existing files
+    }
+
+    // Count total chats that need migration (excluding already migrated)
     let totalChats = 0
     for (const char of db.characters) {
-        if (!char.chats) continue
+        if (!char.chats || !char.chaId) continue
         for (const chat of char.chats) {
             if (chat.message !== undefined && chat.message.length > 0) {
+                // Skip if file already exists
+                const filePath = `${char.chaId}/${chat.id}.bin`
+                if (existingFiles.has(filePath)) continue
                 totalChats++
             }
         }
@@ -403,6 +416,14 @@ async function migrateChatsToFiles(): Promise<void> {
             if (!chat.id) {
                 chat.id = uuidv4() // Ensure chat has id
             }
+
+            // Skip if file already exists
+            const filePath = `${char.chaId}/${chat.id}.bin`
+            if (existingFiles.has(filePath)) {
+                console.log(`[migrateChatsToFiles] Skipping ${filePath} - already exists`)
+                continue
+            }
+
             try {
                 const encodedChat = await encodeChat(chat)
                 await saveToWorker(`database/chats/${char.chaId}/${chat.id}.bin`, encodedChat)
