@@ -1423,6 +1423,8 @@ export const languageKorean = {
     "openIndexedDBExplorer": "IndexedDB 탐색기 열기",
     "indexedDBAllDatabases": "모든 데이터베이스",
     "indexedDBOf": "/",
+    "indexedDBPrevPage": "이전",
+    "indexedDBNextPage": "다음",
     "opfsRoot": "루트",
     "opfsEmpty": "빈 폴더"
 }

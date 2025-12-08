@@ -354,9 +354,10 @@
                 <button
                     onclick={prevPage}
                     disabled={currentPage === 0}
-                    class="p-1 rounded hover:bg-selected disabled:opacity-30 disabled:cursor-not-allowed"
+                    class="px-2 py-1 rounded border border-selected bg-darkbutton hover:bg-selected disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
                 >
                     <ChevronLeftIcon size={16} />
+                    <span>{language.indexedDBPrevPage || 'Prev'}</span>
                 </button>
                 <span>
                     {currentPage * PAGE_SIZE + 1}-{Math.min((currentPage + 1) * PAGE_SIZE, totalKeys)}
@@ -366,8 +367,9 @@
                 <button
                     onclick={nextPage}
                     disabled={(currentPage + 1) * PAGE_SIZE >= totalKeys}
-                    class="p-1 rounded hover:bg-selected disabled:opacity-30 disabled:cursor-not-allowed"
+                    class="px-2 py-1 rounded border border-selected bg-darkbutton hover:bg-selected disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
                 >
+                    <span>{language.indexedDBNextPage || 'Next'}</span>
                     <ChevronRightIcon size={16} />
                 </button>
             {:else if level === 0}

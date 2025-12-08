@@ -1238,6 +1238,8 @@ export const languageEnglish = {
     openIndexedDBExplorer: "Open IndexedDB Explorer",
     indexedDBAllDatabases: "All Databases",
     indexedDBOf: "of",
+    indexedDBPrevPage: "Prev",
+    indexedDBNextPage: "Next",
     opfsRoot: "Root",
     opfsEmpty: "Empty folder",
     autoTranslateCachedOnly: "Auto-translate Cached Messages Only",
