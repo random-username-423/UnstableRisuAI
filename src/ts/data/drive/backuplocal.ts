@@ -190,6 +190,7 @@ export async function LoadLocalBackup(){
                 const CHUNK_SIZE = 1024 * 1024; // 1MB chunk size
                 let bytesRead = 0;
                 let remainingBuffer = new Uint8Array();
+                let itemCount = 0;
 
                 while (true) {
                     const { done, value } = await reader.read();
@@ -199,7 +200,7 @@ export async function LoadLocalBackup(){
 
                     bytesRead += value.length;
                     const progress = ((bytesRead / file.size) * 100).toFixed(2);
-                    alertWait(`Loading local Backup... (${progress}%)`);
+                    alertWait(`Loading local Backup... (Reading: ${progress}% / Saved: ${itemCount} items)`);
 
                     const newBuffer = new Uint8Array(remainingBuffer.length + value.length);
                     newBuffer.set(remainingBuffer);
@@ -232,6 +233,7 @@ export async function LoadLocalBackup(){
                             // Pause save loop to prevent overwriting restored backup
                             saving.paused = true;
 
+                            alertWait('Loading local Backup... (Decoding database...)');
                             const db = new Uint8Array(data);
                             const dbData = await decodeRisuSave(db);
                             console.log('[LoadLocalBackup] Database decoded');
@@ -240,6 +242,7 @@ export async function LoadLocalBackup(){
 
                             // Clear existing separated files (backup has full DB with everything)
                             // This prevents old data from overriding backup data on reload
+                            alertWait('Loading local Backup... (Clearing old files...)');
                             try {
                                 await deleteFromWorker('database/characters.bin');
                                 console.log('[LoadLocalBackup] Cleared characters.bin');
@@ -261,9 +264,11 @@ export async function LoadLocalBackup(){
                             }
 
                             // Save to OPFS (both Tauri and web use OPFS for DB now)
+                            alertWait('Loading local Backup... (Saving database...)');
                             await saveToWorker('database/database.bin', db);
                             console.log('[LoadLocalBackup] Saved to OPFS worker');
 
+                            alertWait('Loading local Backup... (Restarting...)');
                             if (isTauri) {
                                 const currentPlatform = await platform();
                                 console.log('[LoadLocalBackup] Platform:', currentPlatform);
@@ -291,9 +296,14 @@ export async function LoadLocalBackup(){
                             // 에셋은 IndexedDB (forageStorage)에 저장 (Tauri와 웹 모두 동일)
                             await forageStorage.setItem('assets/' + name, data);
                         }
-                        await sleep(10);
-                        if (forageStorage.isAccount) {
-                            await sleep(1000);
+                        itemCount++;
+                        // UI 업데이트를 위해 100개마다 yield
+                        if (itemCount % 100 === 0) {
+                            alertWait(`Loading local Backup... (Reading: ${progress}% / Saved: ${itemCount} items)`);
+                            await sleep(0);
+                            if (forageStorage.isAccount) {
+                                await sleep(1000);
+                            }
                         }
 
                         offset += 4 + nameLength + 4 + dataLength;
