@@ -19,6 +19,7 @@ import {
 import { alertError, alertStore } from "../../utils/alert";
 import { language } from "../../../lang";
 import { isTauri } from "../../utils/env";
+import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "../../config/secrets";
 
 // ============================================================================
 // Types
@@ -125,6 +126,77 @@ class SyncManager {
      */
     getRefreshToken(): string | null {
         return getDatabase().syncRefreshToken || null;
+    }
+
+    /**
+     * Refresh access token using refresh token
+     * Returns new access token if successful, null otherwise
+     */
+    async refreshAccessToken(): Promise<string | null> {
+        const refreshToken = this.getRefreshToken();
+        if (!refreshToken) {
+            console.log('[SyncManager] No refresh token available');
+            return null;
+        }
+
+        try {
+            console.log('[SyncManager] Refreshing access token...');
+            const response = await fetch('https://oauth2.googleapis.com/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    grant_type: 'refresh_token',
+                    refresh_token: refreshToken,
+                    client_id: GOOGLE_CLIENT_ID,
+                    client_secret: GOOGLE_CLIENT_SECRET,
+                }),
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[SyncManager] Token refresh failed:', response.status, errorText);
+                // If refresh token is invalid, clear tokens
+                if (response.status === 400 || response.status === 401) {
+                    this.clearTokens();
+                }
+                return null;
+            }
+
+            const data = await response.json();
+            console.log('[SyncManager] Token refreshed successfully');
+
+            // Update tokens (refresh token may or may not be returned)
+            this.setTokens(
+                data.access_token,
+                data.refresh_token, // May be undefined
+                data.expires_in
+            );
+
+            return data.access_token;
+        } catch (error) {
+            console.error('[SyncManager] Token refresh error:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Get valid access token, refreshing if necessary
+     */
+    async getValidAccessToken(): Promise<string | null> {
+        const accessToken = this.getAccessToken();
+        if (!accessToken) {
+            return null;
+        }
+
+        // Check if token is expired or about to expire
+        if (this.isTokenExpired()) {
+            console.log('[SyncManager] Token expired, attempting refresh');
+            return await this.refreshAccessToken();
+        }
+
+        return accessToken;
     }
 
     // Legacy methods for compatibility
@@ -311,9 +383,10 @@ class SyncManager {
      * Execute the sync immediately
      */
     private async executeSync(): Promise<void> {
-        const accessToken = this.getAccessToken();
+        // Get valid token, refreshing if expired
+        const accessToken = await this.getValidAccessToken();
         if (!accessToken) {
-            console.log('[SyncManager] No access token, skipping sync');
+            console.log('[SyncManager] No valid access token, skipping sync');
             return;
         }
 
@@ -387,9 +460,9 @@ class SyncManager {
      * Perform initial sync on app startup
      */
     async doInitialSync(): Promise<void> {
-        const accessToken = this.getAccessToken();
+        const accessToken = await this.getValidAccessToken();
         if (!accessToken) {
-            console.log('[SyncManager] No access token for initial sync');
+            console.log('[SyncManager] No valid access token for initial sync');
             return;
         }
 
@@ -419,7 +492,7 @@ class SyncManager {
      * Force a full sync in the specified direction
      */
     async forceSync(direction: 'download' | 'upload'): Promise<void> {
-        const accessToken = this.getAccessToken();
+        const accessToken = await this.getValidAccessToken();
         if (!accessToken) {
             alertError(language.syncNoToken || 'No access token. Please connect to Google Drive first.');
             return;
