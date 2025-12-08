@@ -26,7 +26,21 @@
         totalChatCount: number
     }
 
-    let storageInfo = $state<StorageInfo | null>(null)
+    let storageInfo = $state<StorageInfo>({
+        totalUsage: 0,
+        quota: 15 * 1024 * 1024 * 1024, // 15GB
+        dbSize: 0,
+        charactersSize: 0,
+        botPresetsSize: 0,
+        backupsSize: 0,
+        backupCount: 0,
+        chatsSize: 0,
+        chatFileCount: 0,
+        assetsSize: 0,
+        assetCount: 0,
+        characterCount: DBState.db?.characters?.length ?? 0,
+        totalChatCount: DBState.db?.characters?.reduce((sum, char) => sum + (char.chats?.length ?? 0), 0) ?? 0,
+    })
     let loading = $state(true)
     let error = $state<string | null>(null)
 
@@ -167,16 +181,11 @@
 
 <h2 class="mb-2 text-2xl font-bold mt-2">{language.storage}</h2>
 
-{#if loading}
-    <div class="flex items-center gap-2 text-textcolor2 mt-4">
-        <RefreshCwIcon class="animate-spin" size={20} />
-        <span>{language.loading}...</span>
-    </div>
-{:else if error}
+{#if error}
     <div class="text-red-500 mt-4">
         {language.error}: {error}
     </div>
-{:else if storageInfo}
+{:else}
     <!-- Total Usage -->
     <div class="mt-4 p-4 bg-darkbg rounded-lg">
         <div class="flex items-center gap-2 mb-2">
@@ -186,17 +195,25 @@
         <div class="mt-2">
             <div class="flex justify-between text-sm mb-1">
                 <span>{language.storageUsed}</span>
-                <span>{formatBytes(storageInfo.totalUsage)} / {formatBytes(storageInfo.quota)}</span>
+                {#if loading}
+                    <span class="text-textcolor2">{language.storageCalculating}</span>
+                {:else}
+                    <span>{formatBytes(storageInfo.totalUsage)} / {formatBytes(storageInfo.quota)}</span>
+                {/if}
             </div>
             <div class="w-full bg-selected rounded-full h-2">
                 <div
                     class="bg-green-500 h-2 rounded-full transition-all"
-                    style="width: {formatPercent(storageInfo.totalUsage, storageInfo.quota)}"
+                    style="width: {loading ? '0%' : formatPercent(storageInfo.totalUsage, storageInfo.quota)}"
                 ></div>
             </div>
             <div class="text-xs text-textcolor2 mt-1">
-                {formatPercent(storageInfo.totalUsage, storageInfo.quota)}
-                {language.storageUsedPercent}
+                {#if loading}
+                    {language.storageCalculating}
+                {:else}
+                    {formatPercent(storageInfo.totalUsage, storageInfo.quota)}
+                    {language.storageUsedPercent}
+                {/if}
             </div>
         </div>
     </div>
@@ -225,7 +242,9 @@
                     <div class="text-sm font-medium">{language.storageChats}</div>
                     <div class="text-sm">
                         {storageInfo.totalChatCount}
-                        {language.storageItems}{#if storageInfo.chatsSize > 0}
+                        {language.storageItems}{#if loading}
+                            (<span class="text-textcolor2">{language.storageCalculating}</span>)
+                        {:else if storageInfo.chatsSize > 0}
                             ({formatBytes(storageInfo.chatsSize)}){/if}
                     </div>
                 </div>
@@ -236,7 +255,13 @@
                 <ImageIcon size={16} />
                 <div>
                     <div class="text-sm font-medium">{language.storageAssets}</div>
-                    <div class="text-sm">{storageInfo.assetCount} {language.storageItems} (~{formatBytes(storageInfo.assetsSize)})</div>
+                    <div class="text-sm">
+                        {#if loading}
+                            <span class="text-textcolor2">{language.storageCalculating}</span>
+                        {:else}
+                            {storageInfo.assetCount} {language.storageItems} (~{formatBytes(storageInfo.assetsSize)})
+                        {/if}
+                    </div>
                 </div>
             </div>
 
@@ -245,7 +270,13 @@
                 <DatabaseIcon size={16} />
                 <div>
                     <div class="text-sm font-medium">{language.storageBackups}</div>
-                    <div class="text-sm">{storageInfo.backupCount} {language.storageItems} ({formatBytes(storageInfo.backupsSize)})</div>
+                    <div class="text-sm">
+                        {#if loading}
+                            <span class="text-textcolor2">{language.storageCalculating}</span>
+                        {:else}
+                            {storageInfo.backupCount} {language.storageItems} ({formatBytes(storageInfo.backupsSize)})
+                        {/if}
+                    </div>
                 </div>
             </div>
         </div>
@@ -261,22 +292,37 @@
         <div class="space-y-2 text-sm">
             <div class="flex justify-between">
                 <span class="text-textcolor2">database.bin</span>
-                <span>{formatBytes(storageInfo.dbSize)}</span>
+                {#if loading}
+                    <span class="text-textcolor2">{language.storageCalculating}</span>
+                {:else}
+                    <span>{formatBytes(storageInfo.dbSize)}</span>
+                {/if}
             </div>
             <div class="flex justify-between">
                 <span class="text-textcolor2">characters.bin</span>
-                <span>{formatBytes(storageInfo.charactersSize)}</span>
+                {#if loading}
+                    <span class="text-textcolor2">{language.storageCalculating}</span>
+                {:else}
+                    <span>{formatBytes(storageInfo.charactersSize)}</span>
+                {/if}
             </div>
             <div class="flex justify-between">
                 <span class="text-textcolor2">botpresets.bin</span>
-                <span>{formatBytes(storageInfo.botPresetsSize)}</span>
+                {#if loading}
+                    <span class="text-textcolor2">{language.storageCalculating}</span>
+                {:else}
+                    <span>{formatBytes(storageInfo.botPresetsSize)}</span>
+                {/if}
             </div>
-            {#if storageInfo.chatFileCount > 0}
+            {#if loading}
+                <div class="flex justify-between">
+                    <span class="text-textcolor2">chats/</span>
+                    <span class="text-textcolor2">{language.storageCalculating}</span>
+                </div>
+            {:else if storageInfo.chatFileCount > 0}
                 <div class="flex justify-between">
                     <span class="text-textcolor2">chats/ ({storageInfo.chatFileCount} {language.storageFilesCount})</span>
-                    <span
-                        >{#if storageInfo.chatsSize > 0}{formatBytes(storageInfo.chatsSize)}{:else}{language.storageIndividual}{/if}</span
-                    >
+                    <span>{#if storageInfo.chatsSize > 0}{formatBytes(storageInfo.chatsSize)}{:else}{language.storageIndividual}{/if}</span>
                 </div>
             {/if}
         </div>
@@ -308,7 +354,7 @@
     <!-- Refresh Button -->
     <div class="mt-4">
         <Button onclick={loadStorageInfo}>
-            <RefreshCwIcon size={16} />
+            <RefreshCwIcon size={16} class={loading ? "animate-spin" : ""} />
             {language.storageRefresh}
         </Button>
     </div>

@@ -1233,6 +1233,7 @@ export const languageEnglish = {
     storageDbLocation: "Database Location",
     storageAssetLocation: "Asset Location",
     storageRefresh: "Refresh",
+    storageCalculating: "Calculating...",
     autoTranslateCachedOnly: "Auto-translate Cached Messages Only",
     notification: "Notification",
     permissionDenied: "Permission Denied by Your Browser or OS",
