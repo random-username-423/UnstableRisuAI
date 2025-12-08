@@ -122,10 +122,11 @@ export async function startAutoSaveLoop() {
                 const currentChatPage = currentChar.chatPage
                 const currentChat = chats?.[currentChatPage]
                 if (currentChat) {
-                    // Exclude 'message' from tracking - message changes are handled by saveChat()
-                    // This prevents infinite loop when loading chat (chat.message = [])
+                    // Exclude 'message' and 'modifiedAt' from tracking
+                    // - message changes are handled by saveChat()
+                    // - modifiedAt is updated by saveChat() and would cause infinite loop
                     for (const key in currentChat) {
-                        if (key !== 'message') {
+                        if (key !== 'message' && key !== 'modifiedAt') {
                             $state.snapshot(currentChat[key])
                         }
                     }
