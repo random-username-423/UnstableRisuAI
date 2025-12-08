@@ -12,6 +12,7 @@ import { tabSyncManager } from "./tabSyncManager"
 import { autoSaveErrorHandler } from "./autoSaveErrorHandler"
 
 let lastBackupTime = 0
+let isRunning = false
 
 export let saving = $state({
     state: false,
@@ -28,7 +29,12 @@ export let requiresFullEncoderReload = $state({
  *
  * @returns {Promise<void>} - A promise that resolves when the database has been saved.
  */
-export async function saveDb() {
+export async function startAutoSaveLoop() {
+    if (isRunning) {
+        return
+    }
+    isRunning = true
+
     // ============================================================
     // Stage 1: 초기화
     // ============================================================
@@ -167,6 +173,9 @@ export async function saveDb() {
 
             // Stage 3-3: changeTracker 복사 후 리셋
             let toSave = safeStructuredClone(changeTracker)
+            
+            // 다음 감지를 위해 현재 선택된 항목만 남기고 초기화
+            // (사용자가 현재 보고 있는 항목은 계속 변경될 가능성이 높으므로 컨텍스트 유지)
             changeTracker.character = changeTracker.character.length === 0 ? [] : [changeTracker.character[0]]
             changeTracker.chat = changeTracker.chat.length === 0 ? [] : [changeTracker.chat[0]]
             changeTracker.botPreset = false

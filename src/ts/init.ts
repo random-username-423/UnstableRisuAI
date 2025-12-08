@@ -7,7 +7,7 @@ import { get } from "svelte/store";
 import { BaseDirectory, readFile, exists } from "@tauri-apps/plugin-fs";
 import { v4 as uuidv4 } from 'uuid';
 
-import { saveDb } from "src/ts/data/storage/autoSaveManager.svelte";
+import { startAutoSaveLoop } from "src/ts/data/storage/autoSaveManager.svelte";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
 
 import {
@@ -507,7 +507,7 @@ async function finalizeLoading(): Promise<void> {
     startObserveDom()
     ensureValidIds()
     makeColdData()
-    saveDb()
+    startAutoSaveLoop()
     moduleUpdate()
     if (import.meta.env.VITE_RISU_TOS === 'TRUE') {
         alertTOS().then((a) => {
