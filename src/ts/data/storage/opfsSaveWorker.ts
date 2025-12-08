@@ -160,27 +160,48 @@ async function listFilesRecursive(dir: FileSystemDirectoryHandle, prefix: string
     return files
 }
 
-// 재귀적으로 모든 파일 경로와 크기를 수집
+// 재귀적으로 모든 파일 경로와 크기를 수집 (병렬 처리)
 async function listFilesWithSizesRecursive(dir: FileSystemDirectoryHandle, prefix: string = ''): Promise<{ path: string; size: number }[]> {
-    const files: { path: string; size: number }[] = []
-    for await (const [name, handle] of (dir as any).entries()) {
-        const path = prefix ? `${prefix}/${name}` : name
+    // 먼저 모든 항목 수집
+    const entries: [string, FileSystemHandle][] = []
+    for await (const entry of (dir as any).entries()) {
+        entries.push(entry)
+    }
+
+    // 파일과 디렉토리 분리
+    const fileEntries: [string, FileSystemFileHandle][] = []
+    const dirEntries: [string, FileSystemDirectoryHandle][] = []
+
+    for (const [name, handle] of entries) {
         if (handle.kind === 'file') {
-            try {
-                const fileHandle = handle as FileSystemFileHandleWithSync
-                const accessHandle = await fileHandle.createSyncAccessHandle()
-                const size = accessHandle.getSize()
-                accessHandle.close()
-                files.push({ path, size })
-            } catch {
-                files.push({ path, size: 0 })
-            }
+            fileEntries.push([name, handle as FileSystemFileHandle])
         } else if (handle.kind === 'directory') {
-            const subFiles = await listFilesWithSizesRecursive(handle, path)
-            files.push(...subFiles)
+            dirEntries.push([name, handle as FileSystemDirectoryHandle])
         }
     }
-    return files
+
+    // 파일 크기 병렬로 가져오기
+    const fileResults = await Promise.all(
+        fileEntries.map(async ([name, handle]) => {
+            const path = prefix ? `${prefix}/${name}` : name
+            try {
+                const file = await handle.getFile()
+                return { path, size: file.size }
+            } catch {
+                return { path, size: 0 }
+            }
+        })
+    )
+
+    // 하위 디렉토리 병렬로 처리
+    const dirResults = await Promise.all(
+        dirEntries.map(([name, handle]) => {
+            const path = prefix ? `${prefix}/${name}` : name
+            return listFilesWithSizesRecursive(handle, path)
+        })
+    )
+
+    return [...fileResults, ...dirResults.flat()]
 }
 
 // 디렉토리를 재귀적으로 삭제
@@ -298,21 +319,25 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage 
                 return
             }
 
-            const files: { name: string; size: number }[] = []
+            // 먼저 모든 파일 항목 수집
+            const fileEntries: [string, FileSystemFileHandle][] = []
             for await (const [name, handle] of (dir as any).entries()) {
                 if (handle.kind === 'file') {
-                    try {
-                        const fileHandle = handle as FileSystemFileHandleWithSync
-                        const accessHandle = await fileHandle.createSyncAccessHandle()
-                        const size = accessHandle.getSize()
-                        accessHandle.close()
-                        files.push({ name, size })
-                    } catch {
-                        // 파일 크기를 읽을 수 없으면 0으로 처리
-                        files.push({ name, size: 0 })
-                    }
+                    fileEntries.push([name, handle as FileSystemFileHandle])
                 }
             }
+
+            // 병렬로 크기 가져오기
+            const files = await Promise.all(
+                fileEntries.map(async ([name, handle]) => {
+                    try {
+                        const file = await handle.getFile()
+                        return { name, size: file.size }
+                    } catch {
+                        return { name, size: 0 }
+                    }
+                })
+            )
 
             const response: ListWithSizesResponse = { type: 'listWithSizes_success', dirPath, files }
             self.postMessage(response)
