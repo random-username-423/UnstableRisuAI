@@ -1,5 +1,6 @@
 import { get, writable } from "svelte/store";
-import { type character, type MessageGenerationInfo, type Chat, type MessagePresetInfo, changeToPreset, setCurrentChat } from "../data/storage/database.svelte";
+import { type character, type MessageGenerationInfo, type Chat, type MessagePresetInfo, setCurrentChat } from "../data/storage/database.svelte";
+import { changeToPreset } from "../data/storage/utils/presetManager";
 import { DBState } from '../stores.svelte';
 import { CharEmotion, selectedCharID } from "../stores.svelte";
 import { ChatTokenizer, tokenize, tokenizeNum } from "../utils/tokenizer";
