@@ -353,7 +353,7 @@
 
     <!-- Refresh Button -->
     <div class="mt-4">
-        <Button onclick={loadStorageInfo}>
+        <Button onclick={loadStorageInfo} disabled={loading}>
             <RefreshCwIcon size={16} class={loading ? "animate-spin" : ""} />
             {language.storageRefresh}
         </Button>
