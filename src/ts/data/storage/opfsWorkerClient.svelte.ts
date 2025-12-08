@@ -22,6 +22,7 @@ let pendingDeletes = new Map<string, { resolve: () => void, reject: (e: Error) =
 let pendingListsRecursive = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
 let pendingListsWithSizesRecursive = new Map<string, { resolve: (files: { path: string; size: number }[]) => void, reject: (e: Error) => void }>()
 let pendingDeleteDirectories = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
+let pendingListEntries = new Map<string, { resolve: (entries: { name: string; size: number; isDirectory: boolean }[]) => void, reject: (e: Error) => void }>()
 
 export class OPFSNotSupportedError extends Error {
     constructor() {
@@ -176,6 +177,19 @@ export async function initOPFSWorker(): Promise<void> {
                 pendingDeleteDirectories.delete(dirPath)
             }
         }
+        // Handle listEntries responses
+        else if (type === 'listEntries_success' || type === 'listEntries_error') {
+            const { dirPath, entries } = e.data
+            const pending = pendingListEntries.get(dirPath)
+            if (pending) {
+                if (type === 'listEntries_success') {
+                    pending.resolve(entries || [])
+                } else {
+                    pending.resolve([])
+                }
+                pendingListEntries.delete(dirPath)
+            }
+        }
     }
     opfsWorker.onerror = (e) => {
         console.error('OPFS worker error:', e)
@@ -328,5 +342,22 @@ export async function deleteDirectoryFromWorker(dirPath: string): Promise<void> 
     return new Promise((resolve, reject) => {
         pendingDeleteDirectories.set(dirPath, { resolve, reject })
         opfsWorker.postMessage({ type: 'deleteDirectory', dirPath })
+    })
+}
+
+/**
+ * 디렉토리 내 모든 항목(파일+디렉토리) 목록과 크기 조회
+ * OPFS 탐색기용
+ */
+export async function listEntriesFromWorker(dirPath: string): Promise<{ name: string; size: number; isDirectory: boolean }[]> {
+    if (!opfsWorker) {
+        await initOPFSWorker()
+    }
+    if (!opfsWorker) {
+        return []
+    }
+    return new Promise((resolve, reject) => {
+        pendingListEntries.set(dirPath, { resolve, reject })
+        opfsWorker.postMessage({ type: 'listEntries', dirPath })
     })
 }

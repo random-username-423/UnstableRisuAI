@@ -6,9 +6,12 @@
     import { listWithSizesFromWorker, listWithSizesRecursiveFromWorker, loadFromWorker } from "src/ts/data/storage/opfsWorkerClient.svelte"
     import { isTauri } from "src/ts/utils/env"
     import { getDbBackups } from "src/ts/init"
-    import { RefreshCwIcon, Trash2Icon, DatabaseIcon, ImageIcon, MessageSquareIcon, FileIcon, HardDriveIcon, UsersIcon } from "lucide-svelte"
+    import { RefreshCwIcon, Trash2Icon, DatabaseIcon, ImageIcon, MessageSquareIcon, FileIcon, HardDriveIcon, UsersIcon, FolderOpenIcon } from "lucide-svelte"
     import Button from "src/lib/UI/GUI/Button.svelte"
     import { alertConfirm, alertNormal } from "src/ts/utils/alert"
+    import OPFSExplorer from "./OPFSExplorer.svelte"
+
+    let showExplorer = $state(false)
 
     interface StorageInfo {
         totalUsage: number
@@ -351,11 +354,19 @@
         </div>
     </div>
 
-    <!-- Refresh Button -->
-    <div class="mt-4">
+    <!-- Buttons -->
+    <div class="mt-4 flex gap-2">
         <Button onclick={loadStorageInfo} disabled={loading}>
             <RefreshCwIcon size={16} class={loading ? "animate-spin" : ""} />
             {language.storageRefresh}
         </Button>
+        <Button onclick={() => showExplorer = true}>
+            <FolderOpenIcon size={16} />
+            {language.openOPFSExplorer || "Open File Explorer"}
+        </Button>
     </div>
+{/if}
+
+{#if showExplorer}
+    <OPFSExplorer close={() => showExplorer = false} />
 {/if}

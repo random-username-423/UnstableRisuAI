@@ -1417,5 +1417,9 @@ export const languageKorean = {
     "storagePlatform": "플랫폼",
     "storageDbLocation": "데이터베이스 위치",
     "storageAssetLocation": "에셋 위치",
-    "storageRefresh": "새로고침"
+    "storageRefresh": "새로고침",
+    "storageCalculating": "계산 중...",
+    "openOPFSExplorer": "파일 탐색기 열기",
+    "opfsRoot": "루트",
+    "opfsEmpty": "빈 폴더"
 }

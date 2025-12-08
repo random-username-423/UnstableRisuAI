@@ -56,6 +56,11 @@ interface DeleteDirectoryMessage {
     dirPath: string
 }
 
+interface ListEntriesMessage {
+    type: 'listEntries'
+    dirPath: string
+}
+
 interface SaveResponse {
     type: 'success' | 'error'
     key: string
@@ -106,6 +111,13 @@ interface ListWithSizesRecursiveResponse {
 interface DeleteDirectoryResponse {
     type: 'deleteDirectory_success' | 'deleteDirectory_error'
     dirPath: string
+    error?: string
+}
+
+interface ListEntriesResponse {
+    type: 'listEntries_success' | 'listEntries_error'
+    dirPath: string
+    entries?: { name: string; size: number; isDirectory: boolean }[]
     error?: string
 }
 
@@ -209,7 +221,7 @@ async function deleteDirectoryRecursive(parentDir: FileSystemDirectoryHandle, di
     await parentDir.removeEntry(dirName, { recursive: true })
 }
 
-self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage | ListWithSizesMessage | DeleteMessage | ListRecursiveMessage | ListWithSizesRecursiveMessage | DeleteDirectoryMessage>) => {
+self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage | ListWithSizesMessage | DeleteMessage | ListRecursiveMessage | ListWithSizesRecursiveMessage | DeleteDirectoryMessage | ListEntriesMessage>) => {
     const { type } = e.data
 
     if (type === 'save') {
@@ -470,6 +482,69 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage 
             }
             const response: DeleteDirectoryResponse = {
                 type: 'deleteDirectory_error',
+                dirPath,
+                error: error instanceof Error ? error.message : String(error)
+            }
+            self.postMessage(response)
+        }
+    } else if (type === 'listEntries') {
+        const { dirPath } = e.data as ListEntriesMessage
+        try {
+            const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
+            if (!dir) {
+                const response: ListEntriesResponse = {
+                    type: 'listEntries_success',
+                    dirPath,
+                    entries: []
+                }
+                self.postMessage(response)
+                return
+            }
+
+            // 모든 항목 수집
+            const allEntries: [string, FileSystemHandle][] = []
+            for await (const entry of (dir as any).entries()) {
+                allEntries.push(entry)
+            }
+
+            // 파일과 디렉토리 분리
+            const fileHandles: [string, FileSystemFileHandle][] = []
+            const dirNames: string[] = []
+
+            for (const [name, handle] of allEntries) {
+                if (handle.kind === 'file') {
+                    fileHandles.push([name, handle as FileSystemFileHandle])
+                } else if (handle.kind === 'directory') {
+                    dirNames.push(name)
+                }
+            }
+
+            // 파일 크기 병렬로 가져오기
+            const fileEntries = await Promise.all(
+                fileHandles.map(async ([name, handle]) => {
+                    try {
+                        const file = await handle.getFile()
+                        return { name, size: file.size, isDirectory: false }
+                    } catch {
+                        return { name, size: 0, isDirectory: false }
+                    }
+                })
+            )
+
+            // 디렉토리 항목 (크기 0)
+            const dirEntries = dirNames.map(name => ({ name, size: 0, isDirectory: true }))
+
+            // 디렉토리 먼저, 그 다음 파일 (이름순 정렬)
+            const entries = [
+                ...dirEntries.sort((a, b) => a.name.localeCompare(b.name)),
+                ...fileEntries.sort((a, b) => a.name.localeCompare(b.name))
+            ]
+
+            const response: ListEntriesResponse = { type: 'listEntries_success', dirPath, entries }
+            self.postMessage(response)
+        } catch (error) {
+            const response: ListEntriesResponse = {
+                type: 'listEntries_error',
                 dirPath,
                 error: error instanceof Error ? error.message : String(error)
             }
