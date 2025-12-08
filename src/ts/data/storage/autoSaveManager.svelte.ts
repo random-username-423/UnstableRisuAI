@@ -116,7 +116,13 @@ export async function saveDb() {
                 const currentChatPage = currentChar.chatPage
                 const currentChat = chats?.[currentChatPage]
                 if (currentChat) {
-                    $state.snapshot(currentChat)
+                    // Exclude 'message' from tracking - message changes are handled by saveChat()
+                    // This prevents infinite loop when loading chat (chat.message = [])
+                    for (const key in currentChat) {
+                        if (key !== 'message') {
+                            $state.snapshot(currentChat[key])
+                        }
+                    }
                 }
                 // 변경된 캐릭터 ID 추적
                 if (changeTracker.character[0] !== currentChar?.chaId) {

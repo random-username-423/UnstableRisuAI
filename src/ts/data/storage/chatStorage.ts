@@ -2,6 +2,7 @@ import { getDatabase, type Chat } from "./database.svelte"
 import { encodeChat, decodeChat } from "./risuSave"
 import { saveToWorker, loadFromWorker } from "./opfsWorkerClient.svelte"
 import { syncManager } from "../drive/syncManager"
+import { untrack } from "svelte"
 
 // Cache for in-progress loadChat calls to prevent duplicate concurrent loads
 const loadingPromises = new Map<string, Promise<Chat | null>>()
@@ -68,7 +69,9 @@ async function loadChatInternal(chaId: string, chatId: string, chat: Chat): Prom
             console.warn(`[loadChat] Chat file not found: ${chaId}/${chatId}.bin`)
             // Initialize empty message array
             console.log(`[DEBUG chat.message=[]] chatStorage.ts:loadChat - file not found, chaId=${chaId}, chatId=${chatId}`)
-            chat.message = []
+            untrack(() => {
+                chat.message = []
+            })
             return chat
         }
 
@@ -76,29 +79,36 @@ async function loadChatInternal(chaId: string, chatId: string, chat: Chat): Prom
         if (!fullChat) {
             console.warn(`[loadChat] Failed to decode chat: ${chatId}`)
             console.log(`[DEBUG chat.message=[]] chatStorage.ts:loadChat - decode failed, chaId=${chaId}, chatId=${chatId}`)
-            chat.message = []
+            untrack(() => {
+                chat.message = []
+            })
             return chat
         }
 
         // Update chat with loaded data (preserve metadata, load message)
-        chat.message = fullChat.message || []
-        // Also update other fields that might be stored in the file
-        if (fullChat.note !== undefined) chat.note = fullChat.note
-        if (fullChat.localLore !== undefined) chat.localLore = fullChat.localLore
-        if (fullChat.sdData !== undefined) chat.sdData = fullChat.sdData
-        if (fullChat.supaMemoryData !== undefined) chat.supaMemoryData = fullChat.supaMemoryData
-        if (fullChat.hypaV2Data !== undefined) chat.hypaV2Data = fullChat.hypaV2Data
-        if (fullChat.hypaV3Data !== undefined) chat.hypaV3Data = fullChat.hypaV3Data
-        if (fullChat.lastMemory !== undefined) chat.lastMemory = fullChat.lastMemory
-        if (fullChat.suggestMessages !== undefined) chat.suggestMessages = fullChat.suggestMessages
-        if (fullChat.scriptstate !== undefined) chat.scriptstate = fullChat.scriptstate
+        // Use untrack to prevent triggering $effect (loading is not a "change")
+        untrack(() => {
+            chat.message = fullChat.message || []
+            // Also update other fields that might be stored in the file
+            if (fullChat.note !== undefined) chat.note = fullChat.note
+            if (fullChat.localLore !== undefined) chat.localLore = fullChat.localLore
+            if (fullChat.sdData !== undefined) chat.sdData = fullChat.sdData
+            if (fullChat.supaMemoryData !== undefined) chat.supaMemoryData = fullChat.supaMemoryData
+            if (fullChat.hypaV2Data !== undefined) chat.hypaV2Data = fullChat.hypaV2Data
+            if (fullChat.hypaV3Data !== undefined) chat.hypaV3Data = fullChat.hypaV3Data
+            if (fullChat.lastMemory !== undefined) chat.lastMemory = fullChat.lastMemory
+            if (fullChat.suggestMessages !== undefined) chat.suggestMessages = fullChat.suggestMessages
+            if (fullChat.scriptstate !== undefined) chat.scriptstate = fullChat.scriptstate
+        })
 
         console.log(`[loadChat] Loaded chat ${chatId} for character ${chaId}`)
         return chat
     } catch (e) {
         console.error(`[loadChat] Error loading chat ${chatId}:`, e)
         console.log(`[DEBUG chat.message=[]] chatStorage.ts:loadChat - catch error, chaId=${chaId}, chatId=${chatId}`)
-        chat.message = []
+        untrack(() => {
+            chat.message = []
+        })
         return chat
     }
 }
@@ -116,10 +126,15 @@ export async function saveChat(chaId: string, chat: Chat): Promise<void> {
     if (chat.message === undefined) return
 
     try {
-        // Set modifiedAt on a shallow copy to avoid triggering reactive updates
-        const chatToSave = { ...chat, modifiedAt: Date.now() }
+        const now = Date.now()
+        const chatToSave = { ...chat, modifiedAt: now }
         const encodedChat = await encodeChat(chatToSave)
         await saveToWorker(`database/chats/${chaId}/${chat.id}.bin`, encodedChat)
+
+        // Update memory without triggering $effect
+        untrack(() => {
+            chat.modifiedAt = now
+        })
 
         // Mark for sync (debounced)
         syncManager.markChatChanged(chaId, chat.id)
