@@ -1234,7 +1234,7 @@ export const languageEnglish = {
     storageAssetLocation: "Asset Location",
     storageRefresh: "Refresh",
     storageCalculating: "Calculating...",
-    openOPFSExplorer: "Open File Explorer",
+    openOPFSExplorer: "Open OPFS Explorer",
     opfsRoot: "Root",
     opfsEmpty: "Empty folder",
     autoTranslateCachedOnly: "Auto-translate Cached Messages Only",

@@ -1419,7 +1419,7 @@ export const languageKorean = {
     "storageAssetLocation": "에셋 위치",
     "storageRefresh": "새로고침",
     "storageCalculating": "계산 중...",
-    "openOPFSExplorer": "파일 탐색기 열기",
+    "openOPFSExplorer": "OPFS 탐색기 열기",
     "opfsRoot": "루트",
     "opfsEmpty": "빈 폴더"
 }
