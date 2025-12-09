@@ -216,6 +216,7 @@ export const baseDatabaseDefaults: Partial<Database> = {
     assetWidth: -1,
     animationSpeed: 0.4,
     colorSchemeName: 'default',
+    colorScheme: defaultColorScheme,
     hypaModel: 'MiniLM',
     mancerHeader: '',
     emotionProcesser: 'submodel',
