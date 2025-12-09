@@ -202,58 +202,128 @@ interface ParseProgress {
 
 /**
  * Parses a backup file stream and yields individual backup items.
+ * Optimized to use a Chunk List approach to avoid O(N^2) memory copying.
+ * Uses DataView for zero-copy header parsing and ensures safe data copying for yielded items.
  */
 async function* parseBackupStream(
     file: File,
     onProgress?: (progress: ParseProgress) => void
 ): AsyncGenerator<BackupItem> {
     const reader = file.stream().getReader()
-    let bytesRead = 0
-    let remainingBuffer = new Uint8Array()
+    let bytesReadFromFile = 0
     let itemCount = 0
+
+    // Chunk List State
+    const chunks: Uint8Array[] = []
+    let totalLength = 0
+
+    // Parsing State Machine
+    let state: 'NAME_LEN' | 'NAME' | 'DATA_LEN' | 'DATA' = 'NAME_LEN'
+    let currentNameLen = 0
+    let currentName = ''
+    let currentDataLen = 0
+
+    /**
+     * Extracts `n` bytes from the front of the chunk list.
+     * @param mode 'view' for zero-copy subarray (unsafe for long-term storage), 'copy' for new buffer (safe).
+     */
+    function extract(n: number, mode: 'view' | 'copy'): Uint8Array {
+        if (totalLength < n) throw new Error("Internal Error: Not enough bytes to extract")
+
+        // Optimization: The data is fully contained in the first chunk
+        if (chunks[0].length >= n) {
+            let val: Uint8Array
+            if (mode === 'copy') {
+                val = chunks[0].slice(0, n) // Explicit copy
+            } else {
+                val = chunks[0].subarray(0, n) // Reference view
+            }
+
+            if (chunks[0].length === n) {
+                chunks.shift() // Consume entire chunk
+            } else {
+                chunks[0] = chunks[0].subarray(n) // Consume part of chunk
+            }
+            totalLength -= n
+            return val
+        }
+
+        // Slow path: Data spans multiple chunks, need to merge (always creates a new buffer)
+        const res = new Uint8Array(n)
+        let pos = 0
+        while (pos < n) {
+            const chunk = chunks[0]
+            const remaining = n - pos
+            const len = Math.min(chunk.length, remaining)
+            
+            res.set(chunk.subarray(0, len), pos)
+            pos += len
+
+            if (len === chunk.length) {
+                chunks.shift()
+            } else {
+                chunks[0] = chunks[0].subarray(len)
+            }
+        }
+        totalLength -= n
+        return res
+    }
 
     while (true) {
         const { done, value } = await reader.read()
-        if (done) break
-
-        bytesRead += value.length
-        onProgress?.({ bytesRead, fileSize: file.size, itemCount })
-
-        // Append new data to remaining buffer
-        const newBuffer = new Uint8Array(remainingBuffer.length + value.length)
-        newBuffer.set(remainingBuffer)
-        newBuffer.set(value, remainingBuffer.length)
-        remainingBuffer = newBuffer
-
-        // Parse complete items from buffer
-        let offset = 0
-        while (offset + 4 <= remainingBuffer.length) {
-            const nameLength = new Uint32Array(remainingBuffer.slice(offset, offset + 4).buffer)[0]
-            if (offset + 4 + nameLength > remainingBuffer.length) break
-
-            const nameBuffer = remainingBuffer.slice(offset + 4, offset + 4 + nameLength)
-            const name = new TextDecoder().decode(nameBuffer)
-
-            if (offset + 4 + nameLength + 4 > remainingBuffer.length) break
-
-            const dataLength = new Uint32Array(
-                remainingBuffer.slice(offset + 4 + nameLength, offset + 4 + nameLength + 4).buffer
-            )[0]
-
-            if (offset + 4 + nameLength + 4 + dataLength > remainingBuffer.length) break
-
-            const data = remainingBuffer.slice(
-                offset + 4 + nameLength + 4,
-                offset + 4 + nameLength + 4 + dataLength
-            )
-
-            itemCount++
-            yield { name, data: new Uint8Array(data) as Uint8Array<ArrayBuffer> }
-
-            offset += 4 + nameLength + 4 + dataLength
+        if (done) {
+            if (totalLength > 0) {
+                console.warn(`[parseBackupStream] Stream ended with ${totalLength} bytes remaining. File might be corrupted.`)
+            }
+            break
         }
 
-        remainingBuffer = remainingBuffer.slice(offset)
+        chunks.push(value)
+        totalLength += value.length
+        bytesReadFromFile += value.length
+        onProgress?.({ bytesRead: bytesReadFromFile, fileSize: file.size, itemCount })
+
+        // Process loop: Consumes available data based on current state
+        while (true) {
+            if (state === 'NAME_LEN') {
+                if (totalLength < 4) break
+                // Use 'view' mode for transient header parsing
+                const bytes = extract(4, 'view')
+                // Use DataView for zero-copy integer reading
+                currentNameLen = new DataView(bytes.buffer, bytes.byteOffset, 4).getUint32(0, true) // Little-endian
+                state = 'NAME'
+            }
+
+            if (state === 'NAME') {
+                if (totalLength < currentNameLen) break
+                // Use 'view' mode for name decoding (TextDecoder handles views fine)
+                const bytes = extract(currentNameLen, 'view')
+                currentName = new TextDecoder().decode(bytes)
+                state = 'DATA_LEN'
+            }
+
+            if (state === 'DATA_LEN') {
+                if (totalLength < 4) break
+                const bytes = extract(4, 'view')
+                currentDataLen = new DataView(bytes.buffer, bytes.byteOffset, 4).getUint32(0, true)
+                state = 'DATA'
+            }
+
+            if (state === 'DATA') {
+                if (totalLength < currentDataLen) break
+                // Use 'copy' mode for the actual data payload to ensure safe ownership
+                const data = extract(currentDataLen, 'copy')
+                
+                itemCount++
+                yield { name: currentName, data: data as Uint8Array<ArrayBuffer> }
+
+                // Reset for next item
+                state = 'NAME_LEN'
+                currentNameLen = 0
+                currentName = ''
+                currentDataLen = 0
+            }
+        }
     }
 }
 
