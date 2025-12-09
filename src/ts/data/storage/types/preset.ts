@@ -8,7 +8,6 @@ export type FormatingOrderItem = 'main'|'jailbreak'|'chats'|'lorebook'|'globalNo
 
 export interface botPreset{
     name?:string
-    apiType?: string
     openAIKey?: string
     mainPrompt: string
     jailbreak: string

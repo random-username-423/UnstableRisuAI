@@ -54,7 +54,6 @@ export const defaultOoba: OobaSettings = {
 
 export const presetTemplate: botPreset = {
     name: "New Preset",
-    apiType: "gpt35_0301",
     openAIKey: "",
     mainPrompt: defaultMainPrompt,
     jailbreak: defaultJailbreak,
@@ -103,7 +102,6 @@ export const defaultSdDataFunc = () => {
 // 로직이 필요한 기본값(예: 다른 필드 참조)은 setDatabase 함수 내에서 처리합니다.
 export const baseDatabaseDefaults: Partial<Database> = {
     characters: [],
-    apiType: 'gpt35_0301',
     openAIKey: '',
     mainPrompt: defaultMainPrompt,
     jailbreak: defaultJailbreak,

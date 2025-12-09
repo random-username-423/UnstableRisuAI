@@ -142,7 +142,6 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
   },
   "NAI":{
     "name": "NAI",
-    "apiType": "gpt35",
     "openAIKey": "",
     "mainPrompt": "",
     "jailbreak": "",
@@ -308,7 +307,6 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
   },
   "oobaRp":{
     "name": "New Preset",
-    "apiType": "gpt35_0301",
     "openAIKey": "",
     "mainPrompt": "",
     "jailbreak": "",
@@ -472,7 +470,6 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
   },
   "NAI2": {
     "name": "Carefree",
-    "apiType": "gpt35",
     "openAIKey": "",
     "mainPrompt": "",
     "jailbreak": "",
@@ -622,7 +619,6 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
   },
   "OAI2": { //작가 프롬프트 by 하나안, modified by Kwaroran
     "name": "Default Prompt",
-    "apiType": "instructgpt35",
     "openAIKey": "",
     "mainPrompt": "",
     "jailbreak": "",

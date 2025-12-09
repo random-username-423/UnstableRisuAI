@@ -25,7 +25,6 @@ export function saveCurrentPreset(){
     
     const savedPreset: botPreset = {
         name: pres[db.botPresetsId]?.name ?? "New Preset",
-        apiType: db.apiType,
         openAIKey: db.openAIKey,
         mainPrompt: db.mainPrompt,
         jailbreak: db.jailbreak,
@@ -139,7 +138,6 @@ export function changeToPreset(id = 0, savecurrent = true){
 }
 
 export function setPreset(db:Database, newPres: botPreset): Database{
-    db.apiType = newPres.apiType ?? db.apiType
     db.mainPrompt = newPres.mainPrompt ?? db.mainPrompt
     db.jailbreak = newPres.jailbreak ?? db.jailbreak
     db.globalNote = newPres.globalNote ?? db.globalNote

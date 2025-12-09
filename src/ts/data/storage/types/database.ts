@@ -15,7 +15,6 @@ import type { HypaModel } from '../../../process/memory/hypamemory';
 
 export interface Database{
     characters: (character|groupChat)[],
-    apiType: string
     forceReplaceUrl2:string
     openAIKey: string
     proxyKey:string
