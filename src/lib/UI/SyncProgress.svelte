@@ -1,12 +1,16 @@
 <script lang="ts">
-    import { syncManager, type SyncProgress } from "src/ts/data/drive/syncManager";
+    import { syncManager, type SyncProgress, type RateLimitInfo } from "src/ts/data/drive/syncManager";
     import { onMount, onDestroy } from "svelte";
-    import { RefreshCwIcon } from "lucide-svelte";
+    import { RefreshCwIcon, ClockIcon } from "lucide-svelte";
+
+    type SyncStatus = 'idle' | 'syncing' | 'error' | 'conflict' | 'rate_limited';
 
     let progress = $state<SyncProgress | null>(null);
-    let status = $state<'idle' | 'syncing' | 'error' | 'conflict'>('idle');
+    let status = $state<SyncStatus>('idle');
+    let rateLimitInfo = $state<RateLimitInfo | null>(null);
     let unsubProgress: (() => void) | null = null;
     let unsubStatus: (() => void) | null = null;
+    let unsubRateLimit: (() => void) | null = null;
 
     // Drag state
     let isDragging = $state(false);
@@ -22,6 +26,7 @@
     onMount(() => {
         status = syncManager.getStatus();
         progress = syncManager.getProgress();
+        rateLimitInfo = syncManager.getRateLimitInfo();
 
         unsubStatus = syncManager.onStatusChange((s) => {
             status = s;
@@ -29,11 +34,15 @@
         unsubProgress = syncManager.onProgressChange((p) => {
             progress = p;
         });
+        unsubRateLimit = syncManager.onRateLimitChange((info) => {
+            rateLimitInfo = info;
+        });
     });
 
     onDestroy(() => {
         if (unsubStatus) unsubStatus();
         if (unsubProgress) unsubProgress();
+        if (unsubRateLimit) unsubRateLimit();
     });
 
     function getPhaseLabel(phase: string): string {
@@ -93,7 +102,7 @@
 
 <svelte:window onmousemove={onMouseMove} onmouseup={onMouseUp} onresize={onResize} />
 
-{#if status === 'syncing'}
+{#if status === 'syncing' || status === 'rate_limited'}
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
         bind:this={widgetEl}
@@ -103,24 +112,40 @@
             : `top: ${posY}px; left: ${posX}px;`}
         onmousedown={onMouseDown}
     >
-        <div class="flex items-center gap-2 mb-2">
-            <RefreshCwIcon class="animate-spin text-green-500" size={16} />
-            <span class="text-sm font-medium">Syncing...</span>
-        </div>
-        {#if progress}
+        {#if status === 'rate_limited' && rateLimitInfo}
+            <div class="flex items-center gap-2 mb-2">
+                <ClockIcon class="text-yellow-500" size={16} />
+                <span class="text-sm font-medium text-yellow-500">Rate Limited</span>
+            </div>
             <div class="text-xs text-textcolor2 mb-1">
-                {getPhaseLabel(progress.phase)}: {progress.current} / {progress.total}
+                Retrying in {rateLimitInfo.retryAfter}s...
             </div>
             <div class="w-full bg-darkbg2 rounded-full h-1.5">
                 <div
-                    class="bg-green-500 h-1.5 rounded-full transition-all duration-200"
-                    style="width: {progress.total > 0 ? (progress.current / progress.total * 100) : 0}%"
+                    class="bg-yellow-500 h-1.5 rounded-full transition-all duration-200"
+                    style="width: 100%"
                 ></div>
             </div>
         {:else}
-            <div class="text-xs text-textcolor2">
-                Preparing...
+            <div class="flex items-center gap-2 mb-2">
+                <RefreshCwIcon class="animate-spin text-green-500" size={16} />
+                <span class="text-sm font-medium">Syncing...</span>
             </div>
+            {#if progress}
+                <div class="text-xs text-textcolor2 mb-1">
+                    {getPhaseLabel(progress.phase)}: {progress.current} / {progress.total}
+                </div>
+                <div class="w-full bg-darkbg2 rounded-full h-1.5">
+                    <div
+                        class="bg-green-500 h-1.5 rounded-full transition-all duration-200"
+                        style="width: {progress.total > 0 ? (progress.current / progress.total * 100) : 0}%"
+                    ></div>
+                </div>
+            {:else}
+                <div class="text-xs text-textcolor2">
+                    Preparing...
+                </div>
+            {/if}
         {/if}
     </div>
 {/if}

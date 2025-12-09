@@ -8,6 +8,7 @@ import { alertError, alertSelect, alertStore } from "../../utils/alert";
 import { getDatabase, setDatabase, type character, type groupChat, type Chat, type Database } from "../storage/database.svelte";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
 import { saveToWorker, loadFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
+import { decodeChat } from 'src/ts/data/storage/risuSave'
 import { getUnpargeables } from 'src/ts/utils/dbUtils'
 import { sleep, getBasename } from '../../utils/util';
 import { language } from "../../../lang";
@@ -60,9 +61,93 @@ interface DriveFile {
 const SYNC_FOLDER = 'sync';
 const MANIFEST_FILE = 'manifest.json';
 const TOMBSTONE_DAYS = 30;
+const MAX_RETRIES = 5;
+const BASE_RETRY_DELAY_MS = 1000;  // 1 second
 
 // Cached manifest file ID (to avoid repeated listSyncFiles calls)
 let cachedManifestFileId: string | null = null;
+
+// ============================================================================
+// Fetch with Retry (Exponential Backoff)
+// ============================================================================
+
+interface FetchWithRetryOptions extends RequestInit {
+    maxRetries?: number;
+}
+
+/**
+ * Fetch with automatic retry on rate limit (429) and server errors (5xx)
+ * Uses exponential backoff with jitter
+ */
+async function fetchWithRetry(
+    url: string,
+    options: FetchWithRetryOptions = {}
+): Promise<Response> {
+    const { maxRetries = MAX_RETRIES, ...fetchOptions } = options;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        // Check if sync was cancelled
+        if (syncManager.isCancelled()) {
+            throw new Error('Sync cancelled');
+        }
+
+        const response = await fetch(url, fetchOptions);
+
+        // Success or client error (except 429) - return immediately
+        if (response.ok || (response.status >= 400 && response.status < 500 && response.status !== 429)) {
+            return response;
+        }
+
+        // Rate limit (429) or server error (5xx) - retry with backoff
+        if (response.status === 429 || response.status >= 500) {
+            if (attempt === maxRetries) {
+                // Last attempt failed
+                return response;
+            }
+
+            // Calculate delay with exponential backoff + jitter
+            // Try to get Retry-After header first
+            const retryAfterHeader = response.headers.get('Retry-After');
+            let delayMs: number;
+
+            if (retryAfterHeader) {
+                // Retry-After can be seconds or HTTP date
+                const retryAfterSeconds = parseInt(retryAfterHeader, 10);
+                if (!isNaN(retryAfterSeconds)) {
+                    delayMs = retryAfterSeconds * 1000;
+                } else {
+                    // Try parsing as HTTP date
+                    const retryDate = new Date(retryAfterHeader);
+                    delayMs = Math.max(0, retryDate.getTime() - Date.now());
+                }
+            } else {
+                // Exponential backoff: 1s, 2s, 4s, 8s, 16s + jitter
+                delayMs = BASE_RETRY_DELAY_MS * Math.pow(2, attempt);
+                // Add jitter (0-25% of delay)
+                delayMs += Math.random() * delayMs * 0.25;
+            }
+
+            const delaySeconds = Math.ceil(delayMs / 1000);
+            console.log(`[Sync] Rate limited (${response.status}), retrying in ${delaySeconds}s (attempt ${attempt + 1}/${maxRetries})`);
+
+            // Update UI with countdown
+            syncManager.startRateLimitCountdown(delaySeconds);
+
+            // Wait for the delay
+            await sleep(delayMs);
+
+            // Clear rate limit status before retry
+            syncManager.clearRateLimitCountdown();
+            continue;
+        }
+
+        // Other errors - return response
+        return response;
+    }
+
+    // Should not reach here, but just in case
+    throw new Error('Max retries exceeded');
+}
 
 // ============================================================================
 // Google Drive API Helpers (for sync folder)
@@ -78,7 +163,7 @@ async function getSyncFolderId(accessToken: string): Promise<string> {
 
     // Search for existing sync folder
     const searchUrl = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='${SYNC_FOLDER}' and mimeType='application/vnd.google-apps.folder'`;
-    const searchResponse = await fetch(searchUrl, {
+    const searchResponse = await fetchWithRetry(searchUrl, {
         headers: { 'Authorization': `Bearer ${accessToken}` }
     });
 
@@ -91,7 +176,7 @@ async function getSyncFolderId(accessToken: string): Promise<string> {
     }
 
     // Create sync folder if not exists
-    const createResponse = await fetch('https://www.googleapis.com/drive/v3/files', {
+    const createResponse = await fetchWithRetry('https://www.googleapis.com/drive/v3/files', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -123,7 +208,7 @@ async function listSyncFiles(accessToken: string): Promise<DriveFile[]> {
 
     do {
         const url = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q='${folderId}' in parents&pageSize=300${pageToken ? `&pageToken=${pageToken}` : ''}`;
-        const response = await fetch(url, {
+        const response = await fetchWithRetry(url, {
             headers: { 'Authorization': `Bearer ${accessToken}` }
         });
 
@@ -147,7 +232,7 @@ async function uploadSyncFile(accessToken: string, fileName: string, content: Ui
 
     if (existingFileId) {
         // Update existing file
-        const response = await fetch(
+        const response = await fetchWithRetry(
             `https://www.googleapis.com/upload/drive/v3/files/${existingFileId}?uploadType=media`,
             {
                 method: 'PATCH',
@@ -175,7 +260,7 @@ async function uploadSyncFile(accessToken: string, fileName: string, content: Ui
         body.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
         body.append('file', new Blob([content]));
 
-        const response = await fetch(
+        const response = await fetchWithRetry(
             'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
             {
                 method: 'POST',
@@ -197,7 +282,7 @@ async function uploadSyncFile(accessToken: string, fileName: string, content: Ui
  * Download a file from sync folder
  */
 async function downloadSyncFile(accessToken: string, fileId: string): Promise<Uint8Array<ArrayBuffer>> {
-    const response = await fetch(
+    const response = await fetchWithRetry(
         `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
         {
             headers: { 'Authorization': `Bearer ${accessToken}` }
@@ -215,7 +300,7 @@ async function downloadSyncFile(accessToken: string, fileId: string): Promise<Ui
  * Delete a file from sync folder
  */
 async function deleteSyncFile(accessToken: string, fileId: string): Promise<void> {
-    const response = await fetch(
+    const response = await fetchWithRetry(
         `https://www.googleapis.com/drive/v3/files/${fileId}`,
         {
             method: 'DELETE',
@@ -854,8 +939,8 @@ export async function syncChangedItems(
             const data = await loadFromWorker(`database/chats/${chaId}/${chatId}.bin`);
             if (data) {
                 const fileId = await uploadSyncFile(accessToken, fileName, data as Uint8Array<ArrayBuffer>, existingFileId);
-                const chat = JSON.parse(new TextDecoder().decode(data));
-                serverManifest.chats[item.id] = { modifiedAt: chat.modifiedAt || Date.now(), fileId };
+                const chat = await decodeChat(data);
+                serverManifest.chats[item.id] = { modifiedAt: chat?.modifiedAt || Date.now(), fileId };
             }
         } else if (item.type === 'settings') {
             const settingsToUpload = { ...db };

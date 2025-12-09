@@ -34,7 +34,7 @@
     let popup:Window = null
 
     // Sync status
-    type SyncStatus = 'idle' | 'syncing' | 'error' | 'conflict';
+    type SyncStatus = 'idle' | 'syncing' | 'error' | 'conflict' | 'rate_limited';
     let syncStatus = $state<SyncStatus>('idle');
     let unsubscribe: (() => void) | null = null;
 
@@ -49,6 +49,7 @@
             case 'syncing': return language.syncStatusSyncing || 'Syncing...';
             case 'error': return language.syncStatusError || 'Error';
             case 'conflict': return language.syncStatusConflict || 'Conflict Detected';
+            case 'rate_limited': return 'Rate Limited (waiting...)';
         }
     }
 
@@ -58,6 +59,7 @@
             case 'syncing': return 'text-yellow-500';
             case 'error': return 'text-red-500';
             case 'conflict': return 'text-orange-500';
+            case 'rate_limited': return 'text-yellow-500';
         }
     }
 

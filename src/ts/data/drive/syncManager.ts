@@ -30,12 +30,17 @@ export interface ChangedItem {
     id?: string;  // Required for chat (chaId_chatId) and character (chaId)
 }
 
-type SyncStatus = 'idle' | 'syncing' | 'error' | 'conflict';
+type SyncStatus = 'idle' | 'syncing' | 'error' | 'conflict' | 'rate_limited';
 
 export interface SyncProgress {
     current: number;
     total: number;
     phase: string;  // e.g., 'characters', 'chats', 'assets'
+}
+
+export interface RateLimitInfo {
+    retryAfter: number;  // seconds until retry
+    retryAt: number;     // timestamp when retry will happen
 }
 
 // ============================================================================
@@ -51,10 +56,13 @@ class SyncManager {
     private lastError: string | null = null;
     private progress: SyncProgress | null = null;
     private cancelled: boolean = false;  // Cancellation flag
+    private rateLimitInfo: RateLimitInfo | null = null;
+    private rateLimitCountdownTimer: ReturnType<typeof setInterval> | null = null;
 
     // Listeners for UI updates
     private statusListeners: Set<(status: SyncStatus) => void> = new Set();
     private progressListeners: Set<(progress: SyncProgress | null) => void> = new Set();
+    private rateLimitListeners: Set<(info: RateLimitInfo | null) => void> = new Set();
 
     // ========================================================================
     // Access Token Management (Persisted to DB)
@@ -269,6 +277,60 @@ class SyncManager {
     updateProgress(current: number, total: number, phase: string): void {
         this.progress = { current, total, phase };
         this.progressListeners.forEach(listener => listener(this.progress));
+    }
+
+    // ========================================================================
+    // Rate Limit Management
+    // ========================================================================
+
+    /**
+     * Get current rate limit info
+     */
+    getRateLimitInfo(): RateLimitInfo | null {
+        return this.rateLimitInfo;
+    }
+
+    /**
+     * Subscribe to rate limit changes
+     */
+    onRateLimitChange(listener: (info: RateLimitInfo | null) => void): () => void {
+        this.rateLimitListeners.add(listener);
+        return () => this.rateLimitListeners.delete(listener);
+    }
+
+    /**
+     * Start rate limit countdown (called from sync.ts when 429 received)
+     */
+    startRateLimitCountdown(seconds: number): void {
+        this.clearRateLimitCountdown();
+
+        const retryAt = Date.now() + (seconds * 1000);
+        this.rateLimitInfo = { retryAfter: seconds, retryAt };
+        this.setStatus('rate_limited');
+        this.rateLimitListeners.forEach(listener => listener(this.rateLimitInfo));
+
+        // Update countdown every second
+        this.rateLimitCountdownTimer = setInterval(() => {
+            const remaining = Math.ceil((retryAt - Date.now()) / 1000);
+            if (remaining <= 0) {
+                this.clearRateLimitCountdown();
+            } else {
+                this.rateLimitInfo = { retryAfter: remaining, retryAt };
+                this.rateLimitListeners.forEach(listener => listener(this.rateLimitInfo));
+            }
+        }, 1000);
+    }
+
+    /**
+     * Clear rate limit countdown
+     */
+    clearRateLimitCountdown(): void {
+        if (this.rateLimitCountdownTimer) {
+            clearInterval(this.rateLimitCountdownTimer);
+            this.rateLimitCountdownTimer = null;
+        }
+        this.rateLimitInfo = null;
+        this.rateLimitListeners.forEach(listener => listener(null));
     }
 
     // ========================================================================
