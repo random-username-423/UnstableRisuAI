@@ -166,7 +166,7 @@
 
     async function handleButtonTriggerWithin(event: UIEvent) {
         const currentChar = getCurrentCharacter()
-        if(currentChar.type === 'group'){
+        if(!currentChar || currentChar.type === 'group'){
             return
         }
 
