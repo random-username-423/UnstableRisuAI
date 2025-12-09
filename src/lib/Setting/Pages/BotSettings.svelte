@@ -226,25 +226,12 @@
             </SelectInput>
         {:then m}
             {#if m && m.length > 0}
-                <TextInput 
-                    bind:value={openrouterSearchQuery} 
-                    placeholder="Search models..." 
-                    size="sm" 
+                <TextInput
+                    bind:value={openrouterSearchQuery}
+                    placeholder="Search models..."
+                    size="sm"
                 />
-            {/if}
-            <SelectInput className="mt-2 mb-4" bind:value={DBState.db.openrouterRequestModel}>
-                {#if (!m) || (m.length === 0)}
-                    <OptionInput value="openai/gpt-3.5-turbo">GPT 3.5</OptionInput>
-                    <OptionInput value="openai/gpt-3.5-turbo-16k">GPT 3.5 16k</OptionInput>
-                    <OptionInput value="openai/gpt-4">GPT-4</OptionInput>
-                    <OptionInput value="openai/gpt-4-32k">GPT-4 32k</OptionInput>
-                    <OptionInput value="anthropic/claude-2">Claude 2</OptionInput>
-                    <OptionInput value="anthropic/claude-instant-v1">Claude Instant v1</OptionInput>
-                    <OptionInput value="anthropic/claude-instant-v1-100k">Claude Instant v1 100k</OptionInput>
-                    <OptionInput value="anthropic/claude-v1">Claude v1</OptionInput>
-                    <OptionInput value="anthropic/claude-v1-100k">Claude v1 100k</OptionInput>
-                    <OptionInput value="anthropic/claude-1.2">Claude v1.2</OptionInput>
-                {:else}
+                <SelectInput className="mt-2 mb-4" bind:value={DBState.db.openrouterRequestModel}>
                     <OptionInput value={"risu/free"}>Free Auto</OptionInput>
                     <OptionInput value={"openrouter/auto"}>Openrouter Auto</OptionInput>
                     {#each m.filter(model => {
@@ -255,8 +242,12 @@
                     }) as model}
                         <OptionInput value={model.id}>{model.name}</OptionInput>
                     {/each}
-                {/if}
-            </SelectInput>
+                </SelectInput>
+            {:else}
+                <span class="text-draculared">Failed to load models from OpenRouter</span>
+            {/if}
+        {:catch error}
+            <span class="text-draculared">Failed to load models: {error.message}</span>
         {/await}
     {/if}
     {#if DBState.db.aiModel === 'openrouter' || DBState.db.aiModel === 'reverse_proxy'}
