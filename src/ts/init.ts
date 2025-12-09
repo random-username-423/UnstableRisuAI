@@ -82,7 +82,10 @@ export async function loadData() {
             console.log('[loadData] No existing data, creating new database')
             rawData = encodeRisuSaveLegacy({})
             if (!isTauri) {
-                await saveToWorker('database/database.bin', rawData as Uint8Array<ArrayBuffer>)
+                // saveToWorker transfers the buffer, so we need to copy it first
+                // to avoid "detached ArrayBuffer" error when decoding later
+                const copyForSave = new Uint8Array(rawData)
+                await saveToWorker('database/database.bin', copyForSave as Uint8Array<ArrayBuffer>)
             }
         }
 
