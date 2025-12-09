@@ -956,6 +956,9 @@ export async function syncChangedItems(
         }
     }
 
+    // Sync assets - upload any new assets that aren't in the manifest yet
+    await syncAssetsIncremental(accessToken, serverManifest);
+
     // Update manifest - local first, then server
     serverManifest.version++;
     db.lastSyncedVersion = serverManifest.version;
@@ -1041,7 +1044,61 @@ function getLocalAssetList(): string[] {
 }
 
 /**
- * Upload assets from local to server
+ * Incremental asset sync - only upload new assets not in manifest
+ * Called during syncChangedItems() for lightweight sync
+ */
+async function syncAssetsIncremental(
+    accessToken: string,
+    manifest: SyncManifest
+): Promise<{ uploadCount: number; skipCount: number }> {
+    const localAssets = getLocalAssetList();
+
+    // Ensure assets object exists
+    if (!manifest.assets) {
+        manifest.assets = {};
+    }
+
+    let uploadCount = 0;
+    let skipCount = 0;
+
+    for (const assetName of localAssets) {
+        if (syncManager.isCancelled()) break;
+
+        // Skip if already exists on server
+        if (manifest.assets[assetName]) {
+            skipCount++;
+            continue;
+        }
+
+        // Remove from tombstone if re-uploading
+        if (manifest.deletedAssets?.[assetName]) {
+            delete manifest.deletedAssets[assetName];
+        }
+
+        try {
+            const assetData = await forageStorage.getItem(`assets/${assetName}`) as Uint8Array<ArrayBuffer> | null;
+            if (!assetData) {
+                continue;
+            }
+
+            const serverFileName = `asset_${assetName}.bin`;
+            const fileId = await uploadSyncFile(accessToken, serverFileName, assetData);
+            manifest.assets[assetName] = { fileId };
+            uploadCount++;
+        } catch (e) {
+            console.error(`[Sync Assets Incremental] Failed to upload asset ${assetName}:`, e);
+        }
+    }
+
+    if (uploadCount > 0) {
+        console.log(`[Sync Assets Incremental] Uploaded ${uploadCount} new assets, skipped ${skipCount}`);
+    }
+
+    return { uploadCount, skipCount };
+}
+
+/**
+ * Upload assets from local to server (full sync)
  */
 async function syncAssetsUpload(
     accessToken: string,
