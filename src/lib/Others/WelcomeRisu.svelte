@@ -102,13 +102,13 @@
                 }
 
                 if(provider === 'claude'){
-                    DBState.db.aiModel = 'claude-3-5-sonnet-20241022'
-                    DBState.db.subModel = 'claude-3-5-sonnet-20241022'
+                    DBState.db.aiModel = 'claude-sonnet-4-5-20250929'
+                    DBState.db.subModel = 'claude-sonnet-4-5-20250929'
                 }
 
                 if(provider === 'openai'){
-                    DBState.db.aiModel = 'gpt4o-chatgpt'
-                    DBState.db.subModel = 'gpt4o-chatgpt'
+                    DBState.db.aiModel = 'gpt-5.1-2025-11-13'
+                    DBState.db.subModel = 'gpt-5.1-2025-11-13'
                 }
 
                 if(provider === 'openrouter'){

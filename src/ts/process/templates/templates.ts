@@ -243,7 +243,7 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
       "top_k": 140
     },
     "proxyRequestModel": "",
-    "openrouterRequestModel": "openai/gpt-3.5-turbo",
+    "openrouterRequestModel": "google/gemini-2.5-flash",
     "NAISettings": {
       "topK": 12,
       "topP": 0.85,
@@ -383,7 +383,7 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
       "top_k": 140
     },
     "proxyRequestModel": "",
-    "openrouterRequestModel": "openai/gpt-3.5-turbo",
+    "openrouterRequestModel": "google/gemini-2.5-flash",
     "NAISettings": {
       "topK": 12,
       "topP": 0.85,
@@ -546,7 +546,7 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
       "top_k": 140
     },
     "proxyRequestModel": "",
-    "openrouterRequestModel": "openai/gpt-3.5-turbo",
+    "openrouterRequestModel": "google/gemini-2.5-flash",
     "NAISettings": {
       "topK": 15,
       "topP": 0.85,
@@ -695,7 +695,7 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
       "top_k": 140
     },
     "proxyRequestModel": "claude-sonnet-4-5-20250929",
-    "openrouterRequestModel": "anthropic/claude-2",
+    "openrouterRequestModel": "anthropic/claude-sonnet-4.5",
     "NAISettings": {
       "topK": 12,
       "topP": 0.85,
