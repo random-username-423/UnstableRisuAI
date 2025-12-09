@@ -48,6 +48,7 @@ import { language } from "src/lang";
 import type { AccountStorage } from "./data/storage/accountStorage";
 import { updateLorebooks } from "./character/characters";
 import { defaultJailbreak, defaultMainPrompt, oldJailbreak, oldMainPrompt } from "./data/storage/defaultPrompts";
+import { syncManager } from "./data/drive/syncManager";
 
 /**
  * Loads the application data.
@@ -505,6 +506,18 @@ async function finalizeLoading(): Promise<void> {
         initMobileGesture()
         MobileGUI.set(true)
     }
+
+    // Google Drive 실시간 동기화 - UI 표시 전에 최신 데이터 가져오기
+    if (db.syncEnabled && syncManager.hasAccessToken()) {
+        LoadingStatusState.text = "Syncing with Google Drive..."
+        try {
+            await syncManager.doInitialSync()
+        } catch (error) {
+            console.error('[finalizeLoading] Initial sync failed:', error)
+            // 동기화 실패해도 앱은 계속 로드
+        }
+    }
+
     loadedStore.set(true)
     selectedCharID.set(-1)
     startObserveDom()
