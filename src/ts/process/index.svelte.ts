@@ -304,28 +304,8 @@ export async function sendChat(chatProcessIndex = -1,arg:{
     const tokenizer = new ChatTokenizer(chatAdditonalTokens, DBState.db.aiModel.startsWith('gpt') ? 'noName' : 'name')
     let currentChat = runCurrentChatFunction(nowChatroom.chats[selectedChat])
     nowChatroom.chats[selectedChat] = currentChat
+    // TODO: 모델 최대 컨텍스트 넘으면 강제로 제한할지 말지 정하기
     let maxContextTokens = DBState.db.maxContext
-
-    if(DBState.db.aiModel === 'gpt35'){
-        if(maxContextTokens > 4000){
-            maxContextTokens = 4000
-        }
-    }
-    if(DBState.db.aiModel === 'gpt35_16k' || DBState.db.aiModel === 'gpt35_16k_0613'){
-        if(maxContextTokens > 16000){
-            maxContextTokens = 16000
-        }
-    }
-    if(DBState.db.aiModel === 'gpt4'){
-        if(maxContextTokens > 8000){
-            maxContextTokens = 8000
-        }
-    }
-    if(DBState.db.aiModel === 'deepai'){
-        if(maxContextTokens > 3000){
-            maxContextTokens = 3000
-        }
-    }
 
 
     chatProcessStage.set(1)
