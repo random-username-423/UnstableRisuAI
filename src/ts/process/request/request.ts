@@ -386,7 +386,10 @@ export async function requestChatData(arg:requestDataArgument, model:ModelModeEx
                         displayMode: true,
                         displayData: JSON.stringify(arg.formated)
                     })
-        
+
+                    if(!d){
+                        throw new Error('No trigger result')
+                    }
                     const got = JSON.parse(d.displayData)
                     if(!got || !Array.isArray(got)){
                         throw new Error('Invalid return')
