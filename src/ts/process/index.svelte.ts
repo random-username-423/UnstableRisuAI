@@ -131,10 +131,10 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         return chat
     }
 
+    // Originally removed `${currentChar.name}:` prefix from AI responses when chatProcessIndex !== -1
+    // This was removed in commit 00285cc97 ("[fix] remove trimming") on 2023-12-18
+    // Now both branches do the same thing, so the condition is no longer needed
     function reformatContent(data:string){
-        if(chatProcessIndex === -1){
-            return data.trim()
-        }
         return data.trim()
     }
 
