@@ -52,35 +52,40 @@ export const defaultOoba: OobaSettings = {
     }
 };
 
-export const presetTemplate: botPreset = {
-    name: "New Preset",
-    openAIKey: "",
+// botPreset과 Database에서 공통으로 사용되는 기본값
+const commonPresetDefaults = {
     mainPrompt: defaultMainPrompt,
     jailbreak: defaultJailbreak,
-    globalNote: "",
+    globalNote: '',
     temperature: 80,
     maxContext: 8000,
     maxResponse: 600,
     frequencyPenalty: 70,
     PresensePenalty: 70,
-    formatingOrder: ['main', 'description', 'personaPrompt', 'chats', 'lastChat', 'jailbreak', 'lorebook', 'globalNote', 'authorNote'],
+    formatingOrder: ['main', 'description', 'personaPrompt', 'chats', 'lastChat', 'jailbreak', 'lorebook', 'globalNote', 'authorNote'] as const,
     aiModel: 'claude-sonnet-4-5-20250929',
     subModel: 'gemini-2.5-flash',
-    currentPluginProvider: "",
-    textgenWebUIStreamURL: '',
-    textgenWebUIBlockingURL: '',
+    currentPluginProvider: '',
+    textgenWebUIStreamURL: 'wss://localhost/api/',
+    textgenWebUIBlockingURL: 'https://localhost/api/',
     forceReplaceUrl: '',
     forceReplaceUrl2: '',
     promptPreprocess: false,
     proxyKey: '',
-    bias: [],
-    ooba: structuredClone(defaultOoba),
-    ainconfig: structuredClone(defaultAIN),
+    bias: [] as [string, number][],
     reverseProxyOobaArgs: {
-        mode: 'instruct'
+        mode: 'instruct' as const
     },
     top_p: 1,
     useInstructPrompt: false,
+} satisfies Partial<botPreset> & Partial<Database>;
+
+export const presetTemplate: botPreset = {
+    ...commonPresetDefaults,
+    name: "New Preset",
+    openAIKey: "",
+    ooba: structuredClone(defaultOoba),
+    ainconfig: structuredClone(defaultAIN),
     verbosity: 1
 };
 
@@ -101,19 +106,10 @@ export const defaultSdDataFunc = () => {
 // 순수 기본값들만 모아놓은 객체입니다.
 // 로직이 필요한 기본값(예: 다른 필드 참조)은 setDatabase 함수 내에서 처리합니다.
 export const baseDatabaseDefaults: Partial<Database> = {
+    ...commonPresetDefaults,
     characters: [],
     openAIKey: '',
-    mainPrompt: defaultMainPrompt,
-    jailbreak: defaultJailbreak,
-    globalNote: ``, 
-    temperature: 80,
-    maxContext: 8000,
-    maxResponse: 600,
-    frequencyPenalty: 70,
-    PresensePenalty: 70,
-    aiModel: 'claude-sonnet-4-5-20250929',
     jailbreakToggle: false,
-    formatingOrder: ['main', 'description', 'personaPrompt', 'chats', 'lastChat', 'jailbreak', 'lorebook', 'globalNote', 'authorNote'],
     loreBookDepth: 5,
     loreBookToken: 800,
     username: 'User',
@@ -121,31 +117,24 @@ export const baseDatabaseDefaults: Partial<Database> = {
     userNote: '',
     additionalPrompt: 'The assistant must act as {{char}}. user is {{user}}.',
     descriptionPrefix: 'description of {{char}}: ',
-    forceReplaceUrl: '',
-    forceReplaceUrl2: '',
     language: 'en',
     swipe: true,
     translator: '',
     translatorMaxResponse: 1000,
-    currentPluginProvider: '',
     plugins: [],
     zoomsize: 100,
     lastup: '',
     customBackground: '',
-    textgenWebUIStreamURL: 'wss://localhost/api/',
-    textgenWebUIBlockingURL: 'https://localhost/api/',
     autoTranslate: false,
     fullScreen: false,
     playMessage: false,
     iconsize: 100,
     theme: '',
-    subModel: 'gemini-2.5-flash',
     timeOut: 120,
     waifuWidth: 100,
     waifuWidth2: 100,
     emotionPrompt: "",
     requester: "new",
-    proxyKey: "",
     botPresetsId: 0,
     sdProvider: '',
     runpodKey: '',
@@ -164,7 +153,6 @@ export const baseDatabaseDefaults: Partial<Database> = {
     maxDbBackups: 20,
     dbBackupIntervalMinutes: 10,
     useSayNothing: true,
-    bias: [],
     requestmet: 'normal',
     requestproxy: '',
     showUnrecommended: false,
@@ -241,10 +229,6 @@ export const baseDatabaseDefaults: Partial<Database> = {
     fishSpeechKey: '',
     statistics: {},
     presetRegex: [],
-    reverseProxyOobaArgs: {
-        mode: 'instruct'
-    },
-    top_p: 1,
     google: {
         accessToken: '',
         projectId: ''
@@ -281,7 +265,6 @@ export const baseDatabaseDefaults: Partial<Database> = {
     customTokenizer: 'tik',
     instructChatTemplate: "chatml",
     openrouterProvider: '',
-    useInstructPrompt: false,
     hanuraiEnable: false,
     hanuraiSplit: false,
     hanuraiTokens: 1000,
@@ -367,7 +350,7 @@ export const baseDatabaseDefaults: Partial<Database> = {
     ImagenAspectRatio: '1:1',
     ImagenPersonGeneration: 'allow_all',
     openAIServiceTier: '',
-    
+
     // 객체로 된 복잡한 기본값들 (참조 없는 것들)
     sdConfig: {
         width: 512,
