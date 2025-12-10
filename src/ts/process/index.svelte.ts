@@ -2,7 +2,7 @@ import { get, writable } from "svelte/store";
 import { type character, type MessageGenerationInfo, type Chat, type MessagePresetInfo, setCurrentChat } from "../data/storage/database.svelte";
 import { changeToPreset } from "../data/storage/utils/presetManager";
 import { DBState } from '../stores.svelte';
-import { CharEmotion, selectedCharID } from "../stores.svelte";
+import { selectedCharID } from "../stores.svelte";
 import { ChatTokenizer, tokenize } from "../utils/tokenizer";
 import { language } from "../../lang";
 import { alertError, alertToast } from "../utils/alert";
@@ -45,19 +45,14 @@ import {
     createPositionParser,
     type LorebookData
 } from "./promptBuilder";
-// New modular imports for refactored code
+// New modular imports (for future refactoring)
 import {
     formatChatHistory,
     createCharacterCache,
-    createFormatOptions,
-    type FormatMessageOptions
+    createFormatOptions
 } from "./chatHistoryFormatter";
 import {
-    handleStreamingResponse,
-    handleDirectResponse,
     saveEncryptedThinkingFromChunk,
-    createReformatContent,
-    type ResponseHandlerContext,
     type EncryptedThinkingEntry
 } from "./responseHandler";
 import {
@@ -65,11 +60,8 @@ import {
     assembleTemplate,
     assembleLegacy,
     applyDepthPrompts,
-    recheckTokens,
-    trimFormated,
     applyPastThinkingBudget,
     collectEncryptedThinkingHistory,
-    type PromptCard,
     type AssembleContext
 } from "./promptAssembler";
 
