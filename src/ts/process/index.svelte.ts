@@ -3,13 +3,11 @@ import { type character, type MessageGenerationInfo, type Chat, type MessagePres
 import { changeToPreset } from "../data/storage/utils/presetManager";
 import { DBState } from '../stores.svelte';
 import { CharEmotion, selectedCharID } from "../stores.svelte";
-import { ChatTokenizer, tokenize, tokenizeNum } from "../utils/tokenizer";
+import { ChatTokenizer, tokenize } from "../utils/tokenizer";
 import { language } from "../../lang";
 import { alertError, alertToast } from "../utils/alert";
-import { loadLoreBookV3Prompt } from "./lorebook.svelte";
-import { findCharacterbyId, getAuthorNoteDefaultText, getPersonaPrompt, getUserName, isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax, prebuiltAssetCommand } from '../utils/util';
+import { findCharacterbyId, getUserName, isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax, prebuiltAssetCommand } from '../utils/util';
 import { requestChatData } from "./request/request";
-import { stableDiff } from "./stableDiff";
 import { processScript, processScriptFull, risuChatParser } from "./scripts";
 import { exampleMessage } from "./exampleMessages";
 import { sayTTS } from "./tts";
@@ -17,9 +15,7 @@ import { supaMemory } from "./memory/supaMemory";
 import { v4 } from "uuid";
 import { groupOrder } from "./group";
 import { runTrigger } from "./triggers";
-import { HypaProcesser } from "./memory/hypamemory";
-import { additionalInformations } from "./embedding/addinfo";
-import { getInlayAsset, supportsInlayImage } from "./files/inlays";
+import { getInlayAsset } from "./files/inlays";
 import { getGenerationModelString } from "./models/modelString";
 import { connectionOpen, peerRevertChat, peerSafeCheck, peerSync } from "../data/sync/multiuser";
 import { runInlayScreen } from "./inlayScreen";
@@ -28,55 +24,60 @@ import { runImageEmbedding } from "./transformers";
 import { hanuraiMemory } from "./memory/hanuraiMemory";
 import { hypaMemoryV2 } from "./memory/hypav2";
 import { runLuaEditTrigger } from "./scriptings";
-import { getGlobalChatVar, parseChatML } from "../utils/parser.svelte";
+import { parseChatML } from "../utils/parser.svelte";
 import { getModelInfo, LLMFlags } from "../model/modellist";
 import { hypaMemoryV3 } from "./memory/hypav3";
 import { getModuleAssets, getModuleToggles } from "./modules";
-import { getFileSrc, readImage } from "../utils/fileIO";
+import { readImage } from "../utils/fileIO";
+import type { OpenAIChat, OpenAIChatFull, MultiModal, requestTokenPart } from "./chatTypes";
+import { processEmotionScreen, processImageGenScreen, updateEmotionFromSpecial } from "./postprocessing";
+import {
+    createEmptyUnformated,
+    buildLegacyPrompts,
+    buildAuthorNote,
+    buildChainOfThought,
+    buildDescription,
+    buildLorebookPrompts,
+    buildPersonaPrompt,
+    buildInlayViewScreenPrompts,
+    buildPostEverythingLorebooks,
+    getInjectionLorebooks,
+    createPositionParser,
+    type LorebookData
+} from "./promptBuilder";
+// New modular imports for refactored code
+import {
+    formatChatHistory,
+    createCharacterCache,
+    createFormatOptions,
+    type FormatMessageOptions
+} from "./chatHistoryFormatter";
+import {
+    handleStreamingResponse,
+    handleDirectResponse,
+    saveEncryptedThinkingFromChunk,
+    createReformatContent,
+    type ResponseHandlerContext,
+    type EncryptedThinkingEntry
+} from "./responseHandler";
+import {
+    tokenizeTemplate,
+    assembleTemplate,
+    assembleLegacy,
+    applyDepthPrompts,
+    recheckTokens,
+    trimFormated,
+    applyPastThinkingBudget,
+    collectEncryptedThinkingHistory,
+    type PromptCard,
+    type AssembleContext
+} from "./promptAssembler";
 
-export interface OpenAIChat{
-    role: 'system'|'user'|'assistant'|'function'
-    content: string
-    memo?:string
-    name?:string
-    removable?:boolean
-    attr?:string[]
-    multimodals?: MultiModal[]
-    thoughts?: string[]
-    cachePoint?: boolean
-    encryptedThinking?: {
-        provider: string
-        data: any
-        tokens: number
-    }[]
-}
+export type { OpenAIChat, OpenAIChatFull, MultiModal, requestTokenPart }
 
-export interface MultiModal{
-    type:'image'|'video'|'audio'
-    base64:string,
-    height?:number,
-    width?:number
-}
-
-export interface OpenAIChatFull extends OpenAIChat{
-    function_call?: {
-        name: string
-        arguments:string
-    }
-    tool_calls?:{
-        function: {
-            name: string
-            arguments:string
-        }
-        id:string
-        type:'function'
-    }[]
-}
-
-export interface requestTokenPart{
-    name:string
-    tokens:number
-}
+// ─────────────────────────────────────────────────────────────────────────────
+// Exports
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const doingChat = writable(false)
 export const chatProcessStage = writable(0)
@@ -310,18 +311,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
 
     chatProcessStage.set(1)
     stageTimings.stage1Start = Date.now()
-    let unformated = {
-        'main':([] as OpenAIChat[]),
-        'jailbreak':([] as OpenAIChat[]),
-        'chats':([] as OpenAIChat[]),
-        'lorebook':([] as OpenAIChat[]),
-        'globalNote':([] as OpenAIChat[]),
-        'authorNote':([] as OpenAIChat[]),
-        'lastChat':([] as OpenAIChat[]),
-        'description':([] as OpenAIChat[]),
-        'postEverything':([] as OpenAIChat[]),
-        'personaPrompt':([] as OpenAIChat[])
-    }
+    let unformated = createEmptyUnformated()
 
     let promptTemplate = safeStructuredClone(DBState.db.promptTemplate)
     const usingPromptTemplate = !!promptTemplate
@@ -371,213 +361,44 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         ]
     }
 
+    // Build legacy prompts (main, jailbreak, globalNote) if not using template
     if((!currentChar.utilityBot) && (!promptTemplate)){
-        const mainp = currentChar.systemPrompt?.replaceAll('{{original}}', DBState.db.mainPrompt) || DBState.db.mainPrompt
-
-
-        function formatPrompt(data:string){
-            if(!data.startsWith('@@')){
-                data = "@@system\n" + data
-            }
-            const parts = data.split(/@@@?(user|assistant|system)\n/);
-  
-            // Initialize empty array for the chat objects
-            const chatObjects: OpenAIChat[] = [];
-            
-            // Loop through the parts array two elements at a time
-            for (let i = 1; i < parts.length; i += 2) {
-              const role = parts[i] as 'user' | 'assistant' | 'system';
-              const content = parts[i + 1]?.trim() || '';
-              chatObjects.push({ role, content });
-            }
-
-            return chatObjects;
-        }
-
-        unformated.main.push(...formatPrompt(risuChatParser(mainp + ((DBState.db.additionalPrompt === '' || (!DBState.db.promptPreprocess)) ? '' : `\n${DBState.db.additionalPrompt}`), {chara: currentChar})))
-    
-        if(DBState.db.jailbreakToggle){
-            unformated.jailbreak.push(...formatPrompt(risuChatParser(DBState.db.jailbreak, {chara: currentChar})))
-        }
-    
-        unformated.globalNote.push(...formatPrompt(risuChatParser(currentChar.replaceGlobalNote?.replaceAll('{{original}}', DBState.db.globalNote) || DBState.db.globalNote, {chara:currentChar})))
+        buildLegacyPrompts(unformated, currentChar)
     }
 
-    if(currentChat.note){
-        unformated.authorNote.push({
-            role: 'system',
-            content: risuChatParser(currentChat.note, {chara: currentChar})
-        })
-    }
-    else if(getAuthorNoteDefaultText() !== ''){
-        unformated.authorNote.push({
-            role: 'system',
-            content: risuChatParser(getAuthorNoteDefaultText(), {chara: currentChar})
-        })
-    }
+    // Build author note
+    buildAuthorNote(unformated, currentChat, currentChar)
 
-    if(DBState.db.chainOfThought && (!(usingPromptTemplate && DBState.db.promptSettings.customChainOfThought))){
-        unformated.postEverything.push({
-            role: 'system',
-            content: `<instruction> - before respond everything, Think step by step as a ai assistant how would you respond inside <Thoughts> xml tag. this must be less than 5 paragraphs.</instruction>`
-        })
-    }
+    // Build chain of thought
+    buildChainOfThought(unformated, usingPromptTemplate)
 
-    {
-        let description = risuChatParser((DBState.db.promptPreprocess ? DBState.db.descriptionPrefix: '') + currentChar.desc, {chara: currentChar})
+    // Build description
+    await buildDescription(unformated, currentChar, currentChat, nowChatroom.type === 'group')
 
-        const additionalInfo = await additionalInformations(currentChar, currentChat)
+    // Build lorebook prompts
+    const lorepmt: LorebookData = await buildLorebookPrompts(unformated, currentChar)
 
-        if(additionalInfo){
-            description += '\n\n' + risuChatParser(additionalInfo, {chara:currentChar})
-        }
+    // Build persona prompt
+    buildPersonaPrompt(unformated, currentChar)
 
-        if(currentChar.personality){
-            description += risuChatParser("\n\nDescription of {{char}}: " + currentChar.personality, {chara: currentChar})
-        }
+    // Build inlay view screen prompts
+    buildInlayViewScreenPrompts(unformated, currentChar)
 
-        if(currentChar.scenario){
-            description += risuChatParser("\n\nCircumstances and context of the dialogue: " + currentChar.scenario, {chara: currentChar})
-        }
+    // Build postEverything lorebooks
+    buildPostEverythingLorebooks(unformated, lorepmt, currentChar)
 
-        unformated.description.push({
-            role: 'system',
-            content: description
-        })
+    // Get injection lorebooks
+    const { injectionLorebooks, injectionLorePosSet } = getInjectionLorebooks(lorepmt)
 
-        if(nowChatroom.type === 'group'){
-            const systemMsg = `[Write the next reply only as ${currentChar.name}]`
-            unformated.postEverything.push({
-                role: 'system',
-                content: systemMsg
-            })
-        }
-    }
-
-    const lorepmt = await loadLoreBookV3Prompt()
-    const normalActives = lorepmt.actives.filter(v => {
-        return v.pos === '' && v.inject === null
-    })
-    console.log(normalActives)
-
-    for(const lorebook of normalActives){
-        unformated.lorebook.push({
-            role: lorebook.role,
-            content: risuChatParser(lorebook.prompt, {chara: currentChar})
-        })
-    }
-
-    const descActives = lorepmt.actives.filter(v => {
-        return v.pos === 'after_desc' || v.pos === 'before_desc' || v.pos === 'personality' || v.pos === 'scenario'
-    })
-
-    for(const lorebook of descActives){
-        const c = {
-            role: lorebook.role,
-            content: risuChatParser(lorebook.prompt, {chara: currentChar})
-        }
-        if(lorebook.pos === 'before_desc'){
-            unformated.description.unshift(c)
-        }
-        else{
-            unformated.description.push(c)
-        }
-    }
-
-    if(DBState.db.personaPrompt){
-        unformated.personaPrompt.push({
-            role: 'system',
-            content: risuChatParser(getPersonaPrompt(), {chara: currentChar})
-        })
-    }
-    
-    if(currentChar.inlayViewScreen){
-        if(currentChar.viewScreen === 'emotion'){
-            unformated.postEverything.push({
-                role: 'system',
-                content: currentChar.newGenData.emotionInstructions.replaceAll('{{slot}}', currentChar.emotionImages.map((v) => v[0]).join(', '))
-            })
-        }
-        if(currentChar.viewScreen === 'imggen'){
-            unformated.postEverything.push({
-                role: 'system',
-                content: currentChar.newGenData.instructions
-            })
-        }
-    }
-
-    const postEverythingLorebooks = lorepmt.actives.filter(v => {
-        return v.pos === 'depth' && v.depth === 0 && v.role !== 'assistant'
-    })
-    for(const lorebook of postEverythingLorebooks){
-        unformated.postEverything.push({
-            role: lorebook.role,
-            content: risuChatParser(lorebook.prompt, {chara: currentChar})
-        })
-    }
-
-    //Since assistant needs to be prefill, we need to add assistant lorebooks after user/system lorebooks
-    const postEverythingAssistantLorebooks = lorepmt.actives.filter(v => {
-        return v.pos === 'depth' && v.depth === 0 && v.role === 'assistant'
-    })
-
-    const injectionLorebooks = lorepmt.actives.filter(v => {
-        return v.inject && !v.inject.lore
-    })
-
-    const injectionLorePosSet = new Set<string>()
-    for(const lorebook of injectionLorebooks){
-        injectionLorePosSet.add(lorebook.inject.location)
-    }
-    
-    for(const lorebook of postEverythingAssistantLorebooks){
-        unformated.postEverything.push({
-            role: lorebook.role,
-            content: risuChatParser(lorebook.prompt, {chara: currentChar})
-        })
-    }
+    // Create position parser
+    const positionParser = createPositionParser(injectionLorebooks, injectionLorePosSet, lorepmt)
 
     //await tokenize currernt
     let currentTokens = DBState.db.maxResponse
     let supaMemoryCardUsed = false
-    
+
     //for unexpected error
     currentTokens += 50
-    
-    const positionRegex = /{{position::(.+?)}}/g
-    const positionParser = (text:string, loc:string) => {
-        console.log(injectionLorePosSet)
-        if(injectionLorePosSet.has(loc)){
-            const matchings = injectionLorebooks.filter(v => {
-                return v.inject.location === loc
-            })
-            for(const lore of matchings){
-                switch(lore.inject.operation){
-                    case 'append':{
-                        text += ' ' + lore.prompt
-                        break
-                    }
-                    case 'prepend':{
-                        text = lore.prompt + ' ' + text
-                        break
-                    }
-                    case 'replace':{
-                        text = text.replace(lore.inject.param, lore.prompt)
-                        break
-                    }
-                }
-            }
-        }
-        return text.replace(positionRegex, (match, p1) => {
-            const MatchingLorebooks = lorepmt.actives.filter(v => {
-                return v.pos === ('pt_' + p1)
-            })
-
-            return MatchingLorebooks.map(v => {
-                return v.prompt
-            }).join('\n')
-        })
-    }
 
     let hasCachePoint = false
     if(promptTemplate){
@@ -1591,74 +1412,11 @@ export async function sendChat(chatProcessIndex = -1,arg:{
 
         addRerolls(generationId, Object.values(lastResponseChunk))
 
-        // Debug: log all special keys in lastResponseChunk
-        const specialKeys = Object.keys(lastResponseChunk).filter(k => k.startsWith('__'))
-        if(specialKeys.length > 0){
-            console.log('[Debug] lastResponseChunk special keys:', specialKeys, lastResponseChunk)
-        }
-
-        // Save encrypted thinking from streaming response (Gemini)
-        if(lastResponseChunk['__sign_text'] || lastResponseChunk['__sign_function']){
-            const signatures: string[] = []
-            if(lastResponseChunk['__sign_text']) signatures.push(lastResponseChunk['__sign_text'])
-            if(lastResponseChunk['__sign_function']) signatures.push(lastResponseChunk['__sign_function'])
-            if(signatures.length > 0){
-                const thoughtsTokens = parseInt(lastResponseChunk['__thoughts_tokens'] || '0', 10)
-                console.log('[Gemini] Saving thinking tokens:', thoughtsTokens)
-                DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking = [{
-                    provider: 'gemini',
-                    data: { thoughtSignatures: signatures },
-                    tokens: thoughtsTokens > 0 ? thoughtsTokens : undefined
-                }]
-            }
-        }
-
-        // Save encrypted thinking from streaming response (Anthropic)
-        if(lastResponseChunk['__anthropic_signatures'] || lastResponseChunk['__anthropic_redacted']){
-            try {
-                const signatures = lastResponseChunk['__anthropic_signatures']
-                    ? JSON.parse(lastResponseChunk['__anthropic_signatures'])
-                    : undefined
-                const redacted = lastResponseChunk['__anthropic_redacted']
-                    ? JSON.parse(lastResponseChunk['__anthropic_redacted'])
-                    : undefined
-                const thinkingTokens = parseInt(lastResponseChunk['__anthropic_thinking_tokens'] || '0', 10)
-                if((signatures || redacted) && thinkingTokens > 0){
-                    console.log('[Anthropic] Saving thinking tokens:', thinkingTokens)
-                    DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking = [{
-                        provider: 'anthropic',
-                        data: {
-                            signatures: signatures,
-                            redacted: redacted
-                        },
-                        tokens: thinkingTokens
-                    }]
-                }
-            } catch(e) {
-                console.error('Failed to parse Anthropic encrypted thinking:', e)
-            }
-        }
-
-        // Save encrypted thinking from streaming response (OpenAI)
-        if(lastResponseChunk['__oai_reasoning_tokens']){
-            const reasoningTokens = parseInt(lastResponseChunk['__oai_reasoning_tokens'] || '0', 10)
-            if(reasoningTokens > 0){
-                console.log('[OpenAI] Saving reasoning tokens:', reasoningTokens)
-                // For OpenAI, we don't have encrypted content in streaming, but we save the token count
-                // The actual thinking content is embedded in the text as <Thoughts> tags
-                const existingThinking = DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking
-                if(!existingThinking){
-                    DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].encryptedThinking = [{
-                        provider: 'openai',
-                        data: {},
-                        tokens: reasoningTokens
-                    }]
-                } else {
-                    // Update existing entry with token count
-                    existingThinking[0].tokens = reasoningTokens
-                }
-            }
-        }
+        // Save encrypted thinking from streaming response
+        saveEncryptedThinkingFromChunk(
+            lastResponseChunk,
+            DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex]
+        )
 
         DBState.db.characters[selectedChar].chats[selectedChat] = runCurrentChatFunction(DBState.db.characters[selectedChar].chats[selectedChat])
         currentChat = DBState.db.characters[selectedChar].chats[selectedChat]        
@@ -1848,222 +1606,20 @@ export async function sendChat(chatProcessIndex = -1,arg:{
 
     if(req.special){
         if(req.special.emotion){
-            let charemotions = get(CharEmotion)
-            let currentEmotion = currentChar.emotionImages
-
-            let tempEmotion = charemotions[currentChar.chaId]
-            if(!tempEmotion){
-                tempEmotion = []
-            }
-            if(tempEmotion.length > 4){
-                tempEmotion.splice(0, 1)
-            }
-
-            for(const emo of currentEmotion){
-                if(emo[0] === req.special.emotion){
-                    const emos:[string, string,number] = [emo[0], emo[1], Date.now()]
-                    tempEmotion.push(emos)
-                    charemotions[currentChar.chaId] = tempEmotion
-                    CharEmotion.set(charemotions)
-                    emoChanged = true
-                    break
-                }
+            if(updateEmotionFromSpecial(currentChar, req.special.emotion)){
+                emoChanged = true
             }
         }
     }
 
     if(!currentChar.inlayViewScreen){
         if(currentChar.viewScreen === 'emotion' && (!emoChanged) && (abortSignal.aborted === false)){
-
-            let currentEmotion = currentChar.emotionImages
-            let emotionList = currentEmotion.map((a) => {
-                return a[0]
-            })
-            let charemotions = get(CharEmotion)
-
-            let tempEmotion = charemotions[currentChar.chaId]
-            if(!tempEmotion){
-                tempEmotion = []
-            }
-            if(tempEmotion.length > 4){
-                tempEmotion.splice(0, 1)
-            }
-
-            if(DBState.db.emotionProcesser === 'embedding'){
-                const hypaProcesser = new HypaProcesser()
-                await hypaProcesser.addText(emotionList.map((v) => 'emotion:' + v))
-                let searched = (await hypaProcesser.similaritySearchScored(result)).map((v) => {
-                    v[0] = v[0].replace("emotion:",'')
-                    return v
-                })
-
-                //give panaltys
-                for(let i =0;i<tempEmotion.length;i++){
-                    const emo = tempEmotion[i]
-                    //give panalty index
-                    const index = searched.findIndex((v) => {
-                        return v[0] === emo[0]
-                    })
-
-                    const modifier = ((5 - ((tempEmotion.length - (i + 1))))) / 200
-
-                    if(index !== -1){
-                        searched[index][1] -= modifier
-                    }
-                }
-
-                //make a sorted array by score
-                const emoresult = searched.sort((a,b) => {
-                    return b[1] - a[1]
-                }).map((v) => {
-                    return v[0]
-                })
-
-                for(const emo of currentEmotion){
-                    if(emo[0] === emoresult[0]){
-                        const emos:[string, string,number] = [emo[0], emo[1], Date.now()]
-                        tempEmotion.push(emos)
-                        charemotions[currentChar.chaId] = tempEmotion
-                        CharEmotion.set(charemotions)
-                        break
-                    }
-                }
-
-                
-
-                return true
-            }
-
-            function shuffleArray(array:string[]) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-                return array
-            }
-
-            let emobias:{[key:number]:number} = {}
-
-            for(const emo of emotionList){
-                const tokens = await tokenizeNum(emo)
-                for(const token of tokens){
-                    emobias[token] = 10
-                }
-            }
-
-            for(let i =0;i<tempEmotion.length;i++){
-                const emo = tempEmotion[i]
-
-                const tokens = await tokenizeNum(emo[0])
-                const modifier = 20 - ((tempEmotion.length - (i + 1)) * (20/4))
-
-                for(const token of tokens){
-                    emobias[token] -= modifier
-                    if(emobias[token] < -100){
-                        emobias[token] = -100
-                    }
-                }
-            }        
-
-            const promptbody:OpenAIChat[] = [
-                {
-                    role:'system',
-                    content: `${DBState.db.emotionPrompt2 || "From the list below, choose a word that best represents a character's outfit description, action, or emotion in their dialogue. Prioritize selecting words related to outfit first, then action, and lastly emotion. Print out the chosen word."}\n\n list: ${shuffleArray(emotionList).join(', ')} \noutput only one word.`
-                },
-                {
-                    role: 'user',
-                    content: `"Good morning, Master! Is there anything I can do for you today?"`
-                },
-                {
-                    role: 'assistant',
-                    content: 'happy'
-                },
-                {
-                    role: 'user',
-                    content: result
-                },
-            ]
-
-            const rq = await requestChatData({
-                formated: promptbody,
-                bias: emobias,
-                currentChar: currentChar,
-                maxTokens: 30,
-            }, 'emotion', abortSignal)
-
-            if(rq.type === 'fail' || rq.type === 'streaming' || rq.type === 'multiline'){
-                if(abortSignal.aborted){
-                    return true
-                }
-                throwError(`${rq.result}`)
-                return true
-            }
-            else{
-                emotionList = currentEmotion.map((a) => {
-                    return a[0]
-                })
-                try {
-                    const emotion:string = rq.result.replace(/ |\n/g,'').trim().toLocaleLowerCase()
-                    let emotionSelected = false
-                    for(const emo of currentEmotion){
-                        if(emo[0] === emotion){
-                            const emos:[string, string,number] = [emo[0], emo[1], Date.now()]
-                            tempEmotion.push(emos)
-                            charemotions[currentChar.chaId] = tempEmotion
-                            CharEmotion.set(charemotions)
-                            emotionSelected = true
-                            break
-                        }
-                    }
-                    if(!emotionSelected){
-                        for(const emo of currentEmotion){
-                            if(emotion.includes(emo[0])){
-                                const emos:[string, string,number] = [emo[0], emo[1], Date.now()]
-                                tempEmotion.push(emos)
-                                charemotions[currentChar.chaId] = tempEmotion
-                                CharEmotion.set(charemotions)
-                                emotionSelected = true
-                                break
-                            }
-                        }
-                    }
-                    if(!emotionSelected && emotionList.includes('neutral')){
-                        const emo = currentEmotion[emotionList.indexOf('neutral')]
-                        const emos:[string, string,number] = [emo[0], emo[1], Date.now()]
-                        tempEmotion.push(emos)
-                        charemotions[currentChar.chaId] = tempEmotion
-                        CharEmotion.set(charemotions)
-                        emotionSelected = true
-                    }
-                } catch (error) {
-                    throwError(language.errors.httpError + `${error}`)
-                    return true
-                }
-            }
-            
+            await processEmotionScreen(currentChar, result, abortSignal, throwError)
             return true
-
-
         }
         else if(currentChar.viewScreen === 'imggen'){
-            if(chatProcessIndex !== -1){
-                throwError("Stable diffusion in group chat is not supported")
-            }
-
             const msgs = DBState.db.characters[selectedChar].chats[selectedChat].message
-            let msgStr = ''
-            for(let i = (msgs.length - 1);i>=0;i--){
-                if(msgs[i].role === 'char'){
-                    msgStr = `character: ${msgs[i].data.replace(/\n/g, ' ')} \n` + msgStr
-                }
-                else{
-                    msgStr = `user: ${msgs[i].data.replace(/\n/g, ' ')} \n` + msgStr
-                    break
-                }
-            }
-
-
-            await stableDiff(currentChar, msgStr)
+            await processImageGenScreen(currentChar, msgs, throwError, chatProcessIndex !== -1)
         }
     }
 
