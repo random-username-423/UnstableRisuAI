@@ -1,4 +1,4 @@
-import type { character, Message, groupChat } from "src/ts/data/storage/database.svelte";
+import type { character, Message, groupChat } from "src/ts/data/storage/types";
 import type { OpenAIChat, MultiModal } from "src/ts/process/chatTypes";
 import { DBState } from 'src/ts/stores.svelte';
 import { ChatTokenizer } from "src/ts/utils/tokenizer";

@@ -1,4 +1,4 @@
-import type { character, Chat, groupChat } from "src/ts/data/storage/database.svelte";
+import type { character, Chat, groupChat } from "src/ts/data/storage/types";
 import { DBState } from 'src/ts/stores.svelte';
 import { getAuthorNoteDefaultText, getPersonaPrompt } from 'src/ts/utils/util';
 import { risuChatParser } from "src/ts/process/scripting/scripts";

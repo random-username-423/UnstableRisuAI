@@ -1,5 +1,5 @@
 import { getBasename } from "./util"
-import type { Database } from "../data/storage/database.svelte"
+import type { Database } from "../data/storage/types"
 
 /**
  * Retrieves unpargeable resources from the database.

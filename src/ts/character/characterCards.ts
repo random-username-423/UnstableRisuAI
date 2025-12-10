@@ -1,6 +1,7 @@
 import { get, writable, type Writable } from "svelte/store"
 import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertSelect, alertStore, alertTOS, alertWait } from "../utils/alert"
-import { defaultSdDataFunc, type character, setDatabase, type customscript, type loreSettings, type loreBook, type triggerscript, type groupChat, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite, appVer } from "../data/storage/database.svelte"
+import { defaultSdDataFunc, setDatabase, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite, appVer } from "../data/storage/database.svelte"
+import type { character, customscript, loreSettings, loreBook, triggerscript, groupChat } from "../data/storage/types"
 import { importPreset } from "../data/storage/utils/presetManager"
 import { checkNullish, decryptBuffer, encryptBuffer, getArrayBuffer, isKnownUri, selectFileByDom, selectMultipleFile, sleep } from '../utils/util'
 import { language } from "src/lang"

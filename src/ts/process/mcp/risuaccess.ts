@@ -1,4 +1,5 @@
-import { getCurrentCharacter, type character, type groupChat, type loreBook } from "src/ts/data/storage/database.svelte";
+import { getCurrentCharacter } from "src/ts/data/storage/database.svelte";
+import type { character, groupChat, loreBook } from "src/ts/data/storage/types";
 import { MCPClientLike } from "./internalmcp";
 import type { MCPTool, RPCToolCallContent } from "./mcplib";
 import { DBState } from "src/ts/stores.svelte";

@@ -1,5 +1,6 @@
 import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../../utils/alert";
-import { getDatabase, type Database } from "../storage/database.svelte";
+import { getDatabase } from "../storage/database.svelte";
+import type { Database } from "../storage/types";
 import { saving } from "src/ts/data/storage/autoSaveManager.svelte";
 import { openURL } from "../../utils/util";
 import { forageStorage } from "src/ts/data/storage/autoStorage";

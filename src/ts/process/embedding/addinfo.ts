@@ -1,4 +1,5 @@
-import { getDatabase, type Chat, type character } from "src/ts/data/storage/database.svelte";
+import { getDatabase } from "src/ts/data/storage/database.svelte";
+import type { Chat, character } from "src/ts/data/storage/types";
 import { HypaProcesser } from 'src/ts/process/memory/hypamemory'
 import { getUserName } from "src/ts/utils/util";
 

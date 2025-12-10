@@ -1,4 +1,4 @@
-import type { Database } from 'src/ts/data/storage/database.svelte'
+import type { Database } from 'src/ts/data/storage/types'
 
 export function templateCheck(db:Database){
 

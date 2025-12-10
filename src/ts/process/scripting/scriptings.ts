@@ -1,6 +1,7 @@
 import { getChatVar, hasher, setChatVar, getGlobalChatVar, type simpleCharacterArgument, risuChatParser } from "src/ts/utils/parser.svelte";
 import { LuaEngine, LuaFactory } from "wasmoon";
-import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase, type Chat, type character, type groupChat, type triggerscript } from "src/ts/data/storage/database.svelte";
+import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase } from "src/ts/data/storage/database.svelte";
+import type { Chat, character, groupChat, triggerscript } from "src/ts/data/storage/types";
 import { get } from "svelte/store";
 import { ReloadChatPointer, ReloadGUIPointer, selectedCharID } from "src/ts/stores.svelte";
 import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "src/ts/utils/alert";

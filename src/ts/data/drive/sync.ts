@@ -5,7 +5,8 @@
  */
 
 import { alertError, alertSelect, alertStore } from "../../utils/alert";
-import { getDatabase, setDatabase, type character, type groupChat, type Chat, type Database } from "../storage/database.svelte";
+import { getDatabase, setDatabase } from "../storage/database.svelte";
+import { type character, type groupChat, type Chat, type Database } from "../storage/types";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
 import { saveToWorker, loadFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { decodeChat } from 'src/ts/data/storage/risuSave'

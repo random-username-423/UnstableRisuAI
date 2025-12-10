@@ -1,4 +1,4 @@
-import { type Database, type character, type groupChat } from "./database.svelte"
+import { type Database, type character, type groupChat } from "./types"
 import { RisuSaveEncoder, type toSaveType, encodeCharacters, encodeBotPresets } from "./risuSave"
 import { saveToWorker, isWorkerReady } from "./opfsWorkerClient.svelte"
 import { forageStorage } from "./autoStorage"

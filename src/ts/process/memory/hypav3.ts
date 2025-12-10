@@ -6,12 +6,8 @@ import {
   HypaProcessorV2,
 } from "./hypamemoryv2";
 import { type DisplayMode as ModalDisplayMode } from "src/lib/Others/HypaV3Modal/types";
-import {
-  type Chat,
-  type character,
-  type groupChat,
-  getDatabase,
-} from "src/ts/data/storage/database.svelte";
+import { getDatabase } from "src/ts/data/storage/database.svelte";
+import type { Chat, character, groupChat } from "src/ts/data/storage/types";
 import type { OpenAIChat } from "src/ts/process/index.svelte";
 import { requestChatData } from "src/ts/process/request/request";
 import { chatCompletion, unloadEngine } from "src/ts/process/integrations/webllm";

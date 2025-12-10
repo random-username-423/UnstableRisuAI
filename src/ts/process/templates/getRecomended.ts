@@ -1,4 +1,5 @@
-import { type botPreset, setDatabase, getDatabase } from "src/ts/data/storage/database.svelte";
+import { setDatabase, getDatabase } from "src/ts/data/storage/database.svelte";
+import type { botPreset } from "src/ts/data/storage/types";
 import { setPreset } from "src/ts/data/storage/utils/presetManager";
 import { defaultAutoSuggestPrefixOoba, defaultAutoSuggestPrompt, defaultAutoSuggestPromptOoba } from "src/ts/data/storage/defaultPrompts";
 import { prebuiltPresets } from "./templates";

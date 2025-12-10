@@ -7,7 +7,8 @@ import { checkCharOrder } from 'src/ts/character/characters'
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import { tokenize } from "../utils/tokenizer";
 import { createBlankChar } from "../character/characters";
-import { getDatabase, setDatabase, type character } from "../data/storage/database.svelte";
+import { getDatabase, setDatabase } from "../data/storage/database.svelte";
+import type { character } from "../data/storage/types";
 import { sleep } from '../utils/util';
 
 

@@ -1,5 +1,6 @@
 import { get, writable } from "svelte/store";
-import { saveImage, setDatabase, type character, type Chat, defaultSdDataFunc, type loreBook, getDatabase, getCharacterByIndex, setCharacterByIndex } from "../data/storage/database.svelte";
+import { saveImage, setDatabase, defaultSdDataFunc, getDatabase, getCharacterByIndex, setCharacterByIndex } from "../data/storage/database.svelte";
+import type { character, Chat, loreBook } from "../data/storage/types";
 import { alertAddCharacter, alertConfirm, alertError, alertNormal, alertSelect, alertStore, alertWait } from "../utils/alert";
 import { language } from "../../lang";
 import { checkNullish, findCharacterbyId, getUserName, selectMultipleFile, selectSingleFile, sleep } from '../utils/util';

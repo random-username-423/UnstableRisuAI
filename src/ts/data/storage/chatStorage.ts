@@ -1,4 +1,5 @@
-import { getDatabase, type Chat } from "./database.svelte"
+import { getDatabase } from "./database.svelte"
+import type { Chat } from "./types"
 import { encodeChat, decodeChat } from "./risuSave"
 import { saveToWorker, loadFromWorker } from "./opfsWorkerClient.svelte"
 import { syncManager } from "../drive/syncManager"

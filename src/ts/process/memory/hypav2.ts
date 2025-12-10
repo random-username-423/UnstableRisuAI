@@ -1,9 +1,5 @@
-import {
-    getDatabase,
-    type Chat,
-    type character,
-    type groupChat,
-} from "src/ts/data/storage/database.svelte";
+import { getDatabase } from "src/ts/data/storage/database.svelte";
+import type { Chat, character, groupChat } from "src/ts/data/storage/types";
 import type { OpenAIChat } from "src/ts/process/index.svelte";
 import type { ChatTokenizer } from "src/ts/utils/tokenizer";
 import { requestChatData } from "src/ts/process/request/request";

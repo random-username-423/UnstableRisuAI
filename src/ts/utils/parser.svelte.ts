@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
 import markdownit from 'markdown-it'
-import { appVer, getCurrentCharacter, getDatabase, type Database, type Message, type character, type customscript, type groupChat, type loreBook, type triggerscript } from '../data/storage/database.svelte';
+import { appVer, getCurrentCharacter, getDatabase } from '../data/storage/database.svelte';
+import type { Database, Message, character, customscript, groupChat, loreBook, triggerscript } from '../data/storage/types';
 import { DBState } from '../stores.svelte';
 import { getFileSrc } from './fileIO';
 import { isTauri, isNodeServer, isMobileUserAgent, isMobileTauri } from "src/ts/utils/env";

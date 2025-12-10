@@ -1,4 +1,4 @@
-import type { botPreset } from "../../data/storage/database.svelte";
+import type { botPreset } from "../../data/storage/types";
 import type { NAISettings } from "../models/nai";
 
 

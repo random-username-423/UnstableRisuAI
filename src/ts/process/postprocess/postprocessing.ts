@@ -1,5 +1,5 @@
 import { get } from "svelte/store";
-import type { character, Message } from "src/ts/data/storage/database.svelte";
+import type { character, Message } from "src/ts/data/storage/types";
 import { DBState } from 'src/ts/stores.svelte';
 import { CharEmotion } from "src/ts/stores.svelte";
 import { tokenizeNum } from "src/ts/utils/tokenizer";

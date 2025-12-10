@@ -5,7 +5,7 @@
     import { CameraIcon, DatabaseIcon, DicesIcon, GlobeIcon, ImagePlusIcon, LanguagesIcon, Laugh, MenuIcon, MicOffIcon, PackageIcon, Plus, RefreshCcwIcon, ReplyIcon, Send, StepForwardIcon, XIcon, BrainIcon } from "lucide-svelte";
     import { selectedCharID, PlaygroundStore, createSimpleCharacter, hypaV3ModalOpen } from "../../ts/stores.svelte";
     import Chat from "./Chat.svelte";
-    import { type Message, type character, type groupChat } from "../../ts/data/storage/database.svelte";
+    import type { Message, character, groupChat } from "../../ts/data/storage/types";
     import { DBState } from 'src/ts/stores.svelte';
     import { getCharImage } from "../../ts/character/characters";
     import { chatProcessStage, doingChat, sendChat } from "../../ts/process/index.svelte";

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { type loreBook } from "src/ts/data/storage/database.svelte";
+    import { type loreBook } from "src/ts/data/storage/types";
     import { DBState } from 'src/ts/stores.svelte';
     import LoreBookData from "./LoreBookData.svelte";
     import { selectedCharID } from "src/ts/stores.svelte";

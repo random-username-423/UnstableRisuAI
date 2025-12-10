@@ -24,7 +24,8 @@ import { getUnpargeables } from 'src/ts/utils/dbUtils'
 import { checkCharOrder } from 'src/ts/character/characters'
 import { updateHeightMode } from 'src/ts/gui/guisize'
 import { isTauri, isNodeServer } from "src/ts/utils/env";
-import { setDatabase, getDatabase, defaultSdDataFunc, type character, type groupChat } from "./data/storage/database.svelte";
+import { setDatabase, getDatabase, defaultSdDataFunc } from "./data/storage/database.svelte";
+import type { character, groupChat } from "./data/storage/types";
 import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
 import { checkNullish, changeFullscreen, sleep, getBasename } from "./utils/util";
 import { decodeRisuSave, encodeRisuSaveLegacy, decodeCharacters, decodeBotPresets, encodeCharacters, encodeBotPresets } from "./data/storage/risuSave";

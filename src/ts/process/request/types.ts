@@ -15,7 +15,7 @@ export interface requestDataArgument {
     formated: OpenAIChat[]
     bias: {[key:number]:number}
     biasString?: [string,number][]
-    currentChar?: import("../../data/storage/database.svelte").character
+    currentChar?: import("../../data/storage/types").character
     temperature?: number
     maxTokens?:number
     PresensePenalty?: number

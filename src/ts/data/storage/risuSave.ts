@@ -1,6 +1,6 @@
 import { Packr, Unpackr, decode } from "msgpackr";
 import * as fflate from "fflate";
-import { type Database, type Chat } from "./database.svelte";
+import { type Database, type Chat } from "./types";
 
 const packr = new Packr({
     useRecords:false
@@ -539,7 +539,7 @@ export async function decodeChat(data: Uint8Array): Promise<Chat | null> {
     return JSON.parse(jsonStr) as Chat;
 }
 
-import type { character, groupChat, botPreset } from "./database.svelte";
+import type { character, groupChat, botPreset } from "./types";
 
 /**
  * Encodes characters array to a compressed binary format

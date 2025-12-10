@@ -1,6 +1,7 @@
 import { exportCharacterCard } from "./character/characterCards";
 import { VirtualWriter } from "./utils/writers";
-import { getCurrentCharacter, getDatabase, type character } from "./data/storage/database.svelte";
+import { getCurrentCharacter, getDatabase } from "./data/storage/database.svelte";
+import { type character } from "./data/storage/types";
 import { alertStore } from "./utils/alert";
 
 let pong = false;

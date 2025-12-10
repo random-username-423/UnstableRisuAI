@@ -1,5 +1,6 @@
 import type { OpenAIChat } from "../index.svelte";
-import { getDatabase, type Chat, type character, type groupChat } from "../../data/storage/database.svelte";
+import { getDatabase } from "../../data/storage/database.svelte";
+import type { Chat, character, groupChat } from "../../data/storage/types";
 import { tokenize, type ChatTokenizer } from "../../utils/tokenizer";
 import { requestChatData } from "../request/request";
 import { HypaProcesser } from "./hypamemory";

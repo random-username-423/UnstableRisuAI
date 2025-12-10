@@ -8,7 +8,7 @@
     import PlaygroundSyntax from "./PlaygroundSyntax.svelte";
     import { findCharacterIndexbyId } from "src/ts/utils/util";
     import { characterFormatUpdate, createBlankChar } from "src/ts/character/characters";
-    import { type character } from "src/ts/data/storage/database.svelte";
+    import type { character } from "src/ts/data/storage/types";
     import { DBState } from 'src/ts/stores.svelte';
     import PlaygroundImageGen from "./PlaygroundImageGen.svelte";
     import PlaygroundParser from "./PlaygroundParser.svelte";

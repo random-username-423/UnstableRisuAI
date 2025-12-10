@@ -4,7 +4,7 @@
     import Sortable from 'sortablejs/modular/sortable.core.esm.js';
     import { DownloadIcon, PencilIcon, HardDriveUploadIcon, MenuIcon, TrashIcon, GitBranchIcon, SplitIcon, FolderPlusIcon } from "lucide-svelte";
 
-    import type { Chat, ChatFolder, character, groupChat } from "src/ts/data/storage/database.svelte";
+    import type { Chat, ChatFolder, character, groupChat } from "src/ts/data/storage/types";
     import { DBState } from 'src/ts/stores.svelte';
     import { MobileGUI, ReloadGUIPointer, selectedCharID } from "src/ts/stores.svelte";
 

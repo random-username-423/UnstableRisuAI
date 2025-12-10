@@ -1,4 +1,4 @@
-import type { character, Chat } from "src/ts/data/storage/database.svelte";
+import type { character, Chat } from "src/ts/data/storage/types";
 import type { OpenAIChat } from "src/ts/process/chatTypes";
 import type { UnformatedPrompts, LorebookData } from "src/ts/process/prompt/promptBuilder";
 import { DBState } from 'src/ts/stores.svelte';

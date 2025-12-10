@@ -1,6 +1,7 @@
 import { get } from "svelte/store"
 import { translatorPlugin } from "../plugins/plugins"
-import { getDatabase, type character, type customscript, type groupChat } from "../data/storage/database.svelte"
+import { getDatabase } from "../data/storage/database.svelte"
+import { type character, type customscript, type groupChat } from "../data/storage/types"
 import { globalFetch } from "../utils/fetch"
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import { alertError } from "../utils/alert"
