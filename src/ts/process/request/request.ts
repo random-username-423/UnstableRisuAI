@@ -25,7 +25,7 @@ import type {
     KoboldGenerationInputSchema,
 } from "./types";
 import { applyParameters, reformater, setObjectValue } from "./utils";
-import { requestClaude } from './antrophic';
+import { requestClaude } from './anthropic';
 import { requestGoogleCloudVertex } from './google';
 import { requestOpenAI, requestOpenAILegacyInstruct, requestOpenAIResponseAPI } from "./openAI";
 import { requestNovelAI } from "./novelai";
