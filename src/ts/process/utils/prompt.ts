@@ -1,8 +1,8 @@
 import { get } from "svelte/store";
-import { tokenizeAccurate } from "../utils/tokenizer";
-import { getDatabase, presetTemplate, setDatabase, type Database } from "../data/storage/database.svelte";
-import { alertError, alertNormal } from "../utils/alert";
-import type { OobaChatCompletionRequestParams } from "../model/ooba";
+import { tokenizeAccurate } from "src/ts/utils/tokenizer";
+import { getDatabase, presetTemplate, setDatabase, type Database } from "src/ts/data/storage/database.svelte";
+import { alertError, alertNormal } from "src/ts/utils/alert";
+import type { OobaChatCompletionRequestParams } from "src/ts/model/ooba";
 
 export type PromptItem = PromptItemPlain|PromptItemTyped|PromptItemChat|PromptItemAuthorNote|PromptItemChatML|PromptItemCache
 export type PromptType = PromptItem['type'];

@@ -2,7 +2,7 @@
     import { ArrowLeft, PlusIcon, TrashIcon } from "lucide-svelte";
     import { language } from "src/lang";
     import PromptDataItem from "src/lib/UI/PromptDataItem.svelte";
-    import { tokenizePreset, type PromptItem } from "src/ts/process/prompt";
+    import { tokenizePreset, type PromptItem } from "src/ts/process/utils/prompt";
     import { templateCheck } from "src/ts/process/templates/templateCheck";
     
     import { DBState } from 'src/ts/stores.svelte';

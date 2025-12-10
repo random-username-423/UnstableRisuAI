@@ -1,16 +1,16 @@
 import { get } from "svelte/store";
-import { CharEmotion, selectedCharID } from "../stores.svelte";
-import { type character, type customscript, type groupChat, type Database, getDatabase, getCurrentCharacter, getCurrentChat } from "../data/storage/database.svelte";
-import { downloadFile } from "../utils/fileIO";
-import { alertError, alertNormal } from "../utils/alert";
+import { CharEmotion, selectedCharID } from "src/ts/stores.svelte";
+import { type character, type customscript, type groupChat, type Database, getDatabase, getCurrentCharacter, getCurrentChat } from "src/ts/data/storage/database.svelte";
+import { downloadFile } from "src/ts/utils/fileIO";
+import { alertError, alertNormal } from "src/ts/utils/alert";
 import { language } from "src/lang";
-import { selectSingleFile } from '../utils/util';
-import { assetRegex, type CbsConditions, risuChatParser as risuChatParserOrg, type simpleCharacterArgument } from "../utils/parser.svelte";
-import { getModuleAssets, getModuleRegexScripts, getModuleTriggers } from "./modules";
-import { HypaProcesser } from "./memory/hypamemory";
-import { runLuaEditTrigger } from "./scriptings";
-import { pluginV2 } from "../plugins/plugins";
-import { runTrigger } from "./triggers";
+import { selectSingleFile } from 'src/ts/utils/util';
+import { assetRegex, type CbsConditions, risuChatParser as risuChatParserOrg, type simpleCharacterArgument } from "src/ts/utils/parser.svelte";
+import { getModuleAssets, getModuleRegexScripts, getModuleTriggers } from "src/ts/process/scripting/modules";
+import { HypaProcesser } from "src/ts/process/memory/hypamemory";
+import { runLuaEditTrigger } from "src/ts/process/scripting/scriptings";
+import { pluginV2 } from "src/ts/plugins/plugins";
+import { runTrigger } from "src/ts/process/scripting/triggers";
 
 const dreg = /{{data}}/g
 const randomness = /\|\|\|/g

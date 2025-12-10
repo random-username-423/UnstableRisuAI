@@ -1,5 +1,5 @@
 import { getDatabase, type Chat, type character } from "src/ts/data/storage/database.svelte";
-import { HypaProcesser } from '../memory/hypamemory'
+import { HypaProcesser } from 'src/ts/process/memory/hypamemory'
 import { getUserName } from "src/ts/utils/util";
 
 export async function additionalInformations(char: character,chats:Chat,){

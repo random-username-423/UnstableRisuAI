@@ -1,15 +1,15 @@
 import { language } from "src/lang"
-import { alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "../utils/alert"
-import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase, type customscript, type loreBook, type triggerscript } from "../data/storage/database.svelte"
-import { downloadFile, readImage, saveAsset } from "../utils/fileIO"
-import { AppendableBuffer } from "../utils/fetch"
+import { alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "src/ts/utils/alert"
+import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase, type customscript, type loreBook, type triggerscript } from "src/ts/data/storage/database.svelte"
+import { downloadFile, readImage, saveAsset } from "src/ts/utils/fileIO"
+import { AppendableBuffer } from "src/ts/utils/fetch"
 import { isTauri, isNodeServer } from "src/ts/utils/env";
-import { selectSingleFile, sleep } from '../utils/util'
+import { selectSingleFile, sleep } from 'src/ts/utils/util'
 import { v4 } from "uuid"
-import { convertExternalLorebook } from "./lorebook.svelte"
-import { decodeRPack, encodeRPack } from "../rpack/rpack_bg"
-import { convertImage } from "../utils/parser.svelte"
-import { HideIconStore, moduleBackgroundEmbedding, ReloadGUIPointer } from "../stores.svelte"
+import { convertExternalLorebook } from "src/ts/process/prompt/lorebook.svelte"
+import { decodeRPack, encodeRPack } from "src/ts/rpack/rpack_bg"
+import { convertImage } from "src/ts/utils/parser.svelte"
+import { HideIconStore, moduleBackgroundEmbedding, ReloadGUIPointer } from "src/ts/stores.svelte"
 import {get} from "svelte/store"
 
 export interface MCPModule{

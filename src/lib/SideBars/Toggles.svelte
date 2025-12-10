@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { getModuleToggles } from "src/ts/process/modules";
+    import { getModuleToggles } from "src/ts/process/scripting/modules";
     import { DBState, MobileGUI } from "src/ts/stores.svelte";
     import { parseToggleSyntax, type sidebarToggle, type sidebarToggleGroup } from "src/ts/utils/util";
     import { language } from "src/lang";

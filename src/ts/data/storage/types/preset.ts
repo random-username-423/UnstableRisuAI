@@ -1,6 +1,6 @@
 import type { OobaSettings, AINsettings, DynamicOutput, SeparateParameters, customscript } from './settings';
 import type { NAISettings } from '../../../process/models/nai';
-import type { PromptItem, PromptSettings } from '../../../process/prompt';
+import type { PromptItem, PromptSettings } from '../../../process/utils/prompt';
 import type { OobaChatCompletionRequestParams } from '../../../model/ooba';
 import type { LLMFormat, LLMFlags } from '../../../model/modellist';
 

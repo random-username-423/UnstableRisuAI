@@ -14,22 +14,22 @@
     import { isExpTranslator, translate } from "../../ts/translator/translator";
     import { alertError, alertNormal, alertWait, showHypaV2Alert } from "../../ts/utils/alert";
     import sendSound from '../../etc/send.mp3'
-    import { processScript } from "src/ts/process/scripts";
+    import { processScript } from "src/ts/process/scripting/scripts";
     import CreatorQuote from "./CreatorQuote.svelte";
-    import { stopTTS } from "src/ts/process/tts";
+    import { stopTTS } from "src/ts/process/postprocess/tts";
     import MainMenu from '../UI/MainMenu.svelte';
     import AssetInput from './AssetInput.svelte';
     import { loadChat } from "src/ts/data/storage/chatStorage";
     import { downloadFile } from 'src/ts/utils/fileIO';
-    import { runTrigger } from 'src/ts/process/triggers';
+    import { runTrigger } from 'src/ts/process/scripting/triggers';
     import { v4 } from 'uuid';
-    import { PreUnreroll, Prereroll } from 'src/ts/process/prereroll';
-    import { processMultiCommand } from 'src/ts/process/command';
+    import { PreUnreroll, Prereroll } from 'src/ts/process/chat/prereroll';
+    import { processMultiCommand } from 'src/ts/process/scripting/command';
     import { postChatFile } from 'src/ts/process/files/multisend';
     import { getInlayAsset } from 'src/ts/process/files/inlays';
     import PlaygroundMenu from '../Playground/PlaygroundMenu.svelte';
     import { ConnectionOpenStore } from 'src/ts/data/sync/multiuser';
-    import { coldStorageHeader, preLoadChat } from 'src/ts/process/coldstorage.svelte';
+    import { coldStorageHeader, preLoadChat } from 'src/ts/process/utils/coldstorage.svelte';
     import Chats from './Chats.svelte';
 
     let messageInput:string = $state('')

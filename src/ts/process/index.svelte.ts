@@ -8,29 +8,29 @@ import { language } from "../../lang";
 import { alertError, alertToast } from "../utils/alert";
 import { findCharacterbyId, getUserName, isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax, prebuiltAssetCommand } from '../utils/util';
 import { requestChatData } from "./request/request";
-import { processScript, processScriptFull, risuChatParser } from "./scripts";
-import { exampleMessage } from "./exampleMessages";
-import { sayTTS } from "./tts";
+import { processScript, processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts";
+import { exampleMessage } from "src/ts/process/prompt/exampleMessages";
+import { sayTTS } from "src/ts/process/postprocess/tts";
 import { supaMemory } from "./memory/supaMemory";
 import { v4 } from "uuid";
-import { groupOrder } from "./group";
-import { runTrigger } from "./triggers";
+import { groupOrder } from "src/ts/process/chat/group";
+import { runTrigger } from "src/ts/process/scripting/triggers";
 import { getInlayAsset } from "./files/inlays";
 import { getGenerationModelString } from "./models/modelString";
 import { connectionOpen, peerRevertChat, peerSafeCheck, peerSync } from "../data/sync/multiuser";
-import { runInlayScreen } from "./inlayScreen";
-import { addRerolls } from "./prereroll";
-import { runImageEmbedding } from "./transformers";
+import { runInlayScreen } from "src/ts/process/postprocess/inlayScreen";
+import { addRerolls } from "src/ts/process/chat/prereroll";
+import { runImageEmbedding } from "src/ts/process/integrations/transformers";
 import { hanuraiMemory } from "./memory/hanuraiMemory";
 import { hypaMemoryV2 } from "./memory/hypav2";
-import { runLuaEditTrigger } from "./scriptings";
+import { runLuaEditTrigger } from "src/ts/process/scripting/scriptings";
 import { parseChatML } from "../utils/parser.svelte";
 import { getModelInfo, LLMFlags } from "../model/modellist";
 import { hypaMemoryV3 } from "./memory/hypav3";
-import { getModuleAssets, getModuleToggles } from "./modules";
+import { getModuleAssets, getModuleToggles } from "src/ts/process/scripting/modules";
 import { readImage } from "../utils/fileIO";
 import type { OpenAIChat, OpenAIChatFull, MultiModal, requestTokenPart } from "./chatTypes";
-import { processEmotionScreen, processImageGenScreen, updateEmotionFromSpecial } from "./postprocessing";
+import { processEmotionScreen, processImageGenScreen, updateEmotionFromSpecial } from "src/ts/process/postprocess/postprocessing";
 import {
     createEmptyUnformated,
     buildLegacyPrompts,
@@ -44,17 +44,17 @@ import {
     getInjectionLorebooks,
     createPositionParser,
     type LorebookData
-} from "./promptBuilder";
+} from "src/ts/process/prompt/promptBuilder";
 // New modular imports (for future refactoring)
 import {
     formatChatHistory,
     createCharacterCache,
     createFormatOptions
-} from "./chatHistoryFormatter";
+} from "src/ts/process/prompt/chatHistoryFormatter";
 import {
     saveEncryptedThinkingFromChunk,
     type EncryptedThinkingEntry
-} from "./responseHandler";
+} from "src/ts/process/chat/responseHandler";
 import {
     tokenizeTemplate,
     assembleTemplate,
@@ -63,7 +63,7 @@ import {
     applyPastThinkingBudget,
     collectEncryptedThinkingHistory,
     type AssembleContext
-} from "./promptAssembler";
+} from "src/ts/process/prompt/promptAssembler";
 
 export type { OpenAIChat, OpenAIChatFull, MultiModal, requestTokenPart }
 

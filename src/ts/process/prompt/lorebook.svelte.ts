@@ -1,15 +1,15 @@
 import { get } from "svelte/store";
-import {selectedCharID} from '../stores.svelte'
-import { type Message, type loreBook } from "../data/storage/database.svelte";
-import { DBState } from '../stores.svelte';
-import { tokenize } from "../utils/tokenizer";
-import { checkNullish, findCharacterbyId, pickHashRand, selectSingleFile, sfc32 } from '../utils/util';
-import { alertError, alertNormal } from "../utils/alert";
-import { language } from "../../lang";
-import { downloadFile } from "../utils/fileIO";
-import { getModuleLorebooks } from "./modules";
+import {selectedCharID} from 'src/ts/stores.svelte'
+import { type Message, type loreBook } from "src/ts/data/storage/database.svelte";
+import { DBState } from 'src/ts/stores.svelte';
+import { tokenize } from "src/ts/utils/tokenizer";
+import { checkNullish, findCharacterbyId, pickHashRand, selectSingleFile, sfc32 } from 'src/ts/utils/util';
+import { alertError, alertNormal } from "src/ts/utils/alert";
+import { language } from "src/lang";
+import { downloadFile } from "src/ts/utils/fileIO";
+import { getModuleLorebooks } from "src/ts/process/scripting/modules";
 import { CCardLib } from "@risuai/ccardlib";
-import { getChatVar, setChatVar } from "../utils/parser.svelte";
+import { getChatVar, setChatVar } from "src/ts/utils/parser.svelte";
 import { v4 } from "uuid";
 
 export function addLorebook(type:number) {

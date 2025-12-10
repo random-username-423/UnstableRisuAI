@@ -1,4 +1,4 @@
-import { getChatVar, getGlobalChatVar } from "../utils/parser.svelte";
+import { getChatVar, getGlobalChatVar } from "src/ts/utils/parser.svelte";
 
 function toRPN(expression:string) {
     let outputQueue = '';

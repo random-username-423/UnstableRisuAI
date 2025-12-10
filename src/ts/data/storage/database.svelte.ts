@@ -6,6 +6,7 @@ import { createHypaV3Preset } from '../../process/memory/hypav3Types';
 
 // Types
 import type { Database, character, groupChat, Chat } from './types';
+// TODO: remove re-export
 export * from './types';
 
 // Utils & Defaults

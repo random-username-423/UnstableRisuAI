@@ -1,10 +1,10 @@
-import type { character, Chat, groupChat } from "../data/storage/database.svelte";
-import { DBState } from '../stores.svelte';
-import { getAuthorNoteDefaultText, getPersonaPrompt } from '../utils/util';
-import { risuChatParser } from "./scripts";
-import { loadLoreBookV3Prompt } from "./lorebook.svelte";
-import { additionalInformations } from "./embedding/addinfo";
-import type { OpenAIChat } from "./chatTypes";
+import type { character, Chat, groupChat } from "src/ts/data/storage/database.svelte";
+import { DBState } from 'src/ts/stores.svelte';
+import { getAuthorNoteDefaultText, getPersonaPrompt } from 'src/ts/utils/util';
+import { risuChatParser } from "src/ts/process/scripting/scripts";
+import { loadLoreBookV3Prompt } from "src/ts/process/prompt/lorebook.svelte";
+import { additionalInformations } from "src/ts/process/embedding/addinfo";
+import type { OpenAIChat } from "src/ts/process/chatTypes";
 
 export interface UnformatedPrompts {
     main: OpenAIChat[]

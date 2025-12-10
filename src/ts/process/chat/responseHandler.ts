@@ -1,12 +1,12 @@
-import type { character, Chat, Message, MessageGenerationInfo, MessagePresetInfo, groupChat } from "../data/storage/database.svelte";
-import type { OpenAIChat } from "./chatTypes";
-import { DBState } from '../stores.svelte';
-import { processScriptFull, risuChatParser } from "./scripts";
-import { runTrigger } from "./triggers";
-import { runInlayScreen } from "./inlayScreen";
-import { addRerolls } from "./prereroll";
-import { sayTTS } from "./tts";
-import { trimUntilPunctuation } from "../utils/util";
+import type { character, Chat, Message, MessageGenerationInfo, MessagePresetInfo, groupChat } from "src/ts/data/storage/database.svelte";
+import type { OpenAIChat } from "src/ts/process/chatTypes";
+import { DBState } from 'src/ts/stores.svelte';
+import { processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts";
+import { runTrigger } from "src/ts/process/scripting/triggers";
+import { runInlayScreen } from "src/ts/process/postprocess/inlayScreen";
+import { addRerolls } from "src/ts/process/chat/prereroll";
+import { sayTTS } from "src/ts/process/postprocess/tts";
+import { trimUntilPunctuation } from "src/ts/utils/util";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

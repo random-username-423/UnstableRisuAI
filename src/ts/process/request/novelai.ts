@@ -3,7 +3,7 @@ import { getCurrentCharacter, getDatabase } from "../../data/storage/database.sv
 import { globalFetch } from "../../utils/fetch";
 import { tokenizeNum } from "../../utils/tokenizer";
 import { NovelAIBadWordIds, stringlizeNAIChat } from "../models/nai";
-import { unstringlizeChat } from "../stringlize";
+import { unstringlizeChat } from "src/ts/process/prompt/stringlize";
 import type { RequestDataArgumentExtended, requestDataResponse } from "./types";
 
 export async function requestNovelAI(arg:RequestDataArgumentExtended):Promise<requestDataResponse>{

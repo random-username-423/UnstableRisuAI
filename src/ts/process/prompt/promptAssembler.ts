@@ -1,11 +1,11 @@
-import type { character, Chat } from "../data/storage/database.svelte";
-import type { OpenAIChat } from "./chatTypes";
-import type { UnformatedPrompts, LorebookData } from "./promptBuilder";
-import { DBState } from '../stores.svelte';
-import { ChatTokenizer } from "../utils/tokenizer";
-import { risuChatParser } from "./scripts";
-import { parseChatML } from "../utils/parser.svelte";
-import { prebuiltAssetCommand } from "../utils/util";
+import type { character, Chat } from "src/ts/data/storage/database.svelte";
+import type { OpenAIChat } from "src/ts/process/chatTypes";
+import type { UnformatedPrompts, LorebookData } from "src/ts/process/prompt/promptBuilder";
+import { DBState } from 'src/ts/stores.svelte';
+import { ChatTokenizer } from "src/ts/utils/tokenizer";
+import { risuChatParser } from "src/ts/process/scripting/scripts";
+import { parseChatML } from "src/ts/utils/parser.svelte";
+import { prebuiltAssetCommand } from "src/ts/utils/util";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

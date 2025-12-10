@@ -1,22 +1,22 @@
-import { getChatVar, hasher, setChatVar, getGlobalChatVar, type simpleCharacterArgument, risuChatParser } from "../utils/parser.svelte";
+import { getChatVar, hasher, setChatVar, getGlobalChatVar, type simpleCharacterArgument, risuChatParser } from "src/ts/utils/parser.svelte";
 import { LuaEngine, LuaFactory } from "wasmoon";
-import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase, type Chat, type character, type groupChat, type triggerscript } from "../data/storage/database.svelte";
+import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase, type Chat, type character, type groupChat, type triggerscript } from "src/ts/data/storage/database.svelte";
 import { get } from "svelte/store";
-import { ReloadChatPointer, ReloadGUIPointer, selectedCharID } from "../stores.svelte";
-import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "../utils/alert";
-import { HypaProcesser } from "./memory/hypamemory";
-import { generateAIImage } from "./stableDiff";
-import { writeInlayImage, getInlayAsset } from "./files/inlays";
-import type { OpenAIChat, MultiModal } from "./index.svelte";
-import { requestChatData } from "./request/request";
+import { ReloadChatPointer, ReloadGUIPointer, selectedCharID } from "src/ts/stores.svelte";
+import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "src/ts/utils/alert";
+import { HypaProcesser } from "src/ts/process/memory/hypamemory";
+import { generateAIImage } from "src/ts/process/integrations/stableDiff";
+import { writeInlayImage, getInlayAsset } from "src/ts/process/files/inlays";
+import type { OpenAIChat, MultiModal } from "src/ts/process/chatTypes";
+import { requestChatData } from "src/ts/process/request/request";
 import { v4 } from "uuid";
-import { getModuleLorebooks, getModuleTriggers } from "./modules";
-import { Mutex } from './mutex';
-import { tokenize } from "../utils/tokenizer";
-import { readImage } from "../utils/fileIO";
-import { fetchNative } from "../utils/fetch";
-import { loadLoreBookV3Prompt } from './lorebook.svelte';
-import { getPersonaPrompt, getUserName, getUserIcon } from '../utils/util';
+import { getModuleLorebooks, getModuleTriggers } from "src/ts/process/scripting/modules";
+import { Mutex } from 'src/ts/process/utils/mutex';
+import { tokenize } from "src/ts/utils/tokenizer";
+import { readImage } from "src/ts/utils/fileIO";
+import { fetchNative } from "src/ts/utils/fetch";
+import { loadLoreBookV3Prompt } from 'src/ts/process/prompt/lorebook.svelte';
+import { getPersonaPrompt, getUserName, getUserIcon } from 'src/ts/utils/util';
 let luaFactory:LuaFactory
 let ScriptingSafeIds = new Set<string>()
 let ScriptingEditDisplayIds = new Set<string>()
@@ -1367,7 +1367,7 @@ class PyodideContext{
     apis: Record<string, (...args:any[]) => any> = {};
     inited: boolean = false;
     constructor(){
-        this.worker = new Worker(new URL('./pyworker.ts', import.meta.url), {
+        this.worker = new Worker(new URL('src/ts/process/integrations/pyworker.ts', import.meta.url), {
             type: 'module'
         })
         this.worker.onmessage = (event:MessageEvent) => {

@@ -1,6 +1,6 @@
 import type { Database, character, loreBook } from '../data/storage/database.svelte';
 import type { CbsConditions } from '../utils/parser.svelte';
-import type { RisuModule } from '../process/modules';
+import type { RisuModule } from 'src/ts/process/scripting/modules';
 import type { LLMModel } from '../model/modellist';
 import { get } from 'svelte/store';
 import { CurrentTriggerIdStore } from '../stores.svelte';

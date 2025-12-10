@@ -13,9 +13,9 @@
     import { findCharacterbyId, getAuthorNoteDefaultText, selectMultipleFile, selectSingleFile } from "../../ts/utils/util";
     import Help from "../Others/Help.svelte";
     import { exportChar } from "src/ts/character/characterCards";
-    import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices, FixNAITTS } from "src/ts/process/tts";
+    import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices, FixNAITTS } from "src/ts/process/postprocess/tts";
     import { getFileSrc } from "src/ts/utils/fileIO";
-    import { addGroupChar, rmCharFromGroup } from "src/ts/process/group";
+    import { addGroupChar, rmCharFromGroup } from "src/ts/process/chat/group";
     import TextInput from "../UI/GUI/TextInput.svelte";
     import NumberInput from "../UI/GUI/NumberInput.svelte";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
@@ -25,11 +25,11 @@
     import RegexList from "./Scripts/RegexList.svelte";
     import TriggerList from "./Scripts/TriggerList.svelte";
     import CheckInput from "../UI/GUI/CheckInput.svelte";
-    import { updateInlayScreen } from "src/ts/process/inlayScreen";
-    import { registerOnnxModel } from "src/ts/process/transformers";
+    import { updateInlayScreen } from "src/ts/process/postprocess/inlayScreen";
+    import { registerOnnxModel } from "src/ts/process/integrations/transformers";
     import MultiLangInput from "../UI/GUI/MultiLangInput.svelte";
-    import { applyModule, getModuleToggles } from "src/ts/process/modules";
-    import { exportRegex, importRegex } from "src/ts/process/scripts";
+    import { applyModule, getModuleToggles } from "src/ts/process/scripting/modules";
+    import { exportRegex, importRegex } from "src/ts/process/scripting/scripts";
     import Arcodion from "../UI/Arcodion.svelte";
     import SliderInput from "../UI/GUI/SliderInput.svelte";
     import Toggles from "./Toggles.svelte";

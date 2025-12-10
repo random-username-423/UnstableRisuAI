@@ -6,7 +6,7 @@ import { checkNullish, selectSingleFile, sleep } from '../utils/util';
 import type { OpenAIChat } from "../process/index.svelte";
 import { fetchNative, globalFetch } from "../utils/fetch";
 import { selectedCharID } from "../stores.svelte";
-import type { ScriptMode } from "../process/scripts";
+import type { ScriptMode } from "src/ts/process/scripting/scripts";
 
 export const customProviderStore = writable([] as string[])
 

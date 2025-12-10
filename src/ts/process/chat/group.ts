@@ -1,10 +1,10 @@
 import { shuffle } from "lodash";
-import { findCharacterbyId } from '../utils/util';
-import { alertConfirm, alertError, alertSelectChar } from "../utils/alert";
+import { findCharacterbyId } from 'src/ts/utils/util';
+import { alertConfirm, alertError, alertSelectChar } from "src/ts/utils/alert";
 import { language } from "src/lang";
 import { get } from "svelte/store";
-import { getDatabase, setDatabase } from "../data/storage/database.svelte";
-import { selectedCharID } from "../stores.svelte";
+import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte";
+import { selectedCharID } from "src/ts/stores.svelte";
 
 export async function addGroupChar(){
     let db = getDatabase()

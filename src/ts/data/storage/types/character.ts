@@ -1,7 +1,7 @@
 import type { Chat, ChatFolder } from './chat';
 import type { loreBook, loreSettings } from './lorebook';
 import type { customscript, triggerscript } from './settings';
-import type { OnnxModelFiles } from '../../../process/transformers';
+import type { OnnxModelFiles } from 'src/ts/process/integrations/transformers';
 
 export interface character{
     type?:"character"

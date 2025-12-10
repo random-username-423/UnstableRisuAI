@@ -16,7 +16,7 @@
     import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import { untrack } from "svelte";
-    import { tokenizePreset } from "src/ts/process/prompt";
+    import { tokenizePreset } from "src/ts/process/utils/prompt";
     import { getCharToken } from "src/ts/utils/tokenizer";
     import { PlusIcon, PencilIcon, TrashIcon, DownloadIcon, HardDriveUploadIcon } from "lucide-svelte";
     import { alertError, alertInput, alertConfirm, alertNormal } from "src/ts/utils/alert";

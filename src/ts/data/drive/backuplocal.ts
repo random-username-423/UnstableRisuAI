@@ -1,15 +1,15 @@
-import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear, alertSelect } from "../../utils/alert";
+import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear, alertSelect } from "src/ts/utils/alert";
 import { Buffer } from "buffer";
 import { saving, requiresFullEncoderReload } from "src/ts/data/storage/autoSaveManager.svelte";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
 import { LocalWriter } from "src/ts/utils/writers";
 import { saveToWorker, listFromWorker, listRecursiveFromWorker, deleteFromWorker, deleteDirectoryFromWorker, loadFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { isTauri } from "src/ts/utils/env";
-import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
-import { getDatabase, setDatabaseLite, setDatabase } from "../storage/database.svelte";
+import { decodeRisuSave, encodeRisuSaveLegacy } from "src/ts/data/storage/risuSave";
+import { getDatabase, setDatabaseLite, setDatabase } from "src/ts/data/storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { platform } from "@tauri-apps/plugin-os";
-import { sleep } from '../../utils/util';
+import { sleep } from 'src/ts/utils/util';
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
 
 export async function SaveLocalBackup(){

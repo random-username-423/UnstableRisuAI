@@ -4,8 +4,8 @@
     import LoreBookData from "src/lib/SideBars/LoreBook/LoreBookData.svelte";
     import type { loreBook } from "src/ts/data/storage/database.svelte";
     import LoreBookList from "src/lib/SideBars/LoreBook/LoreBookList.svelte";
-    import { type CCLorebook, convertExternalLorebook } from "src/ts/process/lorebook.svelte";
-    import type { RisuModule } from "src/ts/process/modules";
+    import { type CCLorebook, convertExternalLorebook } from "src/ts/process/prompt/lorebook.svelte";
+    import type { RisuModule } from "src/ts/process/scripting/modules";
     import { DownloadIcon, FolderPlusIcon, HardDriveUploadIcon, PlusIcon, TrashIcon } from "lucide-svelte";
     import RegexList from "src/lib/SideBars/Scripts/RegexList.svelte";
     import TriggerList from "src/lib/SideBars/Scripts/TriggerList.svelte";
@@ -15,7 +15,7 @@
     import { getFileSrc, saveAsset, downloadFile } from "src/ts/utils/fileIO";
     import { openURL } from "src/ts/utils/util";
     import { alertNormal, alertError } from "src/ts/utils/alert";
-    import { exportRegex, importRegex } from "src/ts/process/scripts";
+    import { exportRegex, importRegex } from "src/ts/process/scripting/scripts";
     import { selectMultipleFile } from "src/ts/utils/util";
     
     import { DBState } from 'src/ts/stores.svelte';

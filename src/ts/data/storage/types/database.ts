@@ -4,13 +4,13 @@ import type { loreBook } from './lorebook';
 import type { sdConfig, NAIImgConfig, hordeConfig, customscript, SeparateParameters, DynamicOutput, ComfyConfig, OobaSettings, AINsettings, folder } from './settings';
 import type { RisuPlugin } from '../../../plugins/plugins';
 import type { NAISettings } from '../../../process/models/nai';
-import type { PromptItem, PromptSettings } from '../../../process/prompt';
+import type { PromptItem, PromptSettings } from '../../../process/utils/prompt';
 import type { OobaChatCompletionRequestParams } from '../../../model/ooba';
 import type { ColorScheme } from '../../../gui/colorscheme';
 import type { LLMFormat, LLMFlags, LLMTokenizer } from '../../../model/modellist';
 import type { HypaV3Settings, HypaV3Preset } from '../../../process/memory/hypav3Types';
 import type { Hotkey } from '../../../hotkey/defaulthotkeys';
-import type { RisuModule } from '../../../process/modules';
+import type { RisuModule } from 'src/ts/process/scripting/modules';
 import type { HypaModel } from '../../../process/memory/hypamemory';
 
 export interface Database{

@@ -7,7 +7,7 @@
     import { alertMd, alertWait } from "src/ts/utils/alert";
     import Arcodion from "../UI/Arcodion.svelte";
     import { getCharToken, getChatToken } from "src/ts/utils/tokenizer";
-    import { tokenizePreset } from "src/ts/process/prompt";
+    import { tokenizePreset } from "src/ts/process/utils/prompt";
     
     import { DBState } from 'src/ts/stores.svelte';
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
@@ -17,8 +17,8 @@
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import { applyChatTemplate, chatTemplates } from "src/ts/process/templates/chatTemplate";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
-  import { loadLoreBookV3Prompt } from "src/ts/process/lorebook.svelte";
-  import { getModules } from "src/ts/process/modules";
+  import { loadLoreBookV3Prompt } from "src/ts/process/prompt/lorebook.svelte";
+  import { getModules } from "src/ts/process/scripting/modules";
 
     let previewMode = $state('chat')
     let previewJoin = $state('yes')

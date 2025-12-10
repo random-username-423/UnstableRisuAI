@@ -2,7 +2,7 @@
     import { language } from "src/lang";
     import Button from "../UI/GUI/Button.svelte";
     import { selectMultipleFile } from "src/ts/utils/util";
-    import { detectPromptJSONType, promptConvertion } from "src/ts/process/prompt";
+    import { detectPromptJSONType, promptConvertion } from "src/ts/process/utils/prompt";
 
     let files: { name: string, content: string, type:string }[] = $state([])
 

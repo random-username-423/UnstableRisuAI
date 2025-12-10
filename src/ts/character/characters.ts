@@ -9,7 +9,7 @@ import { requiresFullEncoderReload } from "src/ts/data/storage/autoSaveManager.s
 import { loadChat } from "src/ts/data/storage/chatStorage";
 import { downloadFile, getFileSrc } from "../utils/fileIO";
 import { AppendableBuffer } from "../utils/fetch";
-import { updateInlayScreen } from "../process/inlayScreen";
+import { updateInlayScreen } from "src/ts/process/postprocess/inlayScreen";
 import { checkImageType, parseMarkdownSafe } from "../utils/parser.svelte";
 import { translateHTML } from "../translator/translator";
 import { doingChat } from "../process/index.svelte";

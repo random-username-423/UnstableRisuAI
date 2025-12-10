@@ -4,14 +4,14 @@ import { appVer, getCurrentCharacter, getDatabase, type Database, type Message, 
 import { DBState } from '../stores.svelte';
 import { getFileSrc } from './fileIO';
 import { isTauri, isNodeServer, isMobileUserAgent, isMobileTauri } from "src/ts/utils/env";
-import { processScriptFull } from '../process/scripts';
+import { processScriptFull } from 'src/ts/process/scripting/scripts';
 import { get } from 'svelte/store';
 import css, { type CssAtRuleAST } from '@adobe/css-tools'
 import { SizeStore, selectedCharID } from '../stores.svelte';
-import { calcString } from '../process/infunctions';
+import { calcString } from 'src/ts/process/scripting/infunctions';
 import { findCharacterbyId, getPersonaPrompt, getUserIcon, getUserName, parseKeyValue, pickHashRand, replaceAsync} from './util';
 import { getInlayAsset, getInlayAssetBlob } from '../process/files/inlays';
-import { getModuleAssets, getModuleLorebooks, getModules, type RisuModule } from '../process/modules';
+import { getModuleAssets, getModuleLorebooks, getModules, type RisuModule } from 'src/ts/process/scripting/modules';
 import type { OpenAIChat } from '../process/index.svelte';
 import hljs from 'highlight.js/lib/core'
 import 'highlight.js/styles/atom-one-dark.min.css'

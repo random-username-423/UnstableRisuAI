@@ -2,9 +2,9 @@ import { language } from "../../../lang";
 import { getCurrentCharacter, getDatabase } from "../../data/storage/database.svelte";
 import { globalFetch } from "../../utils/fetch";
 import { pluginProcess, pluginV2 } from "../../plugins/plugins";
-import { stringlizeAINChat, unstringlizeAIN, unstringlizeChat } from "../stringlize";
+import { stringlizeAINChat, unstringlizeAIN, unstringlizeChat } from "src/ts/process/prompt/stringlize";
 import { applyChatTemplate } from "../templates/chatTemplate";
-import { runTransformers } from "../transformers";
+import { runTransformers } from "src/ts/process/integrations/transformers";
 import type { RequestDataArgumentExtended, requestDataResponse, StreamResponseChunk } from "./types";
 import { applyParameters } from "./utils";
 

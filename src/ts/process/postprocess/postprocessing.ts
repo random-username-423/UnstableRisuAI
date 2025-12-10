@@ -1,13 +1,13 @@
 import { get } from "svelte/store";
-import type { character, Message } from "../data/storage/database.svelte";
-import { DBState } from '../stores.svelte';
-import { CharEmotion } from "../stores.svelte";
-import { tokenizeNum } from "../utils/tokenizer";
-import { language } from "../../lang";
-import { requestChatData } from "./request/request";
-import { stableDiff } from "./stableDiff";
-import { HypaProcesser } from "./memory/hypamemory";
-import type { OpenAIChat } from "./chatTypes";
+import type { character, Message } from "src/ts/data/storage/database.svelte";
+import { DBState } from 'src/ts/stores.svelte';
+import { CharEmotion } from "src/ts/stores.svelte";
+import { tokenizeNum } from "src/ts/utils/tokenizer";
+import { language } from "src/lang";
+import { requestChatData } from "src/ts/process/request/request";
+import { stableDiff } from "src/ts/process/integrations/stableDiff";
+import { HypaProcesser } from "src/ts/process/memory/hypamemory";
+import type { OpenAIChat } from "src/ts/process/chatTypes";
 
 export interface EmotionProcessResult {
     success: boolean

@@ -4,12 +4,12 @@ import {
     type character,
     type groupChat,
 } from "src/ts/data/storage/database.svelte";
-import type { OpenAIChat } from "../index.svelte";
+import type { OpenAIChat } from "src/ts/process/index.svelte";
 import type { ChatTokenizer } from "src/ts/utils/tokenizer";
-import { requestChatData } from "../request/request";
+import { requestChatData } from "src/ts/process/request/request";
 import { HypaProcesser } from "./hypamemory";
 import { globalFetch } from "src/ts/utils/fetch";
-import { runSummarizer } from "../transformers";
+import { runSummarizer } from "src/ts/process/integrations/transformers";
 import { parseChatML } from "src/ts/utils/parser.svelte";
 
 export interface HypaV2Data {

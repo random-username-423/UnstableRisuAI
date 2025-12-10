@@ -2,7 +2,7 @@
     import { language } from "src/lang";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
-    import { generateAIImage } from "src/ts/process/stableDiff";
+    import { generateAIImage } from "src/ts/process/integrations/stableDiff";
     import { createBlankChar } from "src/ts/character/characters";
     let prompt = $state("");
     let negPrompt = $state("");

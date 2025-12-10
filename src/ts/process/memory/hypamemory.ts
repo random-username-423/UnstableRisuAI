@@ -1,6 +1,6 @@
 import localforage from "localforage";
 import { globalFetch } from "src/ts/utils/fetch";
-import { runEmbedding } from "../transformers";
+import { runEmbedding } from "src/ts/process/integrations/transformers";
 import { appendLastPath } from "src/ts/utils/util";
 import { getDatabase } from "src/ts/data/storage/database.svelte";
 

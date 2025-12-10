@@ -5,7 +5,7 @@
     import { alertError } from "../../ts/utils/alert"
     import { getDistance, ParseMarkdown, postTranslationParse, trimMarkdown, type CbsConditions, type simpleCharacterArgument } from "../../ts/utils/parser.svelte"
     import { getLLMCache, translateHTML } from "../../ts/translator/translator"
-    import { getModuleAssets } from "src/ts/process/modules";
+    import { getModuleAssets } from "src/ts/process/scripting/modules";
     import { getCurrentCharacter } from "src/ts/data/storage/database.svelte";
     import { getFileSrc } from "src/ts/utils/fileIO";
 

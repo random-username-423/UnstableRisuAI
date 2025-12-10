@@ -1,6 +1,6 @@
 import { getDatabase } from "../../data/storage/database.svelte";
 import { sleep } from "../../utils/util";
-import { unstringlizeChat } from "../stringlize";
+import { unstringlizeChat } from "src/ts/process/prompt/stringlize";
 import { applyChatTemplate } from "../templates/chatTemplate";
 import type { RequestDataArgumentExtended, requestDataResponse } from "./types";
 

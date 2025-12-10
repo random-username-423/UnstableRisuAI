@@ -1,14 +1,14 @@
-import type { character, Message, groupChat } from "../data/storage/database.svelte";
-import type { OpenAIChat, MultiModal } from "./chatTypes";
-import { DBState } from '../stores.svelte';
-import { ChatTokenizer } from "../utils/tokenizer";
-import { processScriptFull, risuChatParser } from "./scripts";
-import { getInlayAsset } from "./files/inlays";
-import { runImageEmbedding } from "./transformers";
-import { getModuleAssets } from "./modules";
-import { readImage } from "../utils/fileIO";
-import { findCharacterbyId, getUserName } from "../utils/util";
-import { getModelInfo, LLMFlags } from "../model/modellist";
+import type { character, Message, groupChat } from "src/ts/data/storage/database.svelte";
+import type { OpenAIChat, MultiModal } from "src/ts/process/chatTypes";
+import { DBState } from 'src/ts/stores.svelte';
+import { ChatTokenizer } from "src/ts/utils/tokenizer";
+import { processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts";
+import { getInlayAsset } from "src/ts/process/files/inlays";
+import { runImageEmbedding } from "src/ts/process/integrations/transformers";
+import { getModuleAssets } from "src/ts/process/scripting/modules";
+import { readImage } from "src/ts/utils/fileIO";
+import { findCharacterbyId, getUserName } from "src/ts/utils/util";
+import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
 import { v4 } from "uuid";
 
 // ─────────────────────────────────────────────────────────────────────────────

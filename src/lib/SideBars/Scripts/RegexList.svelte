@@ -5,7 +5,7 @@
     import { sleep, sortableOptions } from "src/ts/utils/util";
     import { onDestroy, onMount } from "svelte";
   import { DownloadIcon, HardDriveUploadIcon, PlusIcon } from "lucide-svelte";
-  import { exportRegex, importRegex } from "src/ts/process/scripts";
+  import { exportRegex, importRegex } from "src/ts/process/scripting/scripts";
     interface Props {
         value?: customscript[];
         buttons?: boolean

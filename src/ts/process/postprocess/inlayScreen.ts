@@ -1,6 +1,6 @@
-import { writeInlayImage } from "./files/inlays";
-import type { character } from "../data/storage/database.svelte";
-import { generateAIImage } from "./stableDiff";
+import { writeInlayImage } from "src/ts/process/files/inlays";
+import type { character } from "src/ts/data/storage/database.svelte";
+import { generateAIImage } from "src/ts/process/integrations/stableDiff";
 
 const imggenRegex = [/<ImgGen="(.+?)">/gi, /{{ImgGen="(.+?)"}}/gi] as const
 

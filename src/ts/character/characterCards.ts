@@ -18,9 +18,9 @@ import { checkImageType, convertImage, hasher } from "../utils/parser.svelte"
 import { CCardLib, type CharacterCardV3, type LorebookEntry } from '@risuai/ccardlib'
 import { reencodeImage } from "../process/files/inlays"
 import { PngChunk } from './pngChunk'
-import type { OnnxModelFiles } from "../process/transformers"
-import { CharXReader, CharXWriter } from "../process/processzip"
-import { exportModule, readModule, type RisuModule } from "../process/modules"
+import type { OnnxModelFiles } from "src/ts/process/integrations/transformers"
+import { CharXReader, CharXWriter } from "src/ts/process/utils/processzip"
+import { exportModule, readModule, type RisuModule } from "src/ts/process/scripting/modules"
 import { readFile } from "@tauri-apps/plugin-fs"
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link';
 

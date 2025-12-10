@@ -4,10 +4,10 @@
     import { ColorSchemeTypeStore } from "src/ts/gui/colorscheme"
     import { longpress } from "src/ts/gui/longtouch"
     import { getModelInfo } from "src/ts/model/modellist"
-    import { runLuaButtonTrigger } from 'src/ts/process/scriptings'
-    import { risuChatParser } from "src/ts/process/scripts"
-    import { runTrigger } from 'src/ts/process/triggers'
-    import { sayTTS } from "src/ts/process/tts"
+    import { runLuaButtonTrigger } from 'src/ts/process/scripting/scriptings'
+    import { risuChatParser } from "src/ts/process/scripting/scripts"
+    import { runTrigger } from 'src/ts/process/scripting/triggers'
+    import { sayTTS } from "src/ts/process/postprocess/tts"
     import { DBState, ReloadChatPointer, CurrentTriggerIdStore } from 'src/ts/stores.svelte'
     import { ConnectionOpenStore } from "src/ts/data/sync/multiuser"
     import { capitalize, getUserIcon, getUserName } from "src/ts/utils/util"

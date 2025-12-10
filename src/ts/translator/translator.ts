@@ -8,9 +8,9 @@ import { requestChatData } from "../process/request/request"
 import { doingChat, type OpenAIChat } from "../process/index.svelte"
 import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../utils/parser.svelte"
 import { selectedCharID } from "../stores.svelte"
-import { getModuleRegexScripts } from "../process/modules"
+import { getModuleRegexScripts } from "src/ts/process/scripting/modules"
 import { getNodetextToSentence, sleep } from "../utils/util"
-import { processScriptFull } from "../process/scripts"
+import { processScriptFull } from "src/ts/process/scripting/scripts"
 import localforage from "localforage"
 import sendSound from '../../etc/send.mp3'
 

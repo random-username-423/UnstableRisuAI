@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { PromptItem, PromptItemChat } from "src/ts/process/prompt";
+    import type { PromptItem, PromptItemChat } from "src/ts/process/utils/prompt";
     import OptionInput from "./GUI/OptionInput.svelte";
     import TextAreaInput from "./GUI/TextAreaInput.svelte";
     import SelectInput from "./GUI/SelectInput.svelte";

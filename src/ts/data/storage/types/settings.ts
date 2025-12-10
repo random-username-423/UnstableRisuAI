@@ -1,4 +1,4 @@
-import type {triggerscript as triggerscriptMain} from '../../../process/triggers';
+import type {triggerscript as triggerscriptMain} from 'src/ts/process/scripting/triggers';
 
 export interface SeparateParameters{
     temperature?:number

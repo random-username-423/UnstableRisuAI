@@ -5,7 +5,7 @@ import { risuEscape, risuUnescape } from "../../utils/parser.svelte";
 import { pluginV2 } from "../../plugins/plugins";
 import { sleep } from '../../utils/util';
 import { getTools } from "../mcp/mcp";
-import { runTrigger } from "../triggers";
+import { runTrigger } from "src/ts/process/scripting/triggers";
 
 // Import from split files
 import type {

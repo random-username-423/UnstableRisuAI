@@ -1,12 +1,12 @@
 import { get } from "svelte/store";
-import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentChat, setDatabase } from "../data/storage/database.svelte";
-import { selectedCharID } from "../stores.svelte";
-import { alertInput, alertMd, alertNormal, alertSelect, alertToast } from "../utils/alert";
-import { sayTTS } from "./tts";
-import { risuChatParser } from "../utils/parser.svelte";
-import { sendChat } from "./index.svelte";
-import { loadLoreBookV3Prompt } from "./lorebook.svelte";
-import { runTrigger } from "./triggers";
+import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentChat, setDatabase } from "src/ts/data/storage/database.svelte";
+import { selectedCharID } from "src/ts/stores.svelte";
+import { alertInput, alertMd, alertNormal, alertSelect, alertToast } from "src/ts/utils/alert";
+import { sayTTS } from "src/ts/process/postprocess/tts";
+import { risuChatParser } from "src/ts/utils/parser.svelte";
+import { sendChat } from "src/ts/process/index.svelte";
+import { loadLoreBookV3Prompt } from "src/ts/process/prompt/lorebook.svelte";
+import { runTrigger } from "src/ts/process/scripting/triggers";
 
 export async function processMultiCommand(command:string) {
     let pipe = ''

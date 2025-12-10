@@ -18,7 +18,7 @@
     import { loadChat } from "src/ts/data/storage/chatStorage";
     import { createMultiuserRoom } from "src/ts/data/sync/multiuser";
     import { getChatBranches } from "src/ts/gui/branches";
-    import { getModuleToggles } from "src/ts/process/modules";
+    import { getModuleToggles } from "src/ts/process/scripting/modules";
     import { language } from "src/lang";
   import Toggles from "./Toggles.svelte";
 

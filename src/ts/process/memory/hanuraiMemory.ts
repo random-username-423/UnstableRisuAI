@@ -1,5 +1,5 @@
 import { alertError } from "src/ts/utils/alert";
-import type { OpenAIChat } from "../index.svelte";
+import type { OpenAIChat } from "src/ts/process/index.svelte";
 import { HypaProcesser } from "./hypamemory";
 import { language } from "src/lang";
 import type { ChatTokenizer } from "src/ts/utils/tokenizer";

@@ -1,19 +1,19 @@
-import { parseChatML, risuChatParser } from "../utils/parser.svelte";
-import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase, type Chat, type character } from "../data/storage/database.svelte";
-import { tokenize } from "../utils/tokenizer";
-import { getModuleTriggers } from "./modules";
+import { parseChatML, risuChatParser } from "src/ts/utils/parser.svelte";
+import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase, type Chat, type character } from "src/ts/data/storage/database.svelte";
+import { tokenize } from "src/ts/utils/tokenizer";
+import { getModuleTriggers } from "src/ts/process/scripting/modules";
 import { get } from "svelte/store";
-import { ReloadChatPointer, ReloadGUIPointer, selectedCharID, CurrentTriggerIdStore } from "../stores.svelte";
-import { processMultiCommand } from "./command";
-import { parseKeyValue, sleep } from "../utils/util";
-import { alertError, alertInput, alertNormal, alertSelect } from "../utils/alert";
-import type { OpenAIChat } from "./index.svelte";
-import { HypaProcesser } from "./memory/hypamemory";
-import { requestChatData, type OpenAIChatExtra } from "./request/request";
-import { generateAIImage } from "./stableDiff";
-import { writeInlayImage } from "./files/inlays";
-import { runScripted } from "./scriptings";
-import { calcString } from "./infunctions";
+import { ReloadChatPointer, ReloadGUIPointer, selectedCharID, CurrentTriggerIdStore } from "src/ts/stores.svelte";
+import { processMultiCommand } from "src/ts/process/scripting/command";
+import { parseKeyValue, sleep } from "src/ts/utils/util";
+import { alertError, alertInput, alertNormal, alertSelect } from "src/ts/utils/alert";
+import type { OpenAIChat } from "src/ts/process/index.svelte";
+import { HypaProcesser } from "src/ts/process/memory/hypamemory";
+import { requestChatData, type OpenAIChatExtra } from "src/ts/process/request/request";
+import { generateAIImage } from "src/ts/process/integrations/stableDiff";
+import { writeInlayImage } from "src/ts/process/files/inlays";
+import { runScripted } from "src/ts/process/scripting/scriptings";
+import { calcString } from "src/ts/process/scripting/infunctions";
 
 
 export interface triggerscript{

@@ -1,11 +1,11 @@
-import { alertError } from "../utils/alert";
-import { getCurrentCharacter, getDatabase, type character } from "../data/storage/database.svelte";
-import { runTranslator, translateVox } from "../translator/translator";
-import { loadAsset } from "../utils/fileIO";
-import { globalFetch } from "../utils/fetch";
+import { alertError } from "src/ts/utils/alert";
+import { getCurrentCharacter, getDatabase, type character } from "src/ts/data/storage/database.svelte";
+import { runTranslator, translateVox } from "src/ts/translator/translator";
+import { loadAsset } from "src/ts/utils/fileIO";
+import { globalFetch } from "src/ts/utils/fetch";
 import { language } from "src/lang";
-import { sleep } from "../utils/util";
-import { runVITS } from "./transformers";
+import { sleep } from "src/ts/utils/util";
+import { runVITS } from "src/ts/process/integrations/transformers";
 
 let sourceNode:AudioBufferSourceNode = null
 
