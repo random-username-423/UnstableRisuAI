@@ -500,7 +500,7 @@ function checkImageExist(image: string) {
 
 
 function formatKeys(name: string) {
-    return getBasename(name).replace(/\_/g, '__').replace(/\./g, '_d').replace(/\//, '_s') + '.png'
+    return getBasename(name).replace(/_/g, '__').replace(/\./g, '_d').replace(/\//, '_s') + '.png'
 }
 
 function newFormatKeys(name: string) {

@@ -225,7 +225,7 @@ export function applyGroupFormatting(
         (options.usingPromptTemplate && options.sendName)
 
     if (needsGroupTemplate) {
-        const form = options.groupTemplate || `<{{char}}\'s Message>\n{{slot}}\n</{{char}}\'s Message>`
+        const form = options.groupTemplate || `<{{char}}'s Message>\n{{slot}}\n</{{char}}'s Message>`
         content = risuChatParser(form, { chara: sayingChar.name }).replace('{{slot}}', content)
 
         switch (options.groupOtherBotRole) {
@@ -387,7 +387,7 @@ export function createFormatOptions(
         isGroupChat: nowChatroom.type === 'group',
         pastThinkingSend: DBState.db.pastThinkingSend ?? 1,
         maxThoughtDepth: DBState.db.promptSettings?.maxThoughtTagDepth ?? -1,
-        groupTemplate: DBState.db.groupTemplate || `<{{char}}\'s Message>\n{{slot}}\n</{{char}}\'s Message>`,
+        groupTemplate: DBState.db.groupTemplate || `<{{char}}'s Message>\n{{slot}}\n</{{char}}'s Message>`,
         groupOtherBotRole: DBState.db.groupOtherBotRole,
         findCharacterbyIdWithCache
     }

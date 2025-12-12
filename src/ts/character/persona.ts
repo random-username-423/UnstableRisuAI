@@ -94,7 +94,7 @@ export async function exportUserPersona() {
     })
 
     await sleep(10)
-    await downloadFile(`${db.username.replace(/[<>:"/\\|?*\.\,]/g, "")}_export.png`, img)
+    await downloadFile(`${db.username.replace(/[<>:"/\\|?*.,]/g, "")}_export.png`, img)
 
     alertNormal(language.successExport)
 }

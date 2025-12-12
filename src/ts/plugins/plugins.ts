@@ -45,9 +45,9 @@ export async function importPlugin() {
             }
         }
 
-        const mediaRegex = /(https?):\/\/[^\s\'\"]+\.(?:png|jpg|jpeg|gif|webp|svg|mp3|wav|ogg|mp4|webm)/gi;
+        const mediaRegex = /(https?):\/\/[^\s'"]+\.(?:png|jpg|jpeg|gif|webp|svg|mp3|wav|ogg|mp4|webm)/gi;
         const hasExternalMedia = mediaRegex.test(jsFile);
-        const jsRegex = /(https?):\/\/[^\s\'\"]+\.js/gi;
+        const jsRegex = /(https?):\/\/[^\s'"]+\.js/gi;
         const hasExternalJS = jsRegex.test(jsFile);
 
         let confirmMessage = `${name}`;

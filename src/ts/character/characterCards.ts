@@ -1289,7 +1289,7 @@ export async function exportCharacterCard(char: character, type: 'png' | 'json' 
                 }
             }
             if (type === 'json') {
-                await downloadFile(`${char.name.replace(/[<>:"/\\|?*\.\,]/g, "")}_export.json`, Buffer.from(JSON.stringify(card, null, 4), 'utf-8'))
+                await downloadFile(`${char.name.replace(/[<>:"/\\|?*.,]/g, "")}_export.json`, Buffer.from(JSON.stringify(card, null, 4), 'utf-8'))
                 alertNormal(language.successExport)
                 return
             }
@@ -1433,7 +1433,7 @@ export async function exportCharacterCard(char: character, type: 'png' | 'json' 
                 }
             }
             if (type === 'json') {
-                await downloadFile(`${char.name.replace(/[<>:"/\\|?*\.\,]/g, "")}_export.json`, Buffer.from(JSON.stringify(card, null, 4), 'utf-8'))
+                await downloadFile(`${char.name.replace(/[<>:"/\\|?*.,]/g, "")}_export.json`, Buffer.from(JSON.stringify(card, null, 4), 'utf-8'))
                 alertNormal(language.successExport)
                 return
             }

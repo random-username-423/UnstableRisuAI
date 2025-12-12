@@ -129,7 +129,7 @@ export async function supaMemory(
 
                     supaMemory = data
                     if(db.removePunctuationHypa){
-                        supaMemory = supaMemory.replace(/[\.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
+                        supaMemory = supaMemory.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"")
                     }
                     currentTokens += await tokenize(supaMemory)
                 }
@@ -149,11 +149,11 @@ export async function supaMemory(
                     return self.indexOf(value) === index;
                 }).map((value) => {
                     if(db.removePunctuationHypa){
-                        value = value.replace(/[\.,\/#!$%\^&\*;:{}=\-_`~()]/g,"")
+                        value = value.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"")
                     }
                     return value
                 }).filter((v) => {
-                    return !supaMemory.replace(/[\.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").includes(v.replace(/[\.,\/#!$%\^&\*;:{}=\-_`~()]/g,""))
+                    return !supaMemory.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,"").includes(v.replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,""))
                 }))
                 const filteredChat = chats.filter((r) => r.role !== 'system' && r.role !== 'function')
                 const s = await hypa.similaritySearch(stringlizeChat(filteredChat.slice(0, 4), char?.name ?? '', false))

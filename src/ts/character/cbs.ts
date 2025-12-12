@@ -1987,7 +1987,7 @@ export function registerCBS(arg:CBSRegisterArg) {
                     arr = parseArray(str)
                 }
                 else{
-                    arr = args[0].replace(/\\,/g, '§X').split(/\:|\,/g)
+                    arr = args[0].replace(/\\,/g, '§X').split(/:|,/g)
                 }
                 const randomIndex = Math.floor(Math.random() * arr.length)
                 if(matcherArg.tokenizeAccurate){
@@ -2026,7 +2026,7 @@ export function registerCBS(arg:CBSRegisterArg) {
                     arr = parseArray(str)
                 }
                 else{
-                    arr = args[0].replace(/\\,/g, '§X').split(/\:|\,/g)
+                    arr = args[0].replace(/\\,/g, '§X').split(/:|,/g)
                 }
                 const randomIndex = Math.floor(hashRand * arr.length)
                 if(matcherArg.tokenizeAccurate){

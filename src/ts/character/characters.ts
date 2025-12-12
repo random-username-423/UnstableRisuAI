@@ -215,7 +215,7 @@ export async function exportChat(page:number){
 
             if(anonymous){
                 //case insensitive match, replace all
-                const excapedName = char.name.replace(/[-\/\\^$*+\?\.()|[\]{}]/g, '\\$&')
+                const excapedName = char.name.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
 
                 v = v.replace(new RegExp(`${excapedName}`, 'gi'), '×××')
             }
@@ -235,7 +235,7 @@ export async function exportChat(page:number){
                 folders: folders
             }), 'utf-8')
     
-            await downloadFile(`${char.name}_${date}_chat`.replace(/[<>:"/\\|?*\.\,]/g, "") + '.json', stringl)
+            await downloadFile(`${char.name}_${date}_chat`.replace(/[<>:"/\\|?*.,]/g, "") + '.json', stringl)
     
         }
         else if(mode === '2'){
@@ -307,7 +307,7 @@ export async function exportChat(page:number){
             `
 
 
-            await downloadFile(`${char.name}_${date}_chat`.replace(/[<>:"/\\|?*\.\,]/g, "") + '.html', Buffer.from(doc, 'utf-8'))
+            await downloadFile(`${char.name}_${date}_chat`.replace(/[<>:"/\\|?*.,]/g, "") + '.html', Buffer.from(doc, 'utf-8'))
         }
         else if(mode === '3'){
             //create a html table
@@ -365,7 +365,7 @@ export async function exportChat(page:number){
                 stringl = `--${char.name}\n${char.firstMessage}\n\n` + stringl
             }
 
-            await downloadFile(`${char.name}_${date}_chat`.replace(/[<>:"/\\|?*\.\,]/g, "") + '.txt', Buffer.from(stringl, 'utf-8'))
+            await downloadFile(`${char.name}_${date}_chat`.replace(/[<>:"/\\|?*.,]/g, "") + '.txt', Buffer.from(stringl, 'utf-8'))
 
         }
         alertNormal(language.successExport)
@@ -663,7 +663,7 @@ export function updateLorebooks(book:loreBook[]){
 
             v.content = `@@probability ${perc}\n${v.content}`
         }
-        v.content = v.content.replace(/@@@?end/g, '@@depth 0').replace(/\<(char|bot)\>/g, '{{char}}').replace(/\<(user)\>/g, '{{user}}')
+        v.content = v.content.replace(/@@@?end/g, '@@depth 0').replace(/<(char|bot)>/g, '{{char}}').replace(/<(user)>/g, '{{user}}')
         v.bookVersion = 2
         return v
     })

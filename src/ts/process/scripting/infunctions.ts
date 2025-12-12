@@ -120,7 +120,7 @@ function executeRPNCalculation(text:string) {
             return "0"
         }
         return parsed.toString()
-    }).replace(/\@([a-zA-Z0-9_]+)/g, (_, p1) => {
+    }).replace(/@([a-zA-Z0-9_]+)/g, (_, p1) => {
         const v = getGlobalChatVar(p1)
         const parsed = parseFloat(v)
         if(isNaN(parsed)){

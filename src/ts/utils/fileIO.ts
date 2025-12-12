@@ -132,9 +132,7 @@ export async function getFileSrc(loc:string) {
                         await sleep(10)
                     }
                     return "/sw/img/" + encoded
-                } catch (error) {
-
-                }
+                } catch { /* ignore */ }
             }
             else{
                 const f = fileCache.res[ind]

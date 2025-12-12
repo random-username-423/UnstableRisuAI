@@ -127,7 +127,7 @@
             try {
                 format()
             } catch (error) {
-                
+                // ignore format error
             }
         }
 

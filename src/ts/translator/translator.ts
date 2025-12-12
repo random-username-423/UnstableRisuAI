@@ -511,7 +511,7 @@ async function translateLLM(text:string, arg:{to:string, from:string, regenerate
             return cacheMatch as string
         }
     }
-    const styleDecodeRegex = /\<risu-style\>(.+?)\<\/risu-style\>/gms
+    const styleDecodeRegex = /<risu-style>(.+?)<\/risu-style>/gms
     const styleDecodes:string[] = []
     text = text.replace(styleDecodeRegex, (match, p1) => {
         styleDecodes.push(p1)

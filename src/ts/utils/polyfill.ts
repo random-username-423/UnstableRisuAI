@@ -34,9 +34,7 @@ try {
         forceApply: true
       });
     }
-} catch (error) {
-    
-}
+} catch { /* ignore - mobile DnD not supported */ }
 
 globalThis.safeStructuredClone = safeStructuredClone
 

@@ -32,7 +32,7 @@
         <span class="text-textcolor">{language.tags}</span>
         <span class="text-textcolor2 text-sm">Tags to search your character easily. latin alphabets only. seperate by comma.</span>
         <TextInput placeholder="" bind:value={tags} oninput={() => {
-            tags = tags.replace(/[^a-zA-Z,\-]/g, '').toLocaleLowerCase().replace(/ /g, '')
+            tags = tags.replace(/[^a-zA-Z,-]/g, '').toLocaleLowerCase().replace(/ /g, '')
         }} />
 
         <div class="peer-focus:block hidden hover:block flex-wrap">

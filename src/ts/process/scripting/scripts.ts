@@ -228,7 +228,7 @@ export async function processScriptFull(char:character|groupChat|simpleCharacter
                                         }
                                         return v
                                     })
-                                    .replace(/\$\&/g, inData)
+                                    .replace(/\$&/g, inData)
                                     .replace(/(?<!\$)\$<([^>]+)>/g, (v) => {
                                         const groupName = parseInt(v.substring(2, v.length - 1))
                                         if(matched.groups && matched.groups[groupName]){

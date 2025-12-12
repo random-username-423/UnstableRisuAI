@@ -320,7 +320,7 @@
             if(stb){
                 try {
                     stb.destroy()
-                } catch (error) {}
+                } catch { /* ignore */ }
             }
     }
         if (bookRef) {
@@ -346,7 +346,7 @@
         if(stb){
             try {
                 stb.destroy()
-            } catch (error) {  }
+            } catch { /* ignore */ }
         }
     })
 </script>

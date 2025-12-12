@@ -348,9 +348,7 @@ async function renderHighlightableMarkdown(data:string) {
                 }).value
                 rendered = rendered.replace(placeholder, `<pre class="hljs" x-hl-lang="${fileExt}"><code>${highlighted}</code></pre>`)   
             }
-        } catch (error) {
-            
-        }
+        } catch { /* ignore highlight error */ }
     }
 
     return rendered
@@ -482,7 +480,7 @@ async function parseAdditionalAssets(data:string, char:simpleCharacterArgument|c
 
     if(needsSourceAccess){
         const chara = getCurrentCharacter()
-        if(chara.image){}
+        if(chara.image){ /* TODO: 이거 왜 있는지 확인 필요 */ }
         data = data.replace(/\uE9b4CHAR\uE9b4/g,
             chara.image ? (await getFileSrc(chara.image)) : ''
         )
@@ -702,13 +700,13 @@ export function parseMarkdownSafe(data:string, arg:{
 }
 
 
-const styleRegex = /\<style\>(.+?)\<\/style\>/gms
+const styleRegex = /<style>(.+?)<\/style>/gms
 function encodeStyle(txt:string){
     return txt.replaceAll(styleRegex, (f, c1) => {
         return "<risu-style>" + Buffer.from(c1).toString('hex') + "</risu-style>"
     })
 }
-const styleDecodeRegex = /\<risu-style\>(.+?)\<\/risu-style\>/gms
+const styleDecodeRegex = /<risu-style>(.+?)<\/risu-style>/gms
 
 function decodeStyleRule(rule:CssAtRuleAST){
     if(rule.type === 'rule'){
@@ -979,7 +977,7 @@ function matcher (p1:string,matcherArg:matcherArg,vars:{[key:string]:string}|nul
         if(callback){
             return callback(p1, matcherArg, args,vars)
         }
-    } catch (error) {}
+    } catch { /* ignore */ }
 
     return null
 }
@@ -1463,7 +1461,7 @@ function blockEndMatcher(p1:string,type:{type:blockMatch,type2?:string},matcherA
                     case 'v':
                         return '\v'
                     case 'a':
-                        return '\a'
+                        return 'a'
                     case 'x':
                         return '\x00'
                     default:
@@ -1567,7 +1565,7 @@ export function risuChatParser(da:string, arg:{
         callStack: arg.callStack,
     }
 
-    da = da.replace(/\<(user|char|bot)\>/gi, '{{$1}}')
+    da = da.replace(/<(user|char|bot)>/gi, '{{$1}}')
 
     const isPureMode = () => {
         return pureModeNest.size > 0
@@ -1842,9 +1840,7 @@ export async function promptTypeParser(prompt:string):Promise<string | PromptPar
 
         return pnresult
 
-    } catch (error) {
-        
-    }
+    } catch { /* fallback to original prompt */ }
 
     return prompt
 }

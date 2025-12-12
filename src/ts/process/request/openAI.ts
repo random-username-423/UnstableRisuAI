@@ -727,13 +727,13 @@ export async function requestHTTPOpenAI(replacerURL:string,body:any, headers:Rec
         if(arg.modelInfo.flags.includes(LLMFlags.deepSeekThinkingOutput)){
             console.log("Checking for reasoning content")
             let reasoningContent = ""
-            result = result.replace(/(.*)\<\/think\>/gms, (m, p1) => {
+            result = result.replace(/(.*)<\/think>/gms, (m, p1) => {
                 reasoningContent = p1
                 return ""
             })
             console.log(`Reasoning Content: ${reasoningContent}`)
             if(reasoningContent){
-                reasoningContent = reasoningContent.replace(/\<think\>/gms, '')
+                reasoningContent = reasoningContent.replace(/<think>/gms, '')
                 result = `<Thoughts>\n${reasoningContent}\n</Thoughts>\n${result}`
             }
         }
@@ -1167,13 +1167,13 @@ function getTranStream(arg:RequestDataArgumentExtended):TransformStream<Uint8Arr
                             const rawChunk = data.replace("data: ", "")
                             if(rawChunk === "[DONE]"){
                                 if(arg.modelInfo.flags.includes(LLMFlags.deepSeekThinkingOutput)){
-                                    readed["0"] = readed["0"].replace(/(.*)\<\/think\>/gms, (m, p1) => {
+                                    readed["0"] = readed["0"].replace(/(.*)<\/think>/gms, (m, p1) => {
                                         reasoningContent = p1
                                         return ""
                                     })
 
                                     if(reasoningContent){
-                                        reasoningContent = reasoningContent.replace(/\<think\>/gm, '')
+                                        reasoningContent = reasoningContent.replace(/<think>/gm, '')
                                     }
                                 }
                                 // Add reasoning_tokens to final chunk if available
@@ -1275,13 +1275,13 @@ function getTranStream(arg:RequestDataArgumentExtended):TransformStream<Uint8Arr
                 }
                 
                 if(arg.modelInfo.flags.includes(LLMFlags.deepSeekThinkingOutput)){
-                    readed["0"] = readed["0"].replace(/(.*)\<\/think\>/gms, (m, p1) => {
+                    readed["0"] = readed["0"].replace(/(.*)<\/think>/gms, (m, p1) => {
                         reasoningContent = p1
                         return ""
                     })
 
                     if(reasoningContent){
-                        reasoningContent = reasoningContent.replace(/\<think\>/gm, '')
+                        reasoningContent = reasoningContent.replace(/<think>/gm, '')
                     }
                 }
                 if(arg.extractJson && (db.jsonSchemaEnabled || arg.schema)){

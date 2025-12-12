@@ -189,9 +189,7 @@
                 if(output){
                     try {
                     outputObj = JSON.parse(output);                        
-                    } catch (error) {
-                    
-                    }
+                    } catch { /* ignore */ }
                 }
                 outputObj.push({
                     x_min: x_min,

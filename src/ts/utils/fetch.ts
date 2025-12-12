@@ -388,7 +388,7 @@ const pipeFetchLog = (fetchLogIndex: number, readableStream: ReadableStream<Uint
                       const newString = decoded.slice(textDecoderPointer)
                       textDecoderPointer = decoded.length
                       controller.enqueue(newString)
-                  } catch {}
+                  } catch { /* ignore decode error */ }
               }
           })
     textDecoder.readable.pipeTo(

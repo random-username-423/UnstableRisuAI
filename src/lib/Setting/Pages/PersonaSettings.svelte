@@ -48,7 +48,7 @@
                 changeUserPersona(selectedPersona !== -1 ? selectedPersona : 0, 'noSave')
                 try {
                     stb.destroy()
-                } catch (error) {}
+                } catch { /* ignore */ }
                 sorted += 1
                 await sleep(1)
                 createStb()
@@ -63,7 +63,7 @@
         if(stb){
             try {
                 stb.destroy()
-            } catch (error) {}
+            } catch { /* ignore */ }
         }
     })
 </script>

@@ -699,7 +699,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             (nowChatroom.type === 'group' && DBState.db.groupOtherBotRole === 'assistant') ||
             (usingPromptTemplate && DBState.db.promptSettings.sendName)
         ){
-            const form = DBState.db.groupTemplate || `<{{char}}\'s Message>\n{{slot}}\n</{{char}}\'s Message>`
+            const form = DBState.db.groupTemplate || `<{{char}}'s Message>\n{{slot}}\n</{{char}}'s Message>`
             formatedChat = risuChatParser(form, {chara: findCharacterbyIdwithCache(msg.saying).name}).replace('{{slot}}', formatedChat)
             switch(DBState.db.groupOtherBotRole){
                 case 'user':

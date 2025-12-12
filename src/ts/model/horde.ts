@@ -6,7 +6,7 @@ interface HordeModel {
     "jobs": number,
     "eta": number,
     "type": "text",
-    "name": "aphrodite\/Undi95\/Toppy-M-7B",
+    "name": "aphrodite/Undi95/Toppy-M-7B",
     "count": number
 }
 
