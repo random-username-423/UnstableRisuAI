@@ -34,7 +34,8 @@ export function saveUserPersona() {
     db.personas[db.selectedPersona].icon = db.userIcon
     db.personas[db.selectedPersona].personaPrompt = db.personaPrompt
     db.personas[db.selectedPersona].note = db.userNote
-    db.personas[db.selectedPersona].largePortrait = db.personas[db.selectedPersona]?.largePortrait
+    // TODO: largePortrait는 다른 필드들과 달리 persona에 직접 바인딩되어 있음. 일관성 맞추기 필요.
+    db.personas[db.selectedPersona].largePortrait ??= false
     setDatabase(db)
 }
 
