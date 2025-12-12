@@ -494,7 +494,7 @@ export function assembleTemplate(
             case 'memory':
                 pushPrompts(assembleMemoryCard(card, memories, ctx))
                 break
-            case 'cache':
+            case 'cache': {
                 // Apply cache points based on card configuration
                 let pointer = formated.length - 1
                 let depthRemaining = card.depth ?? 1
@@ -508,6 +508,7 @@ export function assembleTemplate(
                     pointer--
                 }
                 break
+            }
         }
     }
 

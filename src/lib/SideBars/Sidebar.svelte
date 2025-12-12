@@ -514,7 +514,7 @@
                                                         oder.img = ""
                                                         break
 
-                                                    case 1:
+                                                    case 1: {
                                                         const folderImage = await selectSingleFile(["png", "jpg", "webp"])
 
                                                         if (!folderImage) {
@@ -528,6 +528,7 @@
                                                         db.characterOrder[ind] = oder
                                                         setDatabase(db)
                                                         break
+                                                    }
                                                 }
                                             }
                                         }}

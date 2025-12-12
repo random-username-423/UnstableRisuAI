@@ -235,11 +235,12 @@
                             e.stopPropagation()
                             const sel = parseInt(await alertSelect([language.changeFolderColor, language.cancel]))
                             switch (sel) {
-                                case 0:
+                                case 0: {
                                     const colors = ["red","green","blue","yellow","indigo","purple","pink","default"]
                                     const sel = parseInt(await alertSelect(colors))
                                     folder.color = colors[sel]
                                     break
+                                }
                             }
                         }}>
                             <MenuIcon size={18}/>
