@@ -1341,26 +1341,22 @@ export async function runLuaEditTrigger<T extends string|OpenAIChat[]>(char:char
 
 export async function runLuaButtonTrigger(char:character|groupChat|simpleCharacterArgument, data:string):Promise<any>{
     let runResult
-    try {
-        const triggers = char.type === 'group' ? getModuleTriggers() : char.triggerscript.map<triggerscript>((v) => ({
-            ...v,
-            lowLevelAccess: char.type !== 'simple' ? char.lowLevelAccess ?? false : false
-        })).concat(getModuleTriggers())
+    const triggers = char.type === 'group' ? getModuleTriggers() : char.triggerscript.map<triggerscript>((v) => ({
+        ...v,
+        lowLevelAccess: char.type !== 'simple' ? char.lowLevelAccess ?? false : false
+    })).concat(getModuleTriggers())
 
-        for(const trigger of triggers){
-            if(trigger?.effect?.[0]?.type === 'triggerlua'){
-                runResult = await runScripted(trigger.effect[0].code, {
-                    char: char,
-                    lowLevelAccess: trigger.lowLevelAccess,
-                    mode: 'onButtonClick',
-                    data: data
-                })
-            }
+    for(const trigger of triggers){
+        if(trigger?.effect?.[0]?.type === 'triggerlua'){
+            runResult = await runScripted(trigger.effect[0].code, {
+                char: char,
+                lowLevelAccess: trigger.lowLevelAccess,
+                mode: 'onButtonClick',
+                data: data
+            })
         }
-    } catch (error) {
-        throw(error)
     }
-    return runResult   
+    return runResult
 }
 
 class PyodideContext{
