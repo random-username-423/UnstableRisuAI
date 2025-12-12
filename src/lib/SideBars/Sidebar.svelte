@@ -433,7 +433,6 @@
                     ondragenter={preventAll}
                 >
                     <SidebarIndicator isActive={char.type === "normal" && $selectedCharID === char.index && sideBarMode !== 1} />
-                    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
                     <div
                         role="button"
                         tabindex="0"
@@ -613,7 +612,6 @@
                                     ondragenter={preventAll}
                                 >
                                     <SidebarIndicator isActive={$selectedCharID === char2.index && sideBarMode !== 1} />
-                                    <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
                                     <div
                                         role="button"
                                         tabindex="0"
