@@ -80,7 +80,7 @@ export async function initializeMCPs(additionalMCPs?:string[]) {
                             env: env
                         })
                         let gotPong = false;
-                        let pingIds: string[] = [];
+                        const pingIds: string[] = [];
                         cmd.stdout.on('data', ((line) => {
                             console.log('MCP JSON:', line);
                             try {

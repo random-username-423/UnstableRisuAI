@@ -254,7 +254,7 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
     console.log(`[GoogleDrive Restore] Found ${files.length} files in Drive`)
     let foragekeys: string[] = []
     let loadedForageKeys = false
-    let db = getDatabase()
+    const db = getDatabase()
 
     // IndexedDB (forageStorage)에서 에셋 확인 (Tauri와 웹 모두 동일)
     async function checkImageExists(images: string) {
@@ -272,7 +272,7 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
     })
 
 
-    let dbs: [DriveFile, number][] = []
+    const dbs: [DriveFile, number][] = []
     let noSyncData = true
 
     if (mode === 'backup') {
@@ -323,7 +323,7 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
             })
         }
         async function getDbFromList() {
-            let selectables: string[] = []
+            const selectables: string[] = []
             for (let i = 0; i < dbs.length; i++) {
                 selectables.push(`Backup saved in ${(new Date(dbs[i][1] * 1000)).toLocaleString()}`)
                 if (selectables.length > 7) {
@@ -354,7 +354,7 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
         console.log(`[GoogleDrive Restore] Sample of Drive files (first 10):`, sampleFiles)
 
         const PARALLEL_DOWNLOADS = getDatabase().driveParallelConnections || 20
-        let errorLogs: string[] = []
+        const errorLogs: string[] = []
         let downloadedCount = 0
         let skippedCount = 0
         let notFoundCount = 0
@@ -504,7 +504,7 @@ function formatKeys(name: string) {
 }
 
 function newFormatKeys(name: string) {
-    let n = getBasename(name)
+    const n = getBasename(name)
     const bf = Buffer.from(n).toString('hex')
     return n + '.bin'
 }

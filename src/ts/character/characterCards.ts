@@ -67,11 +67,11 @@ export async function importCharacterProcess(f: {
         const data = f.data instanceof Uint8Array ? f.data : new Uint8Array(await f.data.arrayBuffer())
         const da = JSON.parse(Buffer.from(data).toString('utf-8'))
         if (await importCharacterCardSpec(da)) {
-            let db = getDatabase()
+            const db = getDatabase()
             return db.characters.length - 1
         }
         if ((da.char_name || da.name) && (da.char_persona || da.description) && (da.char_greeting || da.first_mes)) {
-            let db = getDatabase()
+            const db = getDatabase()
             db.characters.push(convertOffSpecCards(da))
             setDatabaseLite(db)
             alertNormal(language.importedCharacter)
@@ -118,7 +118,7 @@ export async function importCharacterProcess(f: {
             }
         }
         await importCharacterCardSpec(card, undefined, 'normal', reader.assets, lorebook)
-        let db = getDatabase()
+        const db = getDatabase()
         return db.characters.length - 1
     }
 
@@ -300,7 +300,7 @@ export async function importCharacterProcess(f: {
                         const decrypted = await decryptBuffer(encrypted, password)
                         const charaData: CharacterCardV2Risu = JSON.parse(Buffer.from(decrypted).toString('utf-8'))
                         if (await importCharacterCardSpec(charaData, img, "normal", assets)) {
-                            let db = getDatabase()
+                            const db = getDatabase()
                             return db.characters.length - 1
                         }
                         else {
@@ -317,7 +317,7 @@ export async function importCharacterProcess(f: {
                 try {
                     const charaData: CharacterCardV2Risu = JSON.parse(Buffer.from(decrypted).toString('utf-8'))
                     if (await importCharacterCardSpec(charaData, img, "normal", assets)) {
-                        let db = getDatabase()
+                        const db = getDatabase()
                         return db.characters.length - 1
                     }
                 } catch (error) {
@@ -658,7 +658,7 @@ function convertOffSpecCards(charaData: OldTavernChar | CharacterCardV2Risu, img
 
 export async function exportChar(charaID: number): Promise<string> {
     const db = getDatabase({ snapshot: true })
-    let char = safeStructuredClone(db.characters[charaID])
+    const char = safeStructuredClone(db.characters[charaID])
 
     if (char.type === 'group') {
         return ''
@@ -696,17 +696,17 @@ async function importCharacterCardSpec(card: CharacterCardV2Risu | CharacterCard
     const data = card.data
     console.log(card)
     let im = img ? await saveAsset(img as Uint8Array<ArrayBuffer>) : undefined
-    let db = getDatabase()
+    const db = getDatabase()
 
     const risuext = safeStructuredClone(data.extensions.risuai)
-    let emotions: [string, string][] = []
+    const emotions: [string, string][] = []
     let bias: [string, number][] = []
     let viewScreen: "none" | "emotion" | "imggen" = 'none'
     let customScripts: customscript[] = []
     let utilityBot = false
     let sdData = defaultSdDataFunc()
-    let extAssets: [string, string, string][] = []
-    let ccAssets: {
+    const extAssets: [string, string, string][] = []
+    const ccAssets: {
         type: string
         uri: string
         name: string
@@ -903,7 +903,7 @@ async function importCharacterCardSpec(card: CharacterCardV2Risu | CharacterCard
         loreExt = a.loreExt
     }
 
-    let ext = safeStructuredClone(data?.extensions ?? {})
+    const ext = safeStructuredClone(data?.extensions ?? {})
 
     for (const key in ext) {
         if (key === 'risuai') {
@@ -914,7 +914,7 @@ async function importCharacterCardSpec(card: CharacterCardV2Risu | CharacterCard
         }
     }
 
-    let char: character = {
+    const char: character = {
         name: data.name ?? '',
         firstMessage: data.first_mes ?? '',
         desc: data.description ?? '',
@@ -1111,9 +1111,9 @@ function convertCharbook(arg: {
 
 async function createBaseV2(char: character) {
 
-    let charBook: charBookEntry[] = []
+    const charBook: charBookEntry[] = []
     for (const lore of char.globalLore) {
-        let ext: {
+        const ext: {
             risu_case_sensitive?: boolean;
             risu_activationPercent?: number
             risu_loreCache?: {
@@ -1122,7 +1122,7 @@ async function createBaseV2(char: character) {
             }
         } = safeStructuredClone(lore.extentions ?? {})
 
-        let caseSensitive = ext.risu_case_sensitive ?? false
+        const caseSensitive = ext.risu_case_sensitive ?? false
         ext.risu_activationPercent = lore.activationPercent
         ext.risu_loreCache = lore.loreCache
 
@@ -1488,8 +1488,8 @@ type RisuLorebookEntry = LorebookEntry & {
 
 export function createBaseV3(char: character) {
 
-    let charBook: RisuLorebookEntry[] = []
-    let assets: Array<{
+    const charBook: RisuLorebookEntry[] = []
+    const assets: Array<{
         type: string
         uri: string
         name: string
@@ -1526,7 +1526,7 @@ export function createBaseV3(char: character) {
     }
 
     for (const lore of char.globalLore) {
-        let ext: {
+        const ext: {
             risu_case_sensitive?: boolean;
             risu_activationPercent?: number
             risu_loreCache?: {
@@ -1535,7 +1535,7 @@ export function createBaseV3(char: character) {
             }
         } = safeStructuredClone(lore.extentions ?? {})
 
-        let caseSensitive = ext.risu_case_sensitive ?? false
+        const caseSensitive = ext.risu_case_sensitive ?? false
         ext.risu_activationPercent = lore.activationPercent
         ext.risu_loreCache = lore.loreCache
 
@@ -1642,7 +1642,7 @@ export async function shareRisuHub2(char: character, arg: {
     try {
         char = safeStructuredClone(char)
         char.license = arg.license
-        let tagList = arg.tag.split(',')
+        const tagList = arg.tag.split(',')
 
         if (arg.nsfw) {
             tagList.push("nsfw")
@@ -1651,7 +1651,7 @@ export async function shareRisuHub2(char: character, arg: {
         await alertWait("Uploading...")
 
 
-        let tags = tagList.filter((v, i) => {
+        const tags = tagList.filter((v, i) => {
             return (!!v) && (tagList.indexOf(v) === i)
         })
         char.tags = tags
@@ -1663,7 +1663,7 @@ export async function shareRisuHub2(char: character, arg: {
 
         openURL(`https://realm.risuai.net/hub/realm/upload#filedata=${encodeURIComponent(dat)}`)
 
-        let testMode = true
+        const testMode = true
         if (testMode) {
             return
         }
@@ -1813,7 +1813,7 @@ export async function downloadRisuHub(id: string, arg: {
 
         await importCharacterCardSpec(data, await getHubResources(img), 'hub')
         checkCharOrder()
-        let db = getDatabase()
+        const db = getDatabase()
         if (db.characters[db.characters.length - 1] && (db.goCharacterOnImport || arg.forceRedirect)) {
             const index = db.characters.length - 1
             characterFormatUpdate(index);

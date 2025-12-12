@@ -16,7 +16,7 @@ import { DBState, selectedCharID } from '../../stores.svelte';
 
 // Re-export from env.ts
 export { appVer } from '../../utils/env'
-export let webAppSubVer = ''
+export const webAppSubVer = ''
 
 export function setDatabase(data: Database) {
     // 1. Apply simple defaults
@@ -33,7 +33,7 @@ export function setDatabase(data: Database) {
         data.characters = []
     }
     if (checkNullish(data.botPresets)) {
-        let defaultPreset = structuredClone(presetTemplate)
+        const defaultPreset = structuredClone(presetTemplate)
         defaultPreset.name = "Default"
         data.botPresets = [defaultPreset]
     }

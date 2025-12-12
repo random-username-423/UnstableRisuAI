@@ -168,7 +168,7 @@
 </SelectInput>
 
 <span class="text-textcolor mt-4">{language.genTimes} <Help key="genTimes"/></span>
-<NumberInput marginBottom={true} size={"sm"} min={1} max={10} bind:value={DBState.db.genTime}/>
+<NumberInput marginBottom={true} size="sm" min={1} max={10} bind:value={DBState.db.genTime}/>
 
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
@@ -205,9 +205,9 @@
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsLoreBookSection}</h3>
 
 <span class="text-textcolor mt-4 mb-2">{language.loreBookDepth} <Help key="loreBookDepth"/></span>
-<NumberInput marginBottom={true} size={"sm"} min={0} max={20} bind:value={DBState.db.loreBookDepth}/>
+<NumberInput marginBottom={true} size="sm" min={0} max={20} bind:value={DBState.db.loreBookDepth}/>
 <span class="text-textcolor">{language.loreBookToken} <Help key="loreBookToken"/></span>
-<NumberInput marginBottom={true} size={"sm"} min={0} max={4096} bind:value={DBState.db.loreBookToken}/>
+<NumberInput marginBottom={true} size="sm" min={0} max={4096} bind:value={DBState.db.loreBookToken}/>
 
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
@@ -215,7 +215,7 @@
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsImageMediaSection}</h3>
 
 <span class="text-textcolor mt-4">{language.assetMaxDifference} <Help key="assetMaxDifference"/></span>
-<NumberInput marginBottom={true} size={"sm"} bind:value={DBState.db.assetMaxDifference}/>
+<NumberInput marginBottom={true} size="sm" bind:value={DBState.db.assetMaxDifference}/>
 
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.imageCompression} name={language.imageCompression}> <Help key="imageCompression"/></Check>
@@ -253,7 +253,7 @@
 </div>
 {#if DBState.db.useExperimental}
     <div class="flex items-center mt-4">
-        <Check bind:check={DBState.db.useExperimentalGoogleTranslator} name={"New Google Translate Experimental"}>
+        <Check bind:check={DBState.db.useExperimentalGoogleTranslator} name="New Google Translate Experimental">
             <Help key="useExperimentalGoogleTranslator"/><Help key="unrecommended" unrecommended/>
         </Check>
     </div>
@@ -295,7 +295,7 @@
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsChatResponseSection}</h3>
 
 <span class="text-textcolor">{language.autoContinueMinTokens} <Help key="autoContinueMinTokens"/></span>
-<NumberInput marginBottom={true} size={"sm"} min={0} bind:value={DBState.db.autoContinueMinTokens}/>
+<NumberInput marginBottom={true} size="sm" min={0} bind:value={DBState.db.autoContinueMinTokens}/>
 
 <div class="flex items-center mt-4">
     <Check bind:check={DBState.db.autoContinueChat} name={language.autoContinueChat}> <Help key="autoContinueChat"/></Check>
@@ -319,16 +319,16 @@
 <h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsPromptSection}</h3>
 
 <span class="text-textcolor">{language.additionalPrompt} <Help key="additionalPrompt"/></span>
-<TextInput marginBottom={true} size={"sm"} bind:value={DBState.db.additionalPrompt}/>
+<TextInput marginBottom={true} size="sm" bind:value={DBState.db.additionalPrompt}/>
 
 <span class="text-textcolor">{language.descriptionPrefix} <Help key="descriptionPrefix"/></span>
-<TextInput marginBottom={true} size={"sm"} bind:value={DBState.db.descriptionPrefix}/>
+<TextInput marginBottom={true} size="sm" bind:value={DBState.db.descriptionPrefix}/>
 
 <span class="text-textcolor">{language.emotionPrompt} <Help key="emotionPrompt"/></span>
-<TextInput marginBottom={true} size={"sm"} bind:value={DBState.db.emotionPrompt2} placeholder="Leave it blank to use default"/>
+<TextInput marginBottom={true} size="sm" bind:value={DBState.db.emotionPrompt2} placeholder="Leave it blank to use default"/>
 
 <span class="text-textcolor">{language.presetChain} <Help key="presetChain"/></span>
-<TextInput marginBottom={true} size={"sm"} bind:value={DBState.db.presetChain} placeholder="Leave it blank to not use">
+<TextInput marginBottom={true} size="sm" bind:value={DBState.db.presetChain} placeholder="Leave it blank to not use">
 </TextInput>
 
 {#if DBState.db.showUnrecommended}
@@ -369,13 +369,13 @@
     </Check>
 </div>
 <span class="text-textcolor mt-4">{language.requestretrys} <Help key="requestretrys"/></span>
-<NumberInput marginBottom={true} size={"sm"} min={0} max={20} bind:value={DBState.db.requestRetrys}/>
+<NumberInput marginBottom={true} size="sm" min={0} max={20} bind:value={DBState.db.requestRetrys}/>
 <span class="text-textcolor mt-4">{language.driveParallelConnections} <Help key="driveParallelConnections"/></span>
-<NumberInput marginBottom={true} size={"sm"} min={1} max={50} bind:value={DBState.db.driveParallelConnections}/>
+<NumberInput marginBottom={true} size="sm" min={1} max={50} bind:value={DBState.db.driveParallelConnections}/>
 <span class="text-textcolor mt-4">{language.maxDbBackups} <Help key="maxDbBackups"/></span>
-<NumberInput marginBottom={true} size={"sm"} min={1} max={50} bind:value={DBState.db.maxDbBackups}/>
+<NumberInput marginBottom={true} size="sm" min={1} max={50} bind:value={DBState.db.maxDbBackups}/>
 <span class="text-textcolor mt-4">{language.dbBackupIntervalMinutes} <Help key="dbBackupIntervalMinutes"/></span>
-<NumberInput marginBottom={true} size={"sm"} min={1} max={60} bind:value={DBState.db.dbBackupIntervalMinutes}/>
+<NumberInput marginBottom={true} size="sm" min={1} max={60} bind:value={DBState.db.dbBackupIntervalMinutes}/>
 {#if !isNodeServer && !isTauri}
     <span class="text-textcolor mt-4">{language.requestLocation} <Help key="requestLocation"/></span>
     <SelectInput bind:value={DBState.db.requestLocation}>
@@ -385,7 +385,7 @@
     </SelectInput>
 {/if}
 <span class="text-textcolor mt-4">Kei Server URL <Help key="keiServerURL"/></span>
-<TextInput marginBottom={true} size={"sm"} bind:value={DBState.db.keiServerURL} placeholder="Leave it blank to use default"/>
+<TextInput marginBottom={true} size="sm" bind:value={DBState.db.keiServerURL} placeholder="Leave it blank to use default"/>
 
 <div class="border-b border-darkborderc mt-4 mb-2"></div>
 
@@ -428,7 +428,7 @@
 {/if}
 {#if DBState.db?.account?.useSync}
     <div class="flex items-center mt-4">
-        <Check bind:check={DBState.db.lightningRealmImport} name={"Lightning Realm Import"}>
+        <Check bind:check={DBState.db.lightningRealmImport} name="Lightning Realm Import">
             <Help key="lightningRealmImport"/><Help key="experimental"/>
         </Check>
     </div>
@@ -520,13 +520,13 @@
             {#if openedModels.has(model.id)}
                 <div class="flex flex-col border border-selected p-2 rounded-b-md overflow-x-auto">
             <span class="text-textcolor">{language.name}</span>
-            <TextInput size={"sm"} bind:value={DBState.db.customModels[index].name}/>
+            <TextInput size="sm" bind:value={DBState.db.customModels[index].name}/>
             <span class="text-textcolor">{language.proxyRequestModel}</span>
-            <TextInput size={"sm"} bind:value={DBState.db.customModels[index].internalId}/>
+            <TextInput size="sm" bind:value={DBState.db.customModels[index].internalId}/>
             <span class="text-textcolor">URL</span>
-            <TextInput size={"sm"} bind:value={DBState.db.customModels[index].url}/>
+            <TextInput size="sm" bind:value={DBState.db.customModels[index].url}/>
             <span class="text-textcolor">{language.tokenizer}</span>
-            <SelectInput size={"sm"} value={DBState.db.customModels[index].tokenizer.toString()} onchange={(e) => {
+            <SelectInput size="sm" value={DBState.db.customModels[index].tokenizer.toString()} onchange={(e) => {
                 DBState.db.customModels[index].tokenizer = parseInt(e.currentTarget.value)
             }}>
                 <OptionInput value="0">tiktokenCl100kBase</OptionInput>
@@ -543,7 +543,7 @@
                 <OptionInput value="12">DeepSeek</OptionInput>
             </SelectInput>
             <span class="text-textcolor">{language.format}</span>
-            <SelectInput size={"sm"} value={DBState.db.customModels[index].format.toString()} onchange={(e) => {
+            <SelectInput size="sm" value={DBState.db.customModels[index].format.toString()} onchange={(e) => {
                 DBState.db.customModels[index].format = parseInt(e.currentTarget.value)
             }}>
                 <OptionInput value="0">OpenAICompatible</OptionInput>
@@ -563,9 +563,9 @@
                 <OptionInput value="18">OpenAIResponseAPI</OptionInput>
             </SelectInput>
             <span class="text-textcolor">{language.proxyAPIKey}</span>
-            <TextInput size={"sm"} bind:value={DBState.db.customModels[index].key}/>
+            <TextInput size="sm" bind:value={DBState.db.customModels[index].key}/>
             <span class="text-textcolor">{language.additionalParams}</span>
-            <TextInput size={"sm"} bind:value={DBState.db.customModels[index].params}/>
+            <TextInput size="sm" bind:value={DBState.db.customModels[index].params}/>
             <Arcodion styled name={language.flags}>
                 {@render CustomFlagButton(index,'hasImageInput', 0)}
                 {@render CustomFlagButton(index,'hasImageOutput', 1)}

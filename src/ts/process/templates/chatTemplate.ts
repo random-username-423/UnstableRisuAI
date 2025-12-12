@@ -34,9 +34,9 @@ export const applyChatTemplate = (messages:OpenAIChat[], arg:{
     if(!type){
         throw new Error('Template type is not set')
     }
-    let clonedMessages = safeStructuredClone(messages)
+    const clonedMessages = safeStructuredClone(messages)
     const template = type === 'jinja' ? (new Template(arg.custom ?? db.JinjaTemplate)) :(new Template(chatTemplates[type]))
-    let formatedMessages:{
+    const formatedMessages:{
         "role": 'user'|'assistant'|'system',
         "content": string
     }[] = []

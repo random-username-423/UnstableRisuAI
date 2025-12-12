@@ -96,7 +96,7 @@ export function getUnpargeables(db: Database, uptype: 'basename' | 'pure' = 'bas
  * @returns {Database} - The updated database object with replaced resources.
  */
 export function replaceDbResources(db: Database, replacer: { [key: string]: string }): Database {
-    let unpargeable: string[] = [];
+    const unpargeable: string[] = [];
 
     /**
      * Replaces a given data string with its corresponding value from the replacer object.

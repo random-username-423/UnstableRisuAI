@@ -18,7 +18,7 @@ import { importCharacter } from "./characterCards";
 import { PngChunk } from './pngChunk';
 
 export function createNewCharacter() {
-    let db = getDatabase()
+    const db = getDatabase()
     db.characters.push(createBlankChar())
     setDatabase(db)
     checkCharOrder()
@@ -26,7 +26,7 @@ export function createNewCharacter() {
 }
 
 export function createNewGroup(){
-    let db = getDatabase()
+    const db = getDatabase()
     db.characters.push({
         type: 'group',
         name: "",
@@ -88,7 +88,7 @@ export async function selectCharImg(charIndex:number) {
         return
     }
     const img = selected.data
-    let db = getDatabase()
+    const db = getDatabase()
 
     const type = checkImageType(img)
     console.log(type)
@@ -131,7 +131,7 @@ export async function selectCharImg(charIndex:number) {
 }
 
 export function dumpCharImage(charIndex:number) {
-    let db = getDatabase()
+    const db = getDatabase()
     const char = db.characters[charIndex] as character
     if(!char.image || char.image === ''){
         return
@@ -149,7 +149,7 @@ export function dumpCharImage(charIndex:number) {
 }
 
 export function changeCharImage(charIndex:number,changeIndex:number) {
-    let db = getDatabase()
+    const db = getDatabase()
     const char = db.characters[charIndex] as character
     const image = char.ccAssets[changeIndex].uri
     char.ccAssets.splice(changeIndex, 1)
@@ -169,12 +169,12 @@ export async function addCharEmotion(charId:number) {
         addingEmotion.set(false)
         return
     }
-    let db = getDatabase()
+    const db = getDatabase()
     for(const f of selected){
         const img = f.data
         const imgp = await saveImage(img as Uint8Array<ArrayBuffer>)
         const name = f.name.replace('.png','').replace('.webp','')
-        let dbChar = db.characters[charId]
+        const dbChar = db.characters[charId]
         if(dbChar.type !== 'group'){
             dbChar.emotionImages.push([name,imgp])
             db.characters[charId] = dbChar
@@ -185,8 +185,8 @@ export async function addCharEmotion(charId:number) {
 }
 
 export async function rmCharEmotion(charId:number, emotionId:number) {
-    let db = getDatabase()
-    let dbChar = db.characters[charId]
+    const db = getDatabase()
+    const dbChar = db.characters[charId]
     if(dbChar.type !== 'group'){
         dbChar.emotionImages.splice(emotionId, 1)
         db.characters[charId] = dbChar
@@ -381,11 +381,11 @@ export async function importChat(){
     }
     try {
         const selectedID = get(selectedCharID)
-        let db = getDatabase()
+        const db = getDatabase()
 
         if(dat.name.endsWith('jsonl')){
             const lines = Buffer.from(dat.data).toString('utf-8').split('\n')
-            let newChat:Chat = {
+            const newChat:Chat = {
                 message: [],
                 note: "",
                 name: "Imported Chat",
@@ -430,8 +430,8 @@ export async function importChat(){
                 const folders = json.folders || []
                 const chats = Array.isArray(json.data) ? json.data : [json.data]
                 const selectedID = get(selectedCharID)
-                let db = getDatabase()
-                let folderIdMap = {}
+                const db = getDatabase()
+                const folderIdMap = {}
                 folders.forEach(folder => {
                     if(db.characters[selectedID].chatFolders?.some(f => f.id === folder.id)){
                         const newId = uuidv4()
@@ -752,7 +752,7 @@ export async function makeGroupImage() {
       
         // Load the images
         const images = [];
-        let loadedImages = 0;
+        const loadedImages = 0;
       
         await Promise.all(
             imageUrls.map(
@@ -826,7 +826,7 @@ export async function removeChar(index:number,name:string, type:'normal'|'perman
             return
         }
     }
-    let chars = db.characters
+    const chars = db.characters
     if(type === 'normal'){
         chars[index].trashTime = Date.now()
     }
@@ -867,7 +867,7 @@ export async function addCharacter(arg:{
             MobileGUIStack.set(1)
             return
     }
-    let db = getDatabase()
+    const db = getDatabase()
     if(db.characters[db.characters.length-1]){
         changeChar(db.characters.length-1)
     }
@@ -905,9 +905,9 @@ export function changeChar(index: number, arg:{
  * Ensures that all characters are properly ordered and removes any invalid entries.
  */
 export function checkCharOrder() {
-    let db = getDatabase()
+    const db = getDatabase()
     db.characterOrder = db.characterOrder ?? []
-    let ordered = []
+    const ordered = []
     for(let i=0;i<db.characterOrder.length;i++){
         const folder =db.characterOrder[i]
         if(typeof(folder) !== 'string' && folder){
@@ -920,7 +920,7 @@ export function checkCharOrder() {
         }
     }
 
-    let charIdList:string[] = []
+    const charIdList:string[] = []
 
     for(let i=0;i<db.characters.length;i++){
         const char = db.characters[i]

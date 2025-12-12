@@ -83,10 +83,10 @@ type StreamedFetchChunk = StreamedFetchChunkData | StreamedFetchHeaderData | Str
 // Module-level state
 //
 
-let fetchLog: FetchLogEntry[] = []
+const fetchLog: FetchLogEntry[] = []
 const knownHostes = ['localhost', '127.0.0.1', '0.0.0.0']
 let fetchIndex = 0
-let nativeFetchData: { [key: string]: StreamedFetchChunk[] } = {}
+const nativeFetchData: { [key: string]: StreamedFetchChunk[] } = {}
 let streamedFetchListening = false
 
 //
@@ -374,7 +374,7 @@ export async function globalFetch(url: string, arg: GlobalFetchArgs = {}): Promi
 //
 
 const pipeFetchLog = (fetchLogIndex: number, readableStream: ReadableStream<Uint8Array>) => {
-    let textDecoderBuffer = new AppendableBuffer()
+    const textDecoderBuffer = new AppendableBuffer()
     let textDecoderPointer = 0
     const textDecoder = TextDecoderStream
         ? new TextDecoderStream()
@@ -385,7 +385,7 @@ const pipeFetchLog = (fetchLogIndex: number, readableStream: ReadableStream<Uint
                       const decoded = new TextDecoder('utf-8', {
                           fatal: true
                       }).decode(textDecoderBuffer.buffer)
-                      let newString = decoded.slice(textDecoderPointer)
+                      const newString = decoded.slice(textDecoderPointer)
                       textDecoderPointer = decoded.length
                       controller.enqueue(newString)
                   } catch {}
@@ -438,7 +438,7 @@ export async function fetchNative(
 
     arg.method = arg.method ?? 'POST'
 
-    let headers = arg.headers ?? {}
+    const headers = arg.headers ?? {}
     let realBody: Uint8Array | undefined
 
     if (arg.method === 'GET' || arg.method === 'DELETE') {
@@ -454,8 +454,8 @@ export async function fetchNative(
     }
 
     const db = getDatabase()
-    let throughProxy = !isTauri && !isNodeServer && !db.usePlainFetch
-    let fetchLogIndex = addFetchLog({
+    const throughProxy = !isTauri && !isNodeServer && !db.usePlainFetch
+    const fetchLogIndex = addFetchLog({
         body: realBody ? new TextDecoder().decode(realBody) : '',
         headers: arg.headers,
         response: 'Streamed Fetch',
@@ -480,7 +480,7 @@ export async function fetchNative(
         if (fetchIndex >= 100000) {
             fetchIndex = 0
         }
-        let fetchId = fetchIndex.toString().padStart(5, '0')
+        const fetchId = fetchIndex.toString().padStart(5, '0')
         nativeFetchData[fetchId] = []
         let resolved = false
 
@@ -512,7 +512,7 @@ export async function fetchNative(
         let resHeaders: { [key: string]: string } | null = null
         let status = 400
 
-        let readableStream = pipeFetchLog(
+        const readableStream = pipeFetchLog(
             fetchLogIndex,
             new ReadableStream<Uint8Array>({
                 async start(controller) {

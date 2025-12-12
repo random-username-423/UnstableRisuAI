@@ -14,12 +14,12 @@ import { autoSaveErrorHandler } from "./autoSaveErrorHandler"
 let lastBackupTime = 0
 let isRunning = false
 
-export let saving = $state({
+export const saving = $state({
     state: false,
     paused: false  // 백업 복원 중 저장 일시정지
 })
 
-export let requiresFullEncoderReload = $state({
+export const requiresFullEncoderReload = $state({
     state: false
 })
 
@@ -173,7 +173,7 @@ export async function startAutoSaveLoop() {
             }
 
             // Stage 3-3: changeTracker 복사 후 리셋
-            let toSave = safeStructuredClone(changeTracker)
+            const toSave = safeStructuredClone(changeTracker)
             
             // 다음 감지를 위해 현재 선택된 항목만 남기고 초기화
             // (사용자가 현재 보고 있는 항목은 계속 변경될 가능성이 높으므로 컨텍스트 유지)
@@ -190,7 +190,7 @@ export async function startAutoSaveLoop() {
             tabSyncManager.notifySaving()
 
             // Stage 3-5: DB 유효성 검사
-            let db = getDatabase()
+            const db = getDatabase()
             if (!db.characters) {
                 await sleep(1000)
                 continue

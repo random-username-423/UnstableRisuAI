@@ -39,7 +39,7 @@ export async function processEmotionScreen(
     if (DBState.db.emotionProcesser === 'embedding') {
         const hypaProcesser = new HypaProcesser()
         await hypaProcesser.addText(emotionList.map((v) => 'emotion:' + v))
-        let searched = (await hypaProcesser.similaritySearchScored(result)).map((v) => {
+        const searched = (await hypaProcesser.similaritySearchScored(result)).map((v) => {
             v[0] = v[0].replace("emotion:", '')
             return v
         })
@@ -80,7 +80,7 @@ export async function processEmotionScreen(
         return array
     }
 
-    let emobias: { [key: number]: number } = {}
+    const emobias: { [key: number]: number } = {}
 
     for (const emo of emotionList) {
         const tokens = await tokenizeNum(emo)

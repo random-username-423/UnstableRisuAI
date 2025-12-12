@@ -229,16 +229,16 @@
         <Arcodion name={language.model} styled>
             {@render fallbackModelList('model')}
         </Arcodion>
-        <Arcodion name={"Memory"} styled>
+        <Arcodion name="Memory" styled>
             {@render fallbackModelList('memory')}
         </Arcodion>
-        <Arcodion name={"Translations"} styled>
+        <Arcodion name="Translations" styled>
             {@render fallbackModelList('translate')}
         </Arcodion>
-        <Arcodion name={"Emotion"} styled>
+        <Arcodion name="Emotion" styled>
             {@render fallbackModelList('emotion')}
         </Arcodion>
-        <Arcodion name={"OtherAx"} styled>
+        <Arcodion name="OtherAx" styled>
             {@render fallbackModelList('otherAx')}
         </Arcodion>
     </Arcodion>

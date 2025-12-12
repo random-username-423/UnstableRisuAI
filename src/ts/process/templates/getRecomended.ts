@@ -33,7 +33,7 @@ export async function setRecommended(model: string, ask:'ask'|'force') {
         const submodel = db.subModel
         const sel1 = parseInt(await alertSelect(["RolePlay (Recommended)", "Legacy"]))
         if(sel1 === 0){
-            let pr = prebuiltPresets.oobaRp
+            const pr = prebuiltPresets.oobaRp
             pr.aiModel = model
             pr.subModel = submodel
             setDatabase(setPreset(db, pr))
@@ -42,7 +42,7 @@ export async function setRecommended(model: string, ask:'ask'|'force') {
         }
 
         const sel = parseInt(await alertSelect(["Vicuna, WizardLM, Airoboros", "OpenChat V3.2", "Guanaco", "OpenAssistant", "Dolphin, Luna", "StableBeluga, Orca-Mini", "Others (Alpaca, Nous-Hermes, ...)"]))
-        let pr = prebuiltPresets.ooba
+        const pr = prebuiltPresets.ooba
         pr.aiModel = model
         pr.subModel = submodel
         pr.mainPrompt = pr.bias = pr.globalNote = undefined

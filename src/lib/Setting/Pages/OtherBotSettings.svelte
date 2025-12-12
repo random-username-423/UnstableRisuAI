@@ -603,7 +603,7 @@
 
         {#if DBState.db.sdProvider === 'Imagen'}
             <span class="text-textcolor mt-2">GoogleAI API Key</span>
-            <TextInput marginBottom={true} size={"sm"} placeholder="..." hideText={DBState.db.hideApiKey} bind:value={DBState.db.google.accessToken}/>
+            <TextInput marginBottom={true} size="sm" placeholder="..." hideText={DBState.db.hideApiKey} bind:value={DBState.db.google.accessToken}/>
             
             <span class="text-textcolor">Model</span>
             <SelectInput className="mb-4" bind:value={DBState.db.ImagenModel}>
@@ -756,7 +756,7 @@
         {:else if DBState.db.hypaV3}
             <span class="max-w-full mb-6 text-sm text-wrap break-words text-textcolor2">{language.hypaV3Settings.descriptionLabel}</span>
             <span class="text-textcolor">Preset</span>
-            <select class={"border border-darkborderc focus:border-borderc rounded-md shadow-sm text-textcolor bg-transparent focus:ring-borderc focus:ring-2 focus:outline-none transition-colors duration-200 text-md px-4 py-2 mb-1"}
+            <select class="border border-darkborderc focus:border-borderc rounded-md shadow-sm text-textcolor bg-transparent focus:ring-borderc focus:ring-2 focus:outline-none transition-colors duration-200 text-md px-4 py-2 mb-1"
                 bind:value={DBState.db.hypaV3PresetId}
             >
                 {#each DBState.db.hypaV3Presets as preset, i}

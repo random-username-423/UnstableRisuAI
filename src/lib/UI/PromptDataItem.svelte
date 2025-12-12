@@ -201,7 +201,7 @@
             <OptionInput value="lorebook">{language.formating.lorebook}</OptionInput>
             <OptionInput value="memory">{language.formating.memory}</OptionInput>
             <OptionInput value="postEverything">{language.formating.postEverything}</OptionInput>
-            <OptionInput value="chatML">{"chatML"}</OptionInput>
+            <OptionInput value="chatML">chatML</OptionInput>
             <OptionInput value="cache">{language.cachePoint}</OptionInput>
 
             {#if DBState.db.promptSettings.customChainOfThought}

@@ -17,7 +17,7 @@ import { isTauri, isMobileTauri } from "./ts/utils/env";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 preLoadCheck()
-let app = mount(App, {
+const app = mount(App, {
     target: document.getElementById("app"),
 });
 

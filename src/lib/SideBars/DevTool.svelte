@@ -108,7 +108,7 @@
     let autopilot = $state([])
 </script>
 
-<Arcodion styled name={"Variables"}>
+<Arcodion styled name="Variables">
     <div class="rounded-md border border-darkborderc grid grid-cols-2 gap-2 p-2">
         {#if DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate &&  Object.keys(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate).length > 0}
             {#each Object.keys(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate) as key}
@@ -127,7 +127,7 @@
     </div>
 </Arcodion>
 
-<Arcodion styled name={"Tokens"}>
+<Arcodion styled name="Tokens">
     <div class="rounded-md border border-darkborderc grid grid-cols-2 gap-2 p-2">
         {#await getCharToken(DBState.db.characters[$selectedCharID])}
             <span>Character Persistant</span>
@@ -160,7 +160,7 @@
     <span class="text-sm text-textcolor2">This is a estimate. The actual token count may be different.</span>
 </Arcodion>
 
-<Arcodion styled name={"Autopilot"}>
+<Arcodion styled name="Autopilot">
     <div class="flex flex-col p-2 border border-darkborderc rounded-md">
         {#each autopilot as text, i}
             <TextAreaInput bind:value={autopilot[i]} />
@@ -239,7 +239,7 @@
 </Arcodion>
 
 
-<Arcodion styled name={"Preview Prompt"}>
+<Arcodion styled name="Preview Prompt">
     <span>Type</span>
     <SelectInput bind:value={previewMode}>
         <OptionInput value="chat">Chat</OptionInput>
@@ -267,7 +267,7 @@
     <Button className="mt-2" onclick={() => {preview()}}>Run</Button>
 </Arcodion>
 
-<Arcodion styled name={"Preview Lorebook"}>
+<Arcodion styled name="Preview Lorebook">
     <Button className="mt-2" onclick={async () => {
         const lorebookResult = await loadLoreBookV3Prompt()
         const html = `

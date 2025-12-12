@@ -7,7 +7,7 @@ export function multiChatReplacer(){
 }
 
 export function stringlizeChat(formated:OpenAIChat[], char:string, continued:boolean){
-    let resultString:string[] = []
+    const resultString:string[] = []
     for(const form of formated){
         if(form.memo?.startsWith('inlayImage')){
             continue
@@ -41,7 +41,7 @@ function appendWhitespace(prefix:string, seperator:string=" ") {
 }
 export function stringlizeChatOba(formated:OpenAIChat[], characterName:string, suggesting:boolean, continued:boolean){
     const db = getDatabase()
-    let resultString:string[] = []
+    const resultString:string[] = []
     let { systemPrefix, userPrefix, assistantPrefix, seperator } = db.ooba.formating;
     systemPrefix = systemPrefix ?? ""
     userPrefix = userPrefix ?? ""
@@ -157,8 +157,8 @@ export function unstringlizeChat(text:string, formated:OpenAIChat[], char:string
 }
 
 export function getUnstringlizerChunks(formated:OpenAIChat[], char:string, mode:'ain'|'normal' = 'normal'){
-    let chunks:string[] = ["system note:", "system:","system note：", "system："]
-    let charNames:string[] = []
+    const chunks:string[] = ["system note:", "system:","system note：", "system："]
+    const charNames:string[] = []
     const db = getDatabase()
     if(char){
         charNames.push(char)
@@ -210,7 +210,7 @@ export function getUnstringlizerChunks(formated:OpenAIChat[], char:string, mode:
 }
 
 export function stringlizeAINChat(formated:OpenAIChat[], char:string, continued: boolean){
-    let resultString:string[] = []
+    const resultString:string[] = []
     const db = getDatabase()
 
     for(const form of formated){
@@ -243,7 +243,7 @@ export function stringlizeAINChat(formated:OpenAIChat[], char:string, continued:
 }
 
 function extractAINOutputStrings(inputString:string, characters:string[]) {
-    let results:{
+    const results:{
         content:string
         character:string
     }[] = [];
@@ -269,7 +269,7 @@ function extractAINOutputStrings(inputString:string, characters:string[]) {
             results.push({content: remainingString.trim(),  character: '[narrator]'});
             break;
         } else {
-            let endQuoteIndex = remainingString.indexOf('」', characterIndex + character.length);
+            const endQuoteIndex = remainingString.indexOf('」', characterIndex + character.length);
             if (endQuoteIndex == -1) {
                 results.push({
                 character, 
@@ -294,7 +294,7 @@ export function unstringlizeAIN(data:string,formated:OpenAIChat[], char:string =
     const db = getDatabase()
     const chunksResult = getUnstringlizerChunks(formated, char ,'ain')
     const chunks = chunksResult.chunks
-    let result:['char'|'user',string][] = []
+    const result:['char'|'user',string][] = []
     data = `${char} 「` + data
 
     for(const n of chunksResult.extChunk){
@@ -329,23 +329,23 @@ export function unstringlizeAIN(data:string,formated:OpenAIChat[], char:string =
 
 function formatToAIN(name:string, content:string){
     function extractContent(str:string) {
-        let result:{
+        const result:{
             type: "outside"|"inside"
            content:string
         }[] = [];
         let lastEndIndex = 0;
-        let regex = /「(.*?)」/g;
+        const regex = /「(.*?)」/g;
         let match:RegExpExecArray | null = null;
 
         
     
         while ((match = regex.exec(str)) !== null) {
-            let start = match.index;
-            let end = start + match[0].length;
-            let inside = match[1];
+            const start = match.index;
+            const end = start + match[0].length;
+            const inside = match[1];
             
             if (start != lastEndIndex) {
-                let outside = str.slice(lastEndIndex, start);
+                const outside = str.slice(lastEndIndex, start);
                 result.push({
                     type: "outside",
                     content: outside
@@ -361,7 +361,7 @@ function formatToAIN(name:string, content:string){
         }
     
         if (lastEndIndex < str.length) {
-            let outside = str.slice(lastEndIndex);
+            const outside = str.slice(lastEndIndex);
             result.push({
                 type: "outside",
                 content: outside
@@ -382,7 +382,7 @@ function formatToAIN(name:string, content:string){
     });
 
     const conts = extractContent(content)
-    let strs:string[] = []
+    const strs:string[] = []
     for(const cont of conts){
         if(cont.type === 'inside'){
             strs.push(`${name} 「${cont.content}」`)

@@ -37,7 +37,7 @@ export async function requestCohere(arg:RequestDataArgumentExtended):Promise<req
 
     //reformat chat
 
-    let body = applyParameters({
+    const body = applyParameters({
         message: lastChatPrompt,
         chat_history: formated.map((v) => {
             if(v.role === 'assistant'){

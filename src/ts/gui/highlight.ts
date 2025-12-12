@@ -4,7 +4,7 @@ type HighLightRange = [number, number]
 type HighlightInt = [HighLightRange, HighlightType]
 type HighlightIntRanged = [Range, HighlightType]
 
-let highLights = new Map<number, HighlightIntRanged[]>();
+const highLights = new Map<number, HighlightIntRanged[]>();
 
 export const highlighter = (highlightDom:HTMLElement, id:number) => {
     try {
@@ -205,8 +205,8 @@ const highlighterSyntax = [
 function simpleCBSHighlightParser(text:string){
     let depth = 0
     let pointer = 0
-    let depthStarts = new Uint8Array(100)
-    let highlightMode = new Uint8Array(100)
+    const depthStarts = new Uint8Array(100)
+    const highlightMode = new Uint8Array(100)
 
     const ranges:HighlightInt[] = []
     const excludesRanges:[number,number][] = []

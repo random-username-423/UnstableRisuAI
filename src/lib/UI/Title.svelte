@@ -75,7 +75,7 @@
         {#if clicks < 5}
             <img src="./santa.png" alt="santa" class="absolute logo-top"
                 style:top={(-20 + iconAnimation).toFixed(0) + 'px'}
-                style:right={'-30px'}
+                style:right="-30px"
                 onclick={async () => {
                     iconAnimation = Math.random() * 300
                     clicks++
@@ -91,15 +91,15 @@
         {#if clicks < 5}
             <img src="./birthday.png" alt="birthday" class="absolute logo-top"
                 style:top={(-28 + iconAnimation).toFixed(0) + 'px'}
-                style:right={'-30px'}
+                style:right="-30px"
             >
         {/if}
     {/if}
     {#if specialDay === 'newYear'}
         <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
         <img src="./sun.webp" alt="sun" class="absolute -z-10"
-            style:top={'-50px'}
-            style:right={'0px'}
+            style:top="-50px"
+            style:right="0px"
             onclick={onClick}
         >
     {/if}

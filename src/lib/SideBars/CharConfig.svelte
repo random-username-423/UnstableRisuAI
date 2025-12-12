@@ -812,16 +812,16 @@
                 </SelectInput>
                 {/if}
                 <span class="text-textcolor">Speed scale</span>
-                <NumberInput size={"sm"} marginBottom bind:value={DBState.db.characters[$selectedCharID].voicevoxConfig.SPEED_SCALE}/>
+                <NumberInput size="sm" marginBottom bind:value={DBState.db.characters[$selectedCharID].voicevoxConfig.SPEED_SCALE}/>
 
                 <span class="text-textcolor">Pitch scale</span>
-                <NumberInput size={"sm"} marginBottom bind:value={DBState.db.characters[$selectedCharID].voicevoxConfig.PITCH_SCALE}/>
+                <NumberInput size="sm" marginBottom bind:value={DBState.db.characters[$selectedCharID].voicevoxConfig.PITCH_SCALE}/>
 
                 <span class="text-textcolor">Volume scale</span>
-                <NumberInput size={"sm"} marginBottom bind:value={DBState.db.characters[$selectedCharID].voicevoxConfig.VOLUME_SCALE}/>
+                <NumberInput size="sm" marginBottom bind:value={DBState.db.characters[$selectedCharID].voicevoxConfig.VOLUME_SCALE}/>
 
                 <span class="text-textcolor">Intonation scale</span>
-                <NumberInput size={"sm"} marginBottom bind:value={DBState.db.characters[$selectedCharID].voicevoxConfig.INTONATION_SCALE}/>
+                <NumberInput size="sm" marginBottom bind:value={DBState.db.characters[$selectedCharID].voicevoxConfig.INTONATION_SCALE}/>
                 <span class="text-sm mb-2 text-textcolor2">To use VOICEVOX, you need to run a colab and put the localtunnel URL in "Settings → Other Bots". https://colab.research.google.com/drive/1tyeXJSklNfjW-aZJAib1JfgOMFarAwze</span>
         {:else if DBState.db.characters[$selectedCharID].ttsMode === 'novelai'}
             <span class="text-textcolor">Custom Voice Seed</span>
@@ -841,7 +841,7 @@
                 </SelectInput>
             {:else}
                 <span class="text-textcolor">Voice</span>
-                <TextInput size={"sm"} bind:value={DBState.db.characters[$selectedCharID].naittsConfig.voice}/>
+                <TextInput size="sm" bind:value={DBState.db.characters[$selectedCharID].naittsConfig.voice}/>
             {/if}
             <span class="text-textcolor">Version</span>
             <SelectInput className="mb-4 mt-2" bind:value={DBState.db.characters[$selectedCharID].naittsConfig.version}>

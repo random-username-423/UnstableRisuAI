@@ -175,7 +175,7 @@
                             msg: 'yes'
                         })
                     }}>Accept</Button>
-                    <Button styled={'outlined'} className="mt-4 flex-grow" onclick={() => {
+                    <Button styled="outlined" className="mt-4 flex-grow" onclick={() => {
                         alertStore.set({
                             type: 'none',
                             msg: 'no'

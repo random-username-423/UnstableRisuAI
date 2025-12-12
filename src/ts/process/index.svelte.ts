@@ -75,7 +75,7 @@ export type { OpenAIChat, OpenAIChatFull, MultiModal, requestTokenPart }
 export const doingChat = writable(false)
 export const chatProcessStage = writable(0)
 export const abortChat = writable(false)
-export let requestTokenParts:{[key:string]:requestTokenPart[]} = {}
+export const requestTokenParts:{[key:string]:requestTokenPart[]} = {}
 export let previewFormated:OpenAIChat[] = []
 export let previewBody:string = ''
 
@@ -102,11 +102,11 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         stage4Duration: 0
     }
 
-    let isAborted = false
-    let findCharCache:{[key:string]:character} = {}
+    const isAborted = false
+    const findCharCache:{[key:string]:character} = {}
     function findCharacterbyIdwithCache(id:string){
         const d = findCharCache[id]
-        if(!!d){
+        if(d){
             return d
         }
         else{
@@ -156,7 +156,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         return
     }
 
-    let isDoing = get(doingChat)
+    const isDoing = get(doingChat)
 
     if(isDoing){
         if(chatProcessIndex === -1){
@@ -196,10 +196,10 @@ export async function sendChat(chatProcessIndex = -1,arg:{
     }
 
     DBState.db.statics.messages += 1
-    let selectedChar = get(selectedCharID)
+    const selectedChar = get(selectedCharID)
     const nowChatroom = DBState.db.characters[selectedChar]
     nowChatroom.lastInteraction = Date.now()
-    let selectedChat = nowChatroom.chatPage
+    const selectedChat = nowChatroom.chatPage
     nowChatroom.chats[nowChatroom.chatPage].message = nowChatroom.chats[nowChatroom.chatPage].message.map((v) => {
         v.chatId = v.chatId ?? v4()
         return v
@@ -294,17 +294,17 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         currentChar = nowChatroom
     }
 
-    let chatAdditonalTokens = arg.chatAdditonalTokens ?? caculatedChatTokens
+    const chatAdditonalTokens = arg.chatAdditonalTokens ?? caculatedChatTokens
     const tokenizer = new ChatTokenizer(chatAdditonalTokens, DBState.db.aiModel.startsWith('gpt') ? 'noName' : 'name')
     let currentChat = runCurrentChatFunction(nowChatroom.chats[selectedChat])
     nowChatroom.chats[selectedChat] = currentChat
     // TODO: 모델 최대 컨텍스트 넘으면 강제로 제한할지 말지 정하기
-    let maxContextTokens = DBState.db.maxContext
+    const maxContextTokens = DBState.db.maxContext
 
 
     chatProcessStage.set(1)
     stageTimings.stage1Start = Date.now()
-    let unformated = createEmptyUnformated()
+    const unformated = createEmptyUnformated()
 
     let promptTemplate = safeStructuredClone(DBState.db.promptTemplate)
     const usingPromptTemplate = !!promptTemplate
@@ -407,7 +407,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         for(const card of template){
             switch(card.type){
                 case 'persona':{
-                    let pmt = safeStructuredClone(unformated.personaPrompt)
+                    const pmt = safeStructuredClone(unformated.personaPrompt)
                     if(card.innerFormat && pmt.length > 0){
                         for(let i=0;i<pmt.length;i++){
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat,card.type), {chara: currentChar}).replace('{{slot}}', pmt[i].content)
@@ -418,7 +418,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     break
                 }
                 case 'description':{
-                    let pmt = safeStructuredClone(unformated.description)
+                    const pmt = safeStructuredClone(unformated.description)
                     if(card.innerFormat && pmt.length > 0){
                         for(let i=0;i<pmt.length;i++){
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat,card.type), {chara: currentChar}).replace('{{slot}}', pmt[i].content)
@@ -429,7 +429,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     break
                 }
                 case 'authornote':{
-                    let pmt = safeStructuredClone(unformated.authorNote)
+                    const pmt = safeStructuredClone(unformated.authorNote)
                     if(card.innerFormat && pmt.length > 0){
                         for(let i=0;i<pmt.length;i++){
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat,card.type), {chara: currentChar}).replace('{{slot}}', pmt[i].content || card.defaultText || '')
@@ -498,7 +498,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     break
                 }
                 case 'chatML':{
-                    let prompts = parseChatML(card.text)
+                    const prompts = parseChatML(card.text)
                     await tokenizeChatArray(prompts)
                     break
                 }
@@ -628,7 +628,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
 
         // Remove <Thoughts> content before extracting inlays
         // so that inlayed images inside thoughts are not sent in the request
-        let thoughts:string[] = []
+        const thoughts:string[] = []
         const maxThoughtDepth = DBState.db.promptSettings?.maxThoughtTagDepth ?? -1
         formatedChat = formatedChat.replace(/<Thoughts>(.+)<\/Thoughts>/gms, (match, p1) => {
             if(maxThoughtDepth === -1 || (maxThoughtDepth - ms.length) <= index){
@@ -637,7 +637,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             return ''
         })
 
-        let inlays:string[] = []
+        const inlays:string[] = []
         if(msg.role === 'char'){
             formatedChat = formatedChat.replace(/{{(inlay|inlayed|inlayeddata)::(.+?)}}/g, (
                 match: string,
@@ -659,7 +659,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             }
         }
 
-        let multimodal:MultiModal[] = []
+        const multimodal:MultiModal[] = []
         const modelinfo = getModelInfo(DBState.db.aiModel)
         if(inlays.length > 0){
             for(const inlay of inlays){
@@ -691,7 +691,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             }
         }
 
-        let attr:string[] = []
+        const attr:string[] = []
         let role:'user'|'assistant'|'system' = msg.role === 'user' ? 'user' : 'assistant'
 
         if(
@@ -873,11 +873,11 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         currentChat.lastMemory = chats[0].memo
     }
 
-    let biases:[string,number][] = DBState.db.bias.concat(currentChar.bias).map((v) => {
+    const biases:[string,number][] = DBState.db.bias.concat(currentChar.bias).map((v) => {
         return [risuChatParser(v[0].replaceAll("\\n","\n").replaceAll("\\r","\r").replaceAll("\\\\","\\"), {chara: currentChar}),v[1]]
     })
 
-    let memories:OpenAIChat[] = []
+    const memories:OpenAIChat[] = []
 
 
 
@@ -994,7 +994,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         for(const card of template){
             switch(card.type){
                 case 'persona':{
-                    let pmt = safeStructuredClone(unformated.personaPrompt)
+                    const pmt = safeStructuredClone(unformated.personaPrompt)
                     if(card.innerFormat && pmt.length > 0){
                         for(let i=0;i<pmt.length;i++){
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat,card.type), {chara: currentChar}).replace('{{slot}}', pmt[i].content)
@@ -1009,7 +1009,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     break
                 }
                 case 'description':{
-                    let pmt = safeStructuredClone(unformated.description)
+                    const pmt = safeStructuredClone(unformated.description)
                     if(card.innerFormat && pmt.length > 0){
                         for(let i=0;i<pmt.length;i++){
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat,card.type), {chara: currentChar}).replace('{{slot}}', pmt[i].content)
@@ -1024,7 +1024,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     break
                 }
                 case 'authornote':{
-                    let pmt = safeStructuredClone(unformated.authorNote)
+                    const pmt = safeStructuredClone(unformated.authorNote)
                     if(card.innerFormat && pmt.length > 0){
                         for(let i=0;i<pmt.length;i++){
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat,card.type), {chara: currentChar}).replace('{{slot}}', pmt[i].content || card.defaultText || '')
@@ -1100,7 +1100,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     break
                 }
                 case 'chatML':{
-                    let prompts = parseChatML(card.text)
+                    const prompts = parseChatML(card.text)
                     pushPrompts(prompts)
                     break
                 }
@@ -1151,7 +1151,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                     break
                 }
                 case 'memory':{
-                    let pmt = safeStructuredClone(memories)
+                    const pmt = safeStructuredClone(memories)
                     if(card.innerFormat && pmt.length > 0){
                         for(let i=0;i<pmt.length;i++){
                             pmt[i].content = risuChatParser(card.innerFormat, {chara: currentChar}).replace('{{slot}}', pmt[i].content)
@@ -1391,7 +1391,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                 if(DBState.db.removeIncompleteResponse){
                     result = trimUntilPunctuation(result)
                 }
-                let result2 = await processScriptFull(nowChatroom, reformatContent(prefix + result), 'editoutput', msgIndex)
+                const result2 = await processScriptFull(nowChatroom, reformatContent(prefix + result), 'editoutput', msgIndex)
                 DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].data = result2.data
                 emoChanged = result2.emoChanged
                 DBState.db.characters[selectedChar].reloadKeys += 1
@@ -1436,15 +1436,15 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         const msgs = (req.type === 'success') ? [['char',req.result]] as const 
                     : (req.type === 'multiline') ? req.result
                     : []
-        let mrerolls:string[] = []
+        const mrerolls:string[] = []
         for(let i=0;i<msgs.length;i++){
-            let msg = msgs[i]
-            let mess = msg[1]
+            const msg = msgs[i]
+            const mess = msg[1]
             let msgIndex = DBState.db.characters[selectedChar].chats[selectedChat].message.length
             let result2 = await processScriptFull(nowChatroom, reformatContent(mess), 'editoutput', msgIndex)
             if(i === 0 && arg.continue){
                 msgIndex -= 1
-                let beforeChat = DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex]
+                const beforeChat = DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex]
                 result2 = await processScriptFull(nowChatroom, reformatContent(beforeChat.data + mess), 'editoutput', msgIndex)
             }
             if(DBState.db.removeIncompleteResponse){

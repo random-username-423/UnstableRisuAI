@@ -159,7 +159,7 @@ async function sendTxtFile(arg:sendFileArg) {
 
 async function sendXMLFile(arg:sendFileArg) {
     const hypa = new HypaProcesser()
-    let nodeTexts:string[] = []
+    const nodeTexts:string[] = []
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(arg.file, "text/xml");
     const nodes = xmlDoc.getElementsByTagName('*')

@@ -362,7 +362,7 @@
                                     send()
                                 }
                             }}
-                            style:height={'44px'}
+                            style:height="44px"
                         ></textarea>
                         <button
                             onclick={send}

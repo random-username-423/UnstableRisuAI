@@ -29,7 +29,7 @@ export type RisuPlugin = ProviderPlugin
 
 export async function importPlugin() {
     try {
-        let db = getDatabase()
+        const db = getDatabase()
         const f = await selectSingleFile(['js'])
         if (!f) {
             return
@@ -63,9 +63,9 @@ export async function importPlugin() {
             return
         }
         let displayName: string = undefined
-        let arg: { [key: string]: 'int' | 'string' | string[] } = {}
-        let realArg: { [key: string]: number | string } = {}
-        let customLink: ProviderPluginCustomLink[] = []
+        const arg: { [key: string]: 'int' | 'string' | string[] } = {}
+        const realArg: { [key: string]: number | string } = {}
+        const customLink: ProviderPluginCustomLink[] = []
         for (const line of splitedJs) {
             if (line.startsWith('//@risu-name')) {
                 alertMd('V1 plugin is not supported anymore, please use V2 plugin instead. for more information, please check the documentation. `https://github.com/kwaroran/RisuAI/blob/main/plugins.md`')
@@ -145,7 +145,7 @@ export async function importPlugin() {
             return
         }
 
-        let pluginData: RisuPlugin = {
+        const pluginData: RisuPlugin = {
             name: name,
             script: jsFile,
             realArg: realArg,
@@ -166,10 +166,10 @@ export async function importPlugin() {
     }
 }
 
-let pluginTranslator = false
+const pluginTranslator = false
 
 export async function loadPlugins() {
-    let db = getDatabase()
+    const db = getDatabase()
 
 
     const pluginV2 = safeStructuredClone(db.plugins).filter((a: RisuPlugin) => a.version === 2)
@@ -249,7 +249,7 @@ export async function loadV2Plugin(plugins: RisuPlugin[]) {
             setDatabaseLite(db)
         },
         addProvider: (name: string, func: (arg: PluginV2ProviderArgument, abortSignal?: AbortSignal) => Promise<{ success: boolean, content: string }>, options?: PluginV2ProviderOptions) => {
-            let provs = get(customProviderStore)
+            const provs = get(customProviderStore)
             provs.push(name)
             pluginV2.providers.set(name, func)
             pluginV2.providerOptions.set(name, options ?? {})

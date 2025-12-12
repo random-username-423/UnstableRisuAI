@@ -16,8 +16,8 @@ export async function requestOobaLegacy(arg:RequestDataArgumentExtended):Promise
     const currentChar = getCurrentCharacter()
     const useStreaming = arg.useStreaming
     const abortSignal = arg.abortSignal
-    let streamUrl = db.textgenWebUIStreamURL.replace(/\/api.*/, "/api/v1/stream")
-    let blockingUrl = db.textgenWebUIBlockingURL.replace(/\/api.*/, "/api/v1/generate")
+    const streamUrl = db.textgenWebUIStreamURL.replace(/\/api.*/, "/api/v1/stream")
+    const blockingUrl = db.textgenWebUIBlockingURL.replace(/\/api.*/, "/api/v1/generate")
     let bodyTemplate:{[key:string]:any} = {}
     const prompt = applyChatTemplate(formated)
     let stopStrings = getStopStrings(false)
@@ -124,7 +124,7 @@ export async function requestOobaLegacy(arg:RequestDataArgumentExtended):Promise
     const dat = res.data as any
     if(res.ok){
         try {
-            let result:string = dat.results[0].text
+            const result:string = dat.results[0].text
 
             return {
                 type: 'success',
@@ -157,7 +157,7 @@ export async function requestOoba(arg:RequestDataArgumentExtended):Promise<reque
             return risuChatParser(v.replace(/\\n/g, "\n"))
         })
     }
-    let bodyTemplate:Record<string, any> = {
+    const bodyTemplate:Record<string, any> = {
         'prompt': prompt,
         presence_penalty: arg.PresensePenalty || (db.PresensePenalty / 100),
         frequency_penalty: arg.frequencyPenalty || (db.frequencyPenalty / 100),

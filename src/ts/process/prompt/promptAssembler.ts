@@ -65,7 +65,7 @@ async function tokenizePersonaCard(
     unformated: UnformatedPrompts,
     ctx: AssembleContext
 ): Promise<number> {
-    let pmt = safeStructuredClone(unformated.personaPrompt)
+    const pmt = safeStructuredClone(unformated.personaPrompt)
     if (card.innerFormat && pmt.length > 0) {
         for (let i = 0; i < pmt.length; i++) {
             pmt[i].content = risuChatParser(ctx.positionParser(card.innerFormat, card.type), { chara: ctx.currentChar })
@@ -80,7 +80,7 @@ async function tokenizeDescriptionCard(
     unformated: UnformatedPrompts,
     ctx: AssembleContext
 ): Promise<number> {
-    let pmt = safeStructuredClone(unformated.description)
+    const pmt = safeStructuredClone(unformated.description)
     if (card.innerFormat && pmt.length > 0) {
         for (let i = 0; i < pmt.length; i++) {
             pmt[i].content = risuChatParser(ctx.positionParser(card.innerFormat, card.type), { chara: ctx.currentChar })
@@ -95,7 +95,7 @@ async function tokenizeAuthorNoteCard(
     unformated: UnformatedPrompts,
     ctx: AssembleContext
 ): Promise<number> {
-    let pmt = safeStructuredClone(unformated.authorNote)
+    const pmt = safeStructuredClone(unformated.authorNote)
     if (card.innerFormat && pmt.length > 0) {
         for (let i = 0; i < pmt.length; i++) {
             pmt[i].content = risuChatParser(ctx.positionParser(card.innerFormat, card.type), { chara: ctx.currentChar })
@@ -210,7 +210,7 @@ function assemblePersonaCard(
     unformated: UnformatedPrompts,
     ctx: AssembleContext
 ): OpenAIChat[] {
-    let pmt = safeStructuredClone(unformated.personaPrompt)
+    const pmt = safeStructuredClone(unformated.personaPrompt)
     if (card.innerFormat && pmt.length > 0) {
         for (let i = 0; i < pmt.length; i++) {
             pmt[i].content = risuChatParser(ctx.positionParser(card.innerFormat, card.type), { chara: ctx.currentChar })
@@ -225,7 +225,7 @@ function assembleDescriptionCard(
     unformated: UnformatedPrompts,
     ctx: AssembleContext
 ): OpenAIChat[] {
-    let pmt = safeStructuredClone(unformated.description)
+    const pmt = safeStructuredClone(unformated.description)
     if (card.innerFormat && pmt.length > 0) {
         for (let i = 0; i < pmt.length; i++) {
             pmt[i].content = risuChatParser(ctx.positionParser(card.innerFormat, card.type), { chara: ctx.currentChar })
@@ -240,7 +240,7 @@ function assembleAuthorNoteCard(
     unformated: UnformatedPrompts,
     ctx: AssembleContext
 ): OpenAIChat[] {
-    let pmt = safeStructuredClone(unformated.authorNote)
+    const pmt = safeStructuredClone(unformated.authorNote)
     if (card.innerFormat && pmt.length > 0) {
         for (let i = 0; i < pmt.length; i++) {
             pmt[i].content = risuChatParser(ctx.positionParser(card.innerFormat, card.type), { chara: ctx.currentChar })
@@ -342,7 +342,7 @@ function assembleMemoryCard(
     memories: OpenAIChat[],
     ctx: AssembleContext
 ): OpenAIChat[] {
-    let pmt = safeStructuredClone(memories)
+    const pmt = safeStructuredClone(memories)
     if (card.innerFormat && pmt.length > 0) {
         for (let i = 0; i < pmt.length; i++) {
             pmt[i].content = risuChatParser(card.innerFormat, { chara: ctx.currentChar })

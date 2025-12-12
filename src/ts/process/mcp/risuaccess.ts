@@ -467,7 +467,7 @@ Character fields:
             }];
         }
 
-        let response:Record<string, any> = {}
+        const response:Record<string, any> = {}
 
         const fieldRemap = {
             'name': 'name',

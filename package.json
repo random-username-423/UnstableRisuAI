@@ -9,6 +9,8 @@
     "tauribuild": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "tauri": "tauri",
     "buildsite": "vite build --outDir dist",
     "updatePlugin": "tsc public/pluginApi.ts",
@@ -96,6 +98,7 @@
     "web-streams-polyfill": "^4.2.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@rollup/plugin-strip": "^3.0.4",
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
     "@swc/core": "1.15.3",
@@ -113,6 +116,10 @@
     "@types/three": "^0.182.0",
     "@types/wicg-file-system-access": "^2023.10.7",
     "autoprefixer": "^10.4.22",
+    "eslint": "^9.39.1",
+    "eslint-interactive": "^12.0.0",
+    "eslint-plugin-svelte": "^3.13.1",
+    "globals": "^16.5.0",
     "internal-ip": "^8.0.1",
     "postcss": "^8.5.6",
     "svelte": "^5.45.8",
@@ -121,6 +128,7 @@
     "tailwindcss": "^3.4.18",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.49.0",
     "vite": "^7.2.7",
     "vite-plugin-top-level-await": "1.6.0",
     "vite-plugin-wasm": "3.5.0"

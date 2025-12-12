@@ -14,15 +14,15 @@ const forageStorage = new AutoStorage()
 // 에셋 파일은 forageStorage(IndexedDB)를 직접 사용
 let opfsWorker: Worker | null = null
 let opfsWorkerReady = false
-let pendingSaves = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
-let pendingLoads = new Map<string, { resolve: (data: Uint8Array | null) => void, reject: (e: Error) => void }>()
-let pendingLists = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
-let pendingListsWithSizes = new Map<string, { resolve: (files: { name: string; size: number }[]) => void, reject: (e: Error) => void }>()
-let pendingDeletes = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
-let pendingListsRecursive = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
-let pendingListsWithSizesRecursive = new Map<string, { resolve: (files: { path: string; size: number }[]) => void, reject: (e: Error) => void }>()
-let pendingDeleteDirectories = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
-let pendingListEntries = new Map<string, { resolve: (entries: { name: string; size: number; isDirectory: boolean }[]) => void, reject: (e: Error) => void }>()
+const pendingSaves = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
+const pendingLoads = new Map<string, { resolve: (data: Uint8Array | null) => void, reject: (e: Error) => void }>()
+const pendingLists = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
+const pendingListsWithSizes = new Map<string, { resolve: (files: { name: string; size: number }[]) => void, reject: (e: Error) => void }>()
+const pendingDeletes = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
+const pendingListsRecursive = new Map<string, { resolve: (files: string[]) => void, reject: (e: Error) => void }>()
+const pendingListsWithSizesRecursive = new Map<string, { resolve: (files: { path: string; size: number }[]) => void, reject: (e: Error) => void }>()
+const pendingDeleteDirectories = new Map<string, { resolve: () => void, reject: (e: Error) => void }>()
+const pendingListEntries = new Map<string, { resolve: (entries: { name: string; size: number; isDirectory: boolean }[]) => void, reject: (e: Error) => void }>()
 
 export class OPFSNotSupportedError extends Error {
     constructor() {
@@ -203,7 +203,7 @@ export async function initOPFSWorker(): Promise<void> {
 }
 
 // 파일별 저장 큐 (같은 파일에 대한 동시 쓰기 방지)
-let saveQueues = new Map<string, Promise<void>>()
+const saveQueues = new Map<string, Promise<void>>()
 
 export async function saveToWorker(key: string, data: Uint8Array<ArrayBuffer>): Promise<void> {
     // 이전 요청이 끝날 때까지 대기 후 실행 (같은 파일만)

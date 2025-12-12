@@ -115,7 +115,7 @@ export const colorSchemeList = Object.keys(colorShemes) as (keyof typeof colorSh
 
 export function changeColorScheme(colorScheme: string){
     try {
-        let db = getDatabase()
+        const db = getDatabase()
         if(colorScheme !== 'custom'){
             db.colorScheme = safeStructuredClone(colorShemes[colorScheme])
         }
@@ -127,7 +127,7 @@ export function changeColorScheme(colorScheme: string){
 
 export function updateColorScheme(){
     try {
-        let db = getDatabase()
+        const db = getDatabase()
 
         let colorScheme = db.colorScheme
     
@@ -150,8 +150,8 @@ export function updateColorScheme(){
 }
 
 export function exportColorScheme(){
-    let db = getDatabase()
-    let json = JSON.stringify(db.colorScheme)
+    const db = getDatabase()
+    const json = JSON.stringify(db.colorScheme)
     downloadFile('colorScheme.json', json)
 }
 
@@ -180,7 +180,7 @@ export async function importColorScheme(){
             return
         }
         changeColorScheme('custom')
-        let db = getDatabase()
+        const db = getDatabase()
         db.colorScheme = colorScheme
         setDatabase(db)
         updateColorScheme()
@@ -193,13 +193,13 @@ export async function importColorScheme(){
 }
 
 export function updateTextThemeAndCSS(){
-    let db = getDatabase()
+    const db = getDatabase()
     const root = document.querySelector(':root') as HTMLElement;
     if(!root){
         return
     }
-    let textTheme = db.textTheme
-    let colorScheme = db.colorScheme.type
+    const textTheme = db.textTheme
+    const colorScheme = db.colorScheme.type
     switch(textTheme){
         case "standard":{
             if(colorScheme === 'dark'){

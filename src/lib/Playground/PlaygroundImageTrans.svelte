@@ -330,8 +330,8 @@
     let mouseDown = false;
 </script>
 <SelectInput bind:value={mode} className="w-1/2">
-    <option value="auto">{"auto"}</option>
-    <option value="manual">{"manual"}</option>
+    <option value="auto">auto</option>
+    <option value="manual">manual</option>
 </SelectInput>
 
 <span class="text-textcolor text-lg mt-4">{language.destinationLanguage}</span>

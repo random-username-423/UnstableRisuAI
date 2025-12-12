@@ -16,7 +16,7 @@ export async function requestNovelAI(arg:RequestDataArgumentExtended):Promise<re
     const currentChar = getCurrentCharacter()
     const prompt = stringlizeNAIChat(formated, currentChar?.name ?? '', arg.continue)
     const abortSignal = arg.abortSignal
-    let logit_bias_exp:{
+    const logit_bias_exp:{
         sequence: number[], bias: number, ensure_sequence_finish: false, generate_once: true
     }[] = []
 

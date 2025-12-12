@@ -163,7 +163,7 @@ export async function handleStreamingResponse(
                 result = trimUntilPunctuation(result)
             }
 
-            let result2 = await processScriptFull(
+            const result2 = await processScriptFull(
                 nowChatroom,
                 reformatContent(prefix + result),
                 'editoutput',
@@ -251,11 +251,11 @@ export async function handleDirectResponse(
     let result = ''
     let emoChanged = false
     let resendChat = false
-    let mrerolls: string[] = []
+    const mrerolls: string[] = []
 
     for (let i = 0; i < msgs.length; i++) {
         const msg = msgs[i]
-        let mess = msg[1]
+        const mess = msg[1]
         let msgIndex = DBState.db.characters[selectedChar].chats[selectedChat].message.length
 
         let result2 = await processScriptFull(nowChatroom, reformatContent(mess), 'editoutput', msgIndex)

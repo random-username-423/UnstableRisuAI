@@ -14,7 +14,7 @@ export const AccountWarning = writable('')
 const risuSession = Date.now().toFixed(0)
 const cachedForage = localforage.createInstance({name: "risuaiAccountCached"})
 
-let seenWarnings:string[] = []
+const seenWarnings:string[] = []
 
 export class AccountStorage{
     auth:string
@@ -158,7 +158,7 @@ export class AccountStorage{
         return Buffer.from(appendable)
     }
     async keys():Promise<string[]>{
-        let db = getDatabase()
+        const db = getDatabase()
         return getUnpargeables(db, 'pure')
     }
     async removeItem(key:string){
@@ -183,7 +183,7 @@ export class AccountStorage{
 
 export async function unMigrationAccount() {
     const keys = await forageStorage.keys()
-    let db = getDatabase()
+    const db = getDatabase()
     let i = 0;
     const MigrationStorage = localforage.createInstance({name: "risuai"})
     

@@ -15,7 +15,7 @@ export async function selectUserImg() {
         return
     }
     const img = selected.data
-    let db = getDatabase()
+    const db = getDatabase()
     const imgp = await saveImage(img as Uint8Array<ArrayBuffer>)
     db.userIcon = imgp
     db.personas[db.selectedPersona] = {
@@ -29,7 +29,7 @@ export async function selectUserImg() {
 }
 
 export function saveUserPersona() {
-    let db = getDatabase()
+    const db = getDatabase()
     db.personas[db.selectedPersona].name = db.username
     db.personas[db.selectedPersona].icon = db.userIcon
     db.personas[db.selectedPersona].personaPrompt = db.personaPrompt
@@ -42,7 +42,7 @@ export function changeUserPersona(id: number, save: 'save' | 'noSave' = 'save') 
     if (save === 'save') {
         saveUserPersona()
     }
-    let db = getDatabase()
+    const db = getDatabase()
     const pr = db.personas[id]
     db.personaPrompt = pr.personaPrompt
     db.username = pr.name
@@ -59,7 +59,7 @@ interface PersonaCard {
 }
 
 export async function exportUserPersona() {
-    let db = getDatabase({ snapshot: true })
+    const db = getDatabase({ snapshot: true })
     if (!db.userIcon) {
         alertError(language.errors.noUserIcon)
         return
@@ -71,7 +71,7 @@ export async function exportUserPersona() {
 
     let img = await readImage(db.userIcon)
 
-    let card: PersonaCard = safeStructuredClone({
+    const card: PersonaCard = safeStructuredClone({
         name: db.username,
         personaPrompt: db.personaPrompt,
         note: db.userNote,
@@ -121,7 +121,7 @@ export async function importUserPersona() {
         }
         const data: PersonaCard = JSON.parse(Buffer.from(decoded, 'base64').toString('utf-8'))
         if (data.name && data.personaPrompt) {
-            let db = getDatabase()
+            const db = getDatabase()
             db.personas.push({
                 name: data.name,
                 icon: await saveImage(await reencodeImage(v.data as Uint8Array<ArrayBuffer>)),

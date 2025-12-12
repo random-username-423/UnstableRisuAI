@@ -365,7 +365,7 @@ function applyTemplate(self:templateStyles, theme:string){
     self.styles.text = themeDict.theme.colors.dialog
     self.tagLayout = []
     for(let i=0; i<themeDict.theme.tags.length; i++){
-        let tag = themeDict.theme.tags[i]
+        const tag = themeDict.theme.tags[i]
         self.tagLayout.push({
             content: "",
             border_radius: 5,
@@ -389,7 +389,7 @@ function createDecoration(self:templateStyles, content:string){
     let profile_section_html = ''
     if(self.gradientModern){
 
-            let colors = {
+            const colors = {
                 "outer_box": "#fafafa",
                 "profile_border": "#e3e3e3",
                 "gradient_start": "#D9D782",
@@ -404,7 +404,7 @@ function createDecoration(self:templateStyles, content:string){
             let bot_name_html = ""
 
             if(self.showBotName){
-                let bot_name = self.botName.trim() || "봇이름"
+                const bot_name = self.botName.trim() || "봇이름"
                 bot_name_html = `
                     <div style="background:linear-gradient(135deg,${colors['gradient_start']},${colors['gradient_end']});
                                 background-size:110%;
@@ -433,10 +433,10 @@ function createDecoration(self:templateStyles, content:string){
 
             let tags_html = ""
                 if(self.showTags){
-                    let tags = []
+                    const tags = []
                     for(let i = 0; i < self.tagLayout.length; i++){
-                        let widget = self.tagLayout[i]
-                        let tag_text = widget.content || `태그 ${i+1}`
+                        const widget = self.tagLayout[i]
+                        const tag_text = widget.content || `태그 ${i+1}`
                         tags.push(tag_text)
                     }
 
@@ -461,12 +461,12 @@ function createDecoration(self:templateStyles, content:string){
                 let profile_image_html = ""
 
                 if(self.showProfile && self.showProfileImage){
-                    let image_url = '' //TODO
-                    let width = self.widthInput
-                    let height = self.heightInput
-                    let frame_style = self.frameStyle
+                    const image_url = '' //TODO
+                    const width = self.widthInput
+                    const height = self.heightInput
+                    const frame_style = self.frameStyle
 
-                    let common_style = `
+                    const common_style = `
                         max-width: 100%;
                         display: block;
                         margin: 0 auto;
@@ -555,14 +555,14 @@ function createDecoration(self:templateStyles, content:string){
 
     }
     else{
-            let box_outer_color = self.outerBoxColor
-            let box_inner_color = self.innerBoxColor
-            let shadow_value = self.shadowIntensity
+            const box_outer_color = self.outerBoxColor
+            const box_inner_color = self.innerBoxColor
+            const shadow_value = self.shadowIntensity
     
             let border_style = ""
             if(self.useBoxBorder){
-                let border_color = self.boxBorderColor
-                let border_thickness = self.boxBorderThickness
+                const border_color = self.boxBorderColor
+                const border_thickness = self.boxBorderThickness
                 border_style = `border: ${border_thickness}px solid ${border_color};`
             }
     
@@ -584,14 +584,14 @@ function createDecoration(self:templateStyles, content:string){
             }
 
             if(self.showProfile){
-                let profile_parts = []
+                const profile_parts = []
                     if(self.showProfileImage){
-                        let profile_border_color = self.profileBorderColor
-                        let width = self.widthInput
-                        let height = self.heightInput
-                        let image_url = '' //TODO
+                        const profile_border_color = self.profileBorderColor
+                        const width = self.widthInput
+                        const height = self.heightInput
+                        const image_url = '' //TODO
                         
-                        let common_style = `
+                        const common_style = `
                             max-width:100%;
                             ${self.showProfileShadow ? 'box-shadow:rgba(0,0,0,0.12) 0px 4px 16px;' : ''}
                             ${self.showProfileBorder ? `border:3px solid ${profile_border_color};` : ''}
@@ -611,7 +611,7 @@ function createDecoration(self:templateStyles, content:string){
                             container_style = "width:auto;"
                         }
                         
-                        let profile_html = `
+                        const profile_html = `
                         <div style="margin-bottom:1rem; text-align:center; ${container_style}">
                             <img style="${profile_style}" 
                                 src="${image_url}" 
@@ -622,21 +622,21 @@ function createDecoration(self:templateStyles, content:string){
                         profile_parts.push(profile_html)
                     }
                     if(self.showBotName){
-                        let bot_name = self.botName || "봇 이름"
-                        let bot_name_color = self.botNameColor
-                        let bot_name_html = `
+                        const bot_name = self.botName || "봇 이름"
+                        const bot_name_color = self.botNameColor
+                        const bot_name_html = `
                             <h3 style="color:${bot_name_color};font-weight:${self.styles.font_weight_bold};">${bot_name}</h3>
                         `
                         profile_parts.push(bot_name_html)
                     }
                     if(self.showTags){
-                        let tags_html = []
+                        const tags_html = []
                         for(let i = 0; i < self.tagLayout.length; i++){
-                            let widget = self.tagLayout[i]
+                            const widget = self.tagLayout[i]
                             if(widget){
-                                let style_dict = widget
-                                let tag_text = style_dict.content || `태그 ${i+1}`
-                                let css_styles = [
+                                const style_dict = widget
+                                const tag_text = style_dict.content || `태그 ${i+1}`
+                                const css_styles = [
                                     "display:inline-block",
                                     `border-radius:${style_dict.border_radius}px`,
                                     `font-size:${style_dict.font_size}rem`,
@@ -651,15 +651,15 @@ function createDecoration(self:templateStyles, content:string){
                                         `border:1px solid ${style_dict.color}`
                                     )
                                 }else if(style_dict.style == "gradient"){
-                                    let base_color:string = style_dict.color //hex
+                                    const base_color:string = style_dict.color //hex
 
-                                    let base_color_rgb = parseInt(base_color, 16)
-                                    let r = (base_color_rgb >> 16) & 255
-                                    let g = (base_color_rgb >> 8) & 255
-                                    let b = base_color_rgb & 255
+                                    const base_color_rgb = parseInt(base_color, 16)
+                                    const r = (base_color_rgb >> 16) & 255
+                                    const g = (base_color_rgb >> 8) & 255
+                                    const b = base_color_rgb & 255
 
-                                    let light_color = `#${Math.min(255, r+120).toString(16)}${Math.min(255, g+120).toString(16)}${Math.min(255, b+120).toString(16)}`
-                                    let dark_color = `#${Math.max(0, r-120).toString(16)}${Math.max(0, g-120).toString(16)}${Math.max(0, b-120).toString(16)}`
+                                    const light_color = `#${Math.min(255, r+120).toString(16)}${Math.min(255, g+120).toString(16)}${Math.min(255, b+120).toString(16)}`
+                                    const dark_color = `#${Math.max(0, r-120).toString(16)}${Math.max(0, g-120).toString(16)}${Math.max(0, b-120).toString(16)}`
 
                                     css_styles.push(
                                         `background:linear-gradient(135deg, ${light_color}, ${dark_color})`,
@@ -672,7 +672,7 @@ function createDecoration(self:templateStyles, content:string){
                                     )
                                 }
                                 
-                                let tag_html = `
+                                const tag_html = `
                                     <span style="${css_styles.join(';')}">
                                         ${tag_text}
                                     </span>
@@ -682,13 +682,13 @@ function createDecoration(self:templateStyles, content:string){
                         }
                         
                         if(tags_html.length > 0){
-                            let container_styles = [
+                            const container_styles = [
                                 "text-align:center",
                                 "margin:0 auto",
                                 "max-width:fit-content"
                             ]
                             
-                            let tags_container = `
+                            const tags_container = `
                                 <div style="${container_styles.join(';')}">
                                     ${tags_html.join('')}
                                 </div>
@@ -698,18 +698,18 @@ function createDecoration(self:templateStyles, content:string){
                     }
 
                     if(self.showDivider){
-                        let thickness = self.dividerThickness
+                        const thickness = self.dividerThickness
                         let divider_style = ""
                         if(self.dividerStyle == "gradient"){
-                            let divider_outer_color = self.dividerOuterColor
-                            let divider_inner_color = self.dividerInnerColor
+                            const divider_outer_color = self.dividerOuterColor
+                            const divider_inner_color = self.dividerInnerColor
                             divider_style = `background:linear-gradient(to right,${divider_outer_color} 0%,${divider_inner_color} 50%,${divider_outer_color} 100%);`
                         }else{
-                            let solid_color = self.dividerSolidColor
+                            const solid_color = self.dividerSolidColor
                             divider_style = `background:${solid_color};`
                         }
 
-                        let divider_html = `
+                        const divider_html = `
                             <div style="height:${thickness}px;${divider_style}margin:1rem 0;border-radius:${thickness/2}px;">
                                 <br>
                             </div>

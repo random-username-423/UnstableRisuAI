@@ -69,7 +69,7 @@
                         <div class="flex-grow flex justify-end">
 
                             {#if alertMode}
-                                <button class={"text-textcolor2 mr-2 cursor-pointer hover:text-blue-500 transition-colors"} onclick={async (e) => {
+                                <button class="text-textcolor2 mr-2 cursor-pointer hover:text-blue-500 transition-colors" onclick={async (e) => {
                                     e.stopPropagation()
 
                                     close(rmodule.id)

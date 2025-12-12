@@ -158,7 +158,7 @@ export async function loadData() {
  * Deletes backups exceeding maxBackups limit (default 20).
  */
 export async function getDbBackups() {
-    let db = getDatabase()
+    const db = getDatabase()
     if (db?.account?.useSync && !isTauri && !isNodeServer) {
         return []
     }
@@ -658,7 +658,7 @@ function updateErrorHandling() {
  * Normalizes database by applying default values, migrating legacy formats, and filtering invalid entries.
  */
 async function normalizeDatabase(): Promise<void> {
-    let db = getDatabase();
+    const db = getDatabase();
 
     // Check data integrity
     db.characters = db.characters.map((v) => {
@@ -751,7 +751,7 @@ async function normalizeDatabase(): Promise<void> {
     }
     if (db.formatversion < 3) {
         for (let i = 0; i < db.characters.length; i++) {
-            let cha = db.characters[i];
+            const cha = db.characters[i];
             if (cha.type === 'character') {
                 if (checkNullish(cha.sdData)) {
                     cha.sdData = defaultSdDataFunc();

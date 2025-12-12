@@ -13,7 +13,7 @@ class StreamChunkWriter {
     }
     async init() {
         let pos = 8
-        let newData: Uint8Array[] = []
+        const newData: Uint8Array[] = []
 
 
         const data = this.data
@@ -94,7 +94,7 @@ class StreamChunkWriter {
 export const PngChunk = {
     read: (data: Uint8Array, chunkName: string[], arg: { checkCrc?: boolean } = {}) => {
         let pos = 8
-        let chunks: { [key: string]: string } = {}
+        const chunks: { [key: string]: string } = {}
         while (pos < data.length) {
             const len = data[pos] * 0x1000000 + data[pos + 1] * 0x10000 + data[pos + 2] * 0x100 + data[pos + 3]
             const type = data.slice(pos + 4, pos + 8)
@@ -140,7 +140,7 @@ export const PngChunk = {
             }
         }
         const reader = data instanceof ReadableStream ? data.getReader() : null
-        let readableStreamData = new AppendableBuffer()
+        const readableStreamData = new AppendableBuffer()
         const trimedData = new AppendableBuffer()
 
         async function appendTrimed(data: Uint8Array) {
@@ -222,7 +222,7 @@ export const PngChunk = {
 
     trim: (data: Uint8Array) => {
         let pos = 8
-        let newData: Uint8Array[] = []
+        const newData: Uint8Array[] = []
         while (pos < data.length) {
             const len = data[pos] * 0x1000000 + data[pos + 1] * 0x10000 + data[pos + 2] * 0x100 + data[pos + 3]
             const type = data.slice(pos + 4, pos + 8)
@@ -246,7 +246,7 @@ export const PngChunk = {
 
     write: async (data: Uint8Array, chunks: { [key: string]: string }, options: { writer?: LocalWriter } = {}): Promise<void | Buffer> => {
         let pos = 8
-        let newData: Uint8Array[] = []
+        const newData: Uint8Array[] = []
 
         async function pushData(data: Uint8Array) {
             if (options.writer) {

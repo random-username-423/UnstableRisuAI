@@ -112,15 +112,15 @@
 
     {#if modelInfo.provider === LLMProvider.GeminiAPI || subModelInfo.provider === LLMProvider.GeminiAPI}
         <span class="text-textcolor">GoogleAI API Key</span>
-        <TextInput marginBottom={true} size={"sm"} placeholder="..." hideText={DBState.db.hideApiKey} bind:value={DBState.db.google.accessToken}/>
+        <TextInput marginBottom={true} size="sm" placeholder="..." hideText={DBState.db.hideApiKey} bind:value={DBState.db.google.accessToken}/>
     {/if}
     {#if modelInfo.provider === LLMProvider.VertexAI || subModelInfo.provider === LLMProvider.VertexAI}
         <span class="text-textcolor">Project ID</span>
-        <TextInput marginBottom={true} size={"sm"} placeholder="..." bind:value={DBState.db.google.projectId} oninput={clearVertexToken}/>
+        <TextInput marginBottom={true} size="sm" placeholder="..." bind:value={DBState.db.google.projectId} oninput={clearVertexToken}/>
         <span class="text-textcolor">Vertex Client Email</span>
-        <TextInput marginBottom={true} size={"sm"} placeholder="..." bind:value={DBState.db.vertexClientEmail} oninput={clearVertexToken}/>
+        <TextInput marginBottom={true} size="sm" placeholder="..." bind:value={DBState.db.vertexClientEmail} oninput={clearVertexToken}/>
         <span class="text-textcolor">Vertex Private Key</span>
-        <TextInput marginBottom={true} size={"sm"} placeholder="..." hideText={DBState.db.hideApiKey} bind:value={DBState.db.vertexPrivateKey} oninput={clearVertexToken}/>
+        <TextInput marginBottom={true} size="sm" placeholder="..." hideText={DBState.db.hideApiKey} bind:value={DBState.db.vertexPrivateKey} oninput={clearVertexToken}/>
         <span class="text-textcolor">Region</span>
         {@const predefinedRegions = ['global', 'us-central1', 'us-east1', 'us-east4', 'us-west1', 'us-west4', 'europe-west1', 'europe-west4', 'asia-northeast1', 'asia-northeast3', 'asia-southeast1', 'asia-east1']}
         {@const isCustomRegion = !predefinedRegions.includes(DBState.db.vertexRegion)}
@@ -133,44 +133,44 @@
             }
             clearVertexToken()
         }}>
-            <OptionInput value={'global'}>global</OptionInput>
-            <OptionInput value={'us-central1'}>us-central1</OptionInput>
-            <OptionInput value={'us-east1'}>us-east1</OptionInput>
-            <OptionInput value={'us-east4'}>us-east4</OptionInput>
-            <OptionInput value={'us-west1'}>us-west1</OptionInput>
-            <OptionInput value={'us-west4'}>us-west4</OptionInput>
-            <OptionInput value={'europe-west1'}>europe-west1</OptionInput>
-            <OptionInput value={'europe-west4'}>europe-west4</OptionInput>
-            <OptionInput value={'asia-northeast1'}>asia-northeast1</OptionInput>
-            <OptionInput value={'asia-northeast3'}>asia-northeast3</OptionInput>
-            <OptionInput value={'asia-southeast1'}>asia-southeast1</OptionInput>
-            <OptionInput value={'asia-east1'}>asia-east1</OptionInput>
-            <OptionInput value={'__custom__'}>Custom...</OptionInput>
+            <OptionInput value="global">global</OptionInput>
+            <OptionInput value="us-central1">us-central1</OptionInput>
+            <OptionInput value="us-east1">us-east1</OptionInput>
+            <OptionInput value="us-east4">us-east4</OptionInput>
+            <OptionInput value="us-west1">us-west1</OptionInput>
+            <OptionInput value="us-west4">us-west4</OptionInput>
+            <OptionInput value="europe-west1">europe-west1</OptionInput>
+            <OptionInput value="europe-west4">europe-west4</OptionInput>
+            <OptionInput value="asia-northeast1">asia-northeast1</OptionInput>
+            <OptionInput value="asia-northeast3">asia-northeast3</OptionInput>
+            <OptionInput value="asia-southeast1">asia-southeast1</OptionInput>
+            <OptionInput value="asia-east1">asia-east1</OptionInput>
+            <OptionInput value="__custom__">Custom...</OptionInput>
         </SelectInput>
         {#if isCustomRegion}
-            <TextInput marginBottom={true} size={"sm"} placeholder="e.g. asia-south1" bind:value={DBState.db.vertexRegion} oninput={clearVertexToken}/>
+            <TextInput marginBottom={true} size="sm" placeholder="e.g. asia-south1" bind:value={DBState.db.vertexRegion} oninput={clearVertexToken}/>
         {/if}    
     {/if}
     {#if modelInfo.provider === LLMProvider.AI21 || subModelInfo.provider === LLMProvider.AI21}
         <span class="text-textcolor">AI21 {language.apiKey}</span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={true} size={"sm"} placeholder="..." bind:value={DBState.db.ai21Key}/>
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={true} size="sm" placeholder="..." bind:value={DBState.db.ai21Key}/>
     {/if}
     {#if modelInfo.provider === LLMProvider.NovelList || subModelInfo.provider === LLMProvider.NovelList}
         <span class="text-textcolor">NovelList {language.apiKey}</span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={true} size={"sm"} placeholder="..." bind:value={DBState.db.novellistAPI}/>
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={true} size="sm" placeholder="..." bind:value={DBState.db.novellistAPI}/>
     {/if}
     {#if DBState.db.aiModel.startsWith('mancer') || DBState.db.subModel.startsWith('mancer')}
         <span class="text-textcolor">Mancer {language.apiKey}</span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={true} size={"sm"} placeholder="..." bind:value={DBState.db.mancerHeader}/>
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={true} size="sm" placeholder="..." bind:value={DBState.db.mancerHeader}/>
     {/if}
     {#if modelInfo.provider === LLMProvider.Anthropic || subModelInfo.provider === LLMProvider.Anthropic
             || modelInfo.provider === LLMProvider.AWS || subModelInfo.provider === LLMProvider.AWS }
         <span class="text-textcolor">Claude {language.apiKey}</span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={true} size={"sm"} placeholder="..." bind:value={DBState.db.claudeAPIKey}/>
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={true} size="sm" placeholder="..." bind:value={DBState.db.claudeAPIKey}/>
     {/if}
     {#if modelInfo.provider === LLMProvider.Mistral || subModelInfo.provider === LLMProvider.Mistral}
         <span class="text-textcolor">Mistral {language.apiKey}</span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={true} size={"sm"} placeholder="..." bind:value={DBState.db.mistralKey}/>
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={true} size="sm" placeholder="..." bind:value={DBState.db.mistralKey}/>
     {/if}
     {#if modelInfo.provider === LLMProvider.NovelAI || subModelInfo.provider === LLMProvider.NovelAI}
         <span class="text-textcolor">NovelAI Bearer Token</span>
@@ -178,11 +178,11 @@
     {/if}
     {#if DBState.db.aiModel === 'reverse_proxy' || DBState.db.subModel === 'reverse_proxy'}
         <span class="text-textcolor mt-2">URL <Help key="forceUrl"/></span>
-        <TextInput marginBottom={false} size={"sm"} bind:value={DBState.db.forceReplaceUrl} placeholder="https//..." />
+        <TextInput marginBottom={false} size="sm" bind:value={DBState.db.forceReplaceUrl} placeholder="https//..." />
         <span class="text-textcolor mt-4"> {language.proxyAPIKey}</span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size={"sm"} placeholder="leave it blank if it hasn't password" bind:value={DBState.db.proxyKey} />
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size="sm" placeholder="leave it blank if it hasn't password" bind:value={DBState.db.proxyKey} />
         <span class="text-textcolor mt-4"> {language.proxyRequestModel}</span>
-        <TextInput marginBottom={false} size={"sm"} bind:value={DBState.db.customProxyRequestModel} placeholder="Name" />
+        <TextInput marginBottom={false} size="sm" bind:value={DBState.db.customProxyRequestModel} placeholder="Name" />
         <span class="text-textcolor mt-4"> {language.format}</span>
         <SelectInput value={DBState.db.customAPIFormat.toString()} onchange={(e) => {
             DBState.db.customAPIFormat = parseInt(e.currentTarget.value)
@@ -206,18 +206,18 @@
     {/if}
     {#if modelInfo.provider === LLMProvider.Cohere || subModelInfo.provider === LLMProvider.Cohere}
         <span class="text-textcolor mt-4">Cohere {language.apiKey}</span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size={"sm"} bind:value={DBState.db.cohereAPIKey} />
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size="sm" bind:value={DBState.db.cohereAPIKey} />
     {/if}
     {#if DBState.db.aiModel === 'ollama-hosted'}
         <span class="text-textcolor mt-4">Ollama URL</span>
-        <TextInput marginBottom={false} size={"sm"} bind:value={DBState.db.ollamaURL} />
+        <TextInput marginBottom={false} size="sm" bind:value={DBState.db.ollamaURL} />
 
         <span class="text-textcolor mt-4">Ollama Model</span>
-        <TextInput marginBottom={false} size={"sm"} bind:value={DBState.db.ollamaModel} />
+        <TextInput marginBottom={false} size="sm" bind:value={DBState.db.ollamaModel} />
     {/if}
     {#if DBState.db.aiModel === 'openrouter' || DBState.db.subModel === 'openrouter'}
         <span class="text-textcolor mt-4">Openrouter Key</span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size={"sm"} bind:value={DBState.db.openrouterKey} />
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size="sm" bind:value={DBState.db.openrouterKey} />
 
         <span class="text-textcolor mt-4">Openrouter Model</span>
         {#await openRouterModels()}
@@ -232,8 +232,8 @@
                     size="sm"
                 />
                 <SelectInput className="mt-2 mb-4" bind:value={DBState.db.openrouterRequestModel}>
-                    <OptionInput value={"risu/free"}>Free Auto</OptionInput>
-                    <OptionInput value={"openrouter/auto"}>Openrouter Auto</OptionInput>
+                    <OptionInput value="risu/free">Free Auto</OptionInput>
+                    <OptionInput value="openrouter/auto">Openrouter Auto</OptionInput>
                     {#each m.filter(model => {
                         if (openrouterSearchQuery === "") return true;
                         const searchTerms = openrouterSearchQuery.toLowerCase().trim().split(/\s+/);
@@ -260,17 +260,17 @@
     {/if}
     {#if modelInfo.provider === LLMProvider.OpenAI || subModelInfo.provider === LLMProvider.OpenAI}
         <span class="text-textcolor">OpenAI {language.apiKey} <Help key="oaiapikey"/></span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size={"sm"} bind:value={DBState.db.openAIKey} placeholder="sk-XXXXXXXXXXXXXXXXXXXX"/>
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size="sm" bind:value={DBState.db.openAIKey} placeholder="sk-XXXXXXXXXXXXXXXXXXXX"/>
     {/if}
 
     {#if modelInfo.keyIdentifier}
         <span class="text-textcolor">{modelInfo.name} {language.apiKey}</span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size={"sm"} bind:value={DBState.db.OaiCompAPIKeys[modelInfo.keyIdentifier]} placeholder="..."/>
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size="sm" bind:value={DBState.db.OaiCompAPIKeys[modelInfo.keyIdentifier]} placeholder="..."/>
     {/if}
 
     {#if subModelInfo.keyIdentifier && subModelInfo.keyIdentifier !== modelInfo.keyIdentifier}
         <span class="text-textcolor">{subModelInfo.name} {language.apiKey}</span>
-        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size={"sm"} bind:value={DBState.db.OaiCompAPIKeys[subModelInfo.keyIdentifier]} placeholder="..."/>
+        <TextInput hideText={DBState.db.hideApiKey} marginBottom={false} size="sm" bind:value={DBState.db.OaiCompAPIKeys[subModelInfo.keyIdentifier]} placeholder="..."/>
     {/if}
 
     <div class="py-2 flex flex-col gap-2 mb-4">
@@ -278,7 +278,7 @@
             <Check bind:check={DBState.db.useStreaming} name={`Response ${language.streaming}`}/>
             
             {#if DBState.db.useStreaming && (modelInfo.flags.includes(LLMFlags.geminiThinking) || subModelInfo.flags.includes(LLMFlags.geminiThinking))}
-                <Check bind:check={DBState.db.streamGeminiThoughts} name={`Stream Gemini Thoughts`}/>
+                <Check bind:check={DBState.db.streamGeminiThoughts} name="Stream Gemini Thoughts"/>
             {/if}
         {/if}
 
@@ -434,16 +434,16 @@
         <span class="text-textcolor">No Repeat n-gram Size</span>
         <SliderInput min={0} max={20} step={1} marginBottom bind:value={DBState.db.ooba.no_repeat_ngram_size}/>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.ooba.do_sample} name={'Do Sample'}/>
+            <Check bind:check={DBState.db.ooba.do_sample} name="Do Sample"/>
         </div>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.ooba.add_bos_token} name={'Add BOS Token'}/>
+            <Check bind:check={DBState.db.ooba.add_bos_token} name="Add BOS Token"/>
         </div>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.ooba.ban_eos_token} name={'Ban EOS Token'}/>
+            <Check bind:check={DBState.db.ooba.ban_eos_token} name="Ban EOS Token"/>
         </div>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.ooba.skip_special_tokens} name={'Skip Special Tokens'}/>
+            <Check bind:check={DBState.db.ooba.skip_special_tokens} name="Skip Special Tokens"/>
         </div>
         <div class="flex items-center mt-4">
             <Check check={!!DBState.db.localStopStrings} name={language.customStopWords} onChange={() => {
@@ -488,9 +488,9 @@
     {:else if modelInfo.format === LLMFormat.NovelAI}
         <div class="flex flex-col p-3 bg-darkbg mt-4">
             <span class="text-textcolor">Starter</span>
-            <TextInput bind:value={DBState.db.NAIsettings.starter} placeholder={'⁂'} />
+            <TextInput bind:value={DBState.db.NAIsettings.starter} placeholder="⁂" />
             <span class="text-textcolor">Seperator</span>
-            <TextInput bind:value={DBState.db.NAIsettings.seperator} placeholder={"\\n"}/>
+            <TextInput bind:value={DBState.db.NAIsettings.seperator} placeholder="\n"/>
         </div>
         <span class="text-textcolor">Top P</span>
         <SliderInput min={0} max={1} step={0.01} marginBottom fixed={2} bind:value={DBState.db.NAIsettings.topP}/>
@@ -751,7 +751,7 @@
     </Arcodion>
 
     <Arcodion styled name={language.moduleIntergration} help="moduleIntergration">
-        <TextAreaInput bind:value={DBState.db.moduleIntergration} fullwidth height={"32"} autocomplete="off"/>
+        <TextAreaInput bind:value={DBState.db.moduleIntergration} fullwidth height="32" autocomplete="off"/>
     </Arcodion>
 
     <Arcodion styled name={language.tools}>
@@ -809,13 +809,13 @@
 {#if submenu === 2 || submenu === -1}
     {#if !DBState.db.promptTemplate}
         <span class="text-textcolor">{language.mainPrompt} <Help key="mainprompt"/></span>
-        <TextAreaInput fullwidth autocomplete="off" height={"32"} bind:value={DBState.db.mainPrompt}></TextAreaInput>
+        <TextAreaInput fullwidth autocomplete="off" height="32" bind:value={DBState.db.mainPrompt}></TextAreaInput>
         <span class="text-textcolor2 mb-6 text-sm mt-2">{tokens.mainPrompt} {language.tokens}</span>
         <span class="text-textcolor">{language.jailbreakPrompt} <Help key="jailbreak"/></span>
-        <TextAreaInput fullwidth autocomplete="off" height={"32"} bind:value={DBState.db.jailbreak}></TextAreaInput>
+        <TextAreaInput fullwidth autocomplete="off" height="32" bind:value={DBState.db.jailbreak}></TextAreaInput>
         <span class="text-textcolor2 mb-6 text-sm mt-2">{tokens.jailbreak} {language.tokens}</span>
         <span class="text-textcolor">{language.globalNote} <Help key="globalNote"/></span>
-        <TextAreaInput fullwidth autocomplete="off" height={"32"} bind:value={DBState.db.globalNote}></TextAreaInput>
+        <TextAreaInput fullwidth autocomplete="off" height="32" bind:value={DBState.db.globalNote}></TextAreaInput>
         <span class="text-textcolor2 mb-6 text-sm mt-2">{tokens.globalNote} {language.tokens}</span>  
         <span class="text-textcolor mb-2 mt-4">{language.formatingOrder} <Help key="formatOrder"/></span>
         <DropList bind:list={DBState.db.formatingOrder} />

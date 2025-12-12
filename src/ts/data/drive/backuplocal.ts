@@ -459,7 +459,7 @@ export async function LoadLocalBackup() {
 export async function loadInternalBackup(){
     // Both Tauri and web use OPFS for database storage now
     const files = await listFromWorker('database')
-    let internalBackups:string[] = []
+    const internalBackups:string[] = []
     for(const file of files){
         if(file.includes('dbbackup-')){
             internalBackups.push(file)

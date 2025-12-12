@@ -45,7 +45,7 @@ export async function downloadFile(name:string, dat:Uint8Array|ArrayBuffer|strin
     }
 }
 
-let fileCache:{
+const fileCache:{
     origin: string[], res:(Uint8Array|'loading'|'done')[]
 } = {
     origin: [],
@@ -226,7 +226,7 @@ export async function saveAsset(data:Uint8Array<ArrayBuffer>, customId:string = 
     if(fileName && fileName.split('.').length > 0){
         fileExtension = fileName.split('.').pop()
     }
-    let form = `assets/${id}.${fileExtension}`
+    const form = `assets/${id}.${fileExtension}`
     // Tauri와 웹 모두 IndexedDB (forageStorage) 사용
     const replacer = await forageStorage.setItem(form, data)
     if(replacer){

@@ -29,7 +29,7 @@ export async function processScript(char:character|groupChat, data:string, mode:
 }
 
 export function exportRegex(s?:customscript[]){
-    let db = getDatabase()
+    const db = getDatabase()
     const script = s ?? db.globalscript
     const data = Buffer.from(JSON.stringify({
         type: 'regex',
@@ -45,7 +45,7 @@ export async function importRegex(o?:customscript[]):Promise<customscript[]>{
     if(!filedata){
         return o
     }
-    let db = getDatabase()
+    const db = getDatabase()
     try {
         const imported= JSON.parse(Buffer.from(filedata).toString('utf-8'))
         if(imported.type === 'regex' && imported.data){
@@ -66,7 +66,7 @@ export async function importRegex(o?:customscript[]):Promise<customscript[]>{
     return o
 }
 
-let bestMatchCache = new Map<string, string>()
+const bestMatchCache = new Map<string, string>()
 let processScriptCache = new Map<string, string>()
 
 function generateScriptCacheKey(scripts: customscript[], data: string, mode: ScriptMode, chatID = -1, cbsConditions: CbsConditions = {}) {
@@ -98,7 +98,7 @@ export function resetScriptCache(){
 }
 
 export async function processScriptFull(char:character|groupChat|simpleCharacterArgument, data:string, mode:ScriptMode, chatID = -1, cbsConditions:CbsConditions = {}){
-    let db = getDatabase()
+    const db = getDatabase()
     let emoChanged = false
     data = await runLuaEditTrigger(char, mode, data, { index:chatID })
 
@@ -152,7 +152,7 @@ export async function processScriptFull(char:character|groupChat|simpleCharacter
 
         if(script.type === mode){
 
-            let outScript2 = script.out.replaceAll("$n", "\n")
+            const outScript2 = script.out.replaceAll("$n", "\n")
             let outScript = outScript2.replace(dreg, "$&")
             let flag = 'g'
             if(script.ableFlag){
@@ -184,7 +184,7 @@ export async function processScriptFull(char:character|groupChat|simpleCharacter
                 if(reg.test(data)){
                     if(outScript.startsWith('@@emo ')){
                         const emoName = script.out.substring(6).trim()
-                        let charemotions = get(CharEmotion)
+                        const charemotions = get(CharEmotion)
                         let tempEmotion = charemotions[char.chaId]
                         if(!tempEmotion){
                             tempEmotion = []
@@ -220,7 +220,7 @@ export async function processScriptFull(char:character|groupChat|simpleCharacter
                         for(const matched of matchAll){
                             if(matched){
                                 const inData = matched[0]
-                                let out = outScript.replace('@@move_top ', '').replace('@@move_bottom ', '')
+                                const out = outScript.replace('@@move_top ', '').replace('@@move_bottom ', '')
                                     .replace(/(?<!\$)\$[0-9]+/g, (v)=>{
                                         const index = parseInt(v.substring(1))
                                         if(index < matched.length){
@@ -294,7 +294,7 @@ export async function processScriptFull(char:character|groupChat|simpleCharacter
         }
     }
 
-    let parsedScripts:pScript[] = []
+    const parsedScripts:pScript[] = []
     let orderChanged = false
     for (const script of scripts){
         if(script.ableFlag && script.flag?.includes('<')){

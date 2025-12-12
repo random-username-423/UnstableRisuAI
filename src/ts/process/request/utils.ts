@@ -256,7 +256,7 @@ export function reformater(formated:OpenAIChat[], modelInfo:LLMModel|LLMFlags[])
     }
 
     if(flags.includes(LLMFlags.requiresAlternateRole)){
-        let newFormated:OpenAIChat[] = []
+        const newFormated:OpenAIChat[] = []
         for(let i=0;i<formated.length;i++){
             const m = formated[i]
             if(newFormated.length === 0){

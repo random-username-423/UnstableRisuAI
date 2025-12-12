@@ -161,7 +161,7 @@ let tokenizersTokenizer:Tokenizer = null
 let tokenizersType:tokenizerType = null
 let lastTikModel = 'cl100k_base'
 
-let googleCloudTokenizedCache = new Map<string, number>()
+const googleCloudTokenizedCache = new Map<string, number>()
 
 async function tokenizeGoogleCloud(text:string) {
     const db = getDatabase()
@@ -427,7 +427,7 @@ export async function strongBan(data:string, bias:{[key:number]:number}) {
     }
     const performace = performance.now()
     const length = Object.keys(bias).length
-    let charAlt = [
+    const charAlt = [
         data,
         data.trim(),
         data.toLocaleUpperCase(),
@@ -436,8 +436,8 @@ export async function strongBan(data:string, bias:{[key:number]:number}) {
         data[0].toLocaleLowerCase() + data.slice(1),
     ]
 
-    let banChars = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~“”‘’«»「」…–―※"
-    let unbanChars:number[] = []
+    const banChars = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~“”‘’«»「」…–―※"
+    const unbanChars:number[] = []
 
     for(const char of banChars){
         unbanChars.push((await tokenizeNum(char))[0])
@@ -453,7 +453,7 @@ export async function strongBan(data:string, bias:{[key:number]:number}) {
             }
         }
         for(const alt of charAlt){
-            let fchar = char
+            const fchar = char
 
             const encoded = await tokenizeNum(alt + fchar)
             if(encoded.length > 0){
@@ -494,7 +494,7 @@ export async function getCharToken(char?:character|groupChat|null){
     persistant += await basicTokenize(char.personality ?? '')
     persistant += await basicTokenize(char.scenario ?? '')
     for(const lore of char.globalLore){
-        let cont = lore.content.split('\n').filter((line) => {
+        const cont = lore.content.split('\n').filter((line) => {
             if(line.startsWith('@@')){
                 return false
             }

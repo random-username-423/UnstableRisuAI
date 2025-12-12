@@ -21,7 +21,7 @@ export function messageForm(arg: Message[], loadPages: number) {
         return data?.trim()
     }
 
-    let a: Messagec[] = []
+    const a: Messagec[] = []
     for (let i = 0; i < arg.length; i++) {
         const m = arg[i]
         a.unshift({
@@ -80,7 +80,7 @@ export async function selectSingleFile(ext: string[]) {
 export async function selectMultipleFile(ext: string[]) {
     if (!isTauri) {
         const v = await selectFileByDom(ext, 'multiple')
-        let arr: { name: string, data: Uint8Array }[] = []
+        const arr: { name: string, data: Uint8Array }[] = []
         for (const file of v) {
             arr.push({ name: file.name, data: await readFileAsUint8Array(file) })
         }
@@ -95,7 +95,7 @@ export async function selectMultipleFile(ext: string[]) {
         multiple: true
     });
     if (Array.isArray(selected)) {
-        let arr: { name: string, data: Uint8Array }[] = []
+        const arr: { name: string, data: Uint8Array }[] = []
         for (const file of selected) {
             arr.push({ name: await basename(file), data: await readFile(file) })
         }
@@ -108,9 +108,9 @@ export async function selectMultipleFile(ext: string[]) {
 }
 
 export const replacePlaceholders = (msg: string, name: string) => {
-    let db = getDatabase()
-    let selectedChar = get(selectedCharID)
-    let currentChar = db.characters[selectedChar]
+    const db = getDatabase()
+    const selectedChar = get(selectedCharID)
+    const currentChar = db.characters[selectedChar]
     return msg.replace(/({{char}})|({{Char}})|(<Char>)|(<char>)/gi, currentChar.name)
         .replace(/({{user}})|({{User}})|(<User>)|(<user>)/gi, getUserName())
         .replace(/(\{\{((set)|(get))var::.+?\}\})/gu, '')
@@ -118,7 +118,7 @@ export const replacePlaceholders = (msg: string, name: string) => {
 
 function checkPersonaBinded() {
     try {
-        let db = getDatabase()
+        const db = getDatabase()
         const selectedChar = get(selectedCharID)
         const character = db.characters[selectedChar]
         const chat = character.chats[character.chatPage]
@@ -265,7 +265,7 @@ export function findCharacterbyId(id: string) {
             }
         }
     }
-    let unknown = createBlankChar()
+    const unknown = createBlankChar()
     unknown.name = 'Unknown Character'
     return unknown
 }
@@ -285,7 +285,7 @@ export function findCharacterIndexbyId(id: string) {
 export function getCharacterIndexObject() {
     const db = getDatabase()
     let i = 0;
-    let result: { [key: string]: number } = {}
+    const result: { [key: string]: number } = {}
     for (const char of db.characters) {
         result[char.chaId] = i
         i += 1
@@ -347,7 +347,7 @@ export async function getEmotion(db: Database, chaEmotion: { [key: string]: [str
         charIdList = [currentDat.chaId]
     }
 
-    let datas: string[] = [currentDat.viewScreen === 'emp' ? 'emp' : 'normal' as const]
+    const datas: string[] = [currentDat.viewScreen === 'emp' ? 'emp' : 'normal' as const]
     for (const chaid of charIdList) {
         const currentChar = findCharacterbyId(chaid)
         if (currentChar.viewScreen === 'emotion') {
@@ -465,7 +465,7 @@ export function encodeMultilangString(data: { [code: string]: string }) {
 }
 
 export function parseMultilangString(data: string) {
-    let result: { [code: string]: string } = {}
+    const result: { [code: string]: string } = {}
     const regex = /# `(.+?)`\n([\s\S]+?)(?=\n# `|$)/g
     let m: RegExpExecArray
     while ((m = regex.exec(data)) !== null) {
@@ -520,7 +520,7 @@ export const languageCodes = ["af", "ak", "am", "an", "ar", "as", "ay", "az", "b
 export function sfc32(a: number, b: number, c: number, d: number) {
     return function () {
         a |= 0; b |= 0; c |= 0; d |= 0;
-        let t = (a + b | 0) + d | 0;
+        const t = (a + b | 0) + d | 0;
         d = d + 1 | 0;
         a = b ^ b >>> 9;
         b = c + (c << 3) | 0;
@@ -978,7 +978,7 @@ export const searchTagList = (query: string) => {
     }
     const realQuery = splited.at(-1).trim().toLowerCase()
 
-    let result = []
+    const result = []
 
     for (const tag of TagList) {
         if (tag.value.startsWith(realQuery)) {
@@ -1342,7 +1342,7 @@ export class PerformanceDebugger{
      * Logs the average time for each key to the console.
      */
     log(){
-        let table:{[key:string]:number} = {}
+        const table:{[key:string]:number} = {}
 
         for(const key in this.kv){
             table[key] = this.kv[key].reduce((a,b) => a + b, 0) / this.kv[key].length
