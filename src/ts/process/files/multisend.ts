@@ -265,22 +265,17 @@ export async function postChatFile(query:string|{
             }
         }
 
-        //image format
-        case 'jpg':
+        case 'jpg': //image format
         case 'jpeg':
         case 'png':
         case 'webp':
         case 'gif':
         case 'avif':
-            
-        //audio format
-        case 'wav':
+        case 'wav': //audio format
         case 'mp3':
         case 'ogg':
         case 'flac':
-            
-        //video format
-        case 'mp4':
+        case 'mp4': //video format
         case 'webm':
         case 'mpeg':
         case 'avi':{

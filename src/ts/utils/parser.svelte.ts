@@ -1234,6 +1234,7 @@ function blockStartMatcher(p1:string,matcherArg:matcherArg):{type:blockMatch,typ
                         else{
                             statement.push('0')
                         }
+                        break
                     }
                     case 'tis':{ //tis = toggle is
                         const variable = getGlobalChatVar('toggle_' + statement.pop())

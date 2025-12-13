@@ -99,6 +99,7 @@ async function processCommand(command:string, pipe:string):Promise<false | strin
                 //NOT IMPLEMENTED
                 return pipe
             }
+            break
         }
         case 'send': {
             currentChat.message.push({
