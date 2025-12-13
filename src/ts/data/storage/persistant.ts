@@ -18,8 +18,7 @@ async function requestPersistantStorageMain() {
         }
 
         //if is chromium
-        //@ts-ignore
-        const isChromium = window.chrome;
+        const isChromium = 'chrome' in window;
         if (isChromium) {
             //chromium requires notification to persist
             alertNormal("For chromium based browsers, you need to allow notifications to persist data")

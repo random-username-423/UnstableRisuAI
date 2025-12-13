@@ -55,10 +55,15 @@ export function getBasename(path: string): string {
 }
 
 const domSelect = true
-export async function selectSingleFile(ext: string[]) {
+export type SelectedFile = { name: string; data: Uint8Array<ArrayBuffer> }
+
+export async function selectSingleFile(ext: string[]): Promise<SelectedFile | null> {
     if (domSelect) {
         const v = await selectFileByDom(ext, 'single')
-        const file = v[0]
+        const file = v?.[0]
+        if (!file) {
+            return null
+        }
         return { name: file.name, data: await readFileAsUint8Array(file) }
     }
 
@@ -73,7 +78,7 @@ export async function selectSingleFile(ext: string[]) {
     } else if (selected === null) {
         return null
     } else {
-        return { name: await basename(selected), data: await readFile(selected) }
+        return { name: await basename(selected), data: (await readFile(selected)) as Uint8Array<ArrayBuffer> }
     }
 }
 
@@ -212,8 +217,8 @@ export function selectFileByDom(allowedExtensions: string[], multiple: 'multiple
     });
 }
 
-function readFileAsUint8Array(file) {
-    return new Promise<Uint8Array>((resolve, reject) => {
+function readFileAsUint8Array(file: File): Promise<Uint8Array<ArrayBuffer>> {
+    return new Promise<Uint8Array<ArrayBuffer>>((resolve, reject) => {
         const reader = new FileReader();
 
         reader.onload = (event) => {

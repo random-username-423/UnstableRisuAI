@@ -178,7 +178,7 @@ export function setPreset(db:Database, newPres: botPreset): Database{
         mode: 'instruct'
     }
     db.top_p = newPres.top_p ?? 1
-    //@ts-ignore //for legacy mistpings
+    //for legacy mistpings
     db.promptSettings = safeStructuredClone(newPres.promptSettings) ?? {
         assistantPrefill: '',
         postEndInnerFormat: '',

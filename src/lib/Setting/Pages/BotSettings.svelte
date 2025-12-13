@@ -785,10 +785,12 @@
         </div>
         <button class="mt-2 text-textcolor2 hover:text-textcolor focus-within:text-textcolor" onclick={async () => {
             const sel = await selectSingleFile(['png', 'jpg', 'jpeg', 'webp'])
+            if(!sel){
+                return
+            }
             const canvas = document.createElement('canvas')
             const ctx = canvas.getContext('2d')
             const img = new Image()
-            //@ts-ignore, works fine, don't touch
             const blob = new Blob([sel.data], {type: "image/png"})
             img.src = URL.createObjectURL(blob)
             await img.decode()

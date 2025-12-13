@@ -20,12 +20,19 @@ export const webAppSubVer = ''
 
 export function setDatabase(data: Database) {
     // 1. Apply simple defaults
-    for (const key in baseDatabaseDefaults) {
-        // @ts-ignore
-        if (checkNullish(data[key])) {
-            // @ts-ignore
-            data[key] = structuredClone(baseDatabaseDefaults[key]);
+    // TODO: too complex to read
+    type DefaultKey = keyof typeof baseDatabaseDefaults & keyof Database
+    const defaultKeys = Object.keys(baseDatabaseDefaults) as DefaultKey[]
+
+    const applyDefault = <K extends DefaultKey>(key: K) => {
+        const defaultValue = baseDatabaseDefaults[key]
+        if (checkNullish(data[key]) && defaultValue !== undefined) {
+            data[key] = structuredClone(defaultValue) as Database[K]
         }
+    }
+
+    for (const key of defaultKeys) {
+        applyDefault(key)
     }
 
     // 2. Defaults with logic or dependencies
@@ -132,7 +139,6 @@ export function setDatabase(data: Database) {
     }
 
     // Web Environment Specifics
-    //@ts-ignore
     if (!globalThis.__NODE__ && !window.__TAURI_INTERNALS__) {
         data.promptInfoInsideChat = false
     }

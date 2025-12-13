@@ -91,7 +91,7 @@
             
         }
 
-        //@ts-ignore since API is available in Corejs
+        //@ts-expect-error since API is available in Corejs
         const toRemove:Set = hashes.difference(currentHashes);
         toRemove.forEach((hash) => {
             const inst = mountInstances.get(hash);

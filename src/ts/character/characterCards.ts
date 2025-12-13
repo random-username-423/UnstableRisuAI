@@ -490,7 +490,7 @@ export async function characterURLImport() {
         SettingsMenuIndex.set(1)
         settingsOpen.set(true)
     }
-    if ("launchQueue" in window) {
+    if (window.launchQueue) {
         const handleFiles = async (files: FileSystemFileHandle[]) => {
             for (const f of files) {
                 const file = await f.getFile()
@@ -498,7 +498,6 @@ export async function characterURLImport() {
                 await importFile(f.name, data);
             }
         }
-        //@ts-ignore
         window.launchQueue.setConsumer((launchParams) => {
             if (launchParams.files && launchParams.files.length) {
                 const files = launchParams.files as FileSystemFileHandle[]
@@ -507,14 +506,11 @@ export async function characterURLImport() {
         });
     }
 
-    if ("tauriOpenedFiles" in window) {
-        //@ts-ignore
-        const files: string[] = window.tauriOpenedFiles
-        if (files) {
-            for (const file of files) {
-                const data = await readFile(file)
-                await importFile(file, data)
-            }
+    const files = window.tauriOpenedFiles
+    if (files) {
+        for (const file of files) {
+            const data = await readFile(file)
+            await importFile(file, data)
         }
     }
 
@@ -1094,7 +1090,6 @@ function convertCharbook(arg: {
             extentions: { ...extensions, risu_case_sensitive: book.case_sensitive },
             activationPercent: book.extensions?.risu_activationPercent,
             loreCache: book.extensions?.risu_loreCache ?? null,
-            //@ts-ignore
             useRegex: book.use_regex ?? false,
             folder: book.folder
         })

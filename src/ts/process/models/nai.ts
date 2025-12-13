@@ -62,7 +62,7 @@ export const novelLogin = async () => {
         alertWait('Logging in to NovelAI')
 
         let tries = 0
-        const error = ''
+        let errorMessage = ''
         while (tries < 3) {
             try {
 
@@ -89,7 +89,7 @@ export const novelLogin = async () => {
                     'base64'
                 )
                 .slice(0, 64)
-            
+
                 const r = await globalFetch('https://api.novelai.net/user/login', {
                     method: 'POST',
                     headers: {
@@ -100,7 +100,7 @@ export const novelLogin = async () => {
                         key: key
                     }
                 })
-            
+
                 if ((!r.ok) || (!r.data?.accessToken)) {
                     alertError(`Failed to authenticate with NovelAI: ${r.data?.message ?? r.data}`)
                     return
@@ -115,12 +115,12 @@ export const novelLogin = async () => {
                 setDatabase(db)
                 return
             }
-            catch (error) {
-                error = (`Failed to authenticate with NovelAI: ${error}`)
+            catch (e) {
+                errorMessage = `Failed to authenticate with NovelAI: ${e}`
                 tries++
             }
         }
-        alertError(error)
+        alertError(errorMessage)
     } catch (error) {
         alertError(`Failed to authenticate with NovelAI: ${error}`)
     }

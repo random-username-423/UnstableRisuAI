@@ -18,15 +18,14 @@ const magicRisuSaveHeader = new TextEncoder().encode("RISUSAVE\0");
 
 
 async function checkCompressionStreams(){
-    if(!CompressionStream){
+    // TODO: Consider centralizing/caching compression-stream initialization to avoid repeating this call pattern.
+    if(!globalThis.CompressionStream){
         const {makeCompressionStream} = await import('compression-streams-polyfill/ponyfill');
-        //@ts-ignore
-        globalThis.CompressionStream = makeCompressionStream(TransformStream);
+        globalThis.CompressionStream = makeCompressionStream(TransformStream) as unknown as typeof CompressionStream;
     }
-    if(!DecompressionStream){
+    if(!globalThis.DecompressionStream){
         const {makeDecompressionStream} = await import('compression-streams-polyfill/ponyfill');
-        //@ts-ignore
-        globalThis.DecompressionStream = makeDecompressionStream(TransformStream);
+        globalThis.DecompressionStream = makeDecompressionStream(TransformStream) as unknown as typeof DecompressionStream;
     }
 }
 
@@ -313,8 +312,8 @@ export class RisuSaveDecoder {
     async decode(data: Uint8Array): Promise<Database> {
         console.log('Decoding RisuSave data');
         let offset = magicRisuSaveHeader.length;
-        //@ts-ignore
-        const db:Database = {}
+        // TODO: Start with Partial<Database> and validate/normalize before returning.
+        const db = {} as Database
         while (offset < data.length) {
             const type = data[offset];
             const compression = data[offset + 1] === 1;

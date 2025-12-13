@@ -5,10 +5,8 @@ import { platform } from '@tauri-apps/plugin-os';
  * This file has almost no imports to avoid circular dependencies.
  */
 
-//@ts-ignore
-export const isTauri = !!window.__TAURI_INTERNALS__
-//@ts-ignore
-export const isNodeServer = !!globalThis.__NODE__
+export const isTauri = !!(window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__
+export const isNodeServer = !!(globalThis as typeof globalThis & { __NODE__?: boolean }).__NODE__
 
 export const currentUserAgent = navigator.userAgent
 
@@ -18,6 +16,19 @@ export const currentPlatform = isTauri ? await platform() : 'web';
 export const isMobileTauri = currentPlatform === 'android' || currentPlatform === 'ios';
 
 export const isFirefox = navigator.userAgent.toLowerCase().includes('firefox')
+
+export function isStandaloneMode(): boolean {
+    try {
+        if (typeof window === 'undefined' || typeof document === 'undefined' || typeof navigator === 'undefined') {
+            return false
+        }
+        const nav = navigator as Navigator & { standalone?: boolean }
+        const mql = window.matchMedia?.('(display-mode: standalone)')
+        return Boolean(mql?.matches) || Boolean(nav.standalone) || document.referrer.includes('android-app://')
+    } catch {
+        return false
+    }
+}
 
 // App version and build info
 export const appVer = "166.6.0"

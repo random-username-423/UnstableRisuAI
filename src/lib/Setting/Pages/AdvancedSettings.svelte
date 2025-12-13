@@ -658,8 +658,7 @@ Show Statistics
             }
         }
 
-        //@ts-ignore
-        db.meta = {
+        const meta = {
             isTauri: isTauri,
             isNodeServer: isNodeServer,
             currentUserAgent: currentUserAgent,
@@ -667,7 +666,7 @@ Show Statistics
             protocol: location.protocol
         }
 
-        const json = JSON.stringify(db, null, 2)
+        const json = JSON.stringify({ ...db, meta }, null, 2)
         await downloadFile('risuai-settings-report.json', new TextEncoder().encode(json))
         await navigator.clipboard.writeText(json)
         alertNormal(language.settingsExported)

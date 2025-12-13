@@ -687,8 +687,7 @@
             DBState.db.supaModelType !== 'none' ? 'supaMemory' :
             DBState.db.hanuraiEnable ? 'hanuraiMemory' : 'none'
         } onchange={(v) => {
-            //@ts-ignore
-            const value = v.target.value
+            const value = v.currentTarget.value
             if (value === 'supaMemory'){
                 DBState.db.supaModelType = 'distilbart'
                 DBState.db.memoryAlgorithmType = 'supaMemory'

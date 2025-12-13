@@ -218,8 +218,7 @@
                 <Button className="mt-4" onclick={() => {
                     alertStore.set({
                         type: 'none',
-                        //@ts-ignore
-                        msg: document.querySelector('#alert-input')?.value
+                        msg: document.querySelector<HTMLInputElement>('#alert-input')?.value ?? ''
                     })
                 }}>OK</Button>
                 {#if $alertStore.datalist}
@@ -244,14 +243,12 @@
                             {#if char.image}
                                 {#await getCharImage(DBState.db.characters[i].image, 'css')}
                                     <BarIcon onClick={() => {
-                                        //@ts-ignore
                                         alertStore.set({type: 'none',msg: char.chaId})
                                     }}>
                                         <User/>
                                     </BarIcon>
                                 {:then im} 
                                     <BarIcon onClick={() => {
-                                        //@ts-ignore
                                         alertStore.set({type: 'none',msg: char.chaId})
                                     }} additionalStyle={im} />
                                     

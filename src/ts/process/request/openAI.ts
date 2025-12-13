@@ -481,7 +481,6 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
         const keys = Object.keys(OobaBodyTemplate)
         for(const key of keys){
             if(OobaBodyTemplate[key] !== undefined && OobaBodyTemplate[key] !== null){
-                // @ts-ignore
                 body[key] = OobaBodyTemplate[key]
             }
         }
@@ -497,7 +496,7 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
                 db.proxyRequestModel?.startsWith('gpt') ||
                 (db.proxyRequestModel === 'custom' && db.customProxyRequestModel.startsWith('gpt'))
             )))){
-            // @ts-ignore
+
             delete body.logit_bias
         }
     }
@@ -559,7 +558,7 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
                 result: 'MultiGen mode cannot be used with tool calls. Please disable one of them.'
             }
         }
-        // @ts-ignore
+
         body.n = db.genTime
     }
     const throughProxi = (!isTauri) && (!isNodeServer) && (!db.usePlainFetch)

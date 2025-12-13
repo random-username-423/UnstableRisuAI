@@ -69,9 +69,7 @@
         }
         else if($ShowRealmFrameStore.startsWith('module')){
             const predata = DBState.db.modules[Number($ShowRealmFrameStore.split(':')[1])]
-            //@ts-ignore
-            predata.type = 'risuModule'
-            const encodedPredata = new TextEncoder().encode(JSON.stringify(predata))
+            const encodedPredata = new TextEncoder().encode(JSON.stringify({ ...predata, type: 'risuModule' }))
             const encodedPredataName = new TextEncoder().encode(predata.name + '.json')
             data = {
                 data: encodedPredata.buffer as ArrayBuffer,

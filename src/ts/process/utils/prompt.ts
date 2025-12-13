@@ -337,11 +337,11 @@ export function promptConvertion(files:{ name: string, content: string, type:str
             }
             const multiplier = arg.multiplier ?? 1
             if(samplers.includes(getname)){
-                //@ts-ignore
+                // @ts-expect-error // TODO: preset conversion typing needs review (JSON-driven assignments)
                 preset[setname] = data[getname] * multiplier
             }
             else{
-                // @ts-ignore
+                // @ts-expect-error // TODO: preset conversion typing needs review (JSON-driven assignments)
                 preset[setname] = -1000
             }
     

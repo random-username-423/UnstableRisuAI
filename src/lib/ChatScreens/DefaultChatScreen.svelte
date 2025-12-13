@@ -446,8 +446,9 @@
         {/if}
     {:else}
         <div class="h-full w-full flex flex-col-reverse overflow-y-auto relative default-chat-screen"  onscroll={(e) => {
-            //@ts-ignore  
-            const scrolled = (e.target.scrollHeight - e.target.clientHeight + e.target.scrollTop)
+            const el = e.currentTarget
+            if (!(el instanceof HTMLElement)) return
+            const scrolled = (el.scrollHeight - el.clientHeight + el.scrollTop)
             if(scrolled < 100 && (DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message?.length ?? 0) > loadPages){
                 loadPages += 15
             }

@@ -12,8 +12,8 @@
             return
         }
         try{
-            //@ts-ignore
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
+            const w = window as Window & { adsbygoogle?: unknown[] }
+            ;(w.adsbygoogle ??= []).push({})
         }catch{}
     });
 </script>

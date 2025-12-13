@@ -23,7 +23,7 @@ import {
 import { getUnpargeables } from 'src/ts/utils/dbUtils'
 import { checkCharOrder } from 'src/ts/character/characters'
 import { updateHeightMode } from 'src/ts/gui/guisize'
-import { isTauri, isNodeServer } from "src/ts/utils/env";
+import { isTauri, isNodeServer, isStandaloneMode } from "src/ts/utils/env";
 import { setDatabase, getDatabase, defaultSdDataFunc } from "./data/storage/database.svelte";
 import type { character, groupChat } from "./data/storage/types";
 import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
@@ -475,9 +475,7 @@ async function finalizeLoading(): Promise<void> {
         } catch (error) { }
     }
     try {
-        //@ts-ignore
-        const isInStandaloneMode = (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone) || document.referrer.includes('android-app://');
-        if (isInStandaloneMode) {
+        if (isStandaloneMode()) {
             await navigator.storage.persist()
         }
     } catch (error) {

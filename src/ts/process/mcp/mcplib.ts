@@ -196,8 +196,7 @@ export class MCPClient{
                                 continue
                             }
 
-                            //@ts-ignore
-                            if(jsonData.method === 'ping'){
+                            if ('method' in jsonData && jsonData.method === 'ping') {
                                 await this.request('response', {}, {
                                     notifications: true,
                                     initMethod: 'none',

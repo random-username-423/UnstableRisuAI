@@ -156,12 +156,14 @@ export function unstringlizeChat(text:string, formated:OpenAIChat[], char:string
     return text
 }
 
+/* eslint-disable no-irregular-whitespace */
 export function getUnstringlizerChunks(formated:OpenAIChat[], char:string, mode:'ain'|'normal' = 'normal'){
     const chunks:string[] = ["system note:", "system:","system note：", "system："]
     const charNames:string[] = []
     const db = getDatabase()
     if(char){
         charNames.push(char)
+        
         if(mode === 'ain'){
             chunks.push(`${char} `)
             chunks.push(`${char}　`)
@@ -208,6 +210,7 @@ export function getUnstringlizerChunks(formated:OpenAIChat[], char:string, mode:
     }
     return {chunks,extChunk:charNames.concat(chunks)}
 }
+/* eslint-enable no-irregular-whitespace */
 
 export function stringlizeAINChat(formated:OpenAIChat[], char:string, continued: boolean){
     const resultString:string[] = []

@@ -24,11 +24,10 @@
     let aspectRatio = 1;
     let fontFamily = $state('Arial');
 
-    async function selectFile(){
+    async function selectFile(): Promise<boolean>{
         const file = await selectSingleFile(['png', 'jpg', 'jpeg','gif','webp','avif']);
         if (!file){
-            loading = false;
-            return;
+            return false;
         };
 
         if(!ctx){
@@ -36,7 +35,6 @@
         }
         const img = new Image();
         inputImage = img;
-        //@ts-ignore
         img.src = URL.createObjectURL(new Blob([file.data]));
         await img.decode();
         aspectRatio = img.width / img.height;
@@ -47,6 +45,7 @@
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
         output = ''
+        return true
     }
 
     async function imageTranslate(type:number = 0) {
@@ -56,7 +55,9 @@
         loading = true;
         try {
             if(mode === 'auto'){
-            await selectFile()
+            if(!(await selectFile())){
+                return
+            }
             }
 
             let data:string = ''

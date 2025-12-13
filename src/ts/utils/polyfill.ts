@@ -39,9 +39,7 @@ try {
 globalThis.safeStructuredClone = safeStructuredClone
 
 globalThis.Buffer = BufferPolyfill
-//@ts-ignore
-globalThis.WritableStream = globalThis.WritableStream ?? WritableStream
-//@ts-ignore
-globalThis.ReadableStream = globalThis.ReadableStream ?? ReadableStream
-//@ts-ignore
-    globalThis.TransformStream = globalThis.TransformStream ?? TransformStream   
+const globalWithStreams = globalThis as any
+globalWithStreams.WritableStream = globalWithStreams.WritableStream ?? WritableStream
+globalWithStreams.ReadableStream = globalWithStreams.ReadableStream ?? ReadableStream
+globalWithStreams.TransformStream = globalWithStreams.TransformStream ?? TransformStream
