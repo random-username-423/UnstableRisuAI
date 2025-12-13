@@ -78,6 +78,7 @@
         <Button onclick={async () => {
             await sleep(1) // wait for the input to be updated
             const enNotes = creatorNotes.en
+            // eslint-disable-next-line no-control-regex
             const latin1 = /^[\x00-\xFF]*$/
             if(enNotes.length < 10){
                 alertError("English version of creator notes must be longer than 10 characters")

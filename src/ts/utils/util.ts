@@ -1260,6 +1260,7 @@ export function toggleDomFullscreen(){
  * @returns {string} The processed string with non-Latin characters removed, multiple spaces replaced by a single space, and trimmed.
  */
 export function trimNonLatin(data:string){
+    // eslint-disable-next-line no-control-regex
     return data .replace(/[^\x00-\x7F]/g, "")
                 .replace(/ +/g, ' ')
                 .trim()
