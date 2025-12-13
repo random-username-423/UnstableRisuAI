@@ -255,22 +255,46 @@ export class MCPClient{
         }
 
         if(this.customTransport){
-            return new Promise<RPCRequestResult>(async (resolve) => {
-                await this.customTransport.send(body as JsonRPC)
-                const func = (message:JsonRPC) => {
-                    if(message.id === body.id){
+            const requestId = body.id
+            const transportError = (): RPCRequestResult => ({
+                rpc: {
+                    jsonrpc: "2.0",
+                    id: requestId,
+                    error: { code: 500, message: "Transport Error" }
+                },
+                http: { status: 500, headers: {} }
+            })
+
+            // notifications는 응답을 기다리지 않음 (HTTP 경로와 동일)
+            if(options.notifications){
+                try {
+                    await this.customTransport.send(body as JsonRPC)
+                } catch {
+                    return transportError()
+                }
+                return {
+                    rpc: { jsonrpc: "2.0", id: requestId, result: null },
+                    http: { status: 200, headers: {} }
+                }
+            }
+
+            return new Promise<RPCRequestResult>((resolve) => {
+                const func = (message: JsonRPC) => {
+                    if(message.id === requestId){
                         resolve({
                             rpc: message,
-                            http: {
-                                status: 200,
-                                headers: {}
-                            }
+                            http: { status: 200, headers: {} }
                         })
                         this.customTransport.removeListener(func)
-                        return
                     }
                 }
                 this.customTransport.addListener(func)
+                Promise.resolve().then(() => {
+                    return this.customTransport.send(body as JsonRPC)
+                }).catch(() => {
+                    this.customTransport.removeListener(func)
+                    resolve(transportError())
+                })
             })
         }
 
