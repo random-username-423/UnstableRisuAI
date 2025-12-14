@@ -1,4 +1,4 @@
-import { exportCharacterCard } from "./character/characterCards";
+import { exportCharacterCard } from "./character/characterCards.svelte";
 import { VirtualWriter } from "./utils/writers";
 import { getCurrentCharacter, getDatabase } from "./data/storage/database.svelte";
 import { type character } from "./data/storage/types";

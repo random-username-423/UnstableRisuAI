@@ -6,7 +6,7 @@ import { open } from '@tauri-apps/plugin-dialog'
 import { open as openShell } from '@tauri-apps/plugin-shell'
 import { readFile } from "@tauri-apps/plugin-fs"
 import { basename } from "@tauri-apps/api/path"
-import { createBlankChar, getCharImage } from "../character/characters"
+import { createBlankChar, getCharImage } from "../character/characters.svelte"
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { isTauri, isMobileTauri } from "src/ts/utils/env";
 

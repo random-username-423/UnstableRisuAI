@@ -5,7 +5,7 @@
     import { getVersionString } from "src/ts/utils/env";
     import { openURL } from "src/ts/utils/util";
     import { language } from "src/lang";
-    import { getRisuHub, hubAdditionalHTML } from "src/ts/character/characterCards";
+    import { getRisuHub, hubAdditionalHTML } from "src/ts/character/characterCards.svelte";
     import RisuHubIcon from "./Realm/RealmHubIcon.svelte";
     import Title from "./Title.svelte";
 </script>

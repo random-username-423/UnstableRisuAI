@@ -1,6 +1,5 @@
-import { writable } from "svelte/store"
 import { getDatabase } from "./database.svelte"
-import { hubURL } from "../../character/characterCards"
+import { hubURL } from "../../character/characterCards.svelte"
 import localforage from "localforage"
 import { alertLogin, alertNormalWait, alertStore, alertWait } from "../../utils/alert"
 import { forageStorage } from "src/ts/data/storage/autoStorage";
@@ -10,7 +9,9 @@ import { v4 } from "uuid"
 import { language } from "src/lang"
 import { sleep } from "../../utils/util"
 
-export const AccountWarning = writable('')
+export const AccountWarning = $state({
+    value: ''
+})
 const risuSession = Date.now().toFixed(0)
 const cachedForage = localforage.createInstance({name: "risuaiAccountCached"})
 
@@ -60,7 +61,7 @@ export class AccountStorage{
                 if(json?.warning){
                     if(!seenWarnings.includes(json.warning)){
                         seenWarnings.push(json.warning)
-                        AccountWarning.set(json.warning)
+                        AccountWarning.value = json.warning
                     }
                 }
                 if(json?.reloadSession){

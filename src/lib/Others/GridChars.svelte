@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { characterFormatUpdate, getCharImage, removeChar } from "../../ts/character/characters"
+    import { characterFormatUpdate, getCharImage, removeChar } from "../../ts/character/characters.svelte"
     import type { Database } from "../../ts/data/storage/types"
     import { DBState, ChatState } from "src/ts/stores.svelte"
     import BarIcon from "../SideBars/BarIcon.svelte"
@@ -8,7 +8,7 @@
     import Button from "../UI/GUI/Button.svelte"
     import { language } from "src/lang"
     import { parseMultilangString } from "src/ts/utils/util"
-    import { checkCharOrder } from "src/ts/character/characters"
+    import { checkCharOrder } from "src/ts/character/characters.svelte"
     import MobileCharacters from "../Mobile/MobileCharacters.svelte"
     interface Props {
         endGrid?: any

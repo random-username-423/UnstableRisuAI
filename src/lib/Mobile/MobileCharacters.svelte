@@ -2,7 +2,7 @@
     import type { character, groupChat } from "src/ts/data/storage/types";
     import { DBState } from 'src/ts/stores.svelte';
     import BarIcon from "../SideBars/BarIcon.svelte";
-    import { addCharacter, changeChar, getCharImage } from "src/ts/character/characters";
+    import { addCharacter, changeChar, getCharImage } from "src/ts/character/characters.svelte";
 import { MobileState } from 'src/ts/stores.svelte';
     import { MessageSquareIcon, PlusIcon } from "lucide-svelte";
 

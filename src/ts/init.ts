@@ -21,7 +21,7 @@ import {
     deleteFromWorker
 } from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { getUnpargeables } from 'src/ts/utils/dbUtils'
-import { checkCharOrder } from 'src/ts/character/characters'
+import { checkCharOrder } from 'src/ts/character/characters.svelte'
 import { updateHeightMode } from 'src/ts/gui/guisize'
 import { isTauri, isNodeServer, isStandaloneMode } from "src/ts/utils/env";
 import { setDatabase, getDatabase, defaultSdDataFunc } from "./data/storage/database.svelte";
@@ -35,7 +35,7 @@ import { checkRisuUpdate } from "./utils/update";
 import { loadPlugins } from "./plugins/plugins";
 import { alertError, alertMd, alertTOS, waitAlert } from "./utils/alert";
 import { checkDriverInit } from "./data/drive/drive";
-import { characterURLImport } from "./character/characterCards";
+import { characterURLImport } from "./character/characterCards.svelte";
 import { loadRisuAccountData } from "./data/drive/accounter";
 import { autoServerBackup } from "./data/kei/backup";
 import { updateAnimationSpeed } from "./gui/animation";
@@ -46,8 +46,8 @@ import { initMobileGesture } from "./hotkey/hotkey";
 import { moduleUpdate } from "src/ts/process/scripting/modules";
 import { makeColdData } from "src/ts/process/utils/coldstorage.svelte";
 import { language } from "src/lang";
-import type { AccountStorage } from "./data/storage/accountStorage";
-import { updateLorebooks } from "./character/characters";
+import type { AccountStorage } from "./data/storage/accountStorage.svelte";
+import { updateLorebooks } from "./character/characters.svelte";
 import { defaultJailbreak, defaultMainPrompt, oldJailbreak, oldMainPrompt } from "./data/storage/defaultPrompts";
 import { syncManager } from "./data/drive/syncManager";
 

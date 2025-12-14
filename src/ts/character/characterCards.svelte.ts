@@ -1,4 +1,3 @@
-import { get, writable, type Writable } from "svelte/store"
 import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertSelect, alertStore, alertTOS, alertWait } from "../utils/alert"
 import { defaultSdDataFunc, setDatabase, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite } from "../data/storage/database.svelte"
 import { appVer } from 'src/ts/utils/env'
@@ -7,11 +6,11 @@ import { importPreset } from "../data/storage/utils/presetManager"
 import { checkNullish, decryptBuffer, encryptBuffer, getArrayBuffer, isKnownUri, selectFileByDom, selectMultipleFile, sleep } from '../utils/util'
 import { language } from "src/lang"
 import { v4 as uuidv4, v4 } from 'uuid';
-import { characterFormatUpdate } from "./characters"
+import { characterFormatUpdate } from "./characters.svelte"
 import { downloadFile, loadAsset, readImage, saveAsset } from "../utils/fileIO"
 import { openURL } from "../utils/util"
 import { AppendableBuffer } from "../utils/fetch"
-import { checkCharOrder } from 'src/ts/character/characters'
+import { checkCharOrder } from 'src/ts/character/characters.svelte'
 import { LocalWriter, VirtualWriter } from "src/ts/utils/writers";
 import { BlankWriter } from 'src/ts/utils/writers'
 import { isTauri, isNodeServer } from "src/ts/utils/env";
@@ -361,10 +360,12 @@ export const getRealmInfo = async (realmPath: string) => {
         alertError(await res.text())
         return
     }
-    showRealmInfoStore.set(await res.json())
+    showRealmInfoStore.value = await res.json()
 }
 
-export const showRealmInfoStore: Writable<null | hubType> = writable(null)
+export const showRealmInfoStore: { value: null | hubType } = $state({
+    value: null
+})
 
 export async function characterURLImport() {
     const realmPath = (new URLSearchParams(location.search)).get('realm')

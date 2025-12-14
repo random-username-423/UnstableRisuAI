@@ -5,7 +5,7 @@ import { NodeStorage } from "./nodeStorage"
 import { alertInput, alertSelect, alertStore } from "../../utils/alert"
 import { getDatabase } from "./database.svelte"
 import type { Database } from "./types"
-import { AccountStorage } from "./accountStorage"
+import { AccountStorage } from "./accountStorage.svelte"
 import { decodeRisuSave, encodeRisuSaveLegacy } from "./risuSave";
 import { language } from "src/lang"
 

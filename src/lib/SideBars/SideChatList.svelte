@@ -11,7 +11,7 @@
     import Button from "../UI/GUI/Button.svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
 
-    import { exportChat, importChat, exportAllChats } from "src/ts/character/characters";
+    import { exportChat, importChat, exportAllChats } from "src/ts/character/characters.svelte";
     import { alertChatOptions, alertConfirm, alertError, alertInput, alertNormal, alertSelect, alertStore } from "src/ts/utils/alert";
     import { findCharacterbyId, parseKeyValue, sleep, sortableOptions } from "src/ts/utils/util";
     import { loadChat } from "src/ts/data/storage/chatStorage";

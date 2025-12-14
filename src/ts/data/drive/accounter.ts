@@ -1,4 +1,4 @@
-import { hubURL } from "../../character/characterCards"
+import { hubURL } from "../../character/characterCards.svelte"
 import { getDatabase, setDatabase } from "../storage/database.svelte"
 import { alertConfirm, alertError, alertMd, alertNormal, alertSelect, alertWait } from "../../utils/alert"
 import { AppendableBuffer } from "../../utils/fetch"

@@ -8,7 +8,7 @@ import { convertFileSrc } from "@tauri-apps/api/core"
 import { v4 as uuidv4 } from 'uuid'
 import { appDataDir, join } from "@tauri-apps/api/path"
 import { hasher } from "./parser.svelte"
-import { hubURL } from "../character/characterCards"
+import { hubURL } from "../character/characterCards.svelte"
 import { forageStorage } from "../data/storage/autoStorage"
 import { isTauri, isMobileTauri } from "./env"
 

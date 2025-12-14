@@ -3,10 +3,10 @@ import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "..
 import { requestChatData } from "../process/request/request";
 import { saveAsset } from "../utils/fileIO";
 import { globalFetch } from "../utils/fetch";
-import { checkCharOrder } from 'src/ts/character/characters'
+import { checkCharOrder } from 'src/ts/character/characters.svelte'
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import { tokenize } from "../utils/tokenizer";
-import { createBlankChar } from "../character/characters";
+import { createBlankChar } from "../character/characters.svelte";
 import { getDatabase, setDatabase } from "../data/storage/database.svelte";
 import type { character } from "../data/storage/types";
 import { sleep } from '../utils/util';

@@ -8,7 +8,7 @@
     import RealmPopUp from './lib/UI/Realm/RealmPopUp.svelte';
     import WelcomeRisu from './lib/Others/WelcomeRisu.svelte';
     import Settings from './lib/Setting/Settings.svelte';
-    import { showRealmInfoStore, importCharacterProcess } from './ts/character/characterCards';
+    import { showRealmInfoStore, importCharacterProcess } from './ts/character/characterCards.svelte';
     import RealmFrame from './lib/UI/Realm/RealmFrame.svelte';
     import SavePopupIconComp from './lib/Others/SavePopupIcon.svelte';
     import Botpreset from './lib/Setting/botpreset.svelte';
@@ -17,7 +17,7 @@
     import MobileBody from './lib/Mobile/MobileBody.svelte';
     import MobileFooter from './lib/Mobile/MobileFooter.svelte';
     import CustomGUISettingMenu from './lib/Setting/Pages/CustomGUISettingMenu.svelte';
-    import { checkCharOrder } from 'src/ts/character/characters'
+    import { checkCharOrder } from 'src/ts/character/characters.svelte'
     import AprilFools from './lib/Others/AprilFools.svelte';
     import HypaV3Modal from './lib/Others/HypaV3Modal.svelte';
     import HypaV3Progress from './lib/Others/HypaV3Progress.svelte';
@@ -81,8 +81,8 @@
         <AlertComp />
     {/if}
     <SyncProgress />
-    {#if $showRealmInfoStore}
-        <RealmPopUp bind:openedData={$showRealmInfoStore} />
+    {#if showRealmInfoStore.value}
+        <RealmPopUp bind:openedData={showRealmInfoStore.value} />
     {/if}
     {#if RealmState.frameContent}
         <RealmFrame />

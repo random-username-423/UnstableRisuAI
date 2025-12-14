@@ -1,4 +1,4 @@
-import { get, writable } from "svelte/store";
+import { get } from "svelte/store";
 import { saveImage, setDatabase, defaultSdDataFunc, getDatabase, getCharacterByIndex, setCharacterByIndex } from "../data/storage/database.svelte";
 import type { character, Chat, loreBook } from "../data/storage/types";
 import { alertAddCharacter, alertConfirm, alertError, alertNormal, alertSelect, alertStore, alertWait } from "../utils/alert";
@@ -14,7 +14,7 @@ import { updateInlayScreen } from "src/ts/process/postprocess/inlayScreen";
 import { checkImageType, parseMarkdownSafe } from "../utils/parser.svelte";
 import { translateHTML } from "../translator/translator";
 import { doingChat } from "../process/index.svelte";
-import { importCharacter } from "./characterCards";
+import { importCharacter } from "./characterCards.svelte";
 import { PngChunk } from './pngChunk';
 
 export function createNewCharacter() {
@@ -160,13 +160,15 @@ export function changeCharImage(charIndex:number,changeIndex:number) {
 }
 
 
-export const addingEmotion = writable(false)
+export const addingEmotion = $state({
+    value: false
+})
 
 export async function addCharEmotion(charId:number) {
-    addingEmotion.set(true)
+    addingEmotion.value = true
     const selected = await selectMultipleFile(['png', 'webp', 'gif'])
     if(!selected){
-        addingEmotion.set(false)
+        addingEmotion.value = false
         return
     }
     const db = getDatabase()
@@ -181,7 +183,7 @@ export async function addCharEmotion(charId:number) {
         }
         setDatabase(db)
     }
-    addingEmotion.set(false)
+    addingEmotion.value = false
 }
 
 export async function rmCharEmotion(charId:number, emotionId:number) {

@@ -8,13 +8,13 @@
     import { MobileState } from 'src/ts/stores.svelte';
     import { PlusIcon, SmileIcon, TrashIcon, UserIcon, ActivityIcon, BookIcon, User, CurlyBraces, Volume2Icon, DownloadIcon, HardDriveUploadIcon, Share2Icon, ImageIcon, ImageOffIcon, ArrowUp, ArrowDown } from 'lucide-svelte'
     import Check from "../UI/GUI/CheckInput.svelte";
-    import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/character/characters";
+    import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/character/characters.svelte";
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
     import { alertConfirm, alertMd, alertNormal, alertSelectChar, alertTOS, showHypaV2Alert } from "../../ts/utils/alert";
     import BarIcon from "./BarIcon.svelte";
     import { findCharacterbyId, getAuthorNoteDefaultText, selectMultipleFile, selectSingleFile } from "../../ts/utils/util";
     import Help from "../Others/Help.svelte";
-    import { exportChar } from "src/ts/character/characterCards";
+    import { exportChar } from "src/ts/character/characterCards.svelte";
     import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices, FixNAITTS } from "src/ts/process/postprocess/tts";
     import { getFileSrc } from "src/ts/utils/fileIO";
     import { addGroupChar, rmCharFromGroup } from "src/ts/process/chat/group";
@@ -524,7 +524,7 @@
             </div>
 
             <div class="text-textcolor2 hover:text-textcolor mt-2 flex">
-                {#if !$addingEmotion}
+                {#if !addingEmotion.value}
                     <button class="cursor-pointer hover:text-green-500" onclick={() => {addCharEmotion(ChatState.selectedCharId)}}>
                         <PlusIcon />
                     </button>

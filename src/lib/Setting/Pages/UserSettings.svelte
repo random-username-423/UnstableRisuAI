@@ -1,6 +1,6 @@
 <script lang="ts">
     import { language } from "src/lang";
-    import { hubURL } from "src/ts/character/characterCards";
+    import { hubURL } from "src/ts/character/characterCards.svelte";
     import { loadRisuAccountBackup, loadRisuAccountData, saveRisuAccountData } from "src/ts/data/drive/accounter";
 
     import { DBState } from 'src/ts/stores.svelte';
@@ -10,7 +10,7 @@
     import { loadInternalBackup } from 'src/ts/data/drive/backuplocal'
     import { isNodeServer } from "src/ts/utils/env";
     import { isTauri } from "src/ts/utils/env";
-    import { unMigrationAccount } from "src/ts/data/storage/accountStorage";
+    import { unMigrationAccount } from "src/ts/data/storage/accountStorage.svelte";
     import { checkDriver } from "src/ts/data/drive/drive";
     import { LoadLocalBackup, SaveLocalBackup } from "src/ts/data/drive/backuplocal";
     import Button from "src/lib/UI/GUI/Button.svelte";

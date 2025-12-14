@@ -5,7 +5,7 @@
 
     import { DBState, RenderState, ChatState } from "src/ts/stores.svelte"
     import { DownloadIcon, EditIcon, HardDriveUploadIcon, PlusIcon, TrashIcon, XIcon } from "lucide-svelte"
-    import { exportChat, importChat } from "../../ts/character/characters"
+    import { exportChat, importChat } from "../../ts/character/characters.svelte"
     import { findCharacterbyId } from "../../ts/utils/util"
     import TextInput from "../UI/GUI/TextInput.svelte"
     import { forageStorage } from "src/ts/data/storage/autoStorage"
