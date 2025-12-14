@@ -512,10 +512,10 @@
                 }
                 
                 for (const trigger of importedTriggers) {
-                    if (!trigger.hasOwnProperty('comment') || 
-                        !trigger.hasOwnProperty('type') ||
-                        !trigger.hasOwnProperty('conditions') ||
-                        !trigger.hasOwnProperty('effect') ||
+                    if (!Object.hasOwn(trigger, 'comment') ||
+                        !Object.hasOwn(trigger, 'type') ||
+                        !Object.hasOwn(trigger, 'conditions') ||
+                        !Object.hasOwn(trigger, 'effect') ||
                         !Array.isArray(trigger.conditions) ||
                         !Array.isArray(trigger.effect)) {
                         return

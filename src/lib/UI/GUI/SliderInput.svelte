@@ -81,7 +81,7 @@
     disableable?: boolean;
     disabled?: boolean;
     customText?: string|undefined;
-    onchange?: Function;
+    onchange?: () => void;
   }
 
   let {

@@ -2665,7 +2665,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
                         const varValue = effect.varType === 'value' ? risuChatParser(effect.var,{chara:char}) : getVar(risuChatParser(effect.var,{chara:char}))
                         const dict = JSON.parse(varValue)
                         const key = effect.keyType === 'value' ? risuChatParser(effect.key,{chara:char}) : getVar(risuChatParser(effect.key,{chara:char}))
-                        setVar(risuChatParser(effect.outputVar, {chara:char}), dict.hasOwnProperty(key) ? '1' : '0')
+                        setVar(risuChatParser(effect.outputVar, {chara:char}), Object.hasOwn(dict, key) ? '1' : '0')
                     } catch (error) {
                         setVar(risuChatParser(effect.outputVar, {chara:char}), '0')
                     }

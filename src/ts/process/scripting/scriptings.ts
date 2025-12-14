@@ -82,7 +82,7 @@ export async function runScripted(code:string, arg:{
         ScriptingEngineState.setVar = setVar
         ScriptingEngineState.getVar = getVar
         if (code !== ScriptingEngineState.code) {
-            let declareAPI:(name: string, func:Function) => void
+            let declareAPI:(name: string, func:(...args: any[]) => any) => void
 
             if(ScriptingEngineState.type === 'lua'){
                 console.log('Creating new Lua engine for mode:', mode)
@@ -90,7 +90,7 @@ export async function runScripted(code:string, arg:{
                 ScriptingEngineState.code = code
                 ScriptingEngineState.engine = await luaFactory.createEngine({injectObjects: true})
                 const luaEngine = ScriptingEngineState.engine
-                declareAPI = (name:string, func:Function) => {
+                declareAPI = (name:string, func:(...args: any[]) => any) => {
                     luaEngine.global.set(name, func)
                 }
             }
@@ -98,8 +98,8 @@ export async function runScripted(code:string, arg:{
                 console.log('Creating new Pyodide context for mode:', mode)
                 ScriptingEngineState.pyodide?.close()
                 ScriptingEngineState.pyodide = new PyodideContext()
-                declareAPI = (name:string, func:Function) => {
-                    ScriptingEngineState.pyodide?.declareAPI(name, func as any)
+                declareAPI = (name:string, func:(...args: any[]) => any) => {
+                    ScriptingEngineState.pyodide?.declareAPI(name, func)
                 }
             }
             declareAPI('getChatVar', (id:string,key:string) => {

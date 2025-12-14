@@ -4,6 +4,7 @@
     import { language } from 'src/lang';
 
     let container: HTMLDivElement;
+    let canvas: HTMLCanvasElement;
     let fileInput: HTMLInputElement;
     let loaded = $state(false);
     let loading = $state(false);
@@ -20,6 +21,8 @@
     let textureMap: Map<string, string> = new Map();
 
     async function initThree() {
+        if (!canvas) return;
+
         const THREE = await import('three');
         const { OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js');
 
@@ -32,10 +35,9 @@
         camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 2000);
         camera.position.set(0, 100, 200);
 
-        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
         renderer.setSize(width, height);
         renderer.setPixelRatio(window.devicePixelRatio);
-        container.appendChild(renderer.domElement);
 
         // Lights
         const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -293,15 +295,16 @@
 
 <div
     bind:this={container}
-    class="w-full rounded-lg overflow-hidden border border-darkborderc"
+    class="w-full rounded-lg overflow-hidden border border-darkborderc relative"
     style="height: 500px;"
     ondrop={handleDrop}
     ondragover={handleDragOver}
     role="region"
     aria-label="3D viewer"
 >
+    <canvas bind:this={canvas} class="block w-full h-full" />
     {#if !loaded && !loading}
-        <div class="w-full h-full flex items-center justify-center text-textcolor2 pointer-events-none absolute">
+        <div class="w-full h-full flex items-center justify-center text-textcolor2 pointer-events-none absolute top-0 left-0">
             <span>Drag & drop FBX + texture files here</span>
         </div>
     {/if}
