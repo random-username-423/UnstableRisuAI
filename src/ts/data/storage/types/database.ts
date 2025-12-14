@@ -14,139 +14,47 @@ import type { RisuModule } from 'src/ts/process/scripting/modules';
 import type { HypaModel } from '../../../process/memory/hypamemory';
 
 export interface Database{
+    // ============================================================
+    // Core Data
+    // ============================================================
     characters: (character|groupChat)[],
-    openAIKey: string
-    proxyKey:string
-    mainPrompt: string
-    jailbreak: string
-    globalNote:string
-    temperature: number
-    askRemoval:boolean
-    maxContext: number
-    maxResponse: number
-    frequencyPenalty: number
-    PresensePenalty: number
-    formatingOrder: FormatingOrderItem[]
-    aiModel: string
-    jailbreakToggle:boolean
-    loreBookDepth: number
-    loreBookToken: number,
-    cipherChat: boolean,
-    loreBook: {
-        name:string
-        data:loreBook[]
-    }[]
-    loreBookPage: number
-    supaMemoryPrompt: string
+    characterOrder:(string|folder)[]
+    formatversion:number
+    didFirstSetup: boolean
+    lastup:string
+    saveTime?:number
+    statistics: {
+        newYear2024?: {
+            messages: number
+            chats: number
+        }
+    },
+    statics: {
+        messages: number
+        imports: number
+    }
+
+    // ============================================================
+    // User & Persona
+    // ============================================================
     username: string
     userIcon: string
     userNote: string
-    additionalPrompt: string
-    descriptionPrefix: string
-    forceReplaceUrl: string
-    language: string
-    translator: string
-    plugins: RisuPlugin[]
-    officialplugins: {
-        automark?: boolean
-        romanizer?: boolean
-        metrica?: boolean
-        oaiFix?: boolean
-        oaiFixEmdash?: boolean
-        oaiFixLetters?: boolean
-    }
-    currentPluginProvider: string
-    zoomsize:number
-    lastup:string
-    customBackground:string
-    textgenWebUIStreamURL:string
-    textgenWebUIBlockingURL:string
-    autoTranslate: boolean
-    fullScreen:boolean
-    playMessage:boolean
-    iconsize:number
-    theme: string
-    subModel:string
-    timeOut:number
-    emotionPrompt: string,
-    requester:string
-    formatversion:number
-    waifuWidth:number
-    waifuWidth2:number
-    botPresets:botPreset[]
-    botPresetsId:number
-    sdProvider: string
-    webUiUrl:string
-    sdSteps:number
-    sdCFG:number
-    sdConfig:sdConfig
-    NAIImgUrl:string
-    NAIApiKey:string
-    NAIImgModel:string
-    NAII2I:boolean
-    NAIREF:boolean
-    NAIImgConfig:NAIImgConfig
-    ttsAutoSpeech?:boolean
-    runpodKey:string
-    promptPreprocess:boolean
-    bias: [string, number][]
-    swipe:boolean
-    instantRemove:boolean
-    textTheme: string
-    customTextTheme: {
-        FontColorStandard: string,
-        FontColorBold : string,
-        FontColorItalic : string,
-        FontColorItalicBold : string,
-        FontColorQuote1 : string,
-        FontColorQuote2 : string
-    }
-    requestRetrys:number
-    driveParallelConnections:number
-    maxDbBackups:number
-    dbBackupIntervalMinutes:number
-    emotionPrompt2:string
-    useSayNothing:boolean
-    didFirstSetup: boolean
-    requestmet: string
-    requestproxy: string
-    showUnrecommended:boolean
-    elevenLabKey:string
-    voicevoxUrl:string
-    useExperimental:boolean
-    showMemoryLimit:boolean
-    roundIcons:boolean
-    useStreaming:boolean
-    palmAPI:string,
-    supaMemoryKey:string
-    hypaMemoryKey:string
-    supaModelType:string
-    textScreenColor?:string
-    textBorder?:boolean
-    textScreenRounded?:boolean
-    textScreenBorder?:string
-    characterOrder:(string|folder)[]
-    hordeConfig:hordeConfig,
-    toggleConfirmRecommendedPreset:boolean,
-    novelai:{
-        token:string,
-        model:string
-    }
-    globalscript: customscript[],
-    sendWithEnter:boolean
-    fixedChatTextarea:boolean
-    clickToEdit: boolean
-    koboldURL:string
-    advancedBotSettings:boolean
-    useAutoSuggestions:boolean
-    autoSuggestPrompt:string
-    autoSuggestPrefix:string
-    autoSuggestClean:boolean
-    claudeAPIKey:string,
-    useChatCopy:boolean,
-    novellistAPI:string,
-    useAutoTranslateInput:boolean
-    imageCompression:boolean
+    personaPrompt:string
+    selectedPersona:number
+    personas:{
+        personaPrompt:string
+        name:string
+        icon:string
+        largePortrait?:boolean
+        id?:string
+        note?:string
+    }[]
+    personaNote:boolean
+
+    // ============================================================
+    // Account & Sync
+    // ============================================================
     account?:{
         token:string
         id:string,
@@ -158,260 +66,70 @@ export interface Database{
         useSync?:boolean
         kei?:boolean
     },
-    classicMaxWidth: boolean,
-    useChatSticker:boolean,
-    useAdditionalAssetsPreview:boolean,
-    usePlainFetch:boolean
-    hypaMemory:boolean
-    hypav2:boolean
-    memoryAlgorithmType:string // To enable new memory module/algorithms 
-    proxyRequestModel:string
-    ooba:OobaSettings
-    ainconfig: AINsettings
-    personaPrompt:string
-    openrouterRequestModel:string
+    syncEnabled?:boolean
+    lastSyncedVersion?:number
+    lastSyncTime?:number
+    syncAccessToken?:string
+    syncRefreshToken?:string
+    syncTokenExpiresAt?:number
+
+    // ============================================================
+    // API Keys & Authentication
+    // ============================================================
+    openAIKey: string
+    proxyKey:string
+    claudeAPIKey:string,
+    claudeAws:boolean
+    palmAPI:string,
     openrouterKey:string
-    openrouterMiddleOut:boolean
-    openrouterFallback:boolean
-    selectedPersona:number
-    personas:{
-        personaPrompt:string
-        name:string
-        icon:string
-        largePortrait?:boolean
-        id?:string
-        note?:string
-    }[]
-    personaNote:boolean
-    assetWidth:number
-    animationSpeed:number
-    botSettingAtStart:false
-    NAIsettings:NAISettings
-    hideRealm:boolean
-    colorScheme:ColorScheme
-    colorSchemeName:string
-    promptTemplate?:PromptItem[]
-    forceProxyAsOpenAI?:boolean
-    hypaModel:HypaModel
-    saveTime?:number
-    mancerHeader:string
-    emotionProcesser:'submodel'|'embedding',
-    showMenuChatList?:boolean,
-    translatorType:'google'|'deepl'|'none'|'llm'|'deeplX'|'bergamot',
-    translatorInputLanguage?:string
-    htmlTranslation?:boolean,
-    NAIadventure?:boolean,
-    NAIappendName?:boolean,
-    deeplOptions:{
-        key:string,
-        freeApi:boolean
-    }
-    deeplXOptions:{
-        url:string,
-        token:string    
-    }
-    localStopStrings?:string[]
-    autofillRequestUrl:boolean
-    customProxyRequestModel:string
-    generationSeed:number
-    newOAIHandle:boolean
-    putUserOpen: boolean
-    inlayImage:boolean
-    gptVisionQuality:string
-    geminiVisionQuality:string
-    geminiMergeSystemToUser:boolean
-    reverseProxyOobaMode:boolean
-    reverseProxyOobaArgs: OobaChatCompletionRequestParams
-    tpo?:boolean
-    automark?:boolean
+    NAIApiKey:string
+    mistralKey?:string
+    cohereAPIKey:string
+    ai21Key:string
     huggingfaceKey:string
+    elevenLabKey:string
     fishSpeechKey:string
-    allowAllExtentionFiles?:boolean
-    translatorPrompt:string
-    translatorMaxResponse:number
-    top_p: number,
+    stabilityKey: string
+    falToken: string
+    supaMemoryKey:string
+    hypaMemoryKey:string
+    mancerHeader:string
     google: {
         accessToken: string
         projectId: string
     }
-    mistralKey?:string
-    chainOfThought?:boolean
-    genTime:number
-    promptSettings: PromptSettings
-    keiServerURL:string
-    statistics: {
-        newYear2024?: {
-            messages: number
-            chats: number
-        }
-    },
-    top_k:number
-    repetition_penalty:number
-    min_p:number
-    top_a:number
-    claudeAws:boolean
-    lastPatchNoteCheckVersion?:string,
-    removePunctuationHypa?:boolean
-    memoryLimitThickness?:number
-    modules: RisuModule[]
-    enabledModules: string[]
-    sideMenuRerollButton?:boolean
-    requestInfoInsideChat?:boolean
-    additionalParams:[string, string][]
-    heightMode:string
-    useAdvancedEditor:boolean
-    noWaitForTranslate:boolean
-    antiClaudeOverload:boolean
-    maxSupaChunkSize:number
-    ollamaURL:string
-    ollamaModel:string
-    autoContinueChat:boolean
-    autoContinueMinTokens:number
-    removeIncompleteResponse:boolean
-    customTokenizer:string
-    instructChatTemplate:string
-    JinjaTemplate:string
-    openrouterProvider:string
-    useInstructPrompt:boolean
-    hanuraiTokens:number
-    hanuraiSplit:boolean
-    hanuraiEnable:boolean
-    textAreaSize:number
-    sideBarSize:number
-    textAreaTextSize:number
-    combineTranslation:boolean
-    dynamicAssets:boolean
-    dynamicAssetsEditDisplay:boolean
-    customPromptTemplateToggle:string
-    globalChatVariables:{[key:string]:string}
-    templateDefaultVariables:string
-    hypaAllocatedTokens:number
-    hypaChunkSize:number
-    cohereAPIKey:string
-    goCharacterOnImport:boolean
-    dallEQuality:string
-    font: string
-    customFont: string
-    lineHeight: number
-    stabilityModel: string
-    stabilityKey: string
-    stabllityStyle: string
-    legacyTranslation: boolean
-    comfyConfig: ComfyConfig
-    comfyUiUrl: string
-    useLegacyGUI: boolean
-    claudeCachingExperimental: boolean
-    hideApiKey: boolean
-    unformatQuotes: boolean
-    enableDevTools: boolean
-    falToken: string
-    falModel: string
-    falLora: string
-    falLoraName: string
-    falLoraScale: number
-    moduleIntergration: string
-    customCSS: string
-    betaMobileGUI:boolean
-    jsonSchemaEnabled:boolean
-    jsonSchema:string
-    strictJsonSchema:boolean
-    extractJson:string
-    ai21Key:string
-    statics: {
-        messages: number
-        imports: number
-    }
-    customQuotes:boolean
-    customQuotesData?:[string, string, string, string]
-    groupTemplate?:string
-    groupOtherBotRole?:string
-    customGUI:string
-    guiHTML:string
-    logShare:boolean
-    OAIPrediction:string
-    customAPIFormat:LLMFormat
-    systemContentReplacement:string
-    systemRoleReplacement:'user'|'assistant'
     vertexPrivateKey: string
     vertexClientEmail: string
     vertexAccessToken: string
     vertexAccessTokenExpires: number
     vertexRegion: string
-    seperateParametersEnabled:boolean
-    seperateParameters:{
-        memory: SeparateParameters,
-        emotion: SeparateParameters,
-        translate: SeparateParameters,
-        otherAx: SeparateParameters
-    }
-    translateBeforeHTMLFormatting:boolean
-    autoTranslateCachedOnly:boolean
-    lightningRealmImport:boolean
-    notification: boolean
-    customFlags: LLMFlags[]
-    enableCustomFlags: boolean
-    googleClaudeTokenizing: boolean
-    presetChain: string
-    legacyMediaFindings?:boolean
-    geminiStream?:boolean
-    assetMaxDifference:number
-    menuSideBar:boolean
-    pluginV2: RisuPlugin[]
-    showSavingIcon:boolean
-    presetRegex: customscript[]
-    banCharacterset:string[]
-    showPromptComparison:boolean
-    checkCorruption:boolean
-    hypaV3:boolean
-    hypaV3Settings: HypaV3Settings // legacy
-    hypaV3Presets: HypaV3Preset[]
-    hypaV3PresetId: number
     OaiCompAPIKeys: {[key:string]:string}
-    inlayErrorResponse:boolean
-    reasoningEffort:number
-    bulkEnabling:boolean
-    showTranslationLoading: boolean
-    showDeprecatedTriggerV1:boolean
-    showDeprecatedTriggerV2:boolean
-    returnCSSError:boolean
-    useExperimentalGoogleTranslator:boolean
-    thinkingTokens: number
-    thinkingLevel: number
-    pastThinkingSend: number        // 0: None, 1: Send, 2: Send (Extra Context)
-    pastThinkingExtraTokens: number // Extra Context mode token budget
-    antiServerOverloads: boolean
-    newChatSeparator: boolean
-    hypaCustomSettings: {
-        url: string,
-        key: string,
-        model: string,       
-    },
-    localActivationInGlobalLorebook: boolean
-    showFolderName: boolean
-    automaticCachePoint: boolean
-    chatCompression: boolean
-    claudeRetrivalCaching: boolean
-    outputImageModal: boolean
-    playMessageOnTranslateEnd:boolean
-    seperateModelsForAxModels:boolean
-    seperateModels:{
-        memory: string
-        emotion: string
-        translate: string
-        otherAx: string
+    authRefreshes:{
+        url:string
+        tokenUrl:string
+        refreshToken:string
+        clientId:string
+        clientSecret:string
+    }[]
+
+    // ============================================================
+    // AI Models
+    // ============================================================
+    aiModel: string
+    subModel:string
+    proxyRequestModel:string
+    openrouterRequestModel:string
+    customProxyRequestModel:string
+    ollamaModel:string
+    novelai:{
+        token:string,
+        model:string
     }
-    doNotChangeSeperateModels:boolean
-    modelTools: string[]
-    hotkeys:Hotkey[]
-    fallbackModels: {
-        memory: string[],
-        emotion: string[],
-        translate: string[],
-        otherAx: string[]
-        model: string[]
-    }
-    doNotChangeFallbackModels: boolean
-    fallbackWhenBlankResponse: boolean
+    NAIsettings:NAISettings
+    NAIadventure?:boolean,
+    NAIappendName?:boolean,
+    ooba:OobaSettings
+    ainconfig: AINsettings
     customModels: {
         id: string
         internalId: string
@@ -423,38 +141,449 @@ export interface Database{
         params: string
         flags: LLMFlags[]
     }[]
-    igpPrompt:string
-    useTokenizerCaching:boolean
-    showMenuHypaMemoryModal:boolean
-    authRefreshes:{
-        url:string
-        tokenUrl:string
-        refreshToken:string
-        clientId:string
-        clientSecret:string
-    }[]
-    promptInfoInsideChat:boolean
-    promptTextInfoInsideChat:boolean
-    claudeBatching:boolean
-    claude1HourCaching:boolean
-    rememberToolUsage:boolean
-    simplifiedToolUse:boolean
-    requestLocation:string
-    newImageHandlingBeta?: boolean
-    showFirstMessagePages:boolean
-    streamGeminiThoughts:boolean
+    modelTools: string[]
+
+    // ============================================================
+    // Generation Parameters
+    // ============================================================
+    temperature: number
+    maxContext: number
+    maxResponse: number
+    frequencyPenalty: number
+    PresensePenalty: number
+    top_p: number,
+    top_k:number
+    top_a:number
+    min_p:number
+    repetition_penalty:number
+    bias: [string, number][]
+    generationSeed:number
+    timeOut:number
     verbosity:number
-    dynamicOutput?:DynamicOutput
+
+    // ============================================================
+    // Prompt Settings
+    // ============================================================
+    mainPrompt: string
+    jailbreak: string
+    jailbreakToggle:boolean
+    globalNote:string
+    additionalPrompt: string
+    descriptionPrefix: string
+    formatingOrder: FormatingOrderItem[]
+    promptTemplate?:PromptItem[]
+    promptSettings: PromptSettings
+    promptPreprocess:boolean
+    customPromptTemplateToggle:string
+    templateDefaultVariables:string
+    localStopStrings?:string[]
+    OAIPrediction:string
+    igpPrompt:string
+
+    // ============================================================
+    // Auto Suggest
+    // ============================================================
+    useAutoSuggestions:boolean
+    autoSuggestPrompt:string
+    autoSuggestPrefix:string
+    autoSuggestClean:boolean
+
+    // ============================================================
+    // Lorebook
+    // ============================================================
+    loreBook: {
+        name:string
+        data:loreBook[]
+    }[]
+    loreBookPage: number
+    loreBookDepth: number
+    loreBookToken: number,
+    localActivationInGlobalLorebook: boolean
+
+    // ============================================================
+    // Memory Systems
+    // ============================================================
+    supaMemoryPrompt: string
+    supaModelType:string
+    maxSupaChunkSize:number
+    hypaMemory:boolean
+    hypav2:boolean
+    hypaV3:boolean
+    hypaV3Settings: HypaV3Settings // legacy
+    hypaV3Presets: HypaV3Preset[]
+    hypaV3PresetId: number
+    hypaModel:HypaModel
+    hypaAllocatedTokens:number
+    hypaChunkSize:number
+    hypaCustomSettings: {
+        url: string,
+        key: string,
+        model: string,
+    },
+    memoryAlgorithmType:string
+    removePunctuationHypa?:boolean
+    memoryLimitThickness?:number
+    showMemoryLimit:boolean
+    showMenuHypaMemoryModal:boolean
+    hanuraiEnable:boolean
+    hanuraiSplit:boolean
+    hanuraiTokens:number
+
+    // ============================================================
+    // Presets
+    // ============================================================
+    botPresets:botPreset[]
+    botPresetsId:number
+    toggleConfirmRecommendedPreset:boolean,
+    presetChain: string
+    presetRegex: customscript[]
+
+    // ============================================================
+    // Scripts & Modules
+    // ============================================================
+    globalscript: customscript[],
+    modules: RisuModule[]
+    enabledModules: string[]
+    moduleIntergration: string
+
+    // ============================================================
+    // Plugins
+    // ============================================================
+    plugins: RisuPlugin[]
+    pluginV2: RisuPlugin[]
+    officialplugins: {
+        automark?: boolean
+        romanizer?: boolean
+        metrica?: boolean
+        oaiFix?: boolean
+        oaiFixEmdash?: boolean
+        oaiFixLetters?: boolean
+    }
+    currentPluginProvider: string
+
+    // ============================================================
+    // Translation
+    // ============================================================
+    language: string
+    translator: string
+    translatorType:'google'|'deepl'|'none'|'llm'|'deeplX'|'bergamot',
+    translatorInputLanguage?:string
+    translatorPrompt:string
+    translatorMaxResponse:number
+    autoTranslate: boolean
+    useAutoTranslateInput:boolean
+    htmlTranslation?:boolean,
+    deeplOptions:{
+        key:string,
+        freeApi:boolean
+    }
+    deeplXOptions:{
+        url:string,
+        token:string
+    }
+    combineTranslation:boolean
+    legacyTranslation: boolean
+    noWaitForTranslate:boolean
+    translateBeforeHTMLFormatting:boolean
+    autoTranslateCachedOnly:boolean
+    useExperimentalGoogleTranslator:boolean
+    showTranslationLoading: boolean
+
+    // ============================================================
+    // TTS & Voice
+    // ============================================================
+    ttsAutoSpeech?:boolean
+    playMessage:boolean
+    playMessageOnTranslateEnd:boolean
+    voicevoxUrl:string
+
+    // ============================================================
+    // Emotion
+    // ============================================================
+    emotionPrompt: string,
+    emotionPrompt2:string
+    emotionProcesser:'submodel'|'embedding',
+
+    // ============================================================
+    // Image Generation
+    // ============================================================
+    sdProvider: string
+    webUiUrl:string
+    sdSteps:number
+    sdCFG:number
+    sdConfig:sdConfig
+    NAIImgUrl:string
+    NAIImgModel:string
+    NAII2I:boolean
+    NAIREF:boolean
+    NAIImgConfig:NAIImgConfig
+    comfyConfig: ComfyConfig
+    comfyUiUrl: string
+    dallEQuality:string
+    stabilityModel: string
+    stabllityStyle: string
+    falModel: string
+    falLora: string
+    falLoraName: string
+    falLoraScale: number
     ImagenModel:string
     ImagenImageSize:string
     ImagenAspectRatio:string
     ImagenPersonGeneration:string
+    inlayImage:boolean
+    outputImageModal: boolean
+
+    // ============================================================
+    // UI & Theme
+    // ============================================================
+    theme: string
+    colorScheme:ColorScheme
+    colorSchemeName:string
+    textTheme: string
+    customTextTheme: {
+        FontColorStandard: string,
+        FontColorBold : string,
+        FontColorItalic : string,
+        FontColorItalicBold : string,
+        FontColorQuote1 : string,
+        FontColorQuote2 : string
+    }
+    textScreenColor?:string
+    textBorder?:boolean
+    textScreenRounded?:boolean
+    textScreenBorder?:string
+    customBackground:string
+    zoomsize:number
+    iconsize:number
+    roundIcons:boolean
+    assetWidth:number
+    animationSpeed:number
+    waifuWidth:number
+    waifuWidth2:number
+    fullScreen:boolean
+    classicMaxWidth: boolean,
+    useLegacyGUI: boolean
+    betaMobileGUI:boolean
+    customGUI:string
+    guiHTML:string
+    customCSS: string
+    font: string
+    customFont: string
+    lineHeight: number
+    heightMode:string
+    textAreaSize:number
+    sideBarSize:number
+    textAreaTextSize:number
+    menuSideBar:boolean
+    showMenuChatList?:boolean,
+    sideMenuRerollButton?:boolean
+    showFolderName: boolean
+    showSavingIcon:boolean
+    hotkeys:Hotkey[]
+
+    // ============================================================
+    // Chat Settings
+    // ============================================================
+    swipe:boolean
+    sendWithEnter:boolean
+    fixedChatTextarea:boolean
+    clickToEdit: boolean
+    useChatCopy:boolean,
+    useChatSticker:boolean,
+    useAdvancedEditor:boolean
+    cipherChat: boolean,
+    autoContinueChat:boolean
+    autoContinueMinTokens:number
+    removeIncompleteResponse:boolean
+    useSayNothing:boolean
+    askRemoval:boolean
+    instantRemove:boolean
+    newChatSeparator: boolean
+    chatCompression: boolean
+    groupTemplate?:string
+    groupOtherBotRole?:string
+    customQuotes:boolean
+    customQuotesData?:[string, string, string, string]
+    unformatQuotes: boolean
+    globalChatVariables:{[key:string]:string}
+
+    // ============================================================
+    // Character Management
+    // ============================================================
+    goCharacterOnImport:boolean
+    useAdditionalAssetsPreview:boolean,
+    dynamicAssets:boolean
+    dynamicAssetsEditDisplay:boolean
+    assetMaxDifference:number
+
+    // ============================================================
+    // Network & Request
+    // ============================================================
+    requester:string
+    requestmet: string
+    requestproxy: string
+    requestRetrys:number
+    requestLocation:string
+    forceReplaceUrl: string
+    forceProxyAsOpenAI?:boolean
+    usePlainFetch:boolean
+    useStreaming:boolean
+    textgenWebUIStreamURL:string
+    textgenWebUIBlockingURL:string
+    koboldURL:string
+    ollamaURL:string
+    reverseProxyOobaMode:boolean
+    reverseProxyOobaArgs: OobaChatCompletionRequestParams
+    autofillRequestUrl:boolean
+    newOAIHandle:boolean
+    antiClaudeOverload:boolean
+    antiServerOverloads: boolean
+    claudeCachingExperimental: boolean
+    claudeRetrivalCaching: boolean
+    claude1HourCaching:boolean
+    claudeBatching:boolean
+    automaticCachePoint: boolean
+    geminiMergeSystemToUser:boolean
+    geminiStream?:boolean
+    streamGeminiThoughts:boolean
+    googleClaudeTokenizing: boolean
+    openrouterMiddleOut:boolean
+    openrouterFallback:boolean
+    openrouterProvider:string
     openAIServiceTier:string
-    // Sync settings
-    syncEnabled?:boolean           // Enable real-time sync
-    lastSyncedVersion?:number      // Last synced manifest version
-    lastSyncTime?:number           // Last sync timestamp
-    syncAccessToken?:string        // Google OAuth access token
-    syncRefreshToken?:string       // Google OAuth refresh token
-    syncTokenExpiresAt?:number     // Token expiration timestamp
+
+    // ============================================================
+    // Tokenizer & Templates
+    // ============================================================
+    customTokenizer:string
+    instructChatTemplate:string
+    JinjaTemplate:string
+    useInstructPrompt:boolean
+    useTokenizerCaching:boolean
+
+    // ============================================================
+    // JSON Schema
+    // ============================================================
+    jsonSchemaEnabled:boolean
+    jsonSchema:string
+    strictJsonSchema:boolean
+    extractJson:string
+
+    // ============================================================
+    // Thinking & Reasoning
+    // ============================================================
+    chainOfThought?:boolean
+    thinkingTokens: number
+    thinkingLevel: number
+    pastThinkingSend: number
+    pastThinkingExtraTokens: number
+    reasoningEffort:number
+
+    // ============================================================
+    // Separate Parameters
+    // ============================================================
+    seperateParametersEnabled:boolean
+    seperateParameters:{
+        memory: SeparateParameters,
+        emotion: SeparateParameters,
+        translate: SeparateParameters,
+        otherAx: SeparateParameters
+    }
+    seperateModelsForAxModels:boolean
+    seperateModels:{
+        memory: string
+        emotion: string
+        translate: string
+        otherAx: string
+    }
+    doNotChangeSeperateModels:boolean
+
+    // ============================================================
+    // Fallback Models
+    // ============================================================
+    fallbackModels: {
+        memory: string[],
+        emotion: string[],
+        translate: string[],
+        otherAx: string[]
+        model: string[]
+    }
+    doNotChangeFallbackModels: boolean
+    fallbackWhenBlankResponse: boolean
+
+    // ============================================================
+    // Custom Flags & API Format
+    // ============================================================
+    customFlags: LLMFlags[]
+    enableCustomFlags: boolean
+    customAPIFormat:LLMFormat
+    systemContentReplacement:string
+    systemRoleReplacement:'user'|'assistant'
+    additionalParams:[string, string][]
+
+    // ============================================================
+    // Tool Use
+    // ============================================================
+    rememberToolUsage:boolean
+    simplifiedToolUse:boolean
+
+    // ============================================================
+    // Backup
+    // ============================================================
+    driveParallelConnections:number
+    maxDbBackups:number
+    dbBackupIntervalMinutes:number
+    keiServerURL:string
+
+    // ============================================================
+    // Vision
+    // ============================================================
+    gptVisionQuality:string
+    geminiVisionQuality:string
+    newImageHandlingBeta?: boolean
+
+    // ============================================================
+    // Horde
+    // ============================================================
+    hordeConfig:hordeConfig,
+
+    // ============================================================
+    // Realm
+    // ============================================================
+    hideRealm:boolean
+    lightningRealmImport:boolean
+
+    // ============================================================
+    // Misc & Feature Flags
+    // ============================================================
+    useExperimental:boolean
+    showUnrecommended:boolean
+    advancedBotSettings:boolean
+    botSettingAtStart:false
+    enableDevTools: boolean
+    logShare:boolean
+    putUserOpen: boolean
+    tpo?:boolean
+    automark?:boolean
+    allowAllExtentionFiles?:boolean
+    imageCompression:boolean
+    genTime:number
+    lastPatchNoteCheckVersion?:string,
+    requestInfoInsideChat?:boolean
+    promptInfoInsideChat:boolean
+    promptTextInfoInsideChat:boolean
+    showPromptComparison:boolean
+    checkCorruption:boolean
+    inlayErrorResponse:boolean
+    bulkEnabling:boolean
+    showDeprecatedTriggerV1:boolean
+    showDeprecatedTriggerV2:boolean
+    returnCSSError:boolean
+    showFirstMessagePages:boolean
+    notification: boolean
+    hideApiKey: boolean
+    banCharacterset:string[]
+    legacyMediaFindings?:boolean
+    novellistAPI:string,
+    dynamicOutput?:DynamicOutput
 }

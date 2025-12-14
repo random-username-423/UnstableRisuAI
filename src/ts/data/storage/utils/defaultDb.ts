@@ -136,7 +136,6 @@ export const baseDatabaseDefaults: Partial<Database> = {
     requester: "new",
     botPresetsId: 0,
     sdProvider: '',
-    runpodKey: '',
     webUiUrl: 'http://127.0.0.1:7860/',
     sdSteps: 30,
     sdCFG: 7,
