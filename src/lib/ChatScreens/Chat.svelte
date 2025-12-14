@@ -710,12 +710,6 @@
         <button class={dom.getAttribute('class') ?? ''} style={dom.getAttribute('style') ?? ''}>
             {@render renderChilds(dom)}
         </button>
-    {:else if dom.tagName === 'STYLE'}
-        <!-- <div>
-            <style>
-                {dom.innerHTML}
-            </style>
-        </div> -->
     {:else if dom.tagName === 'RISUTEXTBOX'}
         {@render textBox()}
     {:else if dom.tagName === 'RISUICON'}
@@ -724,6 +718,7 @@
         {@render icons()}
     {:else if dom.tagName === 'RISUGENINFO'}
         {@render genInfo()}
+    <!-- TODO: Custom HTML에 Style 태그가 적용되어야하는가? -->
     {:else if dom.tagName === 'STYLE'}
         <svelte:element this={'style'}>
             {dom.innerHTML}
