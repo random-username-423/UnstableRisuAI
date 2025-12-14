@@ -168,7 +168,6 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
     "textgenWebUIStreamURL": "",
     "textgenWebUIBlockingURL": "",
     "forceReplaceUrl": "",
-    "forceReplaceUrl2": "",
     "promptPreprocess": false,
     "bias": [
       [
@@ -333,7 +332,6 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
     "textgenWebUIStreamURL": "",
     "textgenWebUIBlockingURL": "",
     "forceReplaceUrl": "",
-    "forceReplaceUrl2": "",
     "promptPreprocess": false,
     "bias": [],
     "koboldURL": null,
@@ -496,7 +494,6 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
     "textgenWebUIStreamURL": "",
     "textgenWebUIBlockingURL": "",
     "forceReplaceUrl": "",
-    "forceReplaceUrl2": "",
     "promptPreprocess": false,
     "bias": [],
     "koboldURL": null,
@@ -645,7 +642,6 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
     "textgenWebUIStreamURL": "",
     "textgenWebUIBlockingURL": "",
     "forceReplaceUrl": "",
-    "forceReplaceUrl2": "",
     "promptPreprocess": false,
     "bias": [],
     "koboldURL": "http://localho.st:5001/api/v1",

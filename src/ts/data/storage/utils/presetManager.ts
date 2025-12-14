@@ -41,7 +41,6 @@ export function saveCurrentPreset(){
         textgenWebUIStreamURL: db.textgenWebUIStreamURL,
         textgenWebUIBlockingURL: db.textgenWebUIBlockingURL,
         forceReplaceUrl: db.forceReplaceUrl,
-        forceReplaceUrl2: db.forceReplaceUrl2,
         promptPreprocess: db.promptPreprocess,
         bias: db.bias,
         koboldURL: db.koboldURL,
@@ -154,7 +153,6 @@ export function setPreset(db:Database, newPres: botPreset): Database{
     db.textgenWebUIBlockingURL = newPres.textgenWebUIBlockingURL ?? db.textgenWebUIBlockingURL
     db.forceReplaceUrl = newPres.forceReplaceUrl ?? db.forceReplaceUrl
     db.promptPreprocess = newPres.promptPreprocess ?? db.promptPreprocess
-    db.forceReplaceUrl2 = newPres.forceReplaceUrl2 ?? db.forceReplaceUrl2
     db.bias = newPres.bias ?? db.bias
     db.koboldURL = newPres.koboldURL ?? db.koboldURL
     db.proxyKey = newPres.proxyKey ?? db.proxyKey
@@ -257,7 +255,6 @@ export async function downloadPreset(id:number, type:'json'|'risupreset'|'return
     console.log(pres)
     pres.openAIKey = ''
     pres.forceReplaceUrl = ''
-    pres.forceReplaceUrl2 = ''
     pres.proxyKey = ''
     pres.textgenWebUIStreamURL=  ''
     pres.textgenWebUIBlockingURL=  ''

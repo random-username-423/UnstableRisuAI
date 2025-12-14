@@ -69,7 +69,6 @@ const commonPresetDefaults = {
     textgenWebUIStreamURL: 'wss://localhost/api/',
     textgenWebUIBlockingURL: 'https://localhost/api/',
     forceReplaceUrl: '',
-    forceReplaceUrl2: '',
     promptPreprocess: false,
     proxyKey: '',
     bias: [] as [string, number][],

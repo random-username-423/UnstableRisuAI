@@ -24,7 +24,6 @@ export interface botPreset{
     textgenWebUIStreamURL?:string
     textgenWebUIBlockingURL?:string
     forceReplaceUrl?:string
-    forceReplaceUrl2?:string
     promptPreprocess: boolean,
     bias: [string, number][]
     proxyRequestModel?:string
