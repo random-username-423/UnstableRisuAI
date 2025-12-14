@@ -14,8 +14,6 @@ export * from './utils/defaultDb';
 // Stores
 import { DBState, selectedCharID } from '../../stores.svelte';
 
-// Re-export from env.ts
-export { appVer } from '../../utils/env'
 export const webAppSubVer = ''
 
 export function setDatabase(data: Database) {

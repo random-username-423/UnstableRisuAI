@@ -1,6 +1,7 @@
 import DOMPurify from 'dompurify';
 import markdownit from 'markdown-it'
-import { appVer, getCurrentCharacter, getDatabase } from '../data/storage/database.svelte';
+import { getCurrentCharacter, getDatabase } from '../data/storage/database.svelte';
+import { appVer } from 'src/ts/utils/env'
 import type { Database, Message, character, customscript, groupChat, loreBook, triggerscript } from '../data/storage/types';
 import { DBState } from '../stores.svelte';
 import { getFileSrc } from './fileIO';

@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { appVer, webAppSubVer } from "src/ts/data/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
     import Hub from "./Realm/RealmMain.svelte";
     import { OpenRealmStore } from "src/ts/stores.svelte";
