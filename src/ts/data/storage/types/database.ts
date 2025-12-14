@@ -419,9 +419,6 @@ export interface Database{
     // ============================================================
     // Network & Request
     // ============================================================
-    requester:string
-    requestmet: string
-    requestproxy: string
     requestRetrys:number
     requestLocation:string
     forceReplaceUrl: string
