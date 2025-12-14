@@ -27,7 +27,7 @@
     import OpenrouterSettings from "./OpenrouterSettings.svelte";
     import ChatFormatSettings from "./ChatFormatSettings.svelte";
     import PromptSettings from "./PromptSettings.svelte";
-    import { openPresetList } from "src/ts/stores.svelte";
+    import { ModalState } from "src/ts/stores.svelte";
     import { selectSingleFile } from "src/ts/utils/util";
   import { getModelInfo, LLMFlags, LLMFormat, LLMProvider } from "src/ts/model/modellist";
   import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
@@ -804,7 +804,7 @@
         </button>
     </Arcodion>
     {#if submenu !== -1}
-        <Button onclick={() => {$openPresetList = true}} className="mt-4">{language.presets}</Button>
+        <Button onclick={() => {ModalState.presetListOpen = true}} className="mt-4">{language.presets}</Button>
     {/if}
 {/if}
 
@@ -836,5 +836,5 @@
     </div>
 {/if}
 {#if submenu === -1}
-    <Button onclick={() => {$openPresetList = true}} className="mt-4">{language.presets}</Button>
+    <Button onclick={() => {ModalState.presetListOpen = true}} className="mt-4">{language.presets}</Button>
 {/if}

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { DynamicGUI, sideBarStore } from '../../ts/stores.svelte';
+    import { LayoutState } from '../../ts/stores.svelte';
     import Sidebar from '../SideBars/Sidebar.svelte';
     import ChatScreen from './ChatScreen.svelte';
     import GridChars from '../Others/GridChars.svelte';
@@ -10,10 +10,10 @@
 {#if gridOpen}
     <GridChars endGrid={() => {gridOpen = false}} />
 {:else}
-    {#if (!$DynamicGUI)}
-        <Sidebar openGrid={() => {gridOpen = true}} hidden={!$sideBarStore} />
+    {#if (!LayoutState.isDynamicMode)}
+        <Sidebar openGrid={() => {gridOpen = true}} hidden={!LayoutState.sidebar.isOpen} />
     {:else}
-        <div class="top-0 w-full h-full left-0 z-30 flex flex-row items-center" class:fixed={$sideBarStore} class:hidden={!$sideBarStore} >
+        <div class="top-0 w-full h-full left-0 z-30 flex flex-row items-center" class:fixed={LayoutState.sidebar.isOpen} class:hidden={!LayoutState.sidebar.isOpen} >
             <Sidebar openGrid={() => {gridOpen = true}}  hidden={false} />
         </div>
     {/if}

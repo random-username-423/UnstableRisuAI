@@ -1,8 +1,8 @@
 <script lang="ts">
     import { getCustomBackground, getEmotion } from "../../ts/utils/util";
-    
+
     import { DBState } from 'src/ts/stores.svelte';
-    import { CharEmotion, ShowVN, selectedCharID } from "../../ts/stores.svelte";
+    import { ChatState, RenderState } from "../../ts/stores.svelte";
     import ResizeBox from './ResizeBox.svelte'
     import DefaultChatScreen from "./DefaultChatScreen.svelte";
     import defaultWallpaper from '../../etc/bg.jpg'
@@ -33,20 +33,20 @@
     });
 </script>
 
-{#if $ShowVN}
+{#if RenderState.showVisualNovel}
     <VisualNovelMain />
 {:else if DBState.db.theme === 'waifu'}
     <div class="flex-grow h-full flex justify-center relative" style="{bgImg.length < 4 ? wallPaper : bgImg}">
         <SideBarArrow />
         <BackgroundDom />
-        {#if $selectedCharID >= 0}
-            {#if DBState.db.characters[$selectedCharID].viewScreen !== 'none'}
+        {#if ChatState.selectedCharId >= 0}
+            {#if DBState.db.characters[ChatState.selectedCharId].viewScreen !== 'none'}
                 <div class="h-full mr-10 flex justify-end halfw" style:width="{42 * (DBState.db.waifuWidth2 / 100)}rem">
-                    <TransitionImage classType="waifu" src={getEmotion(DBState.db, $CharEmotion, 'plain')}/>
+                    <TransitionImage classType="waifu" src={getEmotion(DBState.db, ChatState.emotions, 'plain')}/>
                 </div>
             {/if}
         {/if}
-        <div class="h-full w-2xl" style:width="{42 * (DBState.db.waifuWidth / 100)}rem" class:halfwp={$selectedCharID >= 0 && DBState.db.characters[$selectedCharID].viewScreen !== 'none'}>
+        <div class="h-full w-2xl" style:width="{42 * (DBState.db.waifuWidth / 100)}rem" class:halfwp={ChatState.selectedCharId >= 0 && DBState.db.characters[ChatState.selectedCharId].viewScreen !== 'none'}>
             <DefaultChatScreen customStyle={`${externalStyles}backdrop-filter: blur(4px);`} bind:openChatList bind:openModuleList/>
         </div>
     </div>
@@ -55,15 +55,15 @@
         <SideBarArrow />
         <BackgroundDom />
         <div class="w-full absolute z-10 bottom-0 left-0"
-            class:per33={$selectedCharID >= 0 && DBState.db.characters[$selectedCharID].viewScreen !== 'none'}
-            class:h-full={!($selectedCharID >= 0 && DBState.db.characters[$selectedCharID].viewScreen !== 'none')}
+            class:per33={ChatState.selectedCharId >= 0 && DBState.db.characters[ChatState.selectedCharId].viewScreen !== 'none'}
+            class:h-full={!(ChatState.selectedCharId >= 0 && DBState.db.characters[ChatState.selectedCharId].viewScreen !== 'none')}
         >
             <DefaultChatScreen customStyle={`${externalStyles}backdrop-filter: blur(4px);`} bind:openChatList bind:openModuleList/>
         </div>
-        {#if $selectedCharID >= 0}
-            {#if DBState.db.characters[$selectedCharID].viewScreen !== 'none'}
+        {#if ChatState.selectedCharId >= 0}
+            {#if DBState.db.characters[ChatState.selectedCharId].viewScreen !== 'none'}
                 <div class="h-full w-full absolute bottom-0 left-0 max-w-full">
-                    <TransitionImage classType="mobile" src={getEmotion(DBState.db, $CharEmotion, 'plain')}/>
+                    <TransitionImage classType="mobile" src={getEmotion(DBState.db, ChatState.emotions, 'plain')}/>
                 </div>
             {/if}
         {/if}
@@ -73,8 +73,8 @@
         <SideBarArrow />
         <BackgroundDom />
         <div style={bgImg} class="h-full w-full" class:max-w-6xl={DBState.db.classicMaxWidth}>
-            {#if $selectedCharID >= 0}
-                {#if DBState.db.characters[$selectedCharID].viewScreen !== 'none' && (DBState.db.characters[$selectedCharID].type === 'group' || (!DBState.db.characters[$selectedCharID].inlayViewScreen))}
+            {#if ChatState.selectedCharId >= 0}
+                {#if DBState.db.characters[ChatState.selectedCharId].viewScreen !== 'none' && (DBState.db.characters[ChatState.selectedCharId].type === 'group' || (!DBState.db.characters[ChatState.selectedCharId].inlayViewScreen))}
                     <ResizeBox />
                 {/if}
             {/if}

@@ -5,7 +5,7 @@ import { requestChatData } from "src/ts/process/request/request"
 import { alertError } from "src/ts/utils/alert"
 import { readImage } from "src/ts/utils/fileIO"
 import { fetchNative, globalFetch } from "src/ts/utils/fetch"
-import { CharEmotion, DBState } from "src/ts/stores.svelte"
+import { ChatState, DBState } from "src/ts/stores.svelte"
 import type { OpenAIChat } from "src/ts/process/chatTypes"
 import { processZip } from "src/ts/process/utils/processzip"
 import { keiServerURL } from "src/ts/data/kei/kei"
@@ -98,12 +98,12 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
                 }
             }
             else if(da.ok){
-                const charemotions = get(CharEmotion)
+                const charemotions = ChatState.emotions
                 const img = `data:image/png;base64,${da.data.images[0]}`
                 console.log(img)
                 const emos:[string, string,number][] = [[img, img, Date.now()]]
                 charemotions[currentChar.chaId] = emos
-                CharEmotion.set(charemotions)
+                ChatState.emotions = charemotions
             }
             else{
                 alertError(JSON.stringify(da.data))
@@ -366,11 +366,11 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
             }
 
             else if(da.ok){
-                const charemotions = get(CharEmotion)
+                const charemotions = ChatState.emotions
                 const img = await processZip(da.data);
                 const emos:[string, string,number][] = [[img, img, Date.now()]]
                 charemotions[currentChar.chaId] = emos
-                CharEmotion.set(charemotions)
+                ChatState.emotions = charemotions
             }
             else{
                 alertError(Buffer.from(da.data).toString())
@@ -411,7 +411,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
         }
 
         else if(da.ok){
-            const charemotions = get(CharEmotion)
+            const charemotions = ChatState.emotions
             let img = da?.data?.data?.[0]?.b64_json
             if(!img){
                 alertError(JSON.stringify(da.data))
@@ -420,7 +420,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
             img = `data:image/png;base64,${img}`
             const emos:[string, string,number][] = [[img, img, Date.now()]]
             charemotions[currentChar.chaId] = emos
-            CharEmotion.set(charemotions)
+            ChatState.emotions = charemotions
         }
         else{
             alertError(Buffer.from(da.data).toString())
@@ -470,11 +470,11 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
             return `data:image/png;base64,${Buffer.from(res).toString('base64')}`
         }
 
-        const charemotions = get(CharEmotion)
+        const charemotions = ChatState.emotions
         const img = `data:image/png;base64,${Buffer.from(res).toString('base64')}`
         const emos:[string, string,number][] = [[img, img, Date.now()]]
         charemotions[currentChar.chaId] = emos
-        CharEmotion.set(charemotions)
+        ChatState.emotions = charemotions
         return returnSdData
 
 
@@ -567,11 +567,11 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
                 return `data:image/png;base64,${img64}`
             }
             else {
-                const charemotions = get(CharEmotion)
+                const charemotions = ChatState.emotions
                 const img = `data:image/png;base64,${img64}`
                 const emos:[string, string,number][] = [[img, img, Date.now()]]
                 charemotions[currentChar.chaId] = emos
-                CharEmotion.set(charemotions)
+                ChatState.emotions = charemotions
             }
 
             return returnSdData
@@ -604,11 +604,11 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
             return da.data.data
         }
         else{
-            const charemotions = get(CharEmotion)
+            const charemotions = ChatState.emotions
             const img = da.data.data
             const emos:[string, string,number][] = [[img, img, Date.now()]]
             charemotions[currentChar.chaId] = emos
-            CharEmotion.set(charemotions)
+            ChatState.emotions = charemotions
         }
         return returnSdData
 
@@ -667,10 +667,10 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
             return image
         }
         else{
-            const charemotions = get(CharEmotion)
+            const charemotions = ChatState.emotions
             const emos:[string, string,number][] = [[image, image, Date.now()]]
             charemotions[currentChar.chaId] = emos
-            CharEmotion.set(charemotions)
+            ChatState.emotions = charemotions
         }
     }
     if(db.sdProvider === 'Imagen') {

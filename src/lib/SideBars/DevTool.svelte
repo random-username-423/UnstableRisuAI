@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { selectedCharID } from "src/ts/stores.svelte";
+    import { ChatState } from "src/ts/stores.svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
     import NumberInput from "../UI/GUI/NumberInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
@@ -8,7 +8,7 @@
     import Arcodion from "../UI/Arcodion.svelte";
     import { getCharToken, getChatToken } from "src/ts/utils/tokenizer";
     import { tokenizePreset } from "src/ts/process/utils/prompt";
-    
+
     import { DBState } from 'src/ts/stores.svelte';
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import { HardDriveUploadIcon, PlusIcon, TrashIcon } from "lucide-svelte";
@@ -110,15 +110,15 @@
 
 <Arcodion styled name="Variables">
     <div class="rounded-md border border-darkborderc grid grid-cols-2 gap-2 p-2">
-        {#if DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate &&  Object.keys(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate).length > 0}
-            {#each Object.keys(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate) as key}
+        {#if DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate &&  Object.keys(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate).length > 0}
+            {#each Object.keys(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate) as key}
                 <span>{key}</span>
-                {#if typeof DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate[key] === "object"}
+                {#if typeof DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate[key] === "object"}
                     <div class="p-2 text-center">Object</div>
-                {:else if typeof DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate[key] === "string"}
-                    <TextInput bind:value={DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate[key] as string} />
-                {:else if typeof DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate[key] === "number"}
-                    <NumberInput bind:value={DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate[key] as number} />
+                {:else if typeof DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate[key] === "string"}
+                    <TextInput bind:value={DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate[key] as string} />
+                {:else if typeof DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate[key] === "number"}
+                    <NumberInput bind:value={DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate[key] as number} />
                 {/if}
             {/each}
         {:else}
@@ -129,7 +129,7 @@
 
 <Arcodion styled name="Tokens">
     <div class="rounded-md border border-darkborderc grid grid-cols-2 gap-2 p-2">
-        {#await getCharToken(DBState.db.characters[$selectedCharID])}
+        {#await getCharToken(DBState.db.characters[ChatState.selectedCharId])}
             <span>Character Persistant</span>
             <div class="p-2 text-center">Loading...</div>
             <span>Character Dynamic</span>
@@ -140,7 +140,7 @@
             <span>Character Dynamic</span>
             <div class="p-2 text-center">{token.dynamic} Tokens</div>
         {/await}
-        {#await getChatToken(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage])}
+        {#await getChatToken(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage])}
             <span>Current Chat</span>
             <div class="p-2 text-center">Loading...</div>
         {:then token}
@@ -216,22 +216,22 @@
         }
         for(let i=0;i<autopilot.length;i++){
             const db = (DBState.db)
-            let currentChar = db.characters[$selectedCharID]
+            let currentChar = db.characters[ChatState.selectedCharId]
             let currentChat = currentChar.chats[currentChar.chatPage]
             currentChat.message.push({
                 role: 'user',
                 data: autopilot[i]
             })
             currentChar.chats[currentChar.chatPage] = currentChat
-            db.characters[$selectedCharID] = currentChar
+            db.characters[ChatState.selectedCharId] = currentChar
             if($doingChat){
                 return
             }
             currentChar.chats[currentChar.chatPage] = currentChat
-            db.characters[$selectedCharID] = currentChar
+            db.characters[ChatState.selectedCharId] = currentChar
             doingChat.set(false)
             await sendChat(i);
-            currentChar = db.characters[$selectedCharID]
+            currentChar = db.characters[ChatState.selectedCharId]
             currentChat = currentChar.chats[currentChar.chatPage]
         }
         doingChat.set(false)

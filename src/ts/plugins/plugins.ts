@@ -5,7 +5,7 @@ import { getCurrentCharacter, getDatabase, setDatabaseLite } from "../data/stora
 import { checkNullish, selectSingleFile, sleep } from '../utils/util';
 import type { OpenAIChat } from "../process/index.svelte";
 import { fetchNative, globalFetch } from "../utils/fetch";
-import { selectedCharID } from "../stores.svelte";
+import { ChatState } from "../stores.svelte";
 import type { ScriptMode } from "src/ts/process/scripting/scripts";
 
 export const customProviderStore = writable([] as string[])
@@ -244,7 +244,7 @@ export async function loadV2Plugin(plugins: RisuPlugin[]) {
         },
         setChar: (char: any) => {
             const db = getDatabase()
-            const charid = get(selectedCharID)
+            const charid = ChatState.selectedCharId
             db.characters[charid] = char
             setDatabaseLite(db)
         },

@@ -10,8 +10,7 @@ import { v4 } from "uuid"
 import { convertExternalLorebook } from "src/ts/process/prompt/lorebook.svelte"
 import { decodeRPack, encodeRPack } from "src/ts/rpack/rpack_bg"
 import { convertImage } from "src/ts/utils/parser.svelte"
-import { HideIconStore, moduleBackgroundEmbedding, ReloadGUIPointer } from "src/ts/stores.svelte"
-import {get} from "svelte/store"
+import { RenderState } from "src/ts/stores.svelte"
 
 export interface MCPModule{
     url: string
@@ -467,12 +466,12 @@ export function moduleUpdate(){
     })
 
     if(backgroundEmbedding){
-        moduleBackgroundEmbedding.set(backgroundEmbedding)
+        RenderState.moduleBackground = backgroundEmbedding
     }
-    HideIconStore.set(getCurrentCharacter()?.hideChatIcon || moduleHideIcon)
+    RenderState.hideIcon = getCurrentCharacter()?.hideChatIcon || moduleHideIcon
 
     if(lastModuleIds !== ids){
-        ReloadGUIPointer.set(get(ReloadGUIPointer) + 1)
+        RenderState.guiReloadPointer += 1
         lastModuleIds = ids
     }
 }

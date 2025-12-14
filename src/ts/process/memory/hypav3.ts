@@ -12,7 +12,7 @@ import type { OpenAIChat } from "src/ts/process/index.svelte";
 import { requestChatData } from "src/ts/process/request/request";
 import { chatCompletion, unloadEngine } from "src/ts/process/integrations/webllm";
 import { parseChatML } from "src/ts/utils/parser.svelte";
-import { hypaV3ProgressStore } from "src/ts/stores.svelte";
+import { ModalState } from "src/ts/stores.svelte";
 import { type ChatTokenizer } from "src/ts/utils/tokenizer";
 
 // Re-export from hypav3Types.ts to maintain backwards compatibility
@@ -341,12 +341,12 @@ async function hypaMemoryV3MainExp(
     });
 
     rateLimiter.taskQueueChangeCallback = (queuedCount) => {
-      hypaV3ProgressStore.set({
+      ModalState.hypaV3.progress = {
         open: true,
         miniMsg: `${rateLimiter.queuedTaskCount}`,
         msg: `${logPrefix} Summarizing...`,
         subMsg: `${rateLimiter.queuedTaskCount} queued`,
-      });
+      };
     };
 
     const summarizationTasks = toSummarizeArray.map(
@@ -372,12 +372,12 @@ async function hypaMemoryV3MainExp(
     );
     // End of performance measurement: summarize
 
-    hypaV3ProgressStore.set({
+    ModalState.hypaV3.progress = {
       open: false,
       miniMsg: "",
       msg: "",
       subMsg: "",
-    });
+    };
 
     // Note:
     // We can't save some successful summaries to the DB temporarily
@@ -582,12 +582,12 @@ async function hypaMemoryV3MainExp(
     });
 
     processor.progressCallback = (queuedCount) => {
-      hypaV3ProgressStore.set({
+      ModalState.hypaV3.progress = {
         open: true,
         miniMsg: `${queuedCount}`,
         msg: `${logPrefix} Similarity searching...`,
         subMsg: `${queuedCount} queued`,
-      });
+      };
     };
 
     try {
@@ -613,12 +613,12 @@ async function hypaMemoryV3MainExp(
         memory: toSerializableHypaV3Data(data),
       };
     } finally {
-      hypaV3ProgressStore.set({
+      ModalState.hypaV3.progress = {
         open: false,
         miniMsg: "",
         msg: "",
         subMsg: "",
-      });
+      };
     }
 
     const recentChats = chats
@@ -729,12 +729,12 @@ async function hypaMemoryV3MainExp(
           memory: toSerializableHypaV3Data(data),
         };
       } finally {
-        hypaV3ProgressStore.set({
+        ModalState.hypaV3.progress = {
           open: false,
           miniMsg: "",
           msg: "",
           subMsg: "",
-        });
+        };
       }
     }
 

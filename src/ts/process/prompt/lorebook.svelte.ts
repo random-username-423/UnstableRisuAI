@@ -1,7 +1,5 @@
-import { get } from "svelte/store";
-import {selectedCharID} from 'src/ts/stores.svelte'
 import { type Message, type loreBook } from "src/ts/data/storage/types";
-import { DBState } from 'src/ts/stores.svelte';
+import { DBState, ChatState } from 'src/ts/stores.svelte';
 import { tokenize } from "src/ts/utils/tokenizer";
 import { checkNullish, findCharacterbyId, pickHashRand, selectSingleFile, sfc32 } from 'src/ts/utils/util';
 import { alertError, alertNormal } from "src/ts/utils/alert";
@@ -13,7 +11,7 @@ import { getChatVar, setChatVar } from "src/ts/utils/parser.svelte";
 import { v4 } from "uuid";
 
 export function addLorebook(type:number) {
-    const selectedID = get(selectedCharID)
+    const selectedID = ChatState.selectedCharId
     if(type === 0){
         DBState.db.characters[selectedID].globalLore.push({
             key: '',
@@ -42,7 +40,7 @@ export function addLorebook(type:number) {
 }
 
 export function addLorebookFolder(type:number) {
-    const selectedID = get(selectedCharID)
+    const selectedID = ChatState.selectedCharId
     const id = v4()
     if(type === 0){
         DBState.db.characters[selectedID].globalLore.push({
@@ -72,7 +70,7 @@ export function addLorebookFolder(type:number) {
 }
 
 export async function loadLoreBookV3Prompt(){
-    const selectedID = get(selectedCharID)
+    const selectedID = ChatState.selectedCharId
     const char = DBState.db.characters[selectedID]
     const page = char.chatPage
     const characterLore = char.globalLore ?? []
@@ -654,7 +652,7 @@ export async function loadLoreBookV3Prompt(){
 }
 
 export async function importLoreBook(mode:'global'|'local'|'sglobal'){
-    const selectedID = get(selectedCharID)
+    const selectedID = ChatState.selectedCharId
     const page = mode === 'sglobal' ? -1 : DBState.db.characters[selectedID].chatPage
     const lore = 
         mode === 'global' ? DBState.db.characters[selectedID].globalLore : 
@@ -734,7 +732,7 @@ export function convertExternalLorebook(entries:{[key:string]:CCLorebook}){
 
 export async function exportLoreBook(mode:'global'|'local'|'sglobal'){
     try {
-        const selectedID = get(selectedCharID)
+        const selectedID = ChatState.selectedCharId
         const page = mode === 'sglobal' ? -1 : DBState.db.characters[selectedID].chatPage
         const lore = 
             mode === 'global' ? DBState.db.characters[selectedID].globalLore : 

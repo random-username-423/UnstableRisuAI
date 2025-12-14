@@ -3,8 +3,7 @@ import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, 
 import type { Chat, character } from "src/ts/data/storage/types";
 import { tokenize } from "src/ts/utils/tokenizer";
 import { getModuleTriggers } from "src/ts/process/scripting/modules";
-import { get } from "svelte/store";
-import { ReloadChatPointer, ReloadGUIPointer, selectedCharID, CurrentTriggerIdStore } from "src/ts/stores.svelte";
+import { RenderState, ChatState } from "src/ts/stores.svelte";
 import { processMultiCommand } from "src/ts/process/scripting/command";
 import { parseKeyValue, sleep } from "src/ts/utils/util";
 import { alertError, alertInput, alertNormal, alertSelect } from "src/ts/utils/alert";
@@ -1064,16 +1063,16 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
     const db = getDatabase()
     const defaultVariables = parseKeyValue(char.defaultVariables).concat(parseKeyValue(db.templateDefaultVariables))
     let chat = arg.displayMode ? arg.chat : safeStructuredClone(arg.chat ?? char.chats[char.chatPage])
-    
-    const previousTriggerId = get(CurrentTriggerIdStore)
+
+    const previousTriggerId = ChatState.currentTriggerId
     const shouldSetTriggerId = !arg.displayMode && mode !== 'display'
     if (shouldSetTriggerId) {
-        CurrentTriggerIdStore.set(arg.triggerId || null)
+        ChatState.currentTriggerId = arg.triggerId || null
     }
-    
+
     if((!triggers) || (triggers.length === 0)){
         if (shouldSetTriggerId) {
-            CurrentTriggerIdStore.set(previousTriggerId)
+            ChatState.currentTriggerId = previousTriggerId
         }
         return null
     }
@@ -1186,7 +1185,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
             return
         }
         
-        const selectedCharId = get(selectedCharID)
+        const selectedCharId = ChatState.selectedCharId
         const currentCharacter = getCurrentCharacter()
         const db = getDatabase()
         varChanged = true
@@ -1949,7 +1948,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
                     }
 
                     const db = getDatabase()
-                    const selectedCharId = get(selectedCharID)
+                    const selectedCharId = ChatState.selectedCharId
                     db.characters[selectedCharId].globalLore = char.globalLore
                     setCurrentCharacter(db.characters[selectedCharId])
                     break
@@ -1981,7 +1980,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
                     const value = effect.value
                     char.globalLore[index][2] = value
 
-                    const selectedCharId = get(selectedCharID)
+                    const selectedCharId = ChatState.selectedCharId
                     const db = getDatabase()
                     db.characters[selectedCharId].globalLore = char.globalLore
                     setCurrentCharacter(char)
@@ -2085,7 +2084,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
                 case 'v2SetCharacterDesc':{
                     const value = effect.valueType === 'value' ? risuChatParser(effect.value,{chara:char}) : getVar(risuChatParser(effect.value,{chara:char}))
                     char.desc = value
-                    const selectedCharId = get(selectedCharID)
+                    const selectedCharId = ChatState.selectedCharId
                     const db = getDatabase();
                     (db.characters[selectedCharId] as character).desc = value
                     setCurrentCharacter(char)
@@ -2115,7 +2114,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
                 case 'v2SetReplaceGlobalNote':{
                     const value = effect.valueType === 'value' ? risuChatParser(effect.value,{chara:char}) : getVar(risuChatParser(effect.value,{chara:char}))
                     char.replaceGlobalNote = value
-                    const selectedCharId = get(selectedCharID)
+                    const selectedCharId = ChatState.selectedCharId
                     const db = getDatabase();
                     (db.characters[selectedCharId] as character).replaceGlobalNote = value
                     setCurrentCharacter(char)
@@ -2338,14 +2337,11 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
                     break
                 }
                 case 'v2UpdateGUI':{
-                    ReloadGUIPointer.set(get(ReloadGUIPointer) + 1)
+                    RenderState.guiReloadPointer += 1
                     break
                 }
                 case 'v2UpdateChatAt':{
-                    ReloadChatPointer.update((v) => {
-                        v[effect.index] = (v[effect.index] ?? 0) + 1
-                        return v
-                    })
+                    RenderState.chatReloadPointer[effect.index] = (RenderState.chatReloadPointer[effect.index] ?? 0) + 1
                     break
                 }
                 case 'v2Wait':{
@@ -2490,7 +2486,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
                         selective: false
                     })
 
-                    const selectedCharId = get(selectedCharID)
+                    const selectedCharId = ChatState.selectedCharId
                     const db = getDatabase()
                     db.characters[selectedCharId].globalLore = char.globalLore
                     setCurrentCharacter(char)
@@ -2525,7 +2521,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
                         char.globalLore[index].insertorder = insertOrderNum
                     }
 
-                    const selectedCharId = get(selectedCharID)
+                    const selectedCharId = ChatState.selectedCharId
                     const db = getDatabase()
                     db.characters[selectedCharId].globalLore = char.globalLore
                     setCurrentCharacter(char)
@@ -2541,7 +2537,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
 
                     char.globalLore.splice(index, 1)
 
-                    const selectedCharId = get(selectedCharID)
+                    const selectedCharId = ChatState.selectedCharId
                     const db = getDatabase()
                     db.characters[selectedCharId].globalLore = char.globalLore
                     setCurrentCharacter(char)
@@ -2562,7 +2558,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
 
                     char.globalLore[index].alwaysActive = effect.value
 
-                    const selectedCharId = get(selectedCharID)
+                    const selectedCharId = ChatState.selectedCharId
                     const db = getDatabase()
                     db.characters[selectedCharId].globalLore = char.globalLore
                     setCurrentCharacter(char)
@@ -2590,7 +2586,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
                     chat.note = value
                     
                     if(!arg.displayMode){
-                        const selectedCharId = get(selectedCharID)
+                        const selectedCharId = ChatState.selectedCharId
                         const currentCharacter = getCurrentCharacter()
                         const db = getDatabase()
                         currentCharacter.chats[currentCharacter.chatPage].note = value
@@ -2784,13 +2780,13 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
     if(varChanged){
         const currentChat = getCurrentChat()
         currentChat.scriptstate = chat.scriptstate
-        ReloadGUIPointer.set(get(ReloadGUIPointer) + 1)
+        RenderState.guiReloadPointer += 1
     }
 
     if (shouldSetTriggerId && mode !== 'manual') {
-        CurrentTriggerIdStore.set(previousTriggerId)
+        ChatState.currentTriggerId = previousTriggerId
     }
-    
+
     return {additonalSysPrompt, chat, tokens:caculatedTokens, stopSending, sendAIprompt, displayData: arg.displayData, tempVars: arg.tempVars}
 
 }

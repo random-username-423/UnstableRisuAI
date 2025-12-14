@@ -2,8 +2,7 @@ import { getChatVar, hasher, setChatVar, getGlobalChatVar, type simpleCharacterA
 import { LuaEngine, LuaFactory } from "wasmoon";
 import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase } from "src/ts/data/storage/database.svelte";
 import type { Chat, character, groupChat, triggerscript } from "src/ts/data/storage/types";
-import { get } from "svelte/store";
-import { ReloadChatPointer, ReloadGUIPointer, selectedCharID } from "src/ts/stores.svelte";
+import { RenderState, ChatState } from "src/ts/stores.svelte";
 import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "src/ts/utils/alert";
 import { HypaProcesser } from "src/ts/process/memory/hypamemory";
 import { generateAIImage } from "src/ts/process/integrations/stableDiff";
@@ -268,17 +267,14 @@ export async function runScripted(code:string, arg:{
                 if(!ScriptingSafeIds.has(id)){
                     return
                 }
-                ReloadGUIPointer.set(get(ReloadGUIPointer) + 1)
+                RenderState.guiReloadPointer += 1
             })
 
             declareAPI('reloadChat', (id: string, index: number) => {
                 if(!ScriptingSafeIds.has(id)){
                     return
                 }
-                ReloadChatPointer.update((v) => {
-                    v[index] = (v[index] ?? 0) + 1
-                    return v
-                })
+                RenderState.chatReloadPointer[index] = (RenderState.chatReloadPointer[index] ?? 0) + 1
             })
 
             //Low Level Access
@@ -377,7 +373,7 @@ export async function runScripted(code:string, arg:{
             declareAPI('getCharacterImageMain', async (id:string) => {
                 try {
                     const db = getDatabase()
-                    const selectedChar = get(selectedCharID)
+                    const selectedChar = ChatState.selectedCharId
 
                     if (selectedChar < 0 || selectedChar >= db.characters.length) {
                         return ''
@@ -571,7 +567,7 @@ export async function runScripted(code:string, arg:{
             
             declareAPI('getName', async (id:string) => {
                 const db = getDatabase()
-                const selectedChar = get(selectedCharID)
+                const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
                 return char.name
             })
@@ -581,7 +577,7 @@ export async function runScripted(code:string, arg:{
                     return
                 }
                 const db = getDatabase()
-                const selectedChar = get(selectedCharID)
+                const selectedChar = ChatState.selectedCharId
                 if(typeof name !== 'string'){
                     throw('Invalid data type')
                 }
@@ -594,7 +590,7 @@ export async function runScripted(code:string, arg:{
                     return
                 }
                 const db = getDatabase()
-                const selectedChar = get(selectedCharID)
+                const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
                 if(char.type === 'group'){
                     throw('Character is a group')
@@ -607,7 +603,7 @@ export async function runScripted(code:string, arg:{
                     return
                 }
                 const db = getDatabase()
-                const selectedChar = get(selectedCharID)
+                const selectedChar = ChatState.selectedCharId
                 const char =db.characters[selectedChar]
                 if(typeof data !== 'string'){
                     throw('Invalid data type')
@@ -622,7 +618,7 @@ export async function runScripted(code:string, arg:{
 
             declareAPI('getCharacterFirstMessage', async (id:string) => {
                 const db = getDatabase()
-                const selectedChar = get(selectedCharID)
+                const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
                 return char.firstMessage
             })
@@ -632,7 +628,7 @@ export async function runScripted(code:string, arg:{
                     return
                 }
                 const db = getDatabase()
-                const selectedChar = get(selectedCharID)
+                const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
                 if(typeof data !== 'string'){
                     return false
@@ -649,7 +645,7 @@ export async function runScripted(code:string, arg:{
 
             declareAPI('getPersonaDescription', (id:string) => {
                 const db = getDatabase()
-                const selectedChar = get(selectedCharID)
+                const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
 
                 return risuChatParser(getPersonaPrompt(), { chara: char })
@@ -664,7 +660,7 @@ export async function runScripted(code:string, arg:{
                     return
                 }
                 const db = getDatabase()
-                const selectedChar = get(selectedCharID)
+                const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
                 return char.backgroundHTML
             })
@@ -674,7 +670,7 @@ export async function runScripted(code:string, arg:{
                     return
                 }
                 const db = getDatabase()
-                const selectedChar = get(selectedCharID)
+                const selectedChar = ChatState.selectedCharId
                 if(typeof data !== 'string'){
                     return false
                 }
@@ -686,7 +682,7 @@ export async function runScripted(code:string, arg:{
             // Lore books
             declareAPI('getLoreBooksMain', (id:string, search:string) => {
                 const db = getDatabase()
-                const selectedChar = db.characters[get(selectedCharID)]
+                const selectedChar = db.characters[ChatState.selectedCharId]
                 if (selectedChar.type !== 'character') {
                     return
                 }
@@ -746,7 +742,7 @@ export async function runScripted(code:string, arg:{
 
                 const db = getDatabase()
 
-                const selectedChar = db.characters[get(selectedCharID)]
+                const selectedChar = db.characters[ChatState.selectedCharId]
 
                 if (selectedChar.type !== 'character') {
                     return
@@ -877,27 +873,6 @@ export async function runScripted(code:string, arg:{
                 })
             })
 
-            declareAPI('getCharacterLastMessage', (id: string) => {
-                const chat = ScriptingEngineState.chat
-                if (!chat) {
-                    return ''
-                }
-
-                const db = getDatabase()
-                const selchar = db.characters[get(selectedCharID)]
-
-                let pointer = chat.message.length - 1
-                while (pointer >= 0) {
-                    if (chat.message[pointer].role === 'char') {
-                        const messageData = chat.message[pointer].data
-                        return messageData
-                    }
-                    pointer--
-                }
-
-                return selchar.firstMessage
-            })
-
             declareAPI('getUserLastMessage', (id: string) => {
                 const chat = ScriptingEngineState.chat
                 if (!chat) {
@@ -923,7 +898,7 @@ export async function runScripted(code:string, arg:{
                 }
 
                 const db = getDatabase()
-                const selchar = db.characters[get(selectedCharID)]
+                const selchar = db.characters[ChatState.selectedCharId]
 
                 let pointer = chat.message.length - 1
                 while (pointer >= 0) {

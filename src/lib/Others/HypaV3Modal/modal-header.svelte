@@ -11,11 +11,10 @@
   } from "lucide-svelte";
   import { language } from "src/lang";
   import {
-    hypaV3ModalOpen,
-    settingsOpen,
-    SettingsMenuIndex,
+    ModalState,
+    SettingsState,
     DBState,
-    selectedCharID,
+    ChatState,
   } from "src/ts/stores.svelte";
   import type { SearchState } from "./types";
   import { alertConfirmTwice } from "./utils";
@@ -61,9 +60,9 @@
   }
 
   function openGlobalSettings() {
-    $hypaV3ModalOpen = false;
-    $settingsOpen = true;
-    $SettingsMenuIndex = 2; // Other bot settings
+    ModalState.hypaV3.modalOpen = false;
+    SettingsState.isOpen = true;
+    SettingsState.menuIndex = 2; // Other bot settings
   }
 
   function openDropdown(e: MouseEvent) {
@@ -82,8 +81,8 @@
         language.hypaV3Modal.resetConfirmSecondMessage
       )
     ) {
-      DBState.db.characters[$selectedCharID].chats[
-        DBState.db.characters[$selectedCharID].chatPage
+      DBState.db.characters[ChatState.selectedCharId].chats[
+        DBState.db.characters[ChatState.selectedCharId].chatPage
       ].hypaV3Data = {
         summaries: [],
       };
@@ -91,7 +90,7 @@
   }
 
   function closeModal() {
-    $hypaV3ModalOpen = false;
+    ModalState.hypaV3.modalOpen = false;
   }
 </script>
 

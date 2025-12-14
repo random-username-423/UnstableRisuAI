@@ -1,10 +1,10 @@
-import { get, writable } from "svelte/store"
+import { writable } from "svelte/store"
 import { sleep } from "./util"
 import { language } from "../../lang"
 import { isNodeServer, isTauri } from "./env"
 import { getDatabase } from "../data/storage/database.svelte"
 import type { MessageGenerationInfo } from "../data/storage/types"
-import { alertStore as alertStoreImported } from "../stores.svelte"
+import { ModalState } from "../stores.svelte"
 
 export interface alertData{
     type: 'error'|'normal'|'none'|'ask'|'wait'|'selectChar'
@@ -24,7 +24,7 @@ type AlertGenerationInfoStoreData = {
 export const alertGenerationInfoStore = writable<AlertGenerationInfoStoreData>(null)
 export const alertStore = {
     set: (d:alertData) => {
-        alertStoreImported.set(d)
+        ModalState.alert = d
     }
 }
 
@@ -32,7 +32,7 @@ export function alertError(msg: string | Error) {
     console.error(msg)
     const db = getDatabase()
 
-    let stackTrace: string | undefined = undefined; 
+    let stackTrace: string | undefined = undefined;
 
     if (typeof(msg) !== 'string') {
         try{
@@ -65,17 +65,17 @@ export function alertError(msg: string | Error) {
                     (!isTauri && !isNodeServer) ? language.errors.networkFetchWeb : language.errors.networkFetch
     }
 
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'error',
         'msg': msg,
         'submsg': submsg,
         'stackTrace': stackTrace
-    })
+    }
 }
 
 export async function waitAlert(){
     while(true){
-        if (get(alertStoreImported).type === 'none'){
+        if (ModalState.alert.type === 'none'){
             break
         }
         await sleep(10)
@@ -83,150 +83,150 @@ export async function waitAlert(){
 }
 
 export function alertNormal(msg:string){
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'normal',
         'msg': msg
-    })
+    }
 }
 
 export async function alertNormalWait(msg:string){
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'normal',
         'msg': msg
-    })
+    }
     await waitAlert()
 }
 
 export async function alertAddCharacter() {
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'addchar',
         'msg': language.addCharacter
-    })
+    }
     await waitAlert()
 
-    return get(alertStoreImported).msg
+    return ModalState.alert.msg
 }
 
 export async function alertChatOptions() {
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'chatOptions',
         'msg': language.chatOptions
-    })
+    }
     await waitAlert()
 
-    return parseInt(get(alertStoreImported).msg)
+    return parseInt(ModalState.alert.msg)
 }
 
 export async function alertLogin(){
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'login',
         'msg': 'login'
-    })
+    }
     await waitAlert()
 
-    return get(alertStoreImported).msg
+    return ModalState.alert.msg
 }
 
 export async function alertSelect(msg:string[], display?:string){
     const message = display !== undefined ? `__DISPLAY__${display}||${msg.join('||')}` : msg.join('||')
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'select',
         'msg': message
-    })
+    }
 
     await waitAlert()
 
-    return get(alertStoreImported).msg
+    return ModalState.alert.msg
 }
 
 export async function alertErrorWait(msg:string){
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'wait2',
         'msg': msg
-    })
+    }
     await waitAlert()
 }
 
 export function alertMd(msg:string){
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'markdown',
         'msg': msg
-    })
+    }
 }
 
 export function doingAlert(){
-    return get(alertStoreImported).type !== 'none' && get(alertStoreImported).type !== 'toast' && get(alertStoreImported).type !== 'wait'
+    return ModalState.alert.type !== 'none' && ModalState.alert.type !== 'toast' && ModalState.alert.type !== 'wait'
 }
 
 export function alertToast(msg:string){
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'toast',
         'msg': msg
-    })
+    }
 }
 
 export function alertWait(msg:string){
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'wait',
         'msg': msg
-    })
+    }
 
 }
 
 
 export function alertClear(){
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'none',
         'msg': ''
-    })
+    }
 }
 
 export async function alertSelectChar(){
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'selectChar',
         'msg': ''
-    })
+    }
 
     await waitAlert()
 
-    return get(alertStoreImported).msg
+    return ModalState.alert.msg
 }
 
 export async function alertConfirm(msg:string){
 
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'ask',
         'msg': msg
-    })
+    }
 
     await waitAlert()
 
-    return get(alertStoreImported).msg === 'yes'
+    return ModalState.alert.msg === 'yes'
 }
 
 export async function alertPluginConfirm(msg:string){
 
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'pluginconfirm',
         'msg': msg
-    })
+    }
 
     await waitAlert()
 
-    return get(alertStoreImported).msg === 'yes'
+    return ModalState.alert.msg === 'yes'
 }
 
 export async function alertCardExport(type:string = ''){
 
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'cardexport',
         'msg': '',
         'submsg': type
-    })
+    }
 
     await waitAlert()
 
-    return JSON.parse(get(alertStoreImported).msg) as {
+    return JSON.parse(ModalState.alert.msg) as {
         type: string,
         type2: string,
     }
@@ -238,14 +238,14 @@ export async function alertTOS(){
         return true
     }
 
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'tos',
         'msg': 'tos'
-    })
+    }
 
     await waitAlert()
 
-    if(get(alertStoreImported).msg === 'yes'){
+    if(ModalState.alert.msg === 'yes'){
         localStorage.setItem('tos2', 'true')
         return true
     }
@@ -255,45 +255,45 @@ export async function alertTOS(){
 
 export async function alertInput(msg:string, datalist?:[string, string][]) {
 
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'input',
         'msg': msg,
         'datalist': datalist ?? []
-    })
+    }
 
     await waitAlert()
 
-    return get(alertStoreImported).msg
+    return ModalState.alert.msg
 }
 
 export async function alertModuleSelect(){
 
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'selectModule',
         'msg': ''
-    })
+    }
 
     while(true){
-        if (get(alertStoreImported).type === 'none'){
+        if (ModalState.alert.type === 'none'){
             break
         }
         await sleep(20)
     }
 
-    return get(alertStoreImported).msg
+    return ModalState.alert.msg
 }
 
 export function alertRequestData(info:AlertGenerationInfoStoreData){
     alertGenerationInfoStore.set(info)
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'requestdata',
         'msg': info.genInfo.generationId ?? 'none'
-    })
+    }
 }
 
 export function showHypaV2Alert(){
-    alertStoreImported.set({
+    ModalState.alert = {
         'type': 'hypaV2',
         'msg': ""
-    })
+    }
 }

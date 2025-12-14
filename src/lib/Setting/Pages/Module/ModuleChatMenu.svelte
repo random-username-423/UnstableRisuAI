@@ -5,9 +5,8 @@
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import type { RisuModule } from "src/ts/process/scripting/modules";
     
-    import { DBState, ReloadGUIPointer } from 'src/ts/stores.svelte';
-    import { selectedCharID } from "src/ts/stores.svelte";
-    import { SettingsMenuIndex, settingsOpen } from "src/ts/stores.svelte";
+    import { DBState, RenderState, ChatState } from 'src/ts/stores.svelte';
+    import { SettingsState } from "src/ts/stores.svelte";
 
     interface Props {
         close?: any;
@@ -80,36 +79,36 @@
                                 <button class="mr-2 text-textcolor2 cursor-not-allowed"aria-labelledby="disabled">
                                 </button>
                             {:else}
-                                <button class={(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules.includes(rmodule.id)) ?
+                                <button class={(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].modules.includes(rmodule.id)) ?
                                         "mr-2 cursor-pointer text-blue-500" :
-                                        (DBState.db.characters[$selectedCharID]?.modules?.includes(rmodule.id)) ?
+                                        (DBState.db.characters[ChatState.selectedCharId]?.modules?.includes(rmodule.id)) ?
                                         "mr-2 cursor-pointer text-violet-500" :
                                         "text-textcolor2 hover:text-blue-400 mr-2 cursor-pointer"
                                 } onclick={async (e) => {
                                     e.stopPropagation()
-                                    if(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules.includes(rmodule.id)){
-                                        DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules.splice(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules.indexOf(rmodule.id), 1)
+                                    if(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].modules.includes(rmodule.id)){
+                                        DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].modules.splice(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].modules.indexOf(rmodule.id), 1)
 
                                     }
                                     else{
-                                        DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules.push(rmodule.id)
+                                        DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].modules.push(rmodule.id)
                                     }
-                                    DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules = DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules
-                                    $ReloadGUIPointer += 1
+                                    DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].modules = DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].modules
+                                    RenderState.guiReloadPointer += 1
                                 }}
                                 oncontextmenu={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
-                                    if(!DBState.db.characters[$selectedCharID].modules){
-                                        DBState.db.characters[$selectedCharID].modules = []
+                                    if(!DBState.db.characters[ChatState.selectedCharId].modules){
+                                        DBState.db.characters[ChatState.selectedCharId].modules = []
                                     }
-                                    if(DBState.db.characters[$selectedCharID].modules.includes(rmodule.id)){
-                                        DBState.db.characters[$selectedCharID].modules.splice(DBState.db.characters[$selectedCharID].modules.indexOf(rmodule.id), 1)
+                                    if(DBState.db.characters[ChatState.selectedCharId].modules.includes(rmodule.id)){
+                                        DBState.db.characters[ChatState.selectedCharId].modules.splice(DBState.db.characters[ChatState.selectedCharId].modules.indexOf(rmodule.id), 1)
                                     }
                                     else{
-                                        DBState.db.characters[$selectedCharID].modules.push(rmodule.id)
+                                        DBState.db.characters[ChatState.selectedCharId].modules.push(rmodule.id)
                                     }
-                                    $ReloadGUIPointer += 1
+                                    RenderState.guiReloadPointer += 1
                                 }}>
 
                                     <CheckCircle2Icon size={18}/>
@@ -122,8 +121,8 @@
         </div>
         <div>
             <Button className="mt-4 flex-grow-0" size="sm" onclick={() => {
-                $SettingsMenuIndex = 14
-                $settingsOpen = true
+                SettingsState.menuIndex = 14
+                SettingsState.isOpen = true
                 close('')
             }}>{language.edit}</Button>
         </div>

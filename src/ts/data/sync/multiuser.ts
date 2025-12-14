@@ -3,7 +3,7 @@ import { alertError, alertInput, alertNormal, alertStore, alertWait } from '../.
 import { get, writable } from 'svelte/store';
 import { setDatabase, saveImage, getCurrentChat, setCurrentChat, getDatabase } from '../storage/database.svelte';
 import type { character, Chat } from '../storage/types';
-import { selectedCharID } from '../../stores.svelte';
+import { ChatState } from '../../stores.svelte';
 import { findCharacterIndexbyId, sleep } from '../../utils/util';
 import type { DataConnection, Peer } from 'peerjs';
 import { readImage } from '../../utils/fileIO';
@@ -83,7 +83,7 @@ export async function createMultiuserRoom(){
             const db = getDatabase({
                 snapshot: true
             })
-            const selectedCharId = get(selectedCharID)
+            const selectedCharId = ChatState.selectedCharId
             const char = safeStructuredClone(db.characters[selectedCharId])
             if(char.type === 'group'){
                 return
@@ -133,7 +133,7 @@ export async function createMultiuserRoom(){
                 const db = getDatabase({
                     snapshot: true
                 })
-                const selectedCharId = get(selectedCharID)
+                const selectedCharId = ChatState.selectedCharId
                 const char = safeStructuredClone(db.characters[selectedCharId])
                 const recivedChar = data.data
                 if(char.type === 'group'){
@@ -143,7 +143,7 @@ export async function createMultiuserRoom(){
             }
             if(data.type === 'request-chat-sync'){
                 const db = getDatabase()
-                const selectedCharId = get(selectedCharID)
+                const selectedCharId = ChatState.selectedCharId
                 const char = db.characters[selectedCharId]
                 char.chats[char.chatPage] = data.data
                 db.characters[selectedCharId] = char
@@ -163,7 +163,7 @@ export async function createMultiuserRoom(){
             }
             if(data.type === 'request-chat'){
                 const db = getDatabase()
-                const selectedCharId = get(selectedCharID)
+                const selectedCharId = ChatState.selectedCharId
                 const char = db.characters[selectedCharId]
                 const chat = char.chats[char.chatPage]
                 const rs:ReciveSync = {
@@ -295,7 +295,7 @@ export async function joinMultiuserRoom(){
                     cha.chaId = '§temp'
                     cha.chatPage = 0
                     const ind = findCharacterIndexbyId('§temp')
-                    const selectedcharIndex = get(selectedCharID)
+                    const selectedcharIndex = ChatState.selectedCharId
                     if(ind === -1){
                         db.characters.push(cha)
                     }
@@ -304,7 +304,7 @@ export async function joinMultiuserRoom(){
                     }
                     const tempInd = findCharacterIndexbyId('§temp')
                     if(selectedcharIndex !== tempInd){
-                        selectedCharID.set(tempInd)
+                        ChatState.selectedCharId = tempInd
                     }
                     setDatabase(db)
                     break
@@ -317,7 +317,7 @@ export async function joinMultiuserRoom(){
                     const db = getDatabase({
                         snapshot: true
                     })
-                    const selectedCharId = get(selectedCharID)
+                    const selectedCharId = ChatState.selectedCharId
                     const char = safeStructuredClone(db.characters[selectedCharId])
                     char.chats[char.chatPage] = data.data
                     db.characters[selectedCharId] = char
@@ -347,7 +347,7 @@ export async function joinMultiuserRoom(){
             alertError("Connection closed")
             connectionOpen = false
             ConnectionOpenStore.set(false)
-            selectedCharID.set(-1)
+            ChatState.selectedCharId = -1
         })
     
         let waitTime = 0

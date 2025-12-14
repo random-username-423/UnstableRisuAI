@@ -17,7 +17,7 @@
   import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
   import Arcodion from "src/lib/UI/Arcodion.svelte";
   import Button from "src/lib/UI/GUI/Button.svelte";
-  import { CustomGUISettingMenuStore } from "src/ts/stores.svelte";
+  import { SettingsState } from "src/ts/stores.svelte";
   import { alertError } from "src/ts/utils/alert";
 
     const onSchemeInputChange = (e:Event) => {
@@ -63,7 +63,7 @@
 
     {#if DBState.db.theme === "custom"}
         <Button className="mt-2" onclick={() => {
-            CustomGUISettingMenuStore.set(true)
+            SettingsState.customGUIOpen = true
         }}>{language.defineCustomGUI}</Button>
     {/if}
 

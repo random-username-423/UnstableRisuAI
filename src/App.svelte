@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { settingsOpen, ShowRealmFrameStore, openPresetList, openPersonaList, MobileGUI, CustomGUISettingMenuStore, loadedStore, alertStore, LoadingStatusState } from './ts/stores.svelte';
+    import { SettingsState, RealmState, ModalState, AppState } from './ts/stores.svelte';
+    import { MobileState } from './ts/stores.svelte';
     import { DBState } from './ts/stores.svelte';
     import ChatWorkspace from './lib/ChatScreens/ChatWorkspace.svelte';
     import AlertComp from './lib/Others/AlertComp.svelte';
@@ -17,7 +18,6 @@
     import MobileFooter from './lib/Mobile/MobileFooter.svelte';
     import CustomGUISettingMenu from './lib/Setting/Pages/CustomGUISettingMenu.svelte';
     import { checkCharOrder } from 'src/ts/character/characters'
-    import { hypaV3ModalOpen, hypaV3ProgressStore } from "./ts/stores.svelte";
     import AprilFools from './lib/Others/AprilFools.svelte';
     import HypaV3Modal from './lib/Others/HypaV3Modal.svelte';
     import HypaV3Progress from './lib/Others/HypaV3Progress.svelte';
@@ -48,7 +48,7 @@
     <!-- Main View: 화면 전체를 차지하는 뷰 (한 번에 하나만 표시) -->
     {#if aprilFools}
         <AprilFools onExit={() => aprilFools = false} />
-    {:else if !$loadedStore}
+    {:else if !AppState.loaded}
         <div class="w-full h-full flex justify-center items-center text-textcolor text-xl bg-gray-900 flex-col">
             <div class="flex flex-row items-center">
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-textcolor" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -58,15 +58,15 @@
                 <span>Loading...</span>
             </div>
 
-            <span class="text-sm mt-2 text-textcolor2">{LoadingStatusState.text}</span>
+            <span class="text-sm mt-2 text-textcolor2">{AppState.loadingText}</span>
         </div>
-    {:else if $CustomGUISettingMenuStore}
+    {:else if SettingsState.customGUIOpen}
         <CustomGUISettingMenu />
     {:else if !didFirstSetup}
         <WelcomeRisu />
-    {:else if $settingsOpen}
+    {:else if SettingsState.isOpen}
         <Settings />
-    {:else if $MobileGUI}
+    {:else if MobileState.enabled}
         <div class="w-full h-full flex flex-col">
             <MobileHeader />
             <MobileBody />
@@ -77,27 +77,27 @@
     {/if}
 
     <!-- Overlays: 메인 뷰 위에 표시되는 모달/팝업 -->
-    {#if $alertStore.type !== 'none'}
+    {#if ModalState.alert.type !== 'none'}
         <AlertComp />
     {/if}
     <SyncProgress />
     {#if $showRealmInfoStore}
         <RealmPopUp bind:openedData={$showRealmInfoStore} />
     {/if}
-    {#if $ShowRealmFrameStore}
+    {#if RealmState.frameContent}
         <RealmFrame />
     {/if}
-    {#if $openPresetList}
-        <Botpreset close={() => {$openPresetList = false}} />
+    {#if ModalState.presetListOpen}
+        <Botpreset close={() => {ModalState.presetListOpen = false}} />
     {/if}
-    {#if $openPersonaList}
-        <ListedPersona close={() => {$openPersonaList = false}} />
+    {#if ModalState.personaListOpen}
+        <ListedPersona close={() => {ModalState.personaListOpen = false}} />
     {/if}
-    {#if $hypaV3ModalOpen}
+    {#if ModalState.hypaV3.modalOpen}
         <HypaV3Modal />
     {/if}
     <SavePopupIconComp />
-    {#if $hypaV3ProgressStore.open}
+    {#if ModalState.hypaV3.progress.open}
         <HypaV3Progress />
     {/if}
 </main>

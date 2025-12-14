@@ -3,7 +3,7 @@
   import { ChevronUpIcon, ChevronDownIcon } from "lucide-svelte";
   import { type SerializableSummary } from "src/ts/process/memory/hypav3";
   import { alertNormalWait } from "src/ts/utils/alert";
-  import { DBState, selectedCharID } from "src/ts/stores.svelte";
+  import { DBState, ChatState } from "src/ts/stores.svelte";
   import { language } from "src/lang";
   import ModalHeader from "./HypaV3Modal/modal-header.svelte";
   import ModalSummaryItem from "./HypaV3Modal/modal-summary-item.svelte";
@@ -16,8 +16,8 @@
   } from "./HypaV3Modal/types";
 
   const hypaV3Data = $derived(
-    DBState.db.characters[$selectedCharID].chats[
-      DBState.db.characters[$selectedCharID].chatPage
+    DBState.db.characters[ChatState.selectedCharId].chats[
+      DBState.db.characters[ChatState.selectedCharId].chatPage
     ].hypaV3Data
   );
 
@@ -37,8 +37,8 @@
     filterSelected;
 
     untrack(() => {
-      DBState.db.characters[$selectedCharID].chats[
-        DBState.db.characters[$selectedCharID].chatPage
+      DBState.db.characters[ChatState.selectedCharId].chats[
+        DBState.db.characters[ChatState.selectedCharId].chatPage
       ].hypaV3Data ??= {
         summaries: [],
       };
@@ -287,16 +287,16 @@
   }
 
   function isHypaV2ConversionPossible(): boolean {
-    const char = DBState.db.characters[$selectedCharID];
-    const chat = char.chats[DBState.db.characters[$selectedCharID].chatPage];
+    const char = DBState.db.characters[ChatState.selectedCharId];
+    const chat = char.chats[DBState.db.characters[ChatState.selectedCharId].chatPage];
 
     return chat.hypaV3Data?.summaries?.length === 0 && chat.hypaV2Data != null;
   }
 
   function convertHypaV2ToV3(): { success: boolean; error?: string } {
     try {
-      const char = DBState.db.characters[$selectedCharID];
-      const chat = char.chats[DBState.db.characters[$selectedCharID].chatPage];
+      const char = DBState.db.characters[ChatState.selectedCharId];
+      const chat = char.chats[DBState.db.characters[ChatState.selectedCharId].chatPage];
       const hypaV2Data = chat.hypaV2Data;
 
       if (chat.hypaV3Data?.summaries?.length > 0) {

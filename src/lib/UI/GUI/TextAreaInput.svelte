@@ -38,7 +38,7 @@
         hideAutoComplete()
     }}
 >
-    {#if !highlight || $disableHighlight}
+    {#if !highlight || RenderState.disableHighlight}
         <textarea
             class="w-full h-full bg-transparent focus-within:outline-none resize-none absolute top-0 left-0 z-50 overflow-y-auto"
             class:px-4={padding}
@@ -103,7 +103,7 @@
     import { isMobileUserAgent } from "src/ts/utils/env";
     import { sleep } from 'src/ts/utils/util';
     import { onDestroy, onMount } from 'svelte';
-    import { disableHighlight } from 'src/ts/stores.svelte';
+    import { RenderState } from 'src/ts/stores.svelte';
     interface Props {
         size?: 'xs'|'sm'|'md'|'lg'|'xl'|'default';
         autocomplete?: 'on'|'off';

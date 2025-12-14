@@ -1,10 +1,9 @@
 <script lang="ts">
     import { characterFormatUpdate, getCharImage, removeChar } from "../../ts/character/characters"
     import type { Database } from "../../ts/data/storage/types"
-    import { DBState } from "src/ts/stores.svelte"
+    import { DBState, ChatState } from "src/ts/stores.svelte"
     import BarIcon from "../SideBars/BarIcon.svelte"
     import { ArrowLeft, User, Users, Inspect, TrashIcon, Undo2Icon } from "lucide-svelte"
-    import { selectedCharID } from "../../ts/stores.svelte"
     import TextInput from "../UI/GUI/TextInput.svelte"
     import Button from "../UI/GUI/Button.svelte"
     import { language } from "src/lang"
@@ -21,7 +20,7 @@
 
     function changeChar(index = -1) {
         characterFormatUpdate(index)
-        selectedCharID.set(index)
+        ChatState.selectedCharId = index
         endGrid()
     }
 
@@ -132,7 +131,7 @@
                                     onClick={() => {
                                         changeChar(char.index)
                                     }}
-                                    additionalStyle={char.index === $selectedCharID ? "background:var(--risu-theme-selected)" : ""}
+                                    additionalStyle={char.index === ChatState.selectedCharId ? "background:var(--risu-theme-selected)" : ""}
                                 >
                                     {#if char.type === "group"}
                                         <Users />

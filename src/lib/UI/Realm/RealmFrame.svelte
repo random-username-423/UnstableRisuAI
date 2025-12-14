@@ -2,13 +2,12 @@
     import { alertMd } from "src/ts/utils/alert";
     import { shareRealmCardData } from "src/ts/realm";
     import { downloadPreset } from "src/ts/data/storage/utils/presetManager";
-    import { DBState } from 'src/ts/stores.svelte';
-    import { selectedCharID, ShowRealmFrameStore } from "src/ts/stores.svelte";
+    import { DBState, RealmState, ChatState } from 'src/ts/stores.svelte';
     import { sleep } from "src/ts/utils/util";
     import { onDestroy, onMount } from "svelte";
 
     const close =  () => {
-        $ShowRealmFrameStore = ''
+        RealmState.frameContent = ''
     }
     let iframe: HTMLIFrameElement = $state(null)
     const tk = DBState.db?.account?.token;
@@ -28,12 +27,12 @@
         }
         if(e.data.type === 'success'){
             alertMd(`## Upload Success\n\nYour character has been uploaded to Realm successfully.\n\n${"```\nhttps://realm.risuai.net/character/" +  e.data.id + "\n```"}`)
-            if($ShowRealmFrameStore.startsWith('preset') || $ShowRealmFrameStore.startsWith('module')){
+            if(RealmState.frameContent.startsWith('preset') || RealmState.frameContent.startsWith('module')){
                 //TODO, add preset edit
             }
-            else if(DBState.db.characters[$selectedCharID].type === 'character'){
+            else if(DBState.db.characters[ChatState.selectedCharId].type === 'character'){
                 loadingStage = 0
-                DBState.db.characters[$selectedCharID].realmId = e.data.id
+                DBState.db.characters[ChatState.selectedCharId].realmId = e.data.id
             }
             close()
         }
@@ -58,8 +57,8 @@
             name: ArrayBuffer
         }
         
-        if($ShowRealmFrameStore.startsWith('preset')){
-            const predata = await downloadPreset(Number($ShowRealmFrameStore.split(':')[1]), 'return')
+        if(RealmState.frameContent.startsWith('preset')){
+            const predata = await downloadPreset(Number(RealmState.frameContent.split(':')[1]), 'return')
             const encodedPredata = predata.buf
             const encodedPredataName = new TextEncoder().encode(predata.data.name + '.risup')
             data = {
@@ -67,8 +66,8 @@
                 name: encodedPredataName.buffer as ArrayBuffer
             }
         }
-        else if($ShowRealmFrameStore.startsWith('module')){
-            const predata = DBState.db.modules[Number($ShowRealmFrameStore.split(':')[1])]
+        else if(RealmState.frameContent.startsWith('module')){
+            const predata = DBState.db.modules[Number(RealmState.frameContent.split(':')[1])]
             const encodedPredata = new TextEncoder().encode(JSON.stringify({ ...predata, type: 'risuModule' }))
             const encodedPredataName = new TextEncoder().encode(predata.name + '.json')
             data = {
@@ -92,11 +91,11 @@
 
     const getUrl = () => {
         let url = tk ? `https://realm.risuai.net/upload?token=${tk}&token_id=${id}` : 'https://realm.risuai.net/upload'
-        if($ShowRealmFrameStore.startsWith('preset') || $ShowRealmFrameStore.startsWith('module')){
+        if(RealmState.frameContent.startsWith('preset') || RealmState.frameContent.startsWith('module')){
             //TODO, add preset edit
         }
-        else if(DBState.db.characters[$selectedCharID].type === 'character' && DBState.db.characters[$selectedCharID].realmId){
-            url += `&edit=${DBState.db.characters[$selectedCharID].realmId}&edit-type=normal`
+        else if(DBState.db.characters[ChatState.selectedCharId].type === 'character' && DBState.db.characters[ChatState.selectedCharId].realmId){
+            url += `&edit=${DBState.db.characters[ChatState.selectedCharId].realmId}&edit-type=normal`
         }
         url += '#noLayout'
         return url

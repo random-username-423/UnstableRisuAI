@@ -1,15 +1,11 @@
 <script lang="ts">
     import {
-        CharEmotion,
-        DynamicGUI,
-        botMakerMode,
-        selectedCharID,
-        settingsOpen,
-        sideBarClosing,
-        sideBarStore,
-        OpenRealmStore,
-        PlaygroundStore,
+        ChatState,
+        LayoutState,
+        SettingsState,
+        RealmState,
         QuickSettings,
+        AppState,
     } from "../../ts/stores.svelte"
     import { setDatabase } from "../../ts/data/storage/database.svelte"
     import type { folder } from "../../ts/data/storage/types"
@@ -24,7 +20,6 @@
     import { isEqual } from "lodash"
     import SidebarAvatar from "./SidebarAvatar.svelte"
     import BaseRoundedButton from "../UI/BaseRoundedButton.svelte"
-    import { get } from "svelte/store"
     import { getCharacterIndexObject, selectSingleFile } from "src/ts/utils/util"
     import { v4 } from "uuid"
     import { getFileSrc, saveAsset } from "src/ts/utils/fileIO"
@@ -44,8 +39,8 @@
         menuMode = 0
         sideBarMode = 0
         editMode = false
-        settingsOpen.set(false)
-        CharEmotion.set({})
+        SettingsState.isOpen = false
+        ChatState.emotions = {}
     }
 
     type sortTypeNormal = { type: "normal"; img: string; index: number; name: string }
@@ -61,7 +56,7 @@
 
     let { openGrid = () => {}, hidden = false }: Props = $props()
 
-    sideBarClosing.set(false)
+    LayoutState.sidebar.isClosing = false
 
     $effect(() => {
         let newCharImages: sortType[] = []
@@ -277,19 +272,19 @@
     <div
         class="h-full w-20 min-w-20 flex-col items-center bg-bgcolor text-textcolor shadow-lg relative rs-sidebar"
         class:editMode
-        class:risu-sub-sidebar={$sideBarClosing}
-        class:risu-sub-sidebar-close={$sideBarClosing}
+        class:risu-sub-sidebar={LayoutState.sidebar.isClosing}
+        class:risu-sub-sidebar-close={LayoutState.sidebar.isClosing}
         class:hidden
         class:flex={!hidden}
     >
         <button
             class="flex items-center justify-center py-2 flex-col gap-1 w-full mt-4"
-            class:text-textcolor2={!($selectedCharID < 0 && $PlaygroundStore === 0 && !$settingsOpen)}
+            class:text-textcolor2={!(ChatState.selectedCharId < 0 && AppState.playground === 0 && !SettingsState.isOpen)}
             onclick={() => {
                 reseter()
-                selectedCharID.set(-1)
-                PlaygroundStore.set(0)
-                OpenRealmStore.set(false)
+                ChatState.selectedCharId = -1
+                AppState.playground = 0
+                RealmState.isOpen = false
             }}
         >
             <HomeIcon />
@@ -297,14 +292,14 @@
         </button>
         <button
             class="flex items-center justify-center py-2 flex-col gap-1 w-full"
-            class:text-textcolor2={!$settingsOpen}
+            class:text-textcolor2={!SettingsState.isOpen}
             onclick={() => {
-                if ($settingsOpen) {
+                if (SettingsState.isOpen) {
                     reseter()
-                    settingsOpen.set(false)
+                    SettingsState.isOpen = false
                 } else {
                     reseter()
-                    settingsOpen.set(true)
+                    SettingsState.isOpen = true
                 }
             }}
         >
@@ -313,7 +308,7 @@
         </button>
         <button
             class="flex items-center justify-center py-2 flex-col gap-1 w-full"
-            class:text-textcolor2={!($selectedCharID >= 0)}
+            class:text-textcolor2={!(ChatState.selectedCharId >= 0)}
             onclick={() => {
                 reseter()
                 openGrid()
@@ -324,11 +319,11 @@
         </button>
         <button
             class="flex items-center justify-center py-2 flex-col gap-1 w-full"
-            class:text-textcolor2={!($selectedCharID < 0 && $PlaygroundStore !== 0)}
+            class:text-textcolor2={!(ChatState.selectedCharId < 0 && AppState.playground !== 0)}
             onclick={() => {
                 reseter()
-                selectedCharID.set(-1)
-                PlaygroundStore.set(1)
+                ChatState.selectedCharId = -1
+                AppState.playground = 1
             }}
         >
             <ShellIcon />
@@ -339,8 +334,8 @@
     <div
         class="h-full w-20 min-w-20 flex-col items-center bg-bgcolor text-textcolor shadow-lg relative rs-sidebar"
         class:editMode
-        class:risu-sub-sidebar={$sideBarClosing}
-        class:risu-sub-sidebar-close={$sideBarClosing}
+        class:risu-sub-sidebar={LayoutState.sidebar.isClosing}
+        class:risu-sub-sidebar-close={LayoutState.sidebar.isClosing}
         class:hidden
         class:flex={!hidden}
     >
@@ -356,12 +351,12 @@
                 <div class="absolute w-20 min-w-20 flex border-b-selected border-b bg-bgcolor flex-col items-center pt-2 rounded-b-md z-20 pb-2">
                     <BarIcon
                         onClick={() => {
-                            if ($settingsOpen) {
+                            if (SettingsState.isOpen) {
                                 reseter()
-                                settingsOpen.set(false)
+                                SettingsState.isOpen = false
                             } else {
                                 reseter()
-                                settingsOpen.set(true)
+                                SettingsState.isOpen = true
                             }
                         }}><Settings /></BarIcon
                     >
@@ -369,21 +364,21 @@
                     <BarIcon
                         onClick={() => {
                             reseter()
-                            selectedCharID.set(-1)
-                            PlaygroundStore.set(0)
-                            OpenRealmStore.set(false)
+                            ChatState.selectedCharId = -1
+                            AppState.playground = 0
+                            RealmState.isOpen = false
                         }}><HomeIcon /></BarIcon
                     >
                     <div class="mt-2"></div>
                     <BarIcon
                         onClick={() => {
                             reseter()
-                            if ($selectedCharID === -1 && $PlaygroundStore !== 0) {
-                                PlaygroundStore.set(0)
+                            if (ChatState.selectedCharId === -1 && AppState.playground !== 0) {
+                                AppState.playground = 0
                                 return
                             }
-                            selectedCharID.set(-1)
-                            PlaygroundStore.set(1)
+                            ChatState.selectedCharId = -1
+                            AppState.playground = 1
                         }}><ShellIcon /></BarIcon
                     >
                     <div class="mt-2"></div>
@@ -432,7 +427,7 @@
                     }}
                     ondragenter={preventAll}
                 >
-                    <SidebarIndicator isActive={char.type === "normal" && $selectedCharID === char.index && sideBarMode !== 1} />
+                    <SidebarIndicator isActive={char.type === "normal" && ChatState.selectedCharId === char.index && sideBarMode !== 1} />
                     <div
                         role="button"
                         tabindex="0"
@@ -612,7 +607,7 @@
                                     }}
                                     ondragenter={preventAll}
                                 >
-                                    <SidebarIndicator isActive={$selectedCharID === char2.index && sideBarMode !== 1} />
+                                    <SidebarIndicator isActive={ChatState.selectedCharId === char2.index && sideBarMode !== 1} />
                                     <div
                                         role="button"
                                         tabindex="0"
@@ -706,42 +701,42 @@
 {/if}
 <div
     class="setting-area h-full flex-col overflow-x-hidden bg-darkbg py-6 text-textcolor max-h-full"
-    class:risu-sidebar={!$sideBarClosing}
+    class:risu-sidebar={!LayoutState.sidebar.isClosing}
     class:w-96={$sideBarSize === 0}
     class:w-110={$sideBarSize === 1}
     class:w-124={$sideBarSize === 2}
     class:w-138={$sideBarSize === 3}
-    class:risu-sidebar-close={$sideBarClosing}
-    class:min-w-96={!$DynamicGUI && $sideBarSize === 0}
-    class:min-w-110={!$DynamicGUI && $sideBarSize === 1}
-    class:min-w-124={!$DynamicGUI && $sideBarSize === 2}
-    class:min-w-138={!$DynamicGUI && $sideBarSize === 3}
-    class:px-2={$DynamicGUI}
-    class:px-4={!$DynamicGUI}
-    class:dynamic-sidebar={$DynamicGUI}
+    class:risu-sidebar-close={LayoutState.sidebar.isClosing}
+    class:min-w-96={!LayoutState.isDynamicMode && $sideBarSize === 0}
+    class:min-w-110={!LayoutState.isDynamicMode && $sideBarSize === 1}
+    class:min-w-124={!LayoutState.isDynamicMode && $sideBarSize === 2}
+    class:min-w-138={!LayoutState.isDynamicMode && $sideBarSize === 3}
+    class:px-2={LayoutState.isDynamicMode}
+    class:px-4={!LayoutState.isDynamicMode}
+    class:dynamic-sidebar={LayoutState.isDynamicMode}
     class:hidden
     class:flex={!hidden}
     onanimationend={() => {
-        if ($sideBarClosing) {
-            $sideBarClosing = false
-            sideBarStore.set(false)
+        if (LayoutState.sidebar.isClosing) {
+            LayoutState.sidebar.isClosing = false
+            LayoutState.sidebar.isOpen = false
         }
     }}
 >
     <button
         class="flex w-full justify-end text-textcolor"
         onclick={async () => {
-            if ($sideBarClosing) {
+            if (LayoutState.sidebar.isClosing) {
                 return
             }
-            $sideBarClosing = true
+            LayoutState.sidebar.isClosing = true
         }}
     >
         <!-- <button class="border-none bg-transparent p-0 text-textcolor"><X /></button> -->
     </button>
     <div class="flex flex-col flex-grow min-h-0" class:hidden={sideBarMode !== 0}>
         <!-- Welcome message -->
-        <div class:hidden={!($selectedCharID < 0 || $settingsOpen)}>
+        <div class:hidden={!(ChatState.selectedCharId < 0 || SettingsState.isOpen)}>
             <div>
                 <h1 class="text-xl">Welcome to UnstableRisuAI!</h1>
                 <span class="text-xs text-textcolor2">Select a bot to start chatting</span>
@@ -750,17 +745,17 @@
         <!-- Playground -->
         <div
             class="flex flex-col flex-grow min-h-0"
-            class:hidden={$selectedCharID < 0 || $settingsOpen || DBState.db.characters[$selectedCharID]?.chaId !== "§playground"}
+            class:hidden={ChatState.selectedCharId < 0 || SettingsState.isOpen || DBState.db.characters[ChatState.selectedCharId]?.chaId !== "§playground"}
         >
-            {#if $selectedCharID >= 0 && DBState.db.characters[$selectedCharID]?.chaId === "§playground"}
-                <SideChatList bind:chara={DBState.db.characters[$selectedCharID]} />
+            {#if ChatState.selectedCharId >= 0 && DBState.db.characters[ChatState.selectedCharId]?.chaId === "§playground"}
+                <SideChatList bind:chara={DBState.db.characters[ChatState.selectedCharId]} />
             {/if}
         </div>
         <!-- Connection Open -->
         <div
-            class:hidden={$selectedCharID < 0 ||
-                $settingsOpen ||
-                DBState.db.characters[$selectedCharID]?.chaId === "§playground" ||
+            class:hidden={ChatState.selectedCharId < 0 ||
+                SettingsState.isOpen ||
+                DBState.db.characters[ChatState.selectedCharId]?.chaId === "§playground" ||
                 !$ConnectionOpenStore}
         >
             <div class="flex flex-col">
@@ -782,27 +777,27 @@
         <!-- Main chat/character panel -->
         <div
             class="flex flex-col flex-grow min-h-0"
-            class:hidden={$selectedCharID < 0 ||
-                $settingsOpen ||
-                DBState.db.characters[$selectedCharID]?.chaId === "§playground" ||
+            class:hidden={ChatState.selectedCharId < 0 ||
+                SettingsState.isOpen ||
+                DBState.db.characters[ChatState.selectedCharId]?.chaId === "§playground" ||
                 $ConnectionOpenStore}
         >
             <div class="w-full h-8 min-h-8 border-l border-b border-r border-selected relative bottom-6 rounded-b-md flex">
                 <button
                     onclick={() => {
                         devTool = false
-                        botMakerMode.set(false)
+                        SettingsState.botMakerMode = false
                     }}
                     class="flex-grow border-r border-r-selected rounded-bl-md"
-                    class:text-textcolor2={$botMakerMode || devTool}>{language.Chat}</button
+                    class:text-textcolor2={SettingsState.botMakerMode || devTool}>{language.Chat}</button
                 >
                 <button
                     onclick={() => {
                         devTool = false
-                        botMakerMode.set(true)
+                        SettingsState.botMakerMode = true
                     }}
                     class="flex-grow rounded-br-md"
-                    class:text-textcolor2={!$botMakerMode || devTool}>{language.character}</button
+                    class:text-textcolor2={!SettingsState.botMakerMode || devTool}>{language.character}</button
                 >
                 {#if DBState.db.enableDevTools}
                     <button
@@ -822,39 +817,39 @@
             <div class:hidden={QuickSettings.open || !devTool}>
                 <DevTool />
             </div>
-            <div class:hidden={QuickSettings.open || devTool || !$botMakerMode}>
-                {#if $selectedCharID >= 0 && DBState.db.characters[$selectedCharID]}
+            <div class:hidden={QuickSettings.open || devTool || !SettingsState.botMakerMode}>
+                {#if ChatState.selectedCharId >= 0 && DBState.db.characters[ChatState.selectedCharId]}
                     <CharConfig />
                 {/if}
             </div>
-            <div class="flex-grow min-h-0 flex flex-col" class:hidden={QuickSettings.open || devTool || $botMakerMode}>
-                {#if $selectedCharID >= 0 && DBState.db.characters[$selectedCharID]}
-                    <SideChatList bind:chara={DBState.db.characters[$selectedCharID]} />
+            <div class="flex-grow min-h-0 flex flex-col" class:hidden={QuickSettings.open || devTool || SettingsState.botMakerMode}>
+                {#if ChatState.selectedCharId >= 0 && DBState.db.characters[ChatState.selectedCharId]}
+                    <SideChatList bind:chara={DBState.db.characters[ChatState.selectedCharId]} />
                 {/if}
             </div>
         </div>
     </div>
 </div>
 
-{#if $DynamicGUI}
+{#if LayoutState.isDynamicMode}
     <div
         role="button"
         tabindex="0"
         class="flex-grow h-full min-w-12"
         class:hidden
         onclick={() => {
-            if ($sideBarClosing) {
+            if (LayoutState.sidebar.isClosing) {
                 return
             }
-            $sideBarClosing = true
+            LayoutState.sidebar.isClosing = true
         }}
         onkeydown={(e) => {
             if (e.key === "Enter") {
                 e.currentTarget.click()
             }
         }}
-        class:sidebar-dark-animation={!$sideBarClosing}
-        class:sidebar-dark-close-animation={$sideBarClosing}
+        class:sidebar-dark-animation={!LayoutState.sidebar.isClosing}
+        class:sidebar-dark-close-animation={LayoutState.sidebar.isClosing}
     ></div>
 {/if}
 

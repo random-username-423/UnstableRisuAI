@@ -1,7 +1,7 @@
-import { get, writable, type Writable } from "svelte/store"
+import { writable, type Writable } from "svelte/store"
 import type { Database, Message } from "../data/storage/types"
 import { getDatabase } from "../data/storage/database.svelte"
-import { selectedCharID } from "../stores.svelte"
+import { ChatState } from "../stores.svelte"
 import { open } from '@tauri-apps/plugin-dialog'
 import { open as openShell } from '@tauri-apps/plugin-shell'
 import { readFile } from "@tauri-apps/plugin-fs"
@@ -114,7 +114,7 @@ export async function selectMultipleFile(ext: string[]) {
 
 export const replacePlaceholders = (msg: string, name: string) => {
     const db = getDatabase()
-    const selectedChar = get(selectedCharID)
+    const selectedChar = ChatState.selectedCharId
     const currentChar = db.characters[selectedChar]
     return msg.replace(/({{char}})|({{Char}})|(<Char>)|(<char>)/gi, currentChar.name)
         .replace(/({{user}})|({{User}})|(<User>)|(<user>)/gi, getUserName())
@@ -124,7 +124,7 @@ export const replacePlaceholders = (msg: string, name: string) => {
 function checkPersonaBinded() {
     try {
         const db = getDatabase()
-        const selectedChar = get(selectedCharID)
+        const selectedChar = ChatState.selectedCharId
         const character = db.characters[selectedChar]
         const chat = character.chats[character.chatPage]
         if (!chat.bindedPersona) {
@@ -311,7 +311,7 @@ export function defaultEmotion(em: [string, string][]) {
 }
 
 export async function getEmotion(db: Database, chaEmotion: { [key: string]: [string, string, number][] }, type: 'contain' | 'plain' | 'css') {
-    const selectedChar = get(selectedCharID)
+    const selectedChar = ChatState.selectedCharId
     const currentDat = db.characters[selectedChar]
     if (!currentDat) {
         return []

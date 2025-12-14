@@ -5,7 +5,7 @@ import { alertAddCharacter, alertConfirm, alertError, alertNormal, alertSelect, 
 import { language } from "../../lang";
 import { checkNullish, findCharacterbyId, getUserName, selectMultipleFile, selectSingleFile, sleep } from '../utils/util';
 import { v4 as uuidv4, v4 } from 'uuid';
-import { MobileGUIStack, OpenRealmStore, selectedCharID } from "../stores.svelte";
+import { MobileState, RealmState, ChatState } from "../stores.svelte";
 import { requiresFullEncoderReload } from "src/ts/data/storage/autoSaveManager.svelte";
 import { loadChat } from "src/ts/data/storage/chatStorage";
 import { downloadFile, getFileSrc } from "../utils/fileIO";
@@ -201,7 +201,7 @@ export async function exportChat(page:number){
         const mode = await alertSelect(['Export as JSON', "Export as TXT", "Export as HTML File", "Export as HTML Embed"])
         const doTranslate = (mode === '2' || mode === '3') ? (await alertSelect([language.translateContent, language.doNotTranslate])) === '0' : false
         const anonymous = (mode === '2' || mode === '3') ? ((await alertSelect([language.includePersonaName, language.hidePersonaName])) === '1') : false
-        const selectedID = get(selectedCharID)
+        const selectedID = ChatState.selectedCharId
         const db = getDatabase()
         const chat = db.characters[selectedID].chats[page]
         const char = db.characters[selectedID]
@@ -380,7 +380,7 @@ export async function importChat(){
         return
     }
     try {
-        const selectedID = get(selectedCharID)
+        const selectedID = ChatState.selectedCharId
         const db = getDatabase()
 
         if(dat.name.endsWith('jsonl')){
@@ -429,7 +429,7 @@ export async function importChat(){
             if((json.type === 'risuAllChats' || json.type === 'risuChat') && json.ver === 2){
                 const folders = json.folders || []
                 const chats = Array.isArray(json.data) ? json.data : [json.data]
-                const selectedID = get(selectedCharID)
+                const selectedID = ChatState.selectedCharId
                 const db = getDatabase()
                 const folderIdMap = {}
                 folders.forEach(folder => {
@@ -517,7 +517,7 @@ export async function importChat(){
 
 export async function exportAllChats() {
     try {
-        const selectedID = get(selectedCharID)
+        const selectedID = ChatState.selectedCharId
         const db = getDatabase()
         const char = db.characters[selectedID]
         const date = new Date().toISOString().replace(/[:.]/g, "-")
@@ -733,7 +733,7 @@ export async function makeGroupImage() {
             msg: `Loading..`
         })
         const db = getDatabase()
-        const charID = get(selectedCharID)
+        const charID = ChatState.selectedCharId
         const group = db.characters[charID]
         if(group.type !== 'group'){
             return
@@ -837,19 +837,19 @@ export async function removeChar(index:number,name:string, type:'normal'|'perman
     db.characters = chars
     requiresFullEncoderReload.state = true
     setDatabase(db)
-    selectedCharID.set(-1)
+    ChatState.selectedCharId = -1
 }
 
 export async function addCharacter(arg:{
     reseter?:()=>any,
 } = {}){
-    MobileGUIStack.set(100)
+    MobileState.currentStack = 100
     const reseter = arg.reseter ?? (() => {})
     const r = await alertAddCharacter()
     if(r === 'importFromRealm'){
-        selectedCharID.set(-1)
-        OpenRealmStore.set(true)
-        MobileGUIStack.set(0)
+        ChatState.selectedCharId = -1
+        RealmState.isOpen = true
+        MobileState.currentStack = 0
         return
     }
     reseter();
@@ -864,14 +864,14 @@ export async function addCharacter(arg:{
             await importCharacter()
             break
         default:
-            MobileGUIStack.set(1)
+            MobileState.currentStack = 1
             return
     }
     const db = getDatabase()
     if(db.characters[db.characters.length-1]){
         changeChar(db.characters.length-1)
     }
-    MobileGUIStack.set(1)
+    MobileState.currentStack = 1
 }
 
 export function changeChar(index: number, arg:{
@@ -885,7 +885,7 @@ export function changeChar(index: number, arg:{
     characterFormatUpdate(index, {
       updateInteraction: true,
     });
-    selectedCharID.set(index);
+    ChatState.selectedCharId = index;
 
     // Load current chat (lazy loading)
     const db = getDatabase()

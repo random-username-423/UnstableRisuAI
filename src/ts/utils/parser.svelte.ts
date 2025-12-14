@@ -7,9 +7,8 @@ import { DBState } from '../stores.svelte';
 import { getFileSrc } from './fileIO';
 import { isTauri, isNodeServer, isMobileUserAgent, isMobileTauri } from "src/ts/utils/env";
 import { processScriptFull } from 'src/ts/process/scripting/scripts';
-import { get } from 'svelte/store';
 import css, { type CssAtRuleAST } from '@adobe/css-tools'
-import { SizeStore, selectedCharID } from '../stores.svelte';
+import { ChatState } from '../stores.svelte';
 import { calcString } from 'src/ts/process/scripting/infunctions';
 import { findCharacterbyId, getPersonaPrompt, getUserIcon, getUserName, parseKeyValue, pickHashRand, replaceAsync} from './util';
 import { getInlayAsset, getInlayAssetBlob } from '../process/files/inlays';
@@ -937,7 +936,7 @@ function initMatcher(){
         getModuleLorebooks: getModuleLorebooks,
         pickHashRand: pickHashRand,
         getSelectedCharID: () => {
-            return get(selectedCharID)
+            return ChatState.selectedCharId
         },
         getModelInfo: getModelInfo,
         callInternalFunction: function (args: string[]): string {
@@ -1027,7 +1026,7 @@ const smMatcher = (p1:string,matcherArg:matcherArg) => {
             if(matcherArg.consistantChar){
                 return 'botname'
             }
-            const selectedChar = get(selectedCharID)
+            const selectedChar = ChatState.selectedCharId
             const currentChar = db.characters[selectedChar]
             if(currentChar && currentChar.type !== 'group'){
                 return currentChar.nickname || currentChar.name
@@ -1519,7 +1518,7 @@ export function risuChatParser(da:string, arg:{
     }
     if(arg.tokenizeAccurate){
         const db = arg.db ?? DBState.db
-        const selchar = chara ?? db.characters[get(selectedCharID)]
+        const selchar = chara ?? db.characters[ChatState.selectedCharId]
         if(!selchar){
             chara = 'bot'
         }
@@ -1749,7 +1748,7 @@ export function risuChatParser(da:string, arg:{
 
 
 export function getChatVar(key:string){
-    const selectedChar = get(selectedCharID)
+    const selectedChar = ChatState.selectedCharId
     const char = DBState.db.characters[selectedChar]
     if(!char){
         return 'null'
@@ -1779,7 +1778,7 @@ export function setGlobalChatVar(key:string, value:string){
 }
 
 export function setChatVar(key:string, value:string){
-    const selectedChar = get(selectedCharID)
+    const selectedChar = ChatState.selectedCharId
     if(!DBState.db.characters[selectedChar].chats[DBState.db.characters[selectedChar].chatPage].scriptstate){
         DBState.db.characters[selectedChar].chats[DBState.db.characters[selectedChar].chatPage].scriptstate = {}
     }

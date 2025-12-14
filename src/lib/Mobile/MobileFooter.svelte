@@ -2,26 +2,26 @@
 
   import { SettingsIcon, GlobeIcon, HomeIcon, MessageSquare, Volume2Icon, CurlyBraces, ActivityIcon, BookIcon, SmileIcon, UserIcon } from "lucide-svelte";
   import { language } from "src/lang";
-  import { CharConfigSubMenu, MobileGUIStack, MobileSideBar, selectedCharID } from "src/ts/stores.svelte";
+  import { ChatState, MobileState } from "src/ts/stores.svelte";
 
 </script>
-{#if $selectedCharID === -1}
+{#if ChatState.selectedCharId === -1}
 
     <div class="w-full p-4 text-lg border-t border-t-darkborderc bg-darkbg flex items-center justify-center text-textcolor2">
-        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={$MobileGUIStack === 0} onclick={() => {
-            MobileGUIStack.set(0)
+        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={MobileState.currentStack === 0} onclick={() => {
+            MobileState.currentStack = 0
         }}>
             <GlobeIcon size={24} />
             <span class="text-xs">RisuRealm</span>
         </button>
-        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={$MobileGUIStack === 1} onclick={() => {
-            MobileGUIStack.set(1)
+        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={MobileState.currentStack === 1} onclick={() => {
+            MobileState.currentStack = 1
         }}>
             <HomeIcon size={24} />
             <span class="text-xs">{language.character}</span>
         </button>
-        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={$MobileGUIStack === 2} onclick={() => {
-            MobileGUIStack.set(2)
+        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={MobileState.currentStack === 2} onclick={() => {
+            MobileState.currentStack = 2
         }}>
             <SettingsIcon size={24} />
             <span class="text-xs">{language.settings}</span>
@@ -30,40 +30,40 @@
 
 {/if}
 
-{#if $selectedCharID !== -1 && $MobileSideBar === 2}
+{#if ChatState.selectedCharId !== -1 && MobileState.sideBarMenu === 2}
     <div class="w-full p-4 text-lg border-t border-t-darkborderc bg-darkbg flex items-center justify-center text-textcolor2 truncate">
-        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={$CharConfigSubMenu === 0} onclick={() => {
-            CharConfigSubMenu.set(0)
+        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={ChatState.configSubMenu === 0} onclick={() => {
+            ChatState.configSubMenu = 0
         }}>
             <UserIcon size={24} />
             <span class="text-xs truncate max-w-16">{language.basicInfo}</span>
         </button>
-        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={$CharConfigSubMenu === 1} onclick={() => {
-            CharConfigSubMenu.set(1)
+        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={ChatState.configSubMenu === 1} onclick={() => {
+            ChatState.configSubMenu = 1
         }}>
             <SmileIcon size={24} />
             <span class="text-xs truncate max-w-16">{language.characterDisplay}</span>
         </button>
-        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={$CharConfigSubMenu === 3} onclick={() => {
-            CharConfigSubMenu.set(3)
+        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={ChatState.configSubMenu === 3} onclick={() => {
+            ChatState.configSubMenu = 3
         }}>
             <BookIcon size={24} />
             <span class="text-xs truncate max-w-16">{language.loreBook}</span>
         </button>
-        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={$CharConfigSubMenu === 5} onclick={() => {
-            CharConfigSubMenu.set(5)
+        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={ChatState.configSubMenu === 5} onclick={() => {
+            ChatState.configSubMenu = 5
         }}>
             <Volume2Icon size={24} />
             <span class="text-xs truncate max-w-16">TTS</span>
         </button>
-        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={$CharConfigSubMenu === 4} onclick={() => {
-            CharConfigSubMenu.set(4)
+        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={ChatState.configSubMenu === 4} onclick={() => {
+            ChatState.configSubMenu = 4
         }}>
             <CurlyBraces size={24} />
             <span class="text-xs truncate max-w-16">{language.scripts}</span>
         </button>
-        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={$CharConfigSubMenu === 2} onclick={() => {
-            CharConfigSubMenu.set(2)
+        <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={ChatState.configSubMenu === 2} onclick={() => {
+            ChatState.configSubMenu = 2
         }}>
             <ActivityIcon size={24} />
             <span class="text-xs truncate max-w-16">{language.advanced}</span>

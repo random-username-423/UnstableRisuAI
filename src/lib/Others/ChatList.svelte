@@ -3,8 +3,7 @@
     import { language } from "../../lang"
     import { v4 as uuidv4 } from "uuid"
 
-    import { DBState } from "src/ts/stores.svelte"
-    import { ReloadGUIPointer, selectedCharID } from "../../ts/stores.svelte"
+    import { DBState, RenderState, ChatState } from "src/ts/stores.svelte"
     import { DownloadIcon, EditIcon, HardDriveUploadIcon, PlusIcon, TrashIcon, XIcon } from "lucide-svelte"
     import { exportChat, importChat } from "../../ts/character/characters"
     import { findCharacterbyId } from "../../ts/utils/util"
@@ -28,25 +27,25 @@
                 </button>
             </div>
         </div>
-        {#each DBState.db.characters[$selectedCharID].chats as chat, i}
+        {#each DBState.db.characters[ChatState.selectedCharId].chats as chat, i}
             <button
                 onclick={async () => {
                     if (!editMode) {
-                        const char = DBState.db.characters[$selectedCharID]
+                        const char = DBState.db.characters[ChatState.selectedCharId]
                         const targetChat = char.chats[i]
                         // Load chat data before switching
                         if (targetChat && targetChat.message === undefined) {
                             await loadChat(char.chaId, targetChat.id)
                         }
-                        DBState.db.characters[$selectedCharID].chatPage = i
+                        DBState.db.characters[ChatState.selectedCharId].chatPage = i
                         close()
                     }
                 }}
                 class="flex items-center text-textcolor border-t-1 border-solid border-0 border-darkborderc p-2 cursor-pointer"
-                class:bg-selected={i === DBState.db.characters[$selectedCharID].chatPage}
+                class:bg-selected={i === DBState.db.characters[ChatState.selectedCharId].chatPage}
             >
                 {#if editMode}
-                    <TextInput bind:value={DBState.db.characters[$selectedCharID].chats[i].name} padding={false} />
+                    <TextInput bind:value={DBState.db.characters[ChatState.selectedCharId].chats[i].name} padding={false} />
                 {:else}
                     <span>{chat.name}</span>
                 {/if}
@@ -69,20 +68,20 @@
                         tabindex="0"
                         onclick={async (e) => {
                             e.stopPropagation()
-                            if (DBState.db.characters[$selectedCharID].chats.length === 1) {
+                            if (DBState.db.characters[ChatState.selectedCharId].chats.length === 1) {
                                 alertError(language.errors.onlyOneChat)
                                 return
                             }
                             const d = await alertConfirm(`${language.removeConfirm}${chat.name}`)
                             if (d) {
                                 // Get chat info before deletion for file cleanup
-                                const chaId = DBState.db.characters[$selectedCharID].chaId
+                                const chaId = DBState.db.characters[ChatState.selectedCharId].chaId
                                 const chatId = chat.id
 
-                                DBState.db.characters[$selectedCharID].chatPage = 0
-                                let chats = DBState.db.characters[$selectedCharID].chats
+                                DBState.db.characters[ChatState.selectedCharId].chatPage = 0
+                                let chats = DBState.db.characters[ChatState.selectedCharId].chats
                                 chats.splice(i, 1)
-                                DBState.db.characters[$selectedCharID].chats = chats
+                                DBState.db.characters[ChatState.selectedCharId].chats = chats
 
                                 // Delete the separate chat file if it exists (non-account mode)
                                 if (!forageStorage.isAccount && chaId && chatId) {
@@ -105,9 +104,9 @@
             <button
                 class="text-textcolor2 hover:text-green-500 cursor-pointer mr-1"
                 onclick={() => {
-                    const cha = DBState.db.characters[$selectedCharID]
-                    const len = DBState.db.characters[$selectedCharID].chats.length
-                    let chats = DBState.db.characters[$selectedCharID].chats
+                    const cha = DBState.db.characters[ChatState.selectedCharId]
+                    const len = DBState.db.characters[ChatState.selectedCharId].chats.length
+                    let chats = DBState.db.characters[ChatState.selectedCharId].chats
                     chats.unshift({
                         message: [],
                         note: "",
@@ -125,9 +124,9 @@
                             })
                         })
                     }
-                    DBState.db.characters[$selectedCharID].chats = chats
-                    $ReloadGUIPointer += 1
-                    DBState.db.characters[$selectedCharID].chatPage = len
+                    DBState.db.characters[ChatState.selectedCharId].chats = chats
+                    RenderState.guiReloadPointer += 1
+                    DBState.db.characters[ChatState.selectedCharId].chatPage = len
                     close()
                 }}
             >

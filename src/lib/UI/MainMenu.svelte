@@ -1,7 +1,6 @@
 <script lang="ts">
-    import { DBState } from 'src/ts/stores.svelte';
+    import { DBState, RealmState } from 'src/ts/stores.svelte';
     import Hub from "./Realm/RealmMain.svelte";
-    import { OpenRealmStore } from "src/ts/stores.svelte";
     import { ArrowLeft } from "lucide-svelte";
     import { getVersionString } from "src/ts/utils/env";
     import { openURL } from "src/ts/utils/util";
@@ -11,15 +10,15 @@
     import Title from "./Title.svelte";
 </script>
 <div class="h-full w-full flex flex-col overflow-y-auto items-center">
-    {#if !$OpenRealmStore}
+    {#if !RealmState.isOpen}
       <Title />
       <h3 class="text-textcolor2 mt-1">Version {getVersionString()}</h3>
     {/if}
     <div class="w-full flex p-4 flex-col text-textcolor max-w-4xl">
-      {#if !$OpenRealmStore}
+      {#if !RealmState.isOpen}
       <div class="mt-4 mb-4 w-full border-t border-t-selected"></div>
       <h1 class="text-2xl font-bold">Recently Uploaded<button class="text-base font-medium float-right p-1 bg-darkbg rounded-md hover:ring" onclick={() => {
-        $OpenRealmStore = true
+        RealmState.isOpen = true
       }}>Get More</button></h1>
           {#if !DBState.db.hideRealm}
             {#await getRisuHub({
@@ -32,7 +31,7 @@
               {@html hubAdditionalHTML}
               <div class="w-full flex gap-4 p-2 flex-wrap justify-center">
                   {#each charas as chara}
-                      <RisuHubIcon onClick={() => {$OpenRealmStore = true}} chara={chara} />
+                      <RisuHubIcon onClick={() => {RealmState.isOpen = true}} chara={chara} />
                   {/each}
               </div>
             {:else}
@@ -85,7 +84,7 @@
 
       {:else}
         <div class="flex items-center mt-4">
-          <button class="mr-2 text-textcolor2 hover:text-green-500" onclick={() => ($OpenRealmStore = false)}>
+          <button class="mr-2 text-textcolor2 hover:text-green-500" onclick={() => (RealmState.isOpen = false)}>
             <ArrowLeft/>
           </button>
         </div>

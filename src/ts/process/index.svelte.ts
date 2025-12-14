@@ -2,8 +2,7 @@ import { get, writable } from "svelte/store";
 import { type character, type MessageGenerationInfo, type Chat, type MessagePresetInfo } from "../data/storage/types";
 import { setCurrentChat } from "../data/storage/database.svelte";
 import { changeToPreset } from "../data/storage/utils/presetManager";
-import { DBState } from '../stores.svelte';
-import { selectedCharID } from "../stores.svelte";
+import { DBState, ChatState } from '../stores.svelte';
 import { ChatTokenizer, tokenize } from "../utils/tokenizer";
 import { language } from "../../lang";
 import { alertError, alertToast } from "../utils/alert";
@@ -196,7 +195,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
     }
 
     DBState.db.statics.messages += 1
-    const selectedChar = get(selectedCharID)
+    const selectedChar = ChatState.selectedCharId
     const nowChatroom = DBState.db.characters[selectedChar]
     nowChatroom.lastInteraction = Date.now()
     const selectedChat = nowChatroom.chatPage

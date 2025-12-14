@@ -1,8 +1,7 @@
 <script lang="ts">
     import { type loreBook } from "src/ts/data/storage/types";
-    import { DBState } from 'src/ts/stores.svelte';
+    import { DBState, ChatState } from 'src/ts/stores.svelte';
     import LoreBookData from "./LoreBookData.svelte";
-    import { selectedCharID } from "src/ts/stores.svelte";
     import Sortable from 'sortablejs/modular/sortable.core.esm.js';
     import { onDestroy, onMount, tick } from "svelte";
     import { sleep, sortableOptions } from "src/ts/utils/util";
@@ -44,19 +43,19 @@
         // 4. Calculate expected number of child elements
         let expectedElements = 0;
         if (externalLoreBooks) {
-            expectedElements = externalLoreBooks.filter(item => 
+            expectedElements = externalLoreBooks.filter(item =>
                 (!showFolder && !item.folder) || (showFolder === item.folder)
             ).length;
         } else if (submenu === 1) {
-            expectedElements = DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore.filter(item => 
+            expectedElements = DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].localLore.filter(item =>
                 (!showFolder && !item.folder) || (showFolder === item.folder)
             ).length;
         } else if (globalMode) {
-            expectedElements = DBState.db.loreBook[DBState.db.loreBookPage].data.filter(item => 
+            expectedElements = DBState.db.loreBook[DBState.db.loreBookPage].data.filter(item =>
                 (!showFolder && !item.folder) || (showFolder === item.folder)
             ).length;
         } else {
-            expectedElements = DBState.db.characters[$selectedCharID].globalLore.filter(item => 
+            expectedElements = DBState.db.characters[ChatState.selectedCharId].globalLore.filter(item =>
                 (!showFolder && !item.folder) || (showFolder === item.folder)
             ).length;
         }
@@ -176,13 +175,13 @@
                     currentArray = externalLoreBooks;
                 } else if (submenu === 1) {
                     // Use local chat lorebook
-                    currentArray = DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore;
+                    currentArray = DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].localLore;
                 } else if (globalMode) {
                     // Use global lorebook
                     currentArray = DBState.db.loreBook[DBState.db.loreBookPage].data;
                 } else {
                     // Use character global lorebook (default)
-                    currentArray = DBState.db.characters[$selectedCharID].globalLore;
+                    currentArray = DBState.db.characters[ChatState.selectedCharId].globalLore;
                 }
 
                 const sourceIdx = oldIndex; // Store SortableJS provided index
@@ -281,11 +280,11 @@
                     // Arrays passed as props must be modified internally to reflect in parent
                     externalLoreBooks.splice(0, externalLoreBooks.length, ...newArray);
                 } else if (submenu === 1) {
-                    DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore = newArray;
+                    DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].localLore = newArray;
                 } else if (globalMode) {
                     DBState.db.loreBook[DBState.db.loreBookPage].data = newArray;
                 } else {
-                    DBState.db.characters[$selectedCharID].globalLore = newArray;
+                    DBState.db.characters[ChatState.selectedCharId].globalLore = newArray;
                 }
                 
                 // ===== Stage 5: Force UI synchronization and SortableJS reinitialization =====
@@ -411,14 +410,14 @@
                 {/each}
             {/if}
         {:else if submenu === 0}
-            {@const visibleItems = DBState.db.characters[$selectedCharID].globalLore.filter(book => (!showFolder && !book.folder) || (showFolder === book.folder))}
+            {@const visibleItems = DBState.db.characters[ChatState.selectedCharId].globalLore.filter(book => (!showFolder && !book.folder) || (showFolder === book.folder))}
             {@const lastVisibleItem = visibleItems[visibleItems.length - 1]}
-            {#if DBState.db.characters[$selectedCharID].globalLore.length === 0}
+            {#if DBState.db.characters[ChatState.selectedCharId].globalLore.length === 0}
                 <span class="text-textcolor2">No Lorebook</span>
             {:else}
-                {#each DBState.db.characters[$selectedCharID].globalLore as book, i}
+                {#each DBState.db.characters[ChatState.selectedCharId].globalLore as book, i}
                     {#if (!showFolder && !book.folder) || (showFolder === book.folder)}
-                        <LoreBookData idgroup={idgroup} bind:value={DBState.db.characters[$selectedCharID].globalLore[i]} idx={i} 
+                        <LoreBookData idgroup={idgroup} bind:value={DBState.db.characters[ChatState.selectedCharId].globalLore[i]} idx={i} 
                         isOpen={openedRefs.has(book)}
                         openFolders={openFolders()}
                         isLastInContainer={book === lastVisibleItem}
@@ -429,9 +428,9 @@
                             else if(openedRefs.has(book) && book.folder){
                                 onClose(false, book)
                             }
-                            
-                            let lore  = DBState.db.characters[$selectedCharID].globalLore
-                            
+
+                            let lore  = DBState.db.characters[ChatState.selectedCharId].globalLore
+
                             // When deleting a folder, also delete all items that belong to that folder
                             if (book.mode === 'folder') {
                                 // Close items belonging to the folder if they are open
@@ -440,21 +439,21 @@
                                         onClose(true, item)
                                     }
                                 })
-                                
+
                                 // Filter out the folder and all items belonging to it
-                                lore = lore.filter(item => 
+                                lore = lore.filter(item =>
                                     item !== book && item.folder !== book.key
                                 )
                             } else {
                                 // Delete regular item
                                 lore.splice(i, 1)
                             }
-                            
-                            DBState.db.characters[$selectedCharID].globalLore = lore
-                        }} 
+
+                            DBState.db.characters[ChatState.selectedCharId].globalLore = lore
+                        }}
                         onOpen={(isDetail = true) => onOpen(isDetail, book)}
                         onClose={(isDetail = true) => onClose(isDetail, book)}
-                        lorePlus={lorePlus} bind:externalLoreBooks={DBState.db.characters[$selectedCharID].globalLore}/>
+                        lorePlus={lorePlus} bind:externalLoreBooks={DBState.db.characters[ChatState.selectedCharId].globalLore}/>
                     {:else}
                         <!-- Hidden marker for filtered items (for SortableJS) -->
                         <div data-risu-idx={i} data-risu-idgroup={idgroup} style="display: none;"></div>
@@ -462,14 +461,14 @@
                 {/each}
             {/if}
         {:else if submenu === 1}
-            {@const visibleItems = DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore.filter(book => (!showFolder && !book.folder) || (showFolder === book.folder))}
+            {@const visibleItems = DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].localLore.filter(book => (!showFolder && !book.folder) || (showFolder === book.folder))}
             {@const lastVisibleItem = visibleItems[visibleItems.length - 1]}
-            {#if DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore.length === 0}
+            {#if DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].localLore.length === 0}
                 <span class="text-textcolor2">No Lorebook</span>
             {:else}
-                {#each DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore as book, i}
+                {#each DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].localLore as book, i}
                     {#if (!showFolder && !book.folder) || (showFolder === book.folder)}
-                        <LoreBookData idgroup={idgroup} bind:value={DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore[i]} idx={i} 
+                        <LoreBookData idgroup={idgroup} bind:value={DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].localLore[i]} idx={i} 
                         isOpen={openedRefs.has(book)}
                         openFolders={openFolders()}
                         isLastInContainer={book === lastVisibleItem}
@@ -480,9 +479,9 @@
                             else if(openedRefs.has(book) && book.folder){
                                 onClose(false, book)
                             }
-                            
-                            let lore  = DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore
-                            
+
+                            let lore  = DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].localLore
+
                             // When deleting a folder, also delete all items that belong to that folder
                             if (book.mode === 'folder') {
                                 // Close items belonging to the folder if they are open
@@ -491,21 +490,21 @@
                                         onClose(true, item)
                                     }
                                 })
-                                
+
                                 // Filter out the folder and all items belonging to it
-                                lore = lore.filter(item => 
+                                lore = lore.filter(item =>
                                     item !== book && item.folder !== book.key
                                 )
                             } else {
                                 // Delete regular item
                                 lore.splice(i, 1)
                             }
-                            
-                            DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore = lore
-                        }} 
+
+                            DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].localLore = lore
+                        }}
                         onOpen={(isDetail = true) => onOpen(isDetail, book)}
                         onClose={(isDetail = true) => onClose(isDetail, book)}
-                        lorePlus={lorePlus} bind:externalLoreBooks={DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore}/>
+                        lorePlus={lorePlus} bind:externalLoreBooks={DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].localLore}/>
                     {:else}
                         <!-- Hidden marker for filtered items (for SortableJS) -->
                         <div data-risu-idx={i} data-risu-idgroup={idgroup} style="display: none;"></div>

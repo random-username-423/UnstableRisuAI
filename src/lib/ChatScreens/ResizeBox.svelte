@@ -1,10 +1,10 @@
 <script>
-    import { CharEmotion, ViewBoxsize } from '../../ts/stores.svelte';
+    import { ChatState, LayoutState } from '../../ts/stores.svelte';
     import { onMount } from 'svelte';
     import EmotionBox from './EmotionBox.svelte';
     import TransitionImage from './TransitionImage.svelte';
     import { getEmotion } from '../../ts/utils/util';
-    
+
     import { DBState } from 'src/ts/stores.svelte';
 
     let box = $state();
@@ -38,10 +38,8 @@
         const newWidth = Math.min(initialWidth + deltaX, window.innerWidth * 0.8);
         const newHeight = Math.min(initialHeight + deltaY, window.innerHeight * 0.8);
 
-        ViewBoxsize.set({
-            width: newWidth,
-            height: newHeight
-        })
+        LayoutState.viewBox.width = newWidth
+        LayoutState.viewBox.height = newHeight
     }
 
     onMount(() => {
@@ -84,9 +82,9 @@
     }
 </style>
 
-<div class="box bg-darkbg bg-opacity-70" bind:this="{box}" style="width: {$ViewBoxsize.width}px; height: {$ViewBoxsize.height}px;">
+<div class="box bg-darkbg bg-opacity-70" bind:this="{box}" style="width: {LayoutState.viewBox.width}px; height: {LayoutState.viewBox.height}px;">
     <!-- Your content here -->
-    <TransitionImage classType='risu' src={getEmotion(DBState.db, $CharEmotion, 'plain')}/>
+    <TransitionImage classType='risu' src={getEmotion(DBState.db, ChatState.emotions, 'plain')}/>
     <div role="button" tabindex="0"
       class="resize-handle"
       onmousedown={handleStart}

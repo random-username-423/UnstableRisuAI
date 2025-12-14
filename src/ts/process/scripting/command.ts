@@ -1,6 +1,5 @@
-import { get } from "svelte/store";
 import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentChat, setDatabase } from "src/ts/data/storage/database.svelte";
-import { selectedCharID } from "src/ts/stores.svelte";
+import { ChatState } from "src/ts/stores.svelte";
 import { alertInput, alertMd, alertNormal, alertSelect, alertToast } from "src/ts/utils/alert";
 import { sayTTS } from "src/ts/process/postprocess/tts";
 import { risuChatParser } from "src/ts/utils/parser.svelte";
@@ -41,7 +40,7 @@ export async function processMultiCommand(command:string) {
 
 async function processCommand(command:string, pipe:string):Promise<false | string>{
     const db = getDatabase()
-    const currentChar = db.characters[get(selectedCharID)]
+    const currentChar = db.characters[ChatState.selectedCharId]
     const currentChat = currentChar.chats[currentChar.chatPage]
     let {commandName, arg, namedArg} = commandParser(command, pipe)
 
@@ -183,7 +182,7 @@ async function processCommand(command:string, pipe:string):Promise<false | strin
         case 'setvar':{
             console.log(namedArg, arg)
             const db = getDatabase()
-            const selectedChar = get(selectedCharID)
+            const selectedChar = ChatState.selectedCharId
             const char = db.characters[selectedChar]
             const chat = char.chats[char.chatPage]
             chat.scriptstate = chat.scriptstate ?? {}
@@ -197,7 +196,7 @@ async function processCommand(command:string, pipe:string):Promise<false | strin
         }
         case 'addvar':{
             const db = getDatabase()
-            const selectedChar = get(selectedCharID)
+            const selectedChar = ChatState.selectedCharId
             const char = db.characters[selectedChar]
             const chat = char.chats[char.chatPage]
             chat.scriptstate = chat.scriptstate ?? {}
@@ -210,7 +209,7 @@ async function processCommand(command:string, pipe:string):Promise<false | strin
         }
         case 'getvar':{
             const db = getDatabase()
-            const selectedChar = get(selectedCharID)
+            const selectedChar = ChatState.selectedCharId
             const char = db.characters[selectedChar]
             const chat = char.chats[char.chatPage]
             chat.scriptstate = chat.scriptstate ?? {}

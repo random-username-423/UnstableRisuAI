@@ -26,7 +26,7 @@ import { updateHeightMode } from 'src/ts/gui/guisize'
 import { isTauri, isNodeServer, isStandaloneMode } from "src/ts/utils/env";
 import { setDatabase, getDatabase, defaultSdDataFunc } from "./data/storage/database.svelte";
 import type { character, groupChat } from "./data/storage/types";
-import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
+import { MobileState, SettingsState, ChatState, DBState, AppState } from "./stores.svelte";
 import { checkNullish, changeFullscreen, sleep, getBasename } from "./utils/util";
 import { decodeRisuSave, encodeRisuSaveLegacy, decodeCharacters, decodeBotPresets, encodeCharacters, encodeBotPresets } from "./data/storage/risuSave";
 import { presetTemplate } from "./data/storage/database.svelte";
@@ -56,14 +56,14 @@ import { syncManager } from "./data/drive/syncManager";
  * Called once at app startup from main.ts.
  */
 export async function loadData() {
-    if (get(loadedStore)) return;
+    if (AppState.loaded) return;
 
     try {
         // 1단계: 스토리지 초기화
         await initOPFSWorker()
 
         // 2단계: 마이그레이션
-        LoadingStatusState.text = "Checking migration..."
+        AppState.loadingText = "Checking migration..."
         if (isTauri) {
             await migrateOPFSAssetsToIndexedDB()
             await migrateTauriFsAssetsToIndexedDB()
@@ -73,7 +73,7 @@ export async function loadData() {
         }
 
         // 3단계: DB 로드
-        LoadingStatusState.text = "Reading Save File..."
+        AppState.loadingText = "Reading Save File..."
         let rawData = await loadFromWorker('database/database.bin')
         if (rawData) {
             console.log(`[loadData] database.bin size: ${(rawData.byteLength / 1024 / 1024).toFixed(2)} MB`)
@@ -93,9 +93,9 @@ export async function loadData() {
 
         // 4단계: 디코딩
         try {
-            LoadingStatusState.text = "Decoding Save File..."
+            AppState.loadingText = "Decoding Save File..."
             await decodeAndSetupDatabase(rawData, true)  // enableDebugLog
-            LoadingStatusState.text = "Loading Chat Files..."
+            AppState.loadingText = "Loading Chat Files..."
             await migrateChatsToFiles()
         } catch (error) {
             console.error(error)
@@ -104,7 +104,7 @@ export async function loadData() {
 
         if (isTauri) {
             // 5단계: Tauri 전용 - 업데이트 체크
-            LoadingStatusState.text = "Checking Update..."
+            AppState.loadingText = "Checking Update..."
             await checkRisuUpdate()
             await changeFullscreen()
         }
@@ -117,12 +117,12 @@ export async function loadData() {
             //     await loadFromAccountSync()
             // }
 
-            LoadingStatusState.text = "Checking Drive Sync..."
+            AppState.loadingText = "Checking Drive Sync..."
             const isDriverMode = await checkDriverInit()
             if (isDriverMode) {
                 return
             }
-            LoadingStatusState.text = "Checking Service Worker..."
+            AppState.loadingText = "Checking Service Worker..."
             if (navigator.serviceWorker) {
                 await registerSw()
             }
@@ -138,13 +138,13 @@ export async function loadData() {
     } catch (error) {
         if (error instanceof OPFSNotSupportedError) {
             // OPFS 미지원 시 로딩 화면에 에러 표시하고 앱 중단
-            LoadingStatusState.text = "Your browser does not support OPFS (Origin Private File System).\nPlease use a modern browser like Chrome, Edge, or Firefox."
+            AppState.loadingText = "Your browser does not support OPFS (Origin Private File System).\nPlease use a modern browser like Chrome, Edge, or Firefox."
             console.error('[loadData] OPFS not supported:', error)
             return
         }
         if (error instanceof OPFSInitializationError) {
             // OPFS 초기화 실패 시 로딩 화면에 에러 표시하고 앱 중단
-            LoadingStatusState.text = "Failed to initialize storage.\nPlease try refreshing the page or clearing browser cache."
+            AppState.loadingText = "Failed to initialize storage.\nPlease try refreshing the page or clearing browser cache."
             console.error('[loadData] OPFS initialization failed:', error)
             return
         }
@@ -223,7 +223,7 @@ async function migrateCharactersAndPresetsToFiles(): Promise<void> {
     const charactersData = await loadFromWorker('database/characters.bin')
     if (!charactersData && db.characters && db.characters.length > 0) {
         console.log(`[migrateCharactersAndPresetsToFiles] Migrating ${db.characters.length} characters to characters.bin...`)
-        LoadingStatusState.text = `Migrating Characters...`
+        AppState.loadingText = `Migrating Characters...`
         // Save only chat metadata (message content is in individual files)
         const charactersToSave = db.characters.map(char => {
             const chatsMetadata = char.chats?.map(chat => ({
@@ -246,7 +246,7 @@ async function migrateCharactersAndPresetsToFiles(): Promise<void> {
     const presetsData = await loadFromWorker('database/botpresets.bin')
     if (!presetsData && db.botPresets && db.botPresets.length > 0) {
         console.log(`[migrateCharactersAndPresetsToFiles] Migrating ${db.botPresets.length} presets to botpresets.bin...`)
-        LoadingStatusState.text = `Migrating Bot Presets...`
+        AppState.loadingText = `Migrating Bot Presets...`
         const encoded = await encodeBotPresets(db.botPresets)
         await saveToWorker('database/botpresets.bin', encoded)
         console.log('[migrateCharactersAndPresetsToFiles] Bot presets migration complete')
@@ -264,12 +264,12 @@ async function tryRestoreFromBackups(options: {
 } = {}): Promise<boolean> {
     const { useTauriFsFallback = false, runChatMigration = false, errorMessage = "Your save file is corrupted" } = options
 
-    LoadingStatusState.text = "Reading Backup Files..."
+    AppState.loadingText = "Reading Backup Files..."
     const backups = await getDbBackups()
 
     for (const backup of backups) {
         try {
-            LoadingStatusState.text = `Reading Backup File ${backup}...`
+            AppState.loadingText = `Reading Backup File ${backup}...`
             let backupData = await loadFromWorker(`database/dbbackup-${backup}.bin`)
 
             // Tauri: try filesystem fallback
@@ -282,7 +282,7 @@ async function tryRestoreFromBackups(options: {
             if (backupData) {
                 setDatabase(await decodeRisuSave(backupData))
                 if (runChatMigration) {
-                    LoadingStatusState.text = "Loading Chat Files..."
+                    AppState.loadingText = "Loading Chat Files..."
                     await migrateChatsToFiles()
                 }
                 return true
@@ -300,7 +300,7 @@ async function tryRestoreFromBackups(options: {
  * Common logic used by both Tauri and Web environments.
  */
 async function decodeAndSetupDatabase(rawData: Uint8Array, enableDebugLog = false): Promise<void> {
-    LoadingStatusState.text = "Decoding Save File..."
+    AppState.loadingText = "Decoding Save File..."
     const decoded = await decodeRisuSave(rawData)
 
     // Debug logging (Web only)
@@ -346,14 +346,14 @@ async function decodeAndSetupDatabase(rawData: Uint8Array, enableDebugLog = fals
     }
 
     // Load characters from separate file if exists
-    LoadingStatusState.text = "Loading Characters..."
+    AppState.loadingText = "Loading Characters..."
     const characters = await loadCharactersFromFile()
     if (characters) {
         decoded.characters = characters
     }
 
     // Load bot presets from separate file if exists
-    LoadingStatusState.text = "Loading Bot Presets..."
+    AppState.loadingText = "Loading Bot Presets..."
     const presets = await loadBotPresetsFromFile()
     if (presets) {
         decoded.botPresets = presets
@@ -367,7 +367,7 @@ async function decodeAndSetupDatabase(rawData: Uint8Array, enableDebugLog = fals
     setDatabase(decoded)
 
     // Migrate characters and presets to separate files if needed
-    LoadingStatusState.text = "Checking Data Migration..."
+    AppState.loadingText = "Checking Data Migration..."
     await migrateCharactersAndPresetsToFiles()
 }
 
@@ -433,11 +433,11 @@ async function migrateChatsToFiles(): Promise<void> {
                 const encodedChat = await encodeChat(chat)
                 await saveToWorker(`database/chats/${char.chaId}/${chat.id}.bin`, encodedChat)
                 migratedCount++
-                LoadingStatusState.text = `Migrating Chat Files... (${migratedCount}/${totalChats})`
+                AppState.loadingText = `Migrating Chat Files... (${migratedCount}/${totalChats})`
             } catch (e) {
                 console.error(`[migrateChatsToFiles] Failed to migrate chat ${chat.id}:`, e)
                 migratedCount++
-                LoadingStatusState.text = `Migrating Chat Files... (${migratedCount}/${totalChats})`
+                AppState.loadingText = `Migrating Chat Files... (${migratedCount}/${totalChats})`
             }
         }
     }
@@ -458,18 +458,18 @@ async function migrateChatsToFiles(): Promise<void> {
  * Called by both Tauri and Web environments.
  */
 async function finalizeLoading(): Promise<void> {
-    LoadingStatusState.text = "Checking Unnecessary Files..."
+    AppState.loadingText = "Checking Unnecessary Files..."
     try {
         await pargeChunks()
     } catch (error) {
         console.error(error)
     }
-    LoadingStatusState.text = "Loading Plugins..."
+    AppState.loadingText = "Loading Plugins..."
     try {
         await loadPlugins()
     } catch (error) { }
     if (getDatabase().account) {
-        LoadingStatusState.text = "Checking Account Data..."
+        AppState.loadingText = "Checking Account Data..."
         try {
             await loadRisuAccountData()
         } catch (error) { }
@@ -481,11 +481,11 @@ async function finalizeLoading(): Promise<void> {
     } catch (error) {
 
     }
-    LoadingStatusState.text = "Normalizing Database..."
+    AppState.loadingText = "Normalizing Database..."
     await normalizeDatabase()
     const db = getDatabase();
 
-    LoadingStatusState.text = "Updating States..."
+    AppState.loadingText = "Updating States..."
     updateColorScheme()
     updateTextThemeAndCSS()
     updateAnimationSpeed()
@@ -499,16 +499,16 @@ async function finalizeLoading(): Promise<void> {
         localStorage.setItem('nightlyWarned', '')
     }
     if (db.botSettingAtStart) {
-        botMakerMode.set(true)
+        SettingsState.botMakerMode = true
     }
     if (db.betaMobileGUI && window.innerWidth <= 800) {
         initMobileGesture()
-        MobileGUI.set(true)
+        MobileState.enabled = true
     }
 
     // Google Drive 실시간 동기화 - UI 표시 전에 최신 데이터 가져오기
     if (db.syncEnabled && syncManager.hasAccessToken()) {
-        LoadingStatusState.text = "Syncing with Google Drive..."
+        AppState.loadingText = "Syncing with Google Drive..."
         try {
             await syncManager.doInitialSync()
         } catch (error) {
@@ -517,8 +517,8 @@ async function finalizeLoading(): Promise<void> {
         }
     }
 
-    loadedStore.set(true)
-    selectedCharID.set(-1)
+    AppState.loaded = true
+    ChatState.selectedCharId = -1
     startObserveDom()
     ensureValidIds()
     makeColdData()
@@ -538,9 +538,9 @@ async function finalizeLoading(): Promise<void> {
  * Called when user has account sync enabled.
  */
 async function loadFromAccountSync(): Promise<void> {
-    LoadingStatusState.text = "Checking Account Sync..."
+    AppState.loadingText = "Checking Account Sync..."
     let gotStorage: Uint8Array = await (forageStorage.realStorage as AccountStorage).getItem('database/database.bin', (v) => {
-        LoadingStatusState.text = `Loading Remote Save File ${(v * 100).toFixed(2)}%`
+        AppState.loadingText = `Loading Remote Save File ${(v * 100).toFixed(2)}%`
     })
     if (checkNullish(gotStorage)) {
         gotStorage = encodeRisuSaveLegacy({})
@@ -554,7 +554,7 @@ async function loadFromAccountSync(): Promise<void> {
         let backupLoaded = false
         for (const backup of backups) {
             try {
-                LoadingStatusState.text = `Reading Backup File ${backup}...`
+                AppState.loadingText = `Reading Backup File ${backup}...`
                 const backupData: Uint8Array = await forageStorage.getItem(`database/dbbackup-${backup}.bin`) as unknown as Uint8Array
                 setDatabase(await decodeRisuSave(backupData))
                 backupLoaded = true

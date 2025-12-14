@@ -15,7 +15,7 @@
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import { language } from 'src/lang';
     import { getFetchData } from 'src/ts/utils/fetch';
-    import { alertStore, selectedCharID } from "src/ts/stores.svelte";
+    import { ModalState, ChatState } from "src/ts/stores.svelte";
     import { tokenize } from "src/ts/utils/tokenizer";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import ModuleChatMenu from "../Setting/Pages/Module/ModuleChatMenu.svelte";
@@ -42,13 +42,13 @@
         if(btn){
             btn.focus()
         }
-        if($alertStore.type !== 'input'){
+        if(ModalState.alert.type !== 'input'){
             input = ''
         }
-        if($alertStore.type !== 'branches'){
+        if(ModalState.alert.type !== 'branches'){
             branchHover = null
         }
-        if($alertStore.type !== 'cardexport'){
+        if(ModalState.alert.type !== 'cardexport'){
             cardExportType = 'realm'
             cardExportType2 = ''
             cardLicense = ''
@@ -66,8 +66,8 @@
 
 <svelte:window onmessage={async (e) => {
     if(e.origin.startsWith("https://sv.risuai.xyz") || e.origin.startsWith("https://nightly.sv.risuai.xyz") || e.origin.startsWith("http://127.0.0.1") || e.origin === window.location.origin){
-        if(e.data.msg?.data?.vaild && $alertStore.type === 'login'){
-            $alertStore = {
+        if(e.data.msg?.data?.vaild && ModalState.alert.type === 'login'){
+            ModalState.alert = {
                 type: 'none',
                 msg: JSON.stringify(e.data.msg)
             }
@@ -75,36 +75,36 @@
     }
 }}></svelte:window>
 
-{#if $alertStore.type !== 'none' &&  $alertStore.type !== 'toast' &&  $alertStore.type !== 'cardexport' && $alertStore.type !== 'branches' && $alertStore.type !== 'selectModule' && $alertStore.type !== 'pukmakkurit'}
-    <div class="absolute w-full h-full z-50 bg-black bg-opacity-50 flex justify-center items-center" class:vis={ $alertStore.type === 'wait2'}>
+{#if ModalState.alert.type !== 'none' &&  ModalState.alert.type !== 'toast' &&  ModalState.alert.type !== 'cardexport' && ModalState.alert.type !== 'branches' && ModalState.alert.type !== 'selectModule' && ModalState.alert.type !== 'pukmakkurit'}
+    <div class="absolute w-full h-full z-50 bg-black bg-opacity-50 flex justify-center items-center" class:vis={ ModalState.alert.type === 'wait2'}>
         <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl  max-h-full overflow-y-auto">
-            {#if $alertStore.type === 'error'}
+            {#if ModalState.alert.type === 'error'}
                 <h2 class="text-red-700 mt-0 mb-2 w-40 max-w-full">Error</h2>
-            {:else if $alertStore.type === 'ask'}
+            {:else if ModalState.alert.type === 'ask'}
                 <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Confirm</h2>
-            {:else if $alertStore.type === 'pluginconfirm'}
+            {:else if ModalState.alert.type === 'pluginconfirm'}
                 <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Plugin Import</h2>
-            {:else if $alertStore.type === 'selectChar'}
+            {:else if ModalState.alert.type === 'selectChar'}
                 <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Select</h2>
-            {:else if $alertStore.type === 'input'}
+            {:else if ModalState.alert.type === 'input'}
                 <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Input</h2>
             {/if}
-            {#if $alertStore.type === 'markdown'}
+            {#if ModalState.alert.type === 'markdown'}
                 <div class="overflow-y-auto">
                     <span class="text-gray-300 chattext prose chattext2" class:prose-invert={$ColorSchemeTypeStore}>
-                        {#await ParseMarkdown($alertStore.msg) then msg}
+                        {#await ParseMarkdown(ModalState.alert.msg) then msg}
                             {@html msg}                        
                         {/await}
                     </span>
                 </div>
-            {:else if $alertStore.type === 'tos'}
+            {:else if ModalState.alert.type === 'tos'}
                 <!-- svelte-ignore a11y_missing_attribute -->
                 <!-- svelte-ignore a11y_click_events_have_key_events -->
                 <div class="text-textcolor">You should accept <a role="button" tabindex="0" class="text-green-600 hover:text-green-500 transition-colors duration-200 cursor-pointer" onclick={() => {
                     openURL('https://sv.risuai.xyz/hub/tos')
                 }}>Terms of Service</a> to continue</div>
-            {:else if $alertStore.type === 'pluginconfirm'}
-                {@const parts = $alertStore.msg.split('\n\n')}
+            {:else if ModalState.alert.type === 'pluginconfirm'}
+                {@const parts = ModalState.alert.msg.split('\n\n')}
                 {@const mainPart = parts[0]}
                 {@const confirmMessage = parts[1]}
                 {@const mainParts = mainPart.split('\n')}
@@ -121,13 +121,13 @@
                     {/if}
                     <p class="confirm-message">{confirmMessage}</p>
                 </div>
-            {:else if $alertStore.type !== 'select' && $alertStore.type !== 'requestdata' && $alertStore.type !== 'addchar' && $alertStore.type !== 'hypaV2' && $alertStore.type !== 'chatOptions'}
-                <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
-                {#if $alertStore.submsg && $alertStore.type !== 'progress'}
-                    <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
+            {:else if ModalState.alert.type !== 'select' && ModalState.alert.type !== 'requestdata' && ModalState.alert.type !== 'addchar' && ModalState.alert.type !== 'hypaV2' && ModalState.alert.type !== 'chatOptions'}
+                <span class="text-gray-300 whitespace-pre-wrap">{ModalState.alert.msg}</span>
+                {#if ModalState.alert.submsg && ModalState.alert.type !== 'progress'}
+                    <span class="text-gray-500 text-sm">{ModalState.alert.submsg}</span>
                 {/if}
 
-                {#if $alertStore.type === 'error' && $alertStore.stackTrace}
+                {#if ModalState.alert.type === 'error' && ModalState.alert.stackTrace}
                     <div class="mt-4">
                         <Button styled="outlined" size="sm" onclick={() => showDetails = !showDetails}>
                             {showDetails ? language.hideErrorDetails : language.showErrorDetails}
@@ -138,92 +138,92 @@
                             {/if}
                         </Button>
                         {#if showDetails}
-                            <pre class="stack-trace">{@html $alertStore.stackTrace}</pre>
+                            <pre class="stack-trace">{@html ModalState.alert.stackTrace}</pre>
                         {/if}
                     </div>
                 {/if}
             {/if}
-            {#if $alertStore.type === 'progress'}
+            {#if ModalState.alert.type === 'progress'}
                 <div class="w-full min-w-64 md:min-w-138 h-2 bg-darkbg border border-darkborderc rounded-md mt-6">
-                    <div class="h-full bg-gradient-to-r from-blue-500 to-purple-800 saving-animation transition-[width]" style:width={$alertStore.submsg + '%'}></div>
+                    <div class="h-full bg-gradient-to-r from-blue-500 to-purple-800 saving-animation transition-[width]" style:width={ModalState.alert.submsg + '%'}></div>
                 </div>
                 <div class="w-full flex justify-center mt-6">
-                    <span class="text-gray-500 text-sm">{$alertStore.submsg + '%'}</span>
+                    <span class="text-gray-500 text-sm">{ModalState.alert.submsg + '%'}</span>
                 </div>
             {/if}
 
-            {#if $alertStore.type === 'ask' || $alertStore.type === 'pluginconfirm'}
+            {#if ModalState.alert.type === 'ask' || ModalState.alert.type === 'pluginconfirm'}
                 <div class="flex gap-2 w-full">
                     <Button className="mt-4 flex-grow" onclick={() => {
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: 'yes'
-                        })
+                        }
                     }}>YES</Button>
                     <Button className="mt-4 flex-grow" onclick={() => {
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: 'no'
-                        })
+                        }
                     }}>NO</Button>
                 </div>
-            {:else if $alertStore.type === 'tos'}
+            {:else if ModalState.alert.type === 'tos'}
                 <div class="flex gap-2 w-full">
                     <Button className="mt-4 flex-grow" onclick={() => {
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: 'yes'
-                        })
+                        }
                     }}>Accept</Button>
                     <Button styled="outlined" className="mt-4 flex-grow" onclick={() => {
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: 'no'
-                        })
+                        }
                     }}>Do not Accept</Button>
                 </div>
-            {:else if $alertStore.type === 'select'}
-                {@const hasDisplay = $alertStore.msg.startsWith('__DISPLAY__')}
+            {:else if ModalState.alert.type === 'select'}
+                {@const hasDisplay = ModalState.alert.msg.startsWith('__DISPLAY__')}
                 {#if hasDisplay}
-                    {@const parts = $alertStore.msg.substring(11).split('||')}
+                    {@const parts = ModalState.alert.msg.substring(11).split('||')}
                     <div class="mb-4 text-textcolor">{parts[0]}</div>
                     {#each parts.slice(1) as n, i}
                         <Button className="mt-4" onclick={() => {
-                            alertStore.set({
+                            ModalState.alert = {
                                 type: 'none',
                                 msg: i.toString()
-                            })
+                            }
                         }}>{n}</Button>
                     {/each}
                 {:else}
-                    {@const parts = $alertStore.msg.split('||')}
+                    {@const parts = ModalState.alert.msg.split('||')}
                     {#each parts as n, i}
                         <Button className="mt-4" onclick={() => {
-                            alertStore.set({
+                            ModalState.alert = {
                                 type: 'none',
                                 msg: i.toString()
-                            })
+                            }
                         }}>{n}</Button>
                     {/each}
                 {/if}
-            {:else if $alertStore.type === 'error' || $alertStore.type === 'normal' || $alertStore.type === 'markdown'}
+            {:else if ModalState.alert.type === 'error' || ModalState.alert.type === 'normal' || ModalState.alert.type === 'markdown'}
                <Button className="mt-4" onclick={() => {
-                    alertStore.set({
+                    ModalState.alert = {
                         type: 'none',
                         msg: ''
-                    })
+                    }
                 }}>OK</Button>
-            {:else if $alertStore.type === 'input'}
+            {:else if ModalState.alert.type === 'input'}
                 <TextInput value="" id="alert-input" autocomplete="off" marginTop list="alert-input-list" />
                 <Button className="mt-4" onclick={() => {
-                    alertStore.set({
+                    ModalState.alert = {
                         type: 'none',
                         msg: document.querySelector<HTMLInputElement>('#alert-input')?.value ?? ''
-                    })
+                    }
                 }}>OK</Button>
-                {#if $alertStore.datalist}
+                {#if ModalState.alert.datalist}
                     <datalist id="alert-input-list">
-                        {#each $alertStore.datalist as item}
+                        {#each ModalState.alert.datalist as item}
                             <option
                                 value={item[0]}
                                 label={item[1] ? item[1] : item[0]}
@@ -231,32 +231,32 @@
                         {/each}
                     </datalist>
                 {/if}
-            {:else if $alertStore.type === 'login'}
+            {:else if ModalState.alert.type === 'login'}
                 <div class="fixed top-0 left-0 bg-black bg-opacity-50 w-full h-full flex justify-center items-center">
                     <iframe src={hubURL + '/hub/login'} title="login" class="w-full h-full">
                     </iframe>
                 </div>
-            {:else if $alertStore.type === 'selectChar'}
+            {:else if ModalState.alert.type === 'selectChar'}
                 <div class="flex w-full items-start flex-wrap gap-2 justify-start">
                     {#each DBState.db.characters as char, i}
                         {#if char.type !== 'group'}
                             {#if char.image}
                                 {#await getCharImage(DBState.db.characters[i].image, 'css')}
                                     <BarIcon onClick={() => {
-                                        alertStore.set({type: 'none',msg: char.chaId})
+                                        ModalState.alert = {type: 'none',msg: char.chaId}
                                     }}>
                                         <User/>
                                     </BarIcon>
                                 {:then im} 
                                     <BarIcon onClick={() => {
-                                        alertStore.set({type: 'none',msg: char.chaId})
+                                        ModalState.alert = {type: 'none',msg: char.chaId}
                                     }} additionalStyle={im} />
                                     
                                 {/await}
                             {:else}
                                 <BarIcon onClick={() => {
                                     //@ts-ignore
-                                    alertStore.set({type: 'none',msg: char.chaId})
+                                    ModalState.alert = {type: 'none',msg: char.chaId}
                                 }}>
                                 <User/>
                                 </BarIcon>
@@ -264,7 +264,7 @@
                         {/if}
                     {/each}
                 </div>
-            {:else if $alertStore.type === 'requestdata'}
+            {:else if ModalState.alert.type === 'requestdata'}
                 <div class="flex flex-wrap gap-2">
                     <Button selected={generationInfoMenuIndex === 0} size="sm" onclick={() => {generationInfoMenuIndex = 0}}>
                         {language.tokens}
@@ -279,10 +279,10 @@
                         {language.prompt}
                     </Button>
                     <button class="ml-auto" onclick={() => {
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: ''
-                        })
+                        }
                     }}>✖</button>
                 </div>
                 {#if generationInfoMenuIndex === 0}
@@ -316,15 +316,15 @@
                     <span class="text-amber-500">Model</span>
                     <span class="text-amber-500 justify-self-end">{$alertGenerationInfoStore.genInfo.model}</span>
                     <span class="text-green-500">ID</span>
-                    <span class="text-green-500 justify-self-end">{DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx].chatId ?? "None"}</span>
+                    <span class="text-green-500 justify-self-end">{DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].chatId ?? "None"}</span>
                     <span class="text-red-500">GenID</span>
                     <span class="text-red-500 justify-self-end">{$alertGenerationInfoStore.genInfo.generationId}</span>
                     <span class="text-cyan-500">Saying</span>
-                    <span class="text-cyan-500 justify-self-end">{DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx].saying}</span>
+                    <span class="text-cyan-500 justify-self-end">{DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].saying}</span>
                     <span class="text-purple-500">Size</span>
-                    <span class="text-purple-500 justify-self-end">{JSON.stringify(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx]).length} Bytes</span>
+                    <span class="text-purple-500 justify-self-end">{JSON.stringify(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx]).length} Bytes</span>
                     <span class="text-yellow-500">Time</span>
-                    <span class="text-yellow-500 justify-self-end">{(new Date(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx].time ?? 0)).toLocaleString()}</span>
+                    <span class="text-yellow-500 justify-self-end">{(new Date(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].time ?? 0)).toLocaleString()}</span>
                     {#if $alertGenerationInfoStore.genInfo.stageTiming}
                         {@const stage1 = parseFloat(((($alertGenerationInfoStore.genInfo.stageTiming.stage1 ?? 0) / 1000).toFixed(1)))}
                         {@const stage2 = parseFloat(((($alertGenerationInfoStore.genInfo.stageTiming.stage2 ?? 0) / 1000).toFixed(1)))}
@@ -342,15 +342,15 @@
                     {/if}
 
                     <span class="text-green-500">Tokens</span>
-                    {#await tokenize(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx].data)}
+                    {#await tokenize(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].data)}
                         <span class="text-green-500 justify-self-end">Loading</span>
-                    {:then tokens} 
+                    {:then tokens}
                         <span class="text-green-500 justify-self-end">{tokens}</span>
                     {/await}
                 </div>
                 {/if}
                 {#if generationInfoMenuIndex === 2}
-                    {#await getFetchData($alertStore.msg) then data} 
+                    {#await getFetchData(ModalState.alert.msg) then data} 
                         {#if !data}
                             <span class="text-gray-300 text-lg mt-2">{language.errors.requestLogRemoved}</span>
                             <span class="text-gray-500">{language.errors.requestLogRemovedDesc}</span>
@@ -365,19 +365,19 @@
                     {/await}
                 {/if}
                 {#if generationInfoMenuIndex === 3}
-                    {#if Object.keys(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx].promptInfo || {}).length === 0}
+                    {#if Object.keys(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo || {}).length === 0}
                         <div class="text-gray-300 text-lg mt-2">{language.promptInfoEmptyMessage}</div>
                     {:else}
                         <div class="grid grid-cols-2 gap-y-2 gap-x-4 mt-4">
                             <span class="text-blue-500">Preset Name</span>
-                            <span class="text-blue-500 justify-self-end">{DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptName}</span>
+                            <span class="text-blue-500 justify-self-end">{DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptName}</span>
                             <span class="text-purple-500">Toggles</span>
                             <div class="col-span-2 max-h-32 overflow-y-auto border border-stone-500 rounded p-2 bg-gray-900">
-                                {#if DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptToggles.length === 0}
+                                {#if DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptToggles.length === 0}
                                     <div class="text-gray-500 italic text-center py-4">{language.promptInfoEmptyToggle}</div>
                                 {:else}
                                     <div class="grid grid-cols-2 gap-y-2 gap-x-4">
-                                        {#each DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptToggles as toggle}
+                                        {#each DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptToggles as toggle}
                                         <span class="text-gray-200 truncate">{toggle.key}</span>
                                         <span class="text-gray-200 justify-self-end truncate">{toggle.value}</span>
                                         {/each}
@@ -386,10 +386,10 @@
                             </div>
                             <span class="text-red-500">Prompt Text</span>
                             <div class="col-span-2 max-h-80 overflow-y-auto border border-stone-500 rounded p-4 bg-gray-900">
-                                {#if !DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptText}
+                                {#if !DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptText}
                                     <div class="text-gray-500 italic text-center py-4">{language.promptInfoEmptyText}</div>
                                 {:else}
-                                    {#each DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptText as block}
+                                    {#each DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptText as block}
                                         <div class="mb-2">
                                             <div class="font-bold text-gray-600">{block.role}</div>
                                             <pre class="whitespace-pre-wrap text-sm bg-stone-900 p-2 rounded border border-stone-500">{block.content}</pre>
@@ -400,7 +400,7 @@
                         </div>
                     {/if}
                 {/if}
-            {:else if $alertStore.type === 'hypaV2'}
+            {:else if ModalState.alert.type === 'hypaV2'}
                 <div class="flex flex-wrap gap-2 mb-4 max-w-full w-124">
                     <Button selected={generationInfoMenuIndex === 0} size="sm" onclick={() => {generationInfoMenuIndex = 0}}>
                         Chunks
@@ -409,22 +409,22 @@
                         Summarized
                     </Button>
                     <button class="ml-auto" onclick={() => {
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: ''
-                        })
+                        }
                     }}>✖</button>
                 </div>
                 {#if generationInfoMenuIndex === 0}
                     <div class="flex flex-col gap-2 w-full">
-                        {#each DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].hypaV2Data.chunks as chunk, i}
+                        {#each DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].hypaV2Data.chunks as chunk, i}
                             <TextAreaInput bind:value={chunk.text} />
                         {/each}
 
                         <!-- Adding non-bound chunk is not okay, change the user flow to edit existing ones. -->
                     </div>
                 {:else}
-                    {#each DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].hypaV2Data.mainChunks as chunk, i} <!-- Summarized should be mainChunks, afaik. Be aware of that chunks are created with mainChunks, however this editing would not change related chunks. -->
+                    {#each DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].hypaV2Data.mainChunks as chunk, i} <!-- Summarized should be mainChunks, afaik. Be aware of that chunks are created with mainChunks, however this editing would not change related chunks. -->
                         <div class="flex flex-col p-2 rounded-md border-darkborderc border">
                             {#if i === 0}
                                 <span class="text-green-500">Active</span>
@@ -435,16 +435,16 @@
                         </div>
                     {/each}
                 {/if}
-            {:else if $alertStore.type === 'addchar'}
+            {:else if ModalState.alert.type === 'addchar'}
                 <div class="w-2xl flex flex-col max-w-full">
 
                     <button class="border-darkborderc border py-12 px-8 flex rounded-md hover:ring-2 justify-center items-center" onclick={(e) => {
                         e.stopPropagation()
                         e.preventDefault()
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: 'importFromRealm'
-                        })
+                        }
                     }}>
                         <div class="flex flex-col justify-start items-start">
                             <span class="text-2xl font-bold">{language.importFromRealm}</span>
@@ -454,14 +454,14 @@
                             <ChevronRightIcon />
                         </div>
                     </button>
-                    <button class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2" onclick={((e) => {
+                    <button class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2" onclick={(e) => {
                         e.stopPropagation()
                         e.preventDefault()
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: 'importCharacter'
-                        })
-                    })}>
+                        }
+                    }}>
                         <div class="flex flex-col justify-start items-start">
                             <span>{language.importCharacter}</span>
                         </div>
@@ -472,10 +472,10 @@
                     <button class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2" onclick={(e) => {
                         e.stopPropagation()
                         e.preventDefault()
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: 'createfromScratch'
-                        })
+                        }
                     }}>
                         <div class="flex flex-col justify-start items-start">
                             <span>{language.createfromScratch}</span>
@@ -487,10 +487,10 @@
                     <button class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2" onclick={(e) => {
                         e.stopPropagation()
                         e.preventDefault()
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: 'createGroup'
-                        })
+                        }
                     }}>
                         <div class="flex flex-col justify-start items-start">
                             <span>{language.createGroup}</span>
@@ -502,26 +502,26 @@
                     <button class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2" onclick={(e) => {
                         e.stopPropagation()
                         e.preventDefault()
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: 'cancel'
-                        })
+                        }
                     }}>
                         <div class="flex flex-col justify-start items-start">
                             <span>{language.cancel}</span>
                         </div>
                     </button>
                 </div>
-            {:else if $alertStore.type === 'chatOptions'}
+            {:else if ModalState.alert.type === 'chatOptions'}
                 <div class="w-2xl flex flex-col max-w-full">
                     <h1 class="text-xl mb-4 font-bold">
                         {language.chatOptions}
                     </h1>
                     <button class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2" onclick={() => {
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: '0'
-                        })
+                        }
                     }}>
                         <div class="flex flex-col justify-start items-start">
                             <span>{language.createCopy}</span>
@@ -531,10 +531,10 @@
                         </div>
                     </button>
                     <button class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2" onclick={() => {
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: '1'
-                        })
+                        }
                     }}>
                         <div class="flex flex-col justify-start items-start">
                             <span>{language.bindPersona}</span>
@@ -545,10 +545,10 @@
                     </button>
                     {#if DBState.db.useExperimental}
                         <button class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2" onclick={() => {
-                            alertStore.set({
+                            ModalState.alert = {
                                 type: 'none',
                                 msg: '2'
-                            })
+                            }
                         }}>
                             <div class="flex flex-col justify-start items-start">
                                 <span>{language.createMultiuserRoom} <Help key="experimental"/></span>
@@ -559,10 +559,10 @@
                         </button>
                     {/if}
                     <button class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2" onclick={() => {
-                        alertStore.set({
+                        ModalState.alert = {
                             type: 'none',
                             msg: 'cancel'
-                        })
+                        }
                     }}>
                         <div class="flex flex-col justify-start items-start">
                             <span>{language.cancel}</span>
@@ -573,7 +573,7 @@
         </div>
     </div>
 
-{:else if $alertStore.type === 'cardexport'}
+{:else if ModalState.alert.type === 'cardexport'}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div  class="fixed top-0 left-0 h-full w-full bg-black bg-opacity-50 flex flex-col z-50 items-center justify-center" role="button" tabindex="0" onclick={close}>
         <div class="bg-darkbg rounded-md p-4 max-w-full flex flex-col w-2xl" role="button" tabindex="0" onclick={(e) => {
@@ -584,29 +584,29 @@
                     {language.shareExport}
                 </span>
                 <button class="float-right text-textcolor2 hover:text-green-500" onclick={() => {
-                    alertStore.set({
+                    ModalState.alert = {
                         type: 'none',
                         msg: JSON.stringify({
                             type: 'cancel',
                             type2: cardExportType2
                         })
-                    })
+                    }
                 }}>
                     <XIcon />
                 </button>
             </h1>
             <span class="text-textcolor mt-4">{language.type}</span>
             {#if cardExportType === ''}
-                {#if $alertStore.submsg === 'module'}
+                {#if ModalState.alert.submsg === 'module'}
                     <span class="text-textcolor2 text-sm">{language.risuMDesc}</span>
-                {:else if $alertStore.submsg === 'preset'}
+                {:else if ModalState.alert.submsg === 'preset'}
                     <span class="text-textcolor2 text-sm">{language.risupresetDesc}</span>
                     {#if cardExportType2 === 'preset' && (DBState.db.botPresets[DBState.db.botPresetsId].image || DBState.db.botPresets[DBState.db.botPresetsId].regex?.length > 0)}
                         <span class="text-red-500 text-sm">Use RisuRealm to share the preset. Preset with image or regexes cannot be exported for now.</span>
                     {/if}
                 {:else}
                     <span class="text-textcolor2 text-sm">{language.ccv3Desc}</span>
-                    {#if cardExportType2 !== 'charx' && cardExportType2 !== 'charxJpeg' && isCharacterHasAssets(DBState.db.characters[$selectedCharID])}
+                    {#if cardExportType2 !== 'charx' && cardExportType2 !== 'charxJpeg' && isCharacterHasAssets(DBState.db.characters[ChatState.selectedCharId])}
                         <span class="text-red-500 text-sm">{language.notCharxWarn}</span>
                     {/if}
                 {/if}
@@ -619,10 +619,10 @@
                 <span class="text-textcolor2 text-sm">{language.realmDesc}</span>
             {/if}
             <div class="flex items-center flex-wrap mt-2">
-                {#if $alertStore.submsg === 'preset'}
+                {#if ModalState.alert.submsg === 'preset'}
                     <button class="bg-bgcolor px-2 py-4 rounded-lg flex-1" class:ring-1={cardExportType === 'realm'} onclick={() => {cardExportType = 'realm'}}>RisuRealm</button>
                     <button class="bg-bgcolor px-2 py-4 rounded-lg ml-2 flex-1" class:ring-1={cardExportType === ''} onclick={() => {cardExportType = ''}}>Risupreset</button>
-                {:else if $alertStore.submsg === 'module'}
+                {:else if ModalState.alert.submsg === 'module'}
                     <button class="bg-bgcolor px-2 py-4 rounded-lg ml-2 flex-1" class:ring-1={cardExportType === 'realm'} onclick={() => {cardExportType = 'realm'}}>RisuRealm</button>
                     <button class="bg-bgcolor px-2 py-4 rounded-lg flex-1" class:ring-1={cardExportType === ''} onclick={() => {cardExportType = ''}}>RisuM</button>
                 {:else}
@@ -634,7 +634,7 @@
                     <button class="bg-bgcolor px-2 py-4 rounded-lg ml-2 flex-1" class:ring-1={cardExportType === 'ccv2'} onclick={() => {cardExportType = 'ccv2'}}>Character Card V2</button>
                 {/if}
             </div>
-            {#if $alertStore.submsg === '' && cardExportType === ''}
+            {#if ModalState.alert.submsg === '' && cardExportType === ''}
                 <span class="text-textcolor mt-4">{language.format}</span>
                 <SelectInput bind:value={cardExportType2} className="mt-2">
                     <OptionInput value="charx">CHARX</OptionInput>
@@ -644,34 +644,34 @@
                 </SelectInput>
             {/if}
             <Button className="mt-4" onclick={() => {
-                alertStore.set({
+                ModalState.alert = {
                     type: 'none',
                     msg: JSON.stringify({
                         type: cardExportType,
                         type2: cardExportType2
                     })
-                })
+                }
             }}>{cardExportType === 'realm' ? language.shareCloud : language.export}</Button>
         </div>
     </div>
 
-{:else if $alertStore.type === 'toast'}
+{:else if ModalState.alert.type === 'toast'}
     <div class="toast-anime absolute right-0 bottom-0 bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl  max-h-11/12 overflow-y-auto z-50 text-textcolor"
         onanimationend={() => {
-            alertStore.set({
+            ModalState.alert = {
                 type: 'none',
                 msg: ''
-            })
+            }
         }}
-    >{$alertStore.msg}</div>
-{:else if $alertStore.type === 'selectModule'}
+    >{ModalState.alert.msg}</div>
+{:else if ModalState.alert.type === 'selectModule'}
     <ModuleChatMenu alertMode close={(d) => {
-        alertStore.set({
+        ModalState.alert = {
             type: 'none',
             msg: d
-        })
+        }
     }} />
-{:else if $alertStore.type === 'pukmakkurit'}
+{:else if ModalState.alert.type === 'pukmakkurit'}
     <!-- Log Generator by dootaang, GPL3 -->
     <!-- Svelte, Typescript version by Kwaroran -->
     
@@ -681,7 +681,7 @@
 
         </div>
     </div>
-{:else if $alertStore.type === 'branches'}
+{:else if ModalState.alert.type === 'branches'}
     <div class="absolute w-full h-full z-50 bg-black bg-opacity-80 flex justify-center items-center overflow-x-auto overflow-y-auto">
         {#if branchHover !== null}
             <div class="z-30 whitespace-pre-wrap p-4 text-textcolor bg-darkbg border-darkborderc border rounded-md absolute text-white" style="top: {branchHover.y * 80 + 24}px; left: {(branchHover.x + 1) * 80 + 24}px">
@@ -691,10 +691,10 @@
 
         <div class="x-50 right-2 top-2 absolute">
             <button class="bg-darkbg border-darkborderc border p-2 rounded-md" onclick={() => {
-                alertStore.set({
+                ModalState.alert = {
                     type: 'none',
                     msg: ''
-                })
+                }
             }}>
                 <XIcon />
             </button>

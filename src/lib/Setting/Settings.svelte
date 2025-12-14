@@ -8,7 +8,8 @@
     import PluginSettings from "./Pages/PluginSettings.svelte";
     import FilesSettings from "./Pages/FilesSettings.svelte";
     import AdvancedSettings from "./Pages/AdvancedSettings.svelte";
-    import { MobileGUI, SettingsMenuIndex, settingsOpen } from "src/ts/stores.svelte";
+    import { SettingsState } from "src/ts/stores.svelte";
+    import { MobileState } from 'src/ts/stores.svelte';
     import Botpreset from "./botpreset.svelte";
     import Communities from "./Pages/Communities.svelte";
     import GlobalLoreBookSettings from "./Pages/GlobalLoreBookSettings.svelte";
@@ -24,196 +25,196 @@
     import StorageSettings from "./Pages/StorageSettings.svelte";
 
     let openLoreList = $state(false)
-    if(window.innerWidth >= 900 && $SettingsMenuIndex === -1 && !$MobileGUI){
-        $SettingsMenuIndex = 1
+    if(window.innerWidth >= 900 && SettingsState.menuIndex === -1 && !MobileState.enabled){
+        SettingsState.menuIndex = 1
     }
 
 </script>
-<div class="h-full w-full flex justify-center rs-setting-cont" class:bg-bgcolor={$MobileGUI} class:setting-bg={!$MobileGUI}>
+<div class="h-full w-full flex justify-center rs-setting-cont" class:bg-bgcolor={MobileState.enabled} class:setting-bg={!MobileState.enabled}>
     <div class="h-full max-w-screen-lg w-full flex relative rs-setting-cont-2">
-        {#if (window.innerWidth >= 700 && !$MobileGUI) || $SettingsMenuIndex === -1}
+        {#if (window.innerWidth >= 700 && !MobileState.enabled) || SettingsState.menuIndex === -1}
             <div class="flex h-full flex-col p-4 pt-8 gap-2 overflow-y-auto relative rs-setting-cont-3"
-                class:w-full={window.innerWidth < 700 || $MobileGUI}
-                class:bg-darkbg={!$MobileGUI} class:bg-bgcolor={$MobileGUI}
+                class:w-full={window.innerWidth < 700 || MobileState.enabled}
+                class:bg-darkbg={!MobileState.enabled} class:bg-bgcolor={MobileState.enabled}
             >
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 1 || $SettingsMenuIndex === 13}
-                        class:text-textcolor2={$SettingsMenuIndex !== 1 && $SettingsMenuIndex !== 13}
+                        class:text-textcolor={SettingsState.menuIndex === 1 || SettingsState.menuIndex === 13}
+                        class:text-textcolor2={SettingsState.menuIndex !== 1 && SettingsState.menuIndex !== 13}
                         onclick={() => {
-                            $SettingsMenuIndex = 1
+                            SettingsState.menuIndex = 1
                             
                     }}>
                         <BotIcon />
                         <span>{language.chatBot}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 12}
-                        class:text-textcolor2={$SettingsMenuIndex !== 12}
+                        class:text-textcolor={SettingsState.menuIndex === 12}
+                        class:text-textcolor2={SettingsState.menuIndex !== 12}
                         onclick={() => {
-                            $SettingsMenuIndex = 12
+                            SettingsState.menuIndex = 12
                     }}>
                         <ContactIcon />
                         <span>{language.persona}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 2}
-                        class:text-textcolor2={$SettingsMenuIndex !== 2}
+                        class:text-textcolor={SettingsState.menuIndex === 2}
+                        class:text-textcolor2={SettingsState.menuIndex !== 2}
                         onclick={() => {
-                            $SettingsMenuIndex = 2
+                            SettingsState.menuIndex = 2
                     }}>
                         <Sailboat />
                         <span>{language.otherBots}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 3}
-                        class:text-textcolor2={$SettingsMenuIndex !== 3}
+                        class:text-textcolor={SettingsState.menuIndex === 3}
+                        class:text-textcolor2={SettingsState.menuIndex !== 3}
                         onclick={() => {
-                            $SettingsMenuIndex = 3
+                            SettingsState.menuIndex = 3
                     }}>
                         <MonitorIcon />
                         <span>{language.display}</span>
                     </button>
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                    class:text-textcolor={$SettingsMenuIndex === 10}
-                    class:text-textcolor2={$SettingsMenuIndex !== 10}
+                    class:text-textcolor={SettingsState.menuIndex === 10}
+                    class:text-textcolor2={SettingsState.menuIndex !== 10}
                     onclick={() => {
-                        $SettingsMenuIndex = 10
+                        SettingsState.menuIndex = 10
                 }}>
                     <LanguagesIcon />
                     <span>{language.language}</span>
                 </button>
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 11}
-                        class:text-textcolor2={$SettingsMenuIndex !== 11}
+                        class:text-textcolor={SettingsState.menuIndex === 11}
+                        class:text-textcolor2={SettingsState.menuIndex !== 11}
                         onclick={() => {
-                            $SettingsMenuIndex = 11
+                            SettingsState.menuIndex = 11
                     }}>
                         <AccessibilityIcon />
                         <span>{language.accessibility}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 14}
-                        class:text-textcolor2={$SettingsMenuIndex !== 14}
+                        class:text-textcolor={SettingsState.menuIndex === 14}
+                        class:text-textcolor2={SettingsState.menuIndex !== 14}
                         onclick={() => {
-                            $SettingsMenuIndex = 14
+                            SettingsState.menuIndex = 14
                     }}>
                         <PackageIcon />
                         <span>{language.modules}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 4}
-                        class:text-textcolor2={$SettingsMenuIndex !== 4}
+                        class:text-textcolor={SettingsState.menuIndex === 4}
+                        class:text-textcolor2={SettingsState.menuIndex !== 4}
                         onclick={() => {
-                        $SettingsMenuIndex = 4
+                        SettingsState.menuIndex = 4
                     }}>
                         <CodeIcon />
                         <span>{language.plugin}</span>
                     </button>
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                    class:text-textcolor={$SettingsMenuIndex === 0}
-                    class:text-textcolor2={$SettingsMenuIndex !== 0}
+                    class:text-textcolor={SettingsState.menuIndex === 0}
+                    class:text-textcolor2={SettingsState.menuIndex !== 0}
                     onclick={() => {
-                        $SettingsMenuIndex = 0
+                        SettingsState.menuIndex = 0
                 }}>
                     <UserIcon />
                     <span>{language.account} & {language.files}</span>
                 </button>
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 15}
-                        class:text-textcolor2={$SettingsMenuIndex !== 15}
+                        class:text-textcolor={SettingsState.menuIndex === 15}
+                        class:text-textcolor2={SettingsState.menuIndex !== 15}
                         onclick={() => {
-                        $SettingsMenuIndex = 15
+                        SettingsState.menuIndex = 15
                     }}>
                         <KeyboardIcon />
                         <span>{language.hotkey}</span>
                     </button>
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                    class:text-textcolor={$SettingsMenuIndex === 16}
-                    class:text-textcolor2={$SettingsMenuIndex !== 16}
+                    class:text-textcolor={SettingsState.menuIndex === 16}
+                    class:text-textcolor2={SettingsState.menuIndex !== 16}
                     onclick={() => {
-                    $SettingsMenuIndex = 16
+                    SettingsState.menuIndex = 16
                 }}>
                     <HardDriveIcon />
                     <span>{language.storage}</span>
                 </button>
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                    class:text-textcolor={$SettingsMenuIndex === 6}
-                    class:text-textcolor2={$SettingsMenuIndex !== 6}
+                    class:text-textcolor={SettingsState.menuIndex === 6}
+                    class:text-textcolor2={SettingsState.menuIndex !== 6}
                     onclick={() => {
-                    $SettingsMenuIndex = 6
+                    SettingsState.menuIndex = 6
                 }}>
                     <ActivityIcon />
                     <span>{language.advancedSettings}</span>
                 </button>
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                    class:text-textcolor={$SettingsMenuIndex === 77}
-                    class:text-textcolor2={$SettingsMenuIndex !== 77}
+                    class:text-textcolor={SettingsState.menuIndex === 77}
+                    class:text-textcolor2={SettingsState.menuIndex !== 77}
                     onclick={() => {
-                    $SettingsMenuIndex = 77
+                    SettingsState.menuIndex = 77
                 }}>
                     <BoxIcon />
                     <span>{language.supporterThanks}</span>
                 </button>
-                {#if window.innerWidth < 700 && !$MobileGUI}
+                {#if window.innerWidth < 700 && !MobileState.enabled}
                     <button class="absolute top-2 right-2 hover:text-green-500 text-textcolor" onclick={() => {
-                        settingsOpen.set(false)
+                        SettingsState.isOpen = false
                     }}> <XCircleIcon /> </button>
                 {/if}
             </div>
         {/if}
-        {#if (window.innerWidth >= 700 && !$MobileGUI) || $SettingsMenuIndex !== -1}
-            {#key $SettingsMenuIndex}
+        {#if (window.innerWidth >= 700 && !MobileState.enabled) || SettingsState.menuIndex !== -1}
+            {#key SettingsState.menuIndex}
                 <div class="flex-grow py-6 px-4 bg-bgcolor flex flex-col text-textcolor overflow-y-auto relative rs-setting-cont-4">
-                    {#if $SettingsMenuIndex === 0}
+                    {#if SettingsState.menuIndex === 0}
                         <UserSettings />
-                    {:else if $SettingsMenuIndex === 1}
+                    {:else if SettingsState.menuIndex === 1}
                         <BotSettings goPromptTemplate={() => {
-                            $SettingsMenuIndex = 13
+                            SettingsState.menuIndex = 13
                         }} />
-                    {:else if $SettingsMenuIndex === 2}
+                    {:else if SettingsState.menuIndex === 2}
                         <OtherBotSettings />
-                    {:else if $SettingsMenuIndex === 3}
+                    {:else if SettingsState.menuIndex === 3}
                         <DisplaySettings />
-                    {:else if $SettingsMenuIndex === 4}
+                    {:else if SettingsState.menuIndex === 4}
                         <PluginSettings />
-                    {:else if $SettingsMenuIndex === 5}
+                    {:else if SettingsState.menuIndex === 5}
                         <FilesSettings />
-                    {:else if $SettingsMenuIndex === 6}
+                    {:else if SettingsState.menuIndex === 6}
                         <AdvancedSettings />
-                    {:else if $SettingsMenuIndex === 7}
+                    {:else if SettingsState.menuIndex === 7}
                         <Communities />
-                    {:else if $SettingsMenuIndex === 8}
+                    {:else if SettingsState.menuIndex === 8}
                         <GlobalLoreBookSettings bind:openLoreList />
-                    {:else if $SettingsMenuIndex === 9}
+                    {:else if SettingsState.menuIndex === 9}
                         <GlobalRegex/>
-                    {:else if $SettingsMenuIndex === 10}
+                    {:else if SettingsState.menuIndex === 10}
                         <LanguageSettings/>
-                    {:else if $SettingsMenuIndex === 11}
+                    {:else if SettingsState.menuIndex === 11}
                         <AccessibilitySettings/>
-                    {:else if $SettingsMenuIndex === 12}
+                    {:else if SettingsState.menuIndex === 12}
                         <PersonaSettings/>
-                    {:else if $SettingsMenuIndex === 14}
+                    {:else if SettingsState.menuIndex === 14}
                         <ModuleSettings/>
-                    {:else if $SettingsMenuIndex === 13}
+                    {:else if SettingsState.menuIndex === 13}
                         <PromptSettings onGoBack={() => {
-                            $SettingsMenuIndex = 1
+                            SettingsState.menuIndex = 1
                         }}/>
-                    {:else if $SettingsMenuIndex === 15 && window.innerWidth >= 768}
+                    {:else if SettingsState.menuIndex === 15 && window.innerWidth >= 768}
                         <HotkeySettings/>
-                    {:else if $SettingsMenuIndex === 16}
+                    {:else if SettingsState.menuIndex === 16}
                         <StorageSettings/>
-                    {:else if $SettingsMenuIndex === 77}
+                    {:else if SettingsState.menuIndex === 77}
                         <ThanksPage/>
                     {/if}
             </div>
             {/key}
-            {#if !$MobileGUI}
+            {#if !MobileState.enabled}
                 <button class="absolute top-2 right-2 hover:text-green-500 text-textcolor" onclick={() => {
                     if(window.innerWidth >= 700){
-                        settingsOpen.set(false)
+                        SettingsState.isOpen = false
                     }
                     else{
-                        $SettingsMenuIndex = -1
+                        SettingsState.menuIndex = -1
                     }
                 }}>
                     <XCircleIcon />

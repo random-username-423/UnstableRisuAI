@@ -1,4 +1,3 @@
-import { get } from 'svelte/store';
 import { checkNullish } from '../../utils/util';
 import { changeLanguage } from '../../../lang';
 import { saveAsset as saveImageGlobal } from '../../utils/fileIO';
@@ -12,7 +11,7 @@ import { baseDatabaseDefaults, presetTemplate } from './utils/defaultDb';
 export * from './utils/defaultDb';
 
 // Stores
-import { DBState, selectedCharID } from '../../stores.svelte';
+import { DBState, ChatState } from '../../stores.svelte';
 
 export const webAppSubVer = ''
 
@@ -165,7 +164,7 @@ export function getCurrentCharacter(options: getDatabaseOptions = {}): character
     if (!db.characters) {
         db.characters = []
     }
-    const char = db.characters?.[get(selectedCharID)]
+    const char = db.characters?.[ChatState.selectedCharId]
     return char
 }
 
@@ -173,7 +172,7 @@ export function setCurrentCharacter(char: character | groupChat) {
     if (!DBState.db.characters) {
         DBState.db.characters = []
     }
-    DBState.db.characters[get(selectedCharID)] = char
+    DBState.db.characters[ChatState.selectedCharId] = char
 }
 
 export function getCharacterByIndex(index: number, options: getDatabaseOptions = {}): character | groupChat {

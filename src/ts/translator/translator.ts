@@ -8,7 +8,7 @@ import { alertError } from "../utils/alert"
 import { requestChatData } from "../process/request/request"
 import { doingChat, type OpenAIChat } from "../process/index.svelte"
 import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../utils/parser.svelte"
-import { selectedCharID } from "../stores.svelte"
+import { ChatState } from "../stores.svelte"
 import { getModuleRegexScripts } from "src/ts/process/scripting/modules"
 import { getNodetextToSentence, sleep } from "../utils/util"
 import { processScriptFull } from "src/ts/process/scripting/scripts"
@@ -251,7 +251,7 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
     if(charArg !== ''){
         if(typeof(charArg) === 'string'){
             const db = getDatabase()
-            const charId = get(selectedCharID)
+            const charId = ChatState.selectedCharId
             alwaysExistChar = db.characters[charId]
         }
         else{
@@ -519,7 +519,7 @@ async function translateLLM(text:string, arg:{to:string, from:string, regenerate
     })
 
     const db = getDatabase()
-    const charIndex = get(selectedCharID)
+    const charIndex = ChatState.selectedCharId
     const currentChar = db.characters[charIndex]
     let translatorNote = ""
     console.log(arg.translatorNote)

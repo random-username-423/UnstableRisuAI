@@ -3,7 +3,7 @@ import type { CbsConditions } from '../utils/parser.svelte';
 import type { RisuModule } from 'src/ts/process/scripting/modules';
 import type { LLMModel } from '../model/modellist';
 import { get } from 'svelte/store';
-import { CurrentTriggerIdStore } from '../stores.svelte';
+import { ChatState } from '../stores.svelte';
 
 export const defaultCBSRegisterArg: CBSRegisterArg = {
     registerFunction: () => { throw new Error('registerFunction not implemented') },
@@ -185,7 +185,7 @@ export function registerCBS(arg:CBSRegisterArg) {
     registerFunction({
         name: 'trigger_id',
         callback: (str, matcherArg, args, vars) => {
-            const currentTriggerId = get(CurrentTriggerIdStore)
+            const currentTriggerId = ChatState.currentTriggerId
             return currentTriggerId ?? 'null'
         },
         alias: ['triggerid'],

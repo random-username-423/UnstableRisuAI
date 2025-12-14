@@ -1,6 +1,5 @@
 import { getDatabase, setDatabase } from 'src/ts/data/storage/database.svelte';
-import { selectedCharID } from 'src/ts/stores.svelte';
-import { get } from 'svelte/store';
+import { ChatState } from 'src/ts/stores.svelte';
 import { doingChat, sendChat } from '../index.svelte';
 import { downloadFile } from 'src/ts/utils/fileIO';
 import { isTauri } from "src/ts/utils/env";
@@ -21,7 +20,7 @@ async function sendPofile(arg:sendFileArg){
     let speaker = ''
     let parseMode = 0
     const db = getDatabase()
-    let currentChar = db.characters[get(selectedCharID)]
+    let currentChar = db.characters[ChatState.selectedCharId]
     let currentChat = currentChar.chats[currentChar.chatPage]
     const lines = arg.file.split('\n')
     for(let i=0;i<lines.length;i++){
@@ -44,11 +43,11 @@ async function sendPofile(arg:sendFileArg){
                 data: text
             })
             currentChar.chats[currentChar.chatPage] = currentChat
-            db.characters[get(selectedCharID)] = currentChar
+            db.characters[ChatState.selectedCharId] = currentChar
             setDatabase(db)
             doingChat.set(false)
             await sendChat(-1);
-            currentChar = db.characters[get(selectedCharID)]
+            currentChar = db.characters[ChatState.selectedCharId]
             currentChat = currentChar.chats[currentChar.chatPage]
             const res = currentChat.message[currentChat.message.length-1]
             const msgStr = res.data.split('\n').filter((a) => {

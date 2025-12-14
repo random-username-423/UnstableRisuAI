@@ -15,7 +15,7 @@ import { checkCharOrder } from 'src/ts/character/characters'
 import { LocalWriter, VirtualWriter } from "src/ts/utils/writers";
 import { BlankWriter } from 'src/ts/utils/writers'
 import { isTauri, isNodeServer } from "src/ts/utils/env";
-import { SettingsMenuIndex, ShowRealmFrameStore, selectedCharID, settingsOpen } from "../stores.svelte"
+import { SettingsState, RealmState, ChatState } from "../stores.svelte"
 import { checkImageType, convertImage, hasher } from "../utils/parser.svelte"
 import { CCardLib, type CharacterCardV3, type LorebookEntry } from '@risuai/ccardlib'
 import { reencodeImage } from "../process/files/inlays"
@@ -437,8 +437,8 @@ export async function characterURLImport() {
         db.modules.push(importData)
         setDatabase(db)
         alertNormal(language.successImport)
-        SettingsMenuIndex.set(14)
-        settingsOpen.set(true)
+        SettingsState.menuIndex = 14
+        SettingsState.isOpen = true
         return
     }
     if (hash.startsWith('#import_preset=')) {
@@ -448,8 +448,8 @@ export async function characterURLImport() {
             name: 'imported.risupreset',
             data: importData
         })
-        SettingsMenuIndex.set(1)
-        settingsOpen.set(true)
+        SettingsState.menuIndex = 1
+        SettingsState.isOpen = true
         return
     }
     if (hash.startsWith('#share_character')) {
@@ -475,8 +475,8 @@ export async function characterURLImport() {
         db.modules.push(md)
         setDatabase(db)
         alertNormal(language.successImport)
-        SettingsMenuIndex.set(14)
-        settingsOpen.set(true)
+        SettingsState.menuIndex = 14
+        SettingsState.isOpen = true
     }
     if (hash.startsWith('#share_preset')) {
         const data = await fetch("/sw/share/preset")
@@ -488,8 +488,8 @@ export async function characterURLImport() {
             name: 'shared.risup',
             data: preset
         })
-        SettingsMenuIndex.set(1)
-        settingsOpen.set(true)
+        SettingsState.menuIndex = 1
+        SettingsState.isOpen = true
     }
     if (window.launchQueue) {
         const handleFiles = async (files: FileSystemFileHandle[]) => {
@@ -543,8 +543,8 @@ export async function characterURLImport() {
                 name: name,
                 data: data
             })
-            SettingsMenuIndex.set(1)
-            settingsOpen.set(true)
+            SettingsState.menuIndex = 1
+            SettingsState.isOpen = true
             alertNormal(language.successImport)
             return
         }
@@ -555,8 +555,8 @@ export async function characterURLImport() {
             db.modules.push(md)
             setDatabase(db)
             alertNormal(language.successImport)
-            SettingsMenuIndex.set(14)
-            settingsOpen.set(true)
+            SettingsState.menuIndex = 14
+            SettingsState.isOpen = true
             return
         }
     }
@@ -674,7 +674,7 @@ export async function exportChar(charaID: number): Promise<string> {
         exportCharacterCard(char, 'png', { spec: 'v2' })
     }
     else if (option.type === 'realm') {
-        ShowRealmFrameStore.set("character")
+        RealmState.frameContent = "character"
     }
     else {
         return option.type
@@ -1796,7 +1796,7 @@ export async function downloadRisuHub(id: string, arg: {
             if (db.characters[db.characters.length - 1] && (db.goCharacterOnImport || arg.forceRedirect)) {
                 const index = db.characters.length - 1
                 characterFormatUpdate(index);
-                selectedCharID.set(index);
+                ChatState.selectedCharId =(index);
             }
             return
         }
@@ -1813,7 +1813,7 @@ export async function downloadRisuHub(id: string, arg: {
         if (db.characters[db.characters.length - 1] && (db.goCharacterOnImport || arg.forceRedirect)) {
             const index = db.characters.length - 1
             characterFormatUpdate(index);
-            selectedCharID.set(index);
+            ChatState.selectedCharId =(index);
             alertStore.set({
                 type: 'none',
                 msg: ''

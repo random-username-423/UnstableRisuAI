@@ -13,7 +13,7 @@ import { relaunch } from '@tauri-apps/plugin-process';
 import { platform } from '@tauri-apps/plugin-os';
 import { sleep, getBasename } from '../../utils/util';
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
-import { loadedStore } from "../../stores.svelte";
+import { AppState } from "../../stores.svelte";
 
 export async function checkDriver(type: 'save' | 'load' | 'loadtauri' | 'savetauri' | 'reftoken') {
     const CLIENT_ID = '580075990041-l26k2d3c0nemmqiu3d3aag01npfrkn76.apps.googleusercontent.com';
@@ -78,7 +78,7 @@ export async function checkDriverInit() {
                     await loadDrive(json.access_token, 'backup')
                 }
                 else if (da === 'savetauri' || da === 'loadtauri' || da === 'synctauri') {
-                    loadedStore.set(true)  // Hide loading screen
+                    AppState.loaded = true  // Hide loading screen
                     alertStore.set({
                         type: 'wait2',
                         msg: `Copy and paste this Auth Code: ${json.access_token}`

@@ -1,9 +1,9 @@
-import { get, writable } from "svelte/store";
+import { writable } from "svelte/store";
 import { getDatabase, setDatabase } from "../data/storage/database.svelte";
 import { downloadFile } from "../utils/fileIO";
 import { BufferToText, selectSingleFile } from '../utils/util';
 import { alertError } from "../utils/alert";
-import { CustomCSSStore, SafeModeStore } from "../stores.svelte";
+import { RenderState, AppState } from "../stores.svelte";
 
 export interface ColorScheme{
     bgcolor: string;
@@ -264,10 +264,10 @@ export function updateTextThemeAndCSS(){
         }
     }
 
-    if(!get(SafeModeStore)){
-        CustomCSSStore.set(db.customCSS ?? '')
+    if(!AppState.safeMode){
+        RenderState.customCSS = db.customCSS ?? ''
     }
     else{
-        CustomCSSStore.set('')
+        RenderState.customCSS = ''
     }
 }

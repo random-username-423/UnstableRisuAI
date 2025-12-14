@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { MobileGUIStack, MobileSideBar, selectedCharID } from "src/ts/stores.svelte";
+    import { MobileState, ChatState } from "src/ts/stores.svelte";
     import Settings from "../Setting/Settings.svelte";
     import RealmMain from "../UI/Realm/RealmMain.svelte";
     import MobileCharacters from "./MobileCharacters.svelte";
@@ -13,43 +13,43 @@
     import { DBState } from 'src/ts/stores.svelte';
 </script>
 
-{#if $MobileSideBar > 0}
+{#if MobileState.sideBarMenu > 0}
 <div class="w-full px-2 py-1 text-textcolor2 border-b border-b-darkborderc bg-darkbg flex justify-start items-center gap-2">
-    <button class="flex-1 border-r border-r-darkborderc" class:text-textcolor={$MobileSideBar === 1} onclick={() => {
-        $MobileSideBar = 1
+    <button class="flex-1 border-r border-r-darkborderc" class:text-textcolor={MobileState.sideBarMenu === 1} onclick={() => {
+        MobileState.sideBarMenu = 1
     }}>
         {language.Chat}
     </button>
-    <button class="flex-1 border-r border-r-darkborderc" class:text-textcolor={$MobileSideBar === 2} onclick={() => {
-        $MobileSideBar = 2
+    <button class="flex-1 border-r border-r-darkborderc" class:text-textcolor={MobileState.sideBarMenu === 2} onclick={() => {
+        MobileState.sideBarMenu = 2
     }}>
         {language.character}
     </button>
-    <button class:text-textcolor={$MobileSideBar === 3} onclick={() => {
-        $MobileSideBar = 3
+    <button class:text-textcolor={MobileState.sideBarMenu === 3} onclick={() => {
+        MobileState.sideBarMenu = 3
     }}>
         <WrenchIcon size={18} />
     </button>
 </div>
 {/if}
 <div class="w-full flex-1 overflow-y-auto bg-bgcolor relative">
-    {#if $MobileSideBar > 0}
+    {#if MobileState.sideBarMenu > 0}
         <div class="w-full flex flex-col p-2 mt-2 h-full">
-            {#if $MobileSideBar === 1}
-                <SideChatList bind:chara={DBState.db.characters[$selectedCharID]} />
-            {:else if $MobileSideBar === 2}
+            {#if MobileState.sideBarMenu === 1}
+                <SideChatList bind:chara={DBState.db.characters[ChatState.selectedCharId]} />
+            {:else if MobileState.sideBarMenu === 2}
                 <CharConfig />
-            {:else if $MobileSideBar === 3}
+            {:else if MobileState.sideBarMenu === 3}
                 <DevTool />
             {/if}
         </div>
-    {:else if $selectedCharID !== -1}
+    {:else if ChatState.selectedCharId !== -1}
         <ChatScreen />
-    {:else if $MobileGUIStack === 0}
+    {:else if MobileState.currentStack === 0}
         <RealmMain />
-    {:else if $MobileGUIStack === 1}
+    {:else if MobileState.currentStack === 1}
         <MobileCharacters />
-    {:else if $MobileGUIStack === 2}
+    {:else if MobileState.currentStack === 2}
         <Settings />
     {/if}
 </div>

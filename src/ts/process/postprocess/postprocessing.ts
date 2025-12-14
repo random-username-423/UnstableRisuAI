@@ -1,7 +1,7 @@
 import { get } from "svelte/store";
 import type { character, Message } from "src/ts/data/storage/types";
 import { DBState } from 'src/ts/stores.svelte';
-import { CharEmotion } from "src/ts/stores.svelte";
+import { ChatState } from "src/ts/stores.svelte";
 import { tokenizeNum } from "src/ts/utils/tokenizer";
 import { language } from "src/lang";
 import { requestChatData } from "src/ts/process/request/request";
@@ -25,7 +25,7 @@ export async function processEmotionScreen(
 ): Promise<EmotionProcessResult> {
     const currentEmotion = currentChar.emotionImages
     let emotionList = currentEmotion.map((a) => a[0])
-    const charemotions = get(CharEmotion)
+    const charemotions = ChatState.emotions
 
     let tempEmotion = charemotions[currentChar.chaId]
     if (!tempEmotion) {
@@ -63,7 +63,7 @@ export async function processEmotionScreen(
                 const emos: [string, string, number] = [emo[0], emo[1], Date.now()]
                 tempEmotion.push(emos)
                 charemotions[currentChar.chaId] = tempEmotion
-                CharEmotion.set(charemotions)
+                ChatState.emotions = charemotions
                 break
             }
         }
@@ -147,7 +147,7 @@ export async function processEmotionScreen(
                 const emos: [string, string, number] = [emo[0], emo[1], Date.now()]
                 tempEmotion.push(emos)
                 charemotions[currentChar.chaId] = tempEmotion
-                CharEmotion.set(charemotions)
+                ChatState.emotions = charemotions
                 emotionSelected = true
                 break
             }
@@ -160,7 +160,7 @@ export async function processEmotionScreen(
                     const emos: [string, string, number] = [emo[0], emo[1], Date.now()]
                     tempEmotion.push(emos)
                     charemotions[currentChar.chaId] = tempEmotion
-                    CharEmotion.set(charemotions)
+                    ChatState.emotions = charemotions
                     emotionSelected = true
                     break
                 }
@@ -173,7 +173,7 @@ export async function processEmotionScreen(
             const emos: [string, string, number] = [emo[0], emo[1], Date.now()]
             tempEmotion.push(emos)
             charemotions[currentChar.chaId] = tempEmotion
-            CharEmotion.set(charemotions)
+            ChatState.emotions = charemotions
         }
     } catch (error) {
         throwError(language.errors.httpError + `${error}`)
@@ -217,7 +217,7 @@ export function updateEmotionFromSpecial(
     currentChar: character,
     emotionName: string
 ): boolean {
-    const charemotions = get(CharEmotion)
+    const charemotions = ChatState.emotions
     const currentEmotion = currentChar.emotionImages
 
     let tempEmotion = charemotions[currentChar.chaId]
@@ -233,7 +233,7 @@ export function updateEmotionFromSpecial(
             const emos: [string, string, number] = [emo[0], emo[1], Date.now()]
             tempEmotion.push(emos)
             charemotions[currentChar.chaId] = tempEmotion
-            CharEmotion.set(charemotions)
+            ChatState.emotions = charemotions
             return true
         }
     }

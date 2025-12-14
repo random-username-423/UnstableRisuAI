@@ -2,7 +2,7 @@ import { get } from "svelte/store"
 import { alertMd, alertSelect, alertToast, alertWait, doingAlert } from "../utils/alert"
 import { getDatabase } from "../data/storage/database.svelte"
 import { changeToPreset as changeToPreset2 } from "../data/storage/utils/presetManager"
-import { alertStore, MobileGUIStack, MobileSideBar, openPersonaList, openPresetList, OpenRealmStore, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "../stores.svelte"
+import { ModalState, MobileState, RealmState, QuickSettings, ChatState, SettingsState, AppState } from "../stores.svelte"
 import { language } from "src/lang"
 import { updateTextThemeAndCSS } from "../gui/colorscheme"
 import { defaultHotkeys } from "./defaulthotkeys"
@@ -95,23 +95,23 @@ export function initHotkey(){
                     break
                 }
                 case 'settings':{
-                    settingsOpen.set(!get(settingsOpen))
+                    SettingsState.isOpen = !SettingsState.isOpen
                     break
                 }
                 case 'home':{
-                    selectedCharID.set(-1)
+                    ChatState.selectedCharId = -1
                     break
                 }
                 case 'presets':{
-                    openPresetList.set(!get(openPresetList))
+                    ModalState.presetListOpen = !ModalState.presetListOpen
                     break
                 }
                 case 'persona':{
-                    openPersonaList.set(!get(openPersonaList))
+                    ModalState.personaListOpen = !ModalState.personaListOpen
                     break
                 }
                 case 'toggleCSS':{
-                    SafeModeStore.set(!get(SafeModeStore))
+                    AppState.safeMode = !AppState.safeMode
                     updateTextThemeAndCSS()
                     break
                 }
@@ -119,32 +119,32 @@ export function initHotkey(){
                     const sorted = database.characters.map((v, i) => {
                         return {name: v.name, i}
                     }).sort((a, b) => a.name.localeCompare(b.name))
-                    const currentIndex = sorted.findIndex(v => v.i === get(selectedCharID))
+                    const currentIndex = sorted.findIndex(v => v.i === ChatState.selectedCharId)
                     if(currentIndex === 0){
                         return
                     }
                     if(currentIndex >= sorted.length - 1){
                         return
                     }
-                    selectedCharID.set(sorted[currentIndex - 1].i)
-                    PlaygroundStore.set(0)
-                    OpenRealmStore.set(false)
+                    ChatState.selectedCharId = sorted[currentIndex - 1].i
+                    AppState.playground = 0
+                    RealmState.isOpen = false
                     break
                 }
                 case 'nextChar':{
                     const sorted = database.characters.map((v, i) => {
                         return {name: v.name, i}
                     }).sort((a, b) => a.name.localeCompare(b.name))
-                    const currentIndex = sorted.findIndex(v => v.i === get(selectedCharID))
+                    const currentIndex = sorted.findIndex(v => v.i === ChatState.selectedCharId)
                     if(currentIndex === 0){
                         return
                     }
                     if(currentIndex >= sorted.length - 1){
                         return
                     }
-                    selectedCharID.set(sorted[currentIndex + 1].i)
-                    PlaygroundStore.set(0)
-                    OpenRealmStore.set(false)
+                    ChatState.selectedCharId = sorted[currentIndex + 1].i
+                    AppState.playground = 0
+                    RealmState.isOpen = false
                     break
                 }
                 case 'quickMenu':{
@@ -152,7 +152,7 @@ export function initHotkey(){
                     break
                 }
                 case 'previewRequest':{
-                    if(get(doingChat) && get(selectedCharID) !== -1){
+                    if(get(doingChat) && ChatState.selectedCharId !== -1){
                         return false
                     }
                     alertWait("Loading...")
@@ -258,18 +258,18 @@ export function initHotkey(){
             if(doingAlert()){
                 alertToast('Alert Closed')
             }
-            if(get(settingsOpen)){
-                settingsOpen.set(false)
+            if(SettingsState.isOpen){
+                SettingsState.isOpen = false
             }
             ev.preventDefault()
         }
         if(ev.key === 'Enter'){
-            const alertType = get(alertStore).type 
+            const alertType = ModalState.alert.type
             if(alertType === 'ask' || alertType === 'normal' || alertType === 'error'){
-                alertStore.set({
+                ModalState.alert = {
                     type: 'none',
                     msg: 'yes'
-                })
+                }
             }
         }
     })
@@ -307,10 +307,10 @@ async function quickMenu(){
     ])
     const sel = parseInt(selStr)
     if(sel === 0){
-        openPresetList.set(!get(openPresetList))
+        ModalState.presetListOpen = !ModalState.presetListOpen
     }
     if(sel === 1){
-        openPersonaList.set(!get(openPersonaList))
+        ModalState.personaListOpen = !ModalState.personaListOpen
     }
 }
 
@@ -354,26 +354,26 @@ export function initMobileGesture(){
             pressingPointers.delete(touch.identifier)
 
             if(moveX > 50 && Math.abs(moveY) < Math.abs(moveX)){
-                if(get(selectedCharID) === -1){
-                    if(get(MobileGUIStack) > 0){
-                        MobileGUIStack.update(v => v - 1)
+                if(ChatState.selectedCharId === -1){
+                    if(MobileState.currentStack > 0){
+                        MobileState.currentStack -= 1
                     }
                 }
                 else{
-                    if(get(MobileSideBar) > 0){
-                        MobileSideBar.update(v => v - 1)
+                    if(MobileState.sideBarMenu > 0){
+                        MobileState.sideBarMenu -= 1;
                     }
                 }
             }
             else if(moveX < -50 && Math.abs(moveY) < Math.abs(moveX)){
-                if(get(selectedCharID) === -1){
-                    if(get(MobileGUIStack) < 2){
-                        MobileGUIStack.update(v => v + 1)
+                if(ChatState.selectedCharId === -1){
+                    if(MobileState.currentStack < 2){
+                        MobileState.currentStack -= 1
                     }
                 }
                 else{
-                    if(get(MobileSideBar) < 3){
-                        MobileSideBar.update(v => v + 1)
+                    if(MobileState.sideBarMenu < 3){
+                        MobileState.sideBarMenu += 1
                     }
                 }
             }

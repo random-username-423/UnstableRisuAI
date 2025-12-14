@@ -1,7 +1,7 @@
 import { sleep } from "../../utils/util"
 import { getDbBackups } from "../../init"
 import { getDatabase } from "./database.svelte"
-import { selIdState, DBState } from "../../stores.svelte"
+import { ChatState, DBState } from "../../stores.svelte"
 import { syncDrive } from "../drive/drive"
 import { RisuSaveEncoder, type toSaveType } from "./risuSave"
 import { saveMainData } from "./dbStorage"
@@ -108,7 +108,7 @@ export async function startAutoSaveLoop() {
                 }
             }
             // 현재 선택된 캐릭터의 변경 감지
-            const charIndex = selIdState.selId
+            const charIndex = ChatState.selectedCharId
             if (DBState?.db?.characters?.[charIndex]) {
                 const currentChar = DBState.db.characters[charIndex]
                 for (const key in currentChar) {

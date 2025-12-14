@@ -2,13 +2,12 @@ import { shuffle } from "lodash";
 import { findCharacterbyId } from 'src/ts/utils/util';
 import { alertConfirm, alertError, alertSelectChar } from "src/ts/utils/alert";
 import { language } from "src/lang";
-import { get } from "svelte/store";
 import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte";
-import { selectedCharID } from "src/ts/stores.svelte";
+import { ChatState } from "src/ts/stores.svelte";
 
 export async function addGroupChar(){
     const db = getDatabase()
-    const selectedId = get(selectedCharID)
+    const selectedId = ChatState.selectedCharId
     const group = db.characters[selectedId]
     if(group.type === 'group'){
         const res = await alertSelectChar()
@@ -37,7 +36,7 @@ export async function addGroupChar(){
 
 export function rmCharFromGroup(index:number){
     const db = getDatabase()
-    const selectedId = get(selectedCharID)
+    const selectedId = ChatState.selectedCharId
     const group = db.characters[selectedId]
     if(group.type === 'group'){
         group.characters.splice(index, 1)

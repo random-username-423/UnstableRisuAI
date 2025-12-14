@@ -4,7 +4,7 @@
     import { alertInput } from "src/ts/utils/alert";
     import { language } from "src/lang";
     import RisuHubIcon from "./RealmHubIcon.svelte";
-    import { MobileGUI } from "src/ts/stores.svelte";
+    import { MobileState } from "src/ts/stores.svelte";
     import RealmPopUp from "./RealmPopUp.svelte";
 
     let openedData:null|hubType = $state(null)
@@ -66,7 +66,7 @@
         </button>
     </div>
 </div>
-{#if $MobileGUI}
+{#if MobileState.enabled}
 <div class="ml-4 flex items-start ">
     <div class="p-2 flex mb-3 overflow-x-auto rounded-lg border-darkborderc border gap-2">
         <button onclick={() => {

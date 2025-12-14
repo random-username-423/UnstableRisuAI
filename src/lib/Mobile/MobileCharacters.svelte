@@ -3,7 +3,7 @@
     import { DBState } from 'src/ts/stores.svelte';
     import BarIcon from "../SideBars/BarIcon.svelte";
     import { addCharacter, changeChar, getCharImage } from "src/ts/character/characters";
-    import { MobileSearch } from "src/ts/stores.svelte";
+import { MobileState } from 'src/ts/stores.svelte';
     import { MessageSquareIcon, PlusIcon } from "lucide-svelte";
 
     const agoFormatter = new Intl.RelativeTimeFormat(navigator.languages, { style: 'short' });
@@ -59,7 +59,7 @@
 </script>
 <div class="flex flex-col items-center w-full overflow-y-auto h-full">
     {#each sortChar(DBState.db.characters) as char, i}
-        {#if char.name.toLocaleLowerCase().includes($MobileSearch.toLocaleLowerCase())}
+        {#if char.name.toLocaleLowerCase().includes(MobileState.search.toLocaleLowerCase())}
             <button class="flex p-2 border-t-darkborderc gap-2 w-full" class:border-t={i !== 0} onclick={() => {
                 changeChar(char.i)
                 endGrid()

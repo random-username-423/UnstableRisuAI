@@ -1,5 +1,4 @@
-import { get } from "svelte/store";
-import { CharEmotion, selectedCharID } from "src/ts/stores.svelte";
+import { ChatState } from "src/ts/stores.svelte";
 import { type character, type customscript, type groupChat, type Database } from "src/ts/data/storage/types";
 import { getDatabase, getCurrentCharacter, getCurrentChat } from "src/ts/data/storage/database.svelte";
 import { downloadFile } from "src/ts/utils/fileIO";
@@ -184,7 +183,7 @@ export async function processScriptFull(char:character|groupChat|simpleCharacter
                 if(reg.test(data)){
                     if(outScript.startsWith('@@emo ')){
                         const emoName = script.out.substring(6).trim()
-                        const charemotions = get(CharEmotion)
+                        const charemotions = ChatState.emotions
                         let tempEmotion = charemotions[char.chaId]
                         if(!tempEmotion){
                             tempEmotion = []
@@ -198,7 +197,7 @@ export async function processScriptFull(char:character|groupChat|simpleCharacter
                                     const emos:[string, string,number] = [emo[0], emo[1], Date.now()]
                                     tempEmotion.push(emos)
                                     charemotions[char.chaId] = tempEmotion
-                                    CharEmotion.set(charemotions)
+                                    ChatState.emotions = charemotions
                                     emoChanged = true
                                     break
                                 }
@@ -206,7 +205,7 @@ export async function processScriptFull(char:character|groupChat|simpleCharacter
                         }
                     }
                     else if((outScript.startsWith('@@inject') || pscript.actions.includes('inject')) && chatID !== -1){
-                        const selchar = db.characters[get(selectedCharID)]
+                        const selchar = db.characters[ChatState.selectedCharId]
                         selchar.chats[selchar.chatPage].message[chatID].data = data
                         data = data.replace(reg, "")
                     }
@@ -252,7 +251,7 @@ export async function processScriptFull(char:character|groupChat|simpleCharacter
                 else{
                     if((outScript.startsWith('@@repeat_back') || pscript.actions.includes('repeat_back'))  && chatID !== -1){
                         const v = outScript.split(' ', 2)[1]
-                        const selchar = db.characters[get(selectedCharID)]
+                        const selchar = db.characters[ChatState.selectedCharId]
                         const chat = selchar.chats[selchar.chatPage]
                         let lastChat = chat.fmIndex === -1 ? selchar.firstMessage : selchar.alternateGreetings[chat.fmIndex]
                         let pointer = chatID - 1

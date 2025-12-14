@@ -5,8 +5,7 @@
     import { DownloadIcon, PencilIcon, HardDriveUploadIcon, MenuIcon, TrashIcon, GitBranchIcon, SplitIcon, FolderPlusIcon } from "lucide-svelte";
 
     import type { Chat, ChatFolder, character, groupChat } from "src/ts/data/storage/types";
-    import { DBState } from 'src/ts/stores.svelte';
-    import { MobileGUI, ReloadGUIPointer, selectedCharID } from "src/ts/stores.svelte";
+    import { DBState, RenderState, ChatState } from 'src/ts/stores.svelte';
 
     import CheckInput from "../UI/GUI/CheckInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
@@ -191,7 +190,7 @@
         }
         chara.chats = chats
         chara.chatPage = 0
-        $ReloadGUIPointer += 1
+        RenderState.guiReloadPointer += 1
     }}>{language.newChat}</Button>
     </div>
 
@@ -209,7 +208,7 @@
                     onclick={() => {
                         if(!editMode) {
                             chara.chatFolders[i].folded = !folder.folded
-                            $ReloadGUIPointer += 1
+                            RenderState.guiReloadPointer += 1
                         }
                     }}
                     class="flex items-center text-textcolor border-solid border-0 border-darkborderc p-2 cursor-pointer rounded-md"
@@ -262,7 +261,7 @@
                             e.stopPropagation()
                             const d = await alertConfirm(`${language.removeConfirm}${folder.name}`)
                             if (d) {
-                                $ReloadGUIPointer += 1
+                                RenderState.guiReloadPointer += 1
                                 const folders = chara.chatFolders
                                 folders.splice(i, 1)
                                 chara.chats.forEach(chat => {
@@ -293,7 +292,7 @@
                                 await loadChat(chara.chaId, targetChat.id)
                             }
                             chara.chatPage = chatIndex
-                            $ReloadGUIPointer += 1
+                            RenderState.guiReloadPointer += 1
                         }
                     }} class="risu-chats flex items-center text-textcolor border-solid border-0 border-darkborderc p-2 cursor-pointer rounded-md"class:bg-selected={chara.chats.indexOf(chat) === chara.chatPage}>
                         {#if editMode}
@@ -379,7 +378,7 @@
                                 const d = await alertConfirm(`${language.removeConfirm}${chat.name}`)
                                 if(d){
                                     chara.chatPage = 0
-                                    $ReloadGUIPointer += 1
+                                    RenderState.guiReloadPointer += 1
                                     let chats = chara.chats
                                     chats.splice(chara.chats.indexOf(chat), 1)
                                     chara.chats = chats
@@ -407,7 +406,7 @@
                         await loadChat(chara.chaId, targetChat.id)
                     }
                     chara.chatPage = originalIndex
-                    $ReloadGUIPointer += 1
+                    RenderState.guiReloadPointer += 1
                 }
             }}
             class="flex items-center text-textcolor border-solid border-0 border-darkborderc p-2 cursor-pointer rounded-md"
@@ -496,7 +495,7 @@
                                 const d = await alertConfirm(`${language.removeConfirm}${chat.name}`)
                                 if(d){
                                     chara.chatPage = 0
-                                    $ReloadGUIPointer += 1
+                                    RenderState.guiReloadPointer += 1
                                     let chats = chara.chats
                                     chats.splice(originalIndex, 1)
                                     chara.chats = chats
@@ -549,13 +548,13 @@
                     folded: false,
                 })
                 chara.chatFolders = folders
-                $ReloadGUIPointer += 1
+                RenderState.guiReloadPointer += 1
             }}>
                 <FolderPlusIcon size={18}/>
             </button>
         </div>
 
-        {#if DBState.db.characters[$selectedCharID]?.chaId !== '§playground'}
+        {#if DBState.db.characters[ChatState.selectedCharId]?.chaId !== '§playground'}
             <Toggles bind:chara={chara} />
         {/if}
         {#if chara.type === 'group'}

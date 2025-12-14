@@ -3,11 +3,10 @@
     import { language } from "../../lang";
     import { getDatabase } from "../../ts/data/storage/database.svelte";
 import { changeToPreset, copyPreset, downloadPreset, importPreset } from "../../ts/data/storage/utils/presetManager";
-    import { DBState } from 'src/ts/stores.svelte';
+    import { DBState, RealmState } from 'src/ts/stores.svelte';
     import { CopyIcon, Share2Icon, PencilIcon, HardDriveUploadIcon, PlusIcon, TrashIcon, XIcon, GitCompare } from "lucide-svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
     import { prebuiltPresets } from "src/ts/process/templates/templates";
-    import { ShowRealmFrameStore } from "src/ts/stores.svelte";
     import type { PromptItem, PromptItemPlain, PromptItemChatML, PromptItemTyped, PromptItemAuthorNote, PromptItemChat } from "src/ts/process/utils/prompt";
 
     let editMode = $state(false)
@@ -421,7 +420,7 @@ import { changeToPreset, copyPreset, downloadPreset, importPreset } from "../../
                             downloadPreset(i, 'risupreset')
                         }
                         if(data.type === 'realm'){
-                            $ShowRealmFrameStore = `preset:${i}`
+                            RealmState.frameContent = `preset:${i}`
                         }
                     }} onkeydown={(e) => {
                         if(e.key === 'Enter' && e.currentTarget instanceof HTMLElement){

@@ -1,8 +1,7 @@
-import { get } from "svelte/store";
 import { processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts";
 import type { Message } from "src/ts/data/storage/types";
 import { alertConfirm } from "src/ts/utils/alert";
-import { DBState, selectedCharID } from "src/ts/stores.svelte";
+import { DBState, ChatState } from "src/ts/stores.svelte";
 
 export async function alertConfirmTwice(
   firstMessage: string,
@@ -84,8 +83,8 @@ export function handleDualAction(
 }
 
 export function getFirstMessage(): string | null {
-  const char = DBState.db.characters[get(selectedCharID)];
-  const chat = char.chats[DBState.db.characters[get(selectedCharID)].chatPage];
+  const char = DBState.db.characters[ChatState.selectedCharId];
+  const chat = char.chats[DBState.db.characters[ChatState.selectedCharId].chatPage];
 
   return chat.fmIndex === -1
     ? char.firstMessage
@@ -98,7 +97,7 @@ export async function processRegexScript(
   msg: Message,
   msgIndex: number = -1
 ): Promise<Message> {
-  const char = DBState.db.characters[get(selectedCharID)];
+  const char = DBState.db.characters[ChatState.selectedCharId];
   const newData: string = (
     await processScriptFull(
       char,
