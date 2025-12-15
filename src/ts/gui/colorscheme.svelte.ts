@@ -1,4 +1,3 @@
-import { writable } from "svelte/store";
 import { getDatabase, setDatabase } from "../data/storage/database.svelte";
 import { downloadFile } from "../utils/fileIO";
 import { BufferToText, selectSingleFile } from '../utils/util';
@@ -109,7 +108,9 @@ const colorShemes = {
 
 } as const
 
-export const ColorSchemeTypeStore = writable('dark' as 'dark'|'light')
+export const ColorSchemeTypeState = $state({
+    type: 'dark' as 'dark' | 'light'
+})
 
 export const colorSchemeList = Object.keys(colorShemes) as (keyof typeof colorShemes)[]
 
@@ -121,7 +122,7 @@ export function changeColorScheme(colorScheme: string){
         }
         db.colorSchemeName = colorScheme
         setDatabase(db)
-        updateColorScheme()   
+        updateColorScheme()
     } catch (error) {}
 }
 
@@ -130,7 +131,7 @@ export function updateColorScheme(){
         const db = getDatabase()
 
         let colorScheme = db.colorScheme
-    
+
         if(colorScheme == null){
             colorScheme = safeStructuredClone(defaultColorScheme)
         }
@@ -145,7 +146,7 @@ export function updateColorScheme(){
         document.documentElement.style.setProperty("--risu-theme-textcolor2", colorScheme.textcolor2);
         document.documentElement.style.setProperty("--risu-theme-darkborderc", colorScheme.darkBorderc);
         document.documentElement.style.setProperty("--risu-theme-darkbutton", colorScheme.darkbutton);
-        ColorSchemeTypeStore.set(colorScheme.type)   
+        ColorSchemeTypeState.type = colorScheme.type
     } catch (error) {}
 }
 
@@ -188,7 +189,7 @@ export async function importColorScheme(){
     catch(e){
         alertError('Invalid color scheme')
         return
-    
+
     }
 }
 

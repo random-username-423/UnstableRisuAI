@@ -1,5 +1,5 @@
 import { defaultAutoSuggestPrompt, defaultJailbreak, defaultMainPrompt } from '../defaultPrompts';
-import { defaultColorScheme } from '../../../gui/colorscheme';
+import { defaultColorScheme } from '../../../gui/colorscheme.svelte';
 import type { AINsettings, botPreset, Database, NAIImgConfig, OobaSettings } from '../types';
 import { prebuiltNAIpresets } from '../../../process/templates/templates';
 import { LLMFormat } from '../../../model/modellist';

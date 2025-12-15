@@ -39,7 +39,7 @@ import { characterURLImport } from "./character/characterCards.svelte";
 import { loadRisuAccountData } from "./data/drive/accounter";
 import { autoServerBackup } from "./data/kei/backup";
 import { updateAnimationSpeed } from "./gui/animation";
-import { updateColorScheme, updateTextThemeAndCSS } from "./gui/colorscheme";
+import { updateColorScheme, updateTextThemeAndCSS } from "./gui/colorscheme.svelte";
 import { updateGuisize } from "./gui/guisize.svelte";
 import { startObserveDom } from "./utils/observer.svelte";
 import { initMobileGesture } from "./hotkey/hotkey";

@@ -6,7 +6,7 @@ import type { RisuPlugin } from '../../../plugins/plugins';
 import type { NAISettings } from '../../../process/models/nai';
 import type { PromptItem, PromptSettings } from '../../../process/utils/prompt';
 import type { OobaChatCompletionRequestParams } from '../../../model/ooba';
-import type { ColorScheme } from '../../../gui/colorscheme';
+import type { ColorScheme } from '../../../gui/colorscheme.svelte';
 import type { LLMFormat, LLMFlags, LLMTokenizer } from '../../../model/modellist';
 import type { HypaV3Settings, HypaV3Preset } from '../../../process/memory/hypav3Types';
 import type { Hotkey } from '../../../hotkey/defaulthotkeys';

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ColorSchemeTypeStore } from "src/ts/gui/colorscheme";
+    import { ColorSchemeTypeState } from "src/ts/gui/colorscheme.svelte";
     import { ParseMarkdown } from "src/ts/utils/parser.svelte";
     import { parseMultilangString, toLangName } from "src/ts/utils/util";
 
@@ -32,13 +32,13 @@
         {/each}
     </div>
     {#if markdown}
-        <div class="ml-2 max-w-full break-words text chat chattext prose" class:prose-invert={$ColorSchemeTypeStore}>
-            {#await ParseMarkdown(valueObject[selectedLang]) then md} 
+        <div class="ml-2 max-w-full break-words text chat chattext prose" class:prose-invert={ColorSchemeTypeState.type}>
+            {#await ParseMarkdown(valueObject[selectedLang]) then md}
                 {@html md}
             {/await}
         </div>
     {:else}
-        <div class="ml-2 max-w-full break-words text chat chattext prose" class:prose-invert={$ColorSchemeTypeStore}>
+        <div class="ml-2 max-w-full break-words text chat chattext prose" class:prose-invert={ColorSchemeTypeState.type}>
             {valueObject[selectedLang]}
         </div>
     {/if}

@@ -19,7 +19,7 @@
     import { tokenize } from "src/ts/utils/tokenizer";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import ModuleChatMenu from "../Setting/Pages/Module/ModuleChatMenu.svelte";
-    import { ColorSchemeTypeStore } from "src/ts/gui/colorscheme";
+    import { ColorSchemeTypeState } from "src/ts/gui/colorscheme.svelte";
     import Help from "./Help.svelte";
     import { getChatBranches } from "src/ts/gui/branches";
     import { getCurrentCharacter } from "src/ts/data/storage/database.svelte";
@@ -91,7 +91,7 @@
             {/if}
             {#if ModalState.alert.type === 'markdown'}
                 <div class="overflow-y-auto">
-                    <span class="text-gray-300 chattext prose chattext2" class:prose-invert={$ColorSchemeTypeStore}>
+                    <span class="text-gray-300 chattext prose chattext2" class:prose-invert={ColorSchemeTypeState.type}>
                         {#await ParseMarkdown(ModalState.alert.msg) then msg}
                             {@html msg}                        
                         {/await}

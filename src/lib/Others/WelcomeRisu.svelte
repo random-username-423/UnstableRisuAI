@@ -5,7 +5,7 @@
     import { DBState } from 'src/ts/stores.svelte';
     import Chat from "../ChatScreens/Chat.svelte";
     import { prebuiltPresets } from "src/ts/process/templates/templates";
-    import { updateTextThemeAndCSS } from "src/ts/gui/colorscheme";
+    import { updateTextThemeAndCSS } from "src/ts/gui/colorscheme.svelte";
     import Airisu from '../../etc/Airisu.webp'
 
     const airisuStyle = `background: url("${Airisu}");background-size: cover;`

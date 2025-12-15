@@ -1,7 +1,7 @@
 <script lang="ts">
     import { ArrowLeft, ArrowLeftRightIcon, ArrowRight, BotIcon, CopyIcon, LanguagesIcon, PencilIcon, RefreshCcwIcon, TrashIcon, UserIcon, Volume2Icon } from "lucide-svelte"
     import { getFileSrc } from "src/ts/utils/fileIO"
-    import { ColorSchemeTypeStore } from "src/ts/gui/colorscheme"
+    import { ColorSchemeTypeState } from "src/ts/gui/colorscheme.svelte"
     import { longpress } from "src/ts/gui/longtouch"
     import { getModelInfo } from "src/ts/model/modellist"
     import { runLuaButtonTrigger } from 'src/ts/process/scripting/scriptings'
@@ -248,7 +248,7 @@
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <span class="text chat-width chattext prose minw-0"
-            class:prose-invert={$ColorSchemeTypeStore}
+            class:prose-invert={ColorSchemeTypeState.type}
             bind:this={bodyRoot}
             onclick={() => {
             if(DBState.db.clickToEdit && idx > -1){

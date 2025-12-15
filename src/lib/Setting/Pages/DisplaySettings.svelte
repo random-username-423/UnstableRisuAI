@@ -9,7 +9,7 @@
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
     import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
     import { updateAnimationSpeed } from "src/ts/gui/animation";
-    import { changeColorScheme, colorSchemeList, exportColorScheme, importColorScheme, updateColorScheme, updateTextThemeAndCSS } from "src/ts/gui/colorscheme";
+    import { changeColorScheme, colorSchemeList, exportColorScheme, importColorScheme, updateColorScheme, updateTextThemeAndCSS } from "src/ts/gui/colorscheme.svelte";
     import { DownloadIcon, HardDriveUploadIcon } from "lucide-svelte";
     import { guiSizeText, updateGuisize } from "src/ts/gui/guisize.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
