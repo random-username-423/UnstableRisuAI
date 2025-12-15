@@ -1,4 +1,3 @@
-import { get, writable } from "svelte/store";
 import { type character, type MessageGenerationInfo, type Chat, type MessagePresetInfo } from "../data/storage/types";
 import { setCurrentChat } from "../data/storage/database.svelte";
 import { changeToPreset } from "../data/storage/utils/presetManager";
@@ -71,9 +70,9 @@ export type { OpenAIChat, OpenAIChatFull, MultiModal, requestTokenPart }
 // Exports
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const doingChat = writable(false)
-export const chatProcessStage = writable(0)
-export const abortChat = writable(false)
+export const DoingChatState = $state({ value: false })
+export const ChatProcessStageState = $state({ value: 0 })
+export const AbortChatState = $state({ value: false })
 export const requestTokenParts:{[key:string]:requestTokenPart[]} = {}
 export let previewFormated:OpenAIChat[] = []
 export let previewBody:string = ''
@@ -87,7 +86,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
     previewPrompt?:boolean
 } = {}):Promise<boolean> {
 
-    chatProcessStage.set(0)
+    ChatProcessStageState.value = 0
     const abortSignal = arg.signal ?? (new AbortController()).signal
     
     const stageTimings = {
@@ -155,14 +154,14 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         return
     }
 
-    const isDoing = get(doingChat)
+    const isDoing = DoingChatState.value
 
     if(isDoing){
         if(chatProcessIndex === -1){
             return false
         }
     }
-    doingChat.set(true)
+    DoingChatState.value = true
 
     if(chatProcessIndex === -1 && DBState.db.presetChain){
         const names = DBState.db.presetChain.split(',').map((v) => v.trim())
@@ -182,16 +181,16 @@ export async function sendChat(chatProcessIndex = -1,arg:{
     }
 
     if(connectionOpen){
-        chatProcessStage.set(4)
+        ChatProcessStageState.value = 4
         const peerSafe = await peerSafeCheck()
         if(!peerSafe){
             peerRevertChat()
-            doingChat.set(false)
+            DoingChatState.value = false
             throwError(language.otherUserRequesting)
             return false
         }
         await peerSync()
-        chatProcessStage.set(0)
+        ChatProcessStageState.value = 0
     }
 
     DBState.db.statics.messages += 1
@@ -301,7 +300,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
     const maxContextTokens = DBState.db.maxContext
 
 
-    chatProcessStage.set(1)
+    ChatProcessStageState.value = 1
     stageTimings.stage1Start = Date.now()
     const unformated = createEmptyUnformated()
 
@@ -595,7 +594,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         ms = currentChat.message
         currentTokens += triggerResult.tokens
         if(triggerResult.stopSending){
-            doingChat.set(false)
+            DoingChatState.value = false
             return false
         }
     }
@@ -786,7 +785,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
     
     if(nowChatroom.supaMemory && (DBState.db.supaModelType !== 'none' || DBState.db.hanuraiEnable || DBState.db.hypav2 || DBState.db.hypaV3)){
         stageTimings.stage1Duration = Date.now() - stageTimings.stage1Start
-        chatProcessStage.set(2)
+        ChatProcessStageState.value = 2
         stageTimings.stage2Start = Date.now()
         if(DBState.db.hanuraiEnable){
             const hn = await hanuraiMemory(chats, {
@@ -855,7 +854,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             currentChat.lastMemory = sp.lastId ?? currentChat.lastMemory;
         }
         stageTimings.stage2Duration = Date.now() - stageTimings.stage2Start
-        chatProcessStage.set(1)
+        ChatProcessStageState.value = 1
     }
     else{
         stageTimings.stage1Duration = Date.now() - stageTimings.stage1Start
@@ -1266,7 +1265,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         }
     }
 
-    chatProcessStage.set(3)
+    ChatProcessStageState.value = 3
     stageTimings.stage3Start = Date.now()
     if(arg.preview){
         previewFormated = formated
@@ -1528,7 +1527,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
     }
 
     if(needsAutoContinue){
-        doingChat.set(false)
+        DoingChatState.value = false
         return await sendChat(chatProcessIndex, {
             chatAdditonalTokens: arg.chatAdditonalTokens,
             continue: true,
@@ -1554,7 +1553,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
     if(generationInfo.stageTiming) {
         generationInfo.stageTiming.stage3 = stageTimings.stage3Duration
     }
-    chatProcessStage.set(4)
+    ChatProcessStageState.value = 4
     stageTimings.stage4Start = Date.now()
 
     if(resendChat){
@@ -1572,7 +1571,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
             DBState.db.characters[selectedChar].chats[selectedChat].message[lastMessageIndex].generationInfo = generationInfo
         }
         
-        doingChat.set(false)
+        DoingChatState.value = false
         return await sendChat(chatProcessIndex, {
             signal: abortSignal
         })

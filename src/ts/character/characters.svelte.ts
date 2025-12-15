@@ -1,4 +1,3 @@
-import { get } from "svelte/store";
 import { saveImage, setDatabase, defaultSdDataFunc, getDatabase, getCharacterByIndex, setCharacterByIndex } from "../data/storage/database.svelte";
 import type { character, Chat, loreBook } from "../data/storage/types";
 import { alertAddCharacter, alertConfirm, alertError, alertNormal, alertSelect, alertStore, alertWait } from "../utils/alert";
@@ -13,7 +12,7 @@ import { AppendableBuffer } from "../utils/fetch";
 import { updateInlayScreen } from "src/ts/process/postprocess/inlayScreen";
 import { checkImageType, parseMarkdownSafe } from "../utils/parser.svelte";
 import { translateHTML } from "../translator/translator";
-import { doingChat } from "../process/index.svelte";
+import { DoingChatState } from "../process/index.svelte";
 import { importCharacter } from "./characterCards.svelte";
 import { PngChunk } from './pngChunk';
 
@@ -880,7 +879,7 @@ export function changeChar(index: number, arg:{
     reseter?:()=>any,
 } = {}) {
     const reseter = arg.reseter ?? (() => {})
-    if(get(doingChat)){
+    if(DoingChatState.value){
       return
     }
     reseter();

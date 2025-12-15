@@ -13,7 +13,7 @@
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import { HardDriveUploadIcon, PlusIcon, TrashIcon } from "lucide-svelte";
     import { selectSingleFile } from "src/ts/utils/util";
-    import { doingChat, previewFormated, previewBody, sendChat } from "src/ts/process/index.svelte";
+    import { DoingChatState, previewFormated, previewBody, sendChat } from "src/ts/process/index.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import { applyChatTemplate, chatTemplates } from "src/ts/process/templates/chatTemplate";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
@@ -26,7 +26,7 @@
     let instructCustom = $state('')
 
     const preview = async () => {
-        if($doingChat){
+        if(DoingChatState.value){
             return false
         }
         alertWait("Loading...")
@@ -46,7 +46,7 @@
         if(previewJoin === 'prompt'){
             md += '### Prompt\n'
             md += '```json\n' + JSON.stringify(JSON.parse(previewBody), null, 2).replaceAll('```', '\\`\\`\\`') + '\n```\n'
-            $doingChat = false
+            DoingChatState.value = false
             alertMd(md)
             return
         }
@@ -77,7 +77,7 @@
 
             md += '### Instruction\n'
             md += '```\n' + instructed.replaceAll('```', '\\`\\`\\`') + '\n```\n'
-            $doingChat = false
+            DoingChatState.value = false
             alertMd(md)
             return
         }
@@ -101,7 +101,7 @@
 
             md += '```\n' + formated[i].content.replaceAll('```', '\\`\\`\\`') + '\n```\n'
         }
-        $doingChat = false
+        DoingChatState.value = false
         alertMd(md)
     }
     
@@ -211,7 +211,7 @@
         </button>
     </div>
     <Button className="mt-2" onclick={async () => {
-        if($doingChat){
+        if(DoingChatState.value){
             return
         }
         for(let i=0;i<autopilot.length;i++){
@@ -224,17 +224,17 @@
             })
             currentChar.chats[currentChar.chatPage] = currentChat
             db.characters[ChatState.selectedCharId] = currentChar
-            if($doingChat){
+            if(DoingChatState.value){
                 return
             }
             currentChar.chats[currentChar.chatPage] = currentChat
             db.characters[ChatState.selectedCharId] = currentChar
-            doingChat.set(false)
+            DoingChatState.value = false
             await sendChat(i);
             currentChar = db.characters[ChatState.selectedCharId]
             currentChat = currentChar.chats[currentChar.chatPage]
         }
-        doingChat.set(false)
+        DoingChatState.value = false
     }}>Run</Button>
 </Arcodion>
 

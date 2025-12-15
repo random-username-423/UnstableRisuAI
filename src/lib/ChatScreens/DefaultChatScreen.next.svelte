@@ -8,7 +8,7 @@
     import type { Message, character, groupChat } from "../../ts/data/storage/types";
     import { DBState } from 'src/ts/stores.svelte';
     import { getCharImage } from "../../ts/character/characters.svelte";
-    import { chatProcessStage, doingChat, sendChat } from "../../ts/process/index.svelte";
+    import { ChatProcessStageState, DoingChatState, sendChat } from "../../ts/process/index.svelte";
     import { findCharacterbyId, getUserIconProtrait, messageForm, sleep } from "../../ts/utils/util";
     import { language } from "../../lang";
     import { isExpTranslator, translate } from "../../ts/translator/translator";
@@ -70,7 +70,7 @@
 
     async function sendMain(continueResponse:boolean) {
         let selectedChar = ChatState.selectedCharId
-        if($doingChat){
+        if(DoingChatState.value){
             return
         }
         if(lastCharId !== ChatState.selectedCharId){
@@ -143,7 +143,7 @@
     }
 
     async function reroll() {
-        if($doingChat){
+        if(DoingChatState.value){
             return
         }
         if(lastCharId !== ChatState.selectedCharId){
@@ -198,7 +198,7 @@
     }
 
     async function unReroll() {
-        if($doingChat){
+        if(DoingChatState.value){
             return
         }
         if(lastCharId !== ChatState.selectedCharId){
@@ -248,7 +248,7 @@
             alertError(`${error}`)
         }
         lastCharId = ChatState.selectedCharId
-        $doingChat = false
+        DoingChatState.value = false
         if(DBState.db.playMessage){
             const audio = new Audio(sendSound);
             audio.play();
@@ -530,13 +530,13 @@
                 {/if}
 
 
-                {#if $doingChat || doingChatInputTranslate}
+                {#if DoingChatState.value || doingChatInputTranslate}
                     <button
                             aria-labelledby="cancel"
                             class="peer-focus:border-textcolor  flex justify-center border-y border-darkborderc items-center text-gray-100 p-3 hover:bg-blue-500 transition-colors" onclick={abortChat}
                             style:height={inputHeight}
                     >
-                        <div class="loadmove chat-process-stage-{$chatProcessStage}" class:autoload={autoMode}></div>
+                        <div class="loadmove chat-process-stage-{ChatProcessStageState.value}" class:autoload={autoMode}></div>
                     </button>
                 {:else}
                     <button

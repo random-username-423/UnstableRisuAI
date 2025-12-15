@@ -1,6 +1,6 @@
 <script lang="ts">
 	    import { requestChatData } from "src/ts/process/request/request";
-	    import { doingChat, type OpenAIChat } from "../../ts/process/index.svelte";
+	    import { DoingChatState, type OpenAIChat } from "../../ts/process/index.svelte";
 	    import { setDatabase } from "../../ts/data/storage/database.svelte";
 	    import type { character, Message, groupChat, Database } from "../../ts/data/storage/types";
 		import { DBState, ChatState } from 'src/ts/stores.svelte';
@@ -9,7 +9,6 @@
     import { alertConfirm } from "src/ts/utils/alert";
     import { language } from "src/lang";
     import { getUserName, replacePlaceholders } from "../../ts/utils/util";
-    import { onDestroy } from 'svelte';
     import { ParseMarkdown } from "src/ts/utils/parser.svelte";
 
     interface Props {
@@ -27,7 +26,7 @@
     let chatPage:number = $state()
 
     const updateSuggestions = () => {
-        if(ChatState.selectedCharId > -1 && !$doingChat) {
+        if(ChatState.selectedCharId > -1 && !DoingChatState.value) {
             if(progressChatPage > 0 && progressChatPage != chatPage){
                 progress=false
                 abortController?.abort()
@@ -36,9 +35,10 @@
             suggestMessages = currentChar?.chats[currentChar.chatPage].suggestMessages
         }
     }
-    
 
-    const unsub = doingChat.subscribe(async (v) => {
+    // Watch DoingChatState changes
+    $effect(() => {
+        const v = DoingChatState.value
         if(v) {
             progress=false
             abortController?.abort()
@@ -107,8 +107,6 @@
         }
     }
 
-    onDestroy(unsub)
-
     $effect.pre(() => {
         ChatState.selectedCharId
         //FIXME add selectedChatPage for optimize render
@@ -124,7 +122,7 @@
             <div class="loadmove mx-2"></div>
             <div>{language.creatingSuggestions}</div>
         </div>        
-    {:else if !$doingChat}
+    {:else if !DoingChatState.value}
         {#if DBState.db.translator !== ''}
             <div class="flex mr-2 mb-2">
                 <button class={"bg-textcolor2 hover:bg-darkbutton font-bold py-2 px-4 rounded " + (toggleTranslate ? 'text-green-500' : 'text-textcolor')}
@@ -144,8 +142,8 @@
                     alertConfirm(language.askReRollAutoSuggestions).then((result) => {
                         if(result) {
                             suggestMessages = []
-                            doingChat.set(true)
-                            doingChat.set(false)        
+                            DoingChatState.value = true
+                            DoingChatState.value = false        
                         }
                     })
                 }}

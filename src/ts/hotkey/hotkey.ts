@@ -1,4 +1,3 @@
-import { get } from "svelte/store"
 import { alertMd, alertSelect, alertToast, alertWait, doingAlert } from "../utils/alert"
 import { getDatabase } from "../data/storage/database.svelte"
 import { changeToPreset as changeToPreset2 } from "../data/storage/utils/presetManager"
@@ -6,7 +5,7 @@ import { ModalState, MobileState, RealmState, QuickSettings, ChatState, Settings
 import { language } from "src/lang"
 import { updateTextThemeAndCSS } from "../gui/colorscheme"
 import { defaultHotkeys } from "./defaulthotkeys"
-import { doingChat, previewBody, sendChat } from "../process/index.svelte"
+import { DoingChatState, previewBody, sendChat } from "../process/index.svelte"
 import { getRequestLog } from "../utils/fetch"
 
 export function initHotkey(){
@@ -152,7 +151,7 @@ export function initHotkey(){
                     break
                 }
                 case 'previewRequest':{
-                    if(get(doingChat) && ChatState.selectedCharId !== -1){
+                    if(DoingChatState.value && ChatState.selectedCharId !== -1){
                         return false
                     }
                     alertWait("Loading...")
@@ -165,7 +164,7 @@ export function initHotkey(){
                     let md = ''
                     md += '### Prompt\n'
                     md += '```json\n' + JSON.stringify(JSON.parse(previewBody), null, 2).replaceAll('```', '\\`\\`\\`') + '\n```\n'
-                    doingChat.set(false)
+                    DoingChatState.value = false
                     alertMd(md)
                     return
                 }

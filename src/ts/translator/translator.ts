@@ -1,4 +1,3 @@
-import { get } from "svelte/store"
 import { translatorPlugin } from "../plugins/plugins"
 import { getDatabase } from "../data/storage/database.svelte"
 import { type character, type customscript, type groupChat } from "../data/storage/types"
@@ -6,7 +5,7 @@ import { globalFetch } from "../utils/fetch"
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import { alertError } from "../utils/alert"
 import { requestChatData } from "../process/request/request"
-import { doingChat, type OpenAIChat } from "../process/index.svelte"
+import { DoingChatState, type OpenAIChat } from "../process/index.svelte"
 import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../utils/parser.svelte"
 import { ChatState } from "../stores.svelte"
 import { getModuleRegexScripts } from "src/ts/process/scripting/modules"
@@ -267,8 +266,8 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
         }
     }
     const db = getDatabase()
-    const DoingChat = get(doingChat)
-    if(DoingChat){
+    const isDoingChat = DoingChatState.value
+    if(isDoingChat){
         if(isExpTranslator()){
             if(!(db.translatorType === 'llm' && await getLLMCache(html) !== null)){
                 return html
