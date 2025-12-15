@@ -16,7 +16,7 @@ import {
     downloadManifest,
     createManifestFromLocal
 } from "./sync";
-import { alertError, alertStore } from "../../utils/alert";
+import { alertError, alertStore } from "../../utils/alert.svelte";
 import { language } from "../../../lang";
 import { isTauri } from "../../utils/env";
 import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "../../config/secrets";

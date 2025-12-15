@@ -1,6 +1,6 @@
 import { get } from "svelte/store";
 import { getDatabase } from "./database.svelte";
-import { alertNormal } from "../../utils/alert";
+import { alertNormal } from "../../utils/alert.svelte";
 import { language } from "src/lang";
 import { isTauri, isNodeServer, isFirefox } from "src/ts/utils/env";
 

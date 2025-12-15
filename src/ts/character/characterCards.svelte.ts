@@ -1,4 +1,4 @@
-import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertSelect, alertStore, alertTOS, alertWait } from "../utils/alert"
+import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertSelect, alertStore, alertTOS, alertWait } from "../utils/alert.svelte"
 import { defaultSdDataFunc, setDatabase, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite } from "../data/storage/database.svelte"
 import { appVer } from 'src/ts/utils/env'
 import type { character, customscript, loreSettings, loreBook, triggerscript, groupChat } from "../data/storage/types"

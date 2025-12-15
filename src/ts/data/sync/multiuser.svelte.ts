@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { alertError, alertInput, alertNormal, alertStore, alertWait } from '../../utils/alert';
+import { alertError, alertInput, alertNormal, alertStore, alertWait } from '../../utils/alert.svelte';
 import { setDatabase, saveImage, getCurrentChat, setCurrentChat, getDatabase } from '../storage/database.svelte';
 import type { character, Chat } from '../storage/types';
 import { ChatState } from '../../stores.svelte';

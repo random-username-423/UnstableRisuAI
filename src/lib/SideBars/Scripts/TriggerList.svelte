@@ -6,7 +6,7 @@
     import { sleep, sortableOptions } from "src/ts/utils/util";
     import { onDestroy, onMount } from "svelte";
     import { language } from "src/lang";
-    import { alertConfirm } from "src/ts/utils/alert";
+    import { alertConfirm } from "src/ts/utils/alert.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import Button from "src/lib/UI/GUI/Button.svelte";
     import { openURL } from "src/ts/utils/util";

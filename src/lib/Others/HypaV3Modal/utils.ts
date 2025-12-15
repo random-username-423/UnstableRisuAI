@@ -1,6 +1,6 @@
 import { processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts";
 import type { Message } from "src/ts/data/storage/types";
-import { alertConfirm } from "src/ts/utils/alert";
+import { alertConfirm } from "src/ts/utils/alert.svelte";
 import { DBState, ChatState } from "src/ts/stores.svelte";
 
 export async function alertConfirmTwice(

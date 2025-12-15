@@ -3,7 +3,7 @@
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
     import { type MCPToolWithURL, callMCPTool, getMCPMeta, getMCPTools, initializeMCPs } from "src/ts/process/mcp/mcp";
-    import { alertMd } from "src/ts/utils/alert";
+    import { alertMd } from "src/ts/utils/alert.svelte";
 
     let metadatas = $state('')
     let tools:MCPToolWithURL[] = $state([]);

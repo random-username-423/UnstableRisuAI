@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { alertGenerationInfoStore } from "../../ts/utils/alert";
+    import { AlertGenerationInfoState } from "../../ts/utils/alert.svelte";
     
     import { DBState } from 'src/ts/stores.svelte';
     import { getCharImage } from '../../ts/character/characters.svelte';
@@ -290,10 +290,10 @@
                         <div class="w-32 h-32 border-darkborderc border-4 rounded-lg" style:background={
                             `linear-gradient(0deg,
                             rgb(59,130,246) 0%,
-                            rgb(59,130,246) ${($alertGenerationInfoStore.genInfo.inputTokens / $alertGenerationInfoStore.genInfo.maxContext) * 100}%,
-                            rgb(34 197 94) ${($alertGenerationInfoStore.genInfo.inputTokens / $alertGenerationInfoStore.genInfo.maxContext) * 100}%,
-                            rgb(34 197 94) ${(($alertGenerationInfoStore.genInfo.outputTokens + $alertGenerationInfoStore.genInfo.inputTokens) / $alertGenerationInfoStore.genInfo.maxContext) * 100}%,
-                            rgb(156 163 175) ${(($alertGenerationInfoStore.genInfo.outputTokens + $alertGenerationInfoStore.genInfo.inputTokens) / $alertGenerationInfoStore.genInfo.maxContext) * 100}%,
+                            rgb(59,130,246) ${(AlertGenerationInfoState.data.genInfo.inputTokens / AlertGenerationInfoState.data.genInfo.maxContext) * 100}%,
+                            rgb(34 197 94) ${(AlertGenerationInfoState.data.genInfo.inputTokens / AlertGenerationInfoState.data.genInfo.maxContext) * 100}%,
+                            rgb(34 197 94) ${((AlertGenerationInfoState.data.genInfo.outputTokens + AlertGenerationInfoState.data.genInfo.inputTokens) / AlertGenerationInfoState.data.genInfo.maxContext) * 100}%,
+                            rgb(156 163 175) ${((AlertGenerationInfoState.data.genInfo.outputTokens + AlertGenerationInfoState.data.genInfo.inputTokens) / AlertGenerationInfoState.data.genInfo.maxContext) * 100}%,
                             rgb(156 163 175) 100%)`
                         }>
 
@@ -301,35 +301,35 @@
                     </div>
                     <div class="grid grid-cols-2 gap-y-2 gap-x-4 mt-4">
                         <span class="text-blue-500">{language.inputTokens}</span>
-                        <span class="text-blue-500 justify-self-end">{$alertGenerationInfoStore.genInfo.inputTokens ?? '?'} {language.tokens}</span>
+                        <span class="text-blue-500 justify-self-end">{AlertGenerationInfoState.data.genInfo.inputTokens ?? '?'} {language.tokens}</span>
                         <span class="text-green-500">{language.outputTokens}</span>
-                        <span class="text-green-500 justify-self-end">{$alertGenerationInfoStore.genInfo.outputTokens ?? '?'} {language.tokens}</span>
+                        <span class="text-green-500 justify-self-end">{AlertGenerationInfoState.data.genInfo.outputTokens ?? '?'} {language.tokens}</span>
                         <span class="text-gray-400">{language.maxContextSize}</span>
-                        <span class="text-gray-400 justify-self-end">{$alertGenerationInfoStore.genInfo.maxContext ?? '?'} {language.tokens}</span>
+                        <span class="text-gray-400 justify-self-end">{AlertGenerationInfoState.data.genInfo.maxContext ?? '?'} {language.tokens}</span>
                     </div>
                     <span class="text-textcolor2 text-sm">{language.tokenWarning}</span>
                 {/if}
                 {#if generationInfoMenuIndex === 1}
                 <div class="grid grid-cols-2 gap-y-2 gap-x-4 mt-4">
                     <span class="text-blue-500">Index</span>
-                    <span class="text-blue-500 justify-self-end">{$alertGenerationInfoStore.idx}</span>
+                    <span class="text-blue-500 justify-self-end">{AlertGenerationInfoState.data.idx}</span>
                     <span class="text-amber-500">Model</span>
-                    <span class="text-amber-500 justify-self-end">{$alertGenerationInfoStore.genInfo.model}</span>
+                    <span class="text-amber-500 justify-self-end">{AlertGenerationInfoState.data.genInfo.model}</span>
                     <span class="text-green-500">ID</span>
-                    <span class="text-green-500 justify-self-end">{DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].chatId ?? "None"}</span>
+                    <span class="text-green-500 justify-self-end">{DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx].chatId ?? "None"}</span>
                     <span class="text-red-500">GenID</span>
-                    <span class="text-red-500 justify-self-end">{$alertGenerationInfoStore.genInfo.generationId}</span>
+                    <span class="text-red-500 justify-self-end">{AlertGenerationInfoState.data.genInfo.generationId}</span>
                     <span class="text-cyan-500">Saying</span>
-                    <span class="text-cyan-500 justify-self-end">{DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].saying}</span>
+                    <span class="text-cyan-500 justify-self-end">{DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx].saying}</span>
                     <span class="text-purple-500">Size</span>
-                    <span class="text-purple-500 justify-self-end">{JSON.stringify(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx]).length} Bytes</span>
+                    <span class="text-purple-500 justify-self-end">{JSON.stringify(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx]).length} Bytes</span>
                     <span class="text-yellow-500">Time</span>
-                    <span class="text-yellow-500 justify-self-end">{(new Date(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].time ?? 0)).toLocaleString()}</span>
-                    {#if $alertGenerationInfoStore.genInfo.stageTiming}
-                        {@const stage1 = parseFloat(((($alertGenerationInfoStore.genInfo.stageTiming.stage1 ?? 0) / 1000).toFixed(1)))}
-                        {@const stage2 = parseFloat(((($alertGenerationInfoStore.genInfo.stageTiming.stage2 ?? 0) / 1000).toFixed(1)))}
-                        {@const stage3 = parseFloat(((($alertGenerationInfoStore.genInfo.stageTiming.stage3 ?? 0) / 1000).toFixed(1)))}
-                        {@const stage4 = parseFloat(((($alertGenerationInfoStore.genInfo.stageTiming.stage4 ?? 0) / 1000).toFixed(1)))}
+                    <span class="text-yellow-500 justify-self-end">{(new Date(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx].time ?? 0)).toLocaleString()}</span>
+                    {#if AlertGenerationInfoState.data.genInfo.stageTiming}
+                        {@const stage1 = parseFloat((((AlertGenerationInfoState.data.genInfo.stageTiming.stage1 ?? 0) / 1000).toFixed(1)))}
+                        {@const stage2 = parseFloat((((AlertGenerationInfoState.data.genInfo.stageTiming.stage2 ?? 0) / 1000).toFixed(1)))}
+                        {@const stage3 = parseFloat((((AlertGenerationInfoState.data.genInfo.stageTiming.stage3 ?? 0) / 1000).toFixed(1)))}
+                        {@const stage4 = parseFloat((((AlertGenerationInfoState.data.genInfo.stageTiming.stage4 ?? 0) / 1000).toFixed(1)))}
                         {@const totalRounded = (stage1 + stage2 + stage3 + stage4).toFixed(1)}
                         <span class="text-gray-400">Timing</span>
                         <span class="text-gray-400 justify-self-end">
@@ -342,7 +342,7 @@
                     {/if}
 
                     <span class="text-green-500">Tokens</span>
-                    {#await tokenize(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].data)}
+                    {#await tokenize(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx].data)}
                         <span class="text-green-500 justify-self-end">Loading</span>
                     {:then tokens}
                         <span class="text-green-500 justify-self-end">{tokens}</span>
@@ -365,19 +365,19 @@
                     {/await}
                 {/if}
                 {#if generationInfoMenuIndex === 3}
-                    {#if Object.keys(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo || {}).length === 0}
+                    {#if Object.keys(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx].promptInfo || {}).length === 0}
                         <div class="text-gray-300 text-lg mt-2">{language.promptInfoEmptyMessage}</div>
                     {:else}
                         <div class="grid grid-cols-2 gap-y-2 gap-x-4 mt-4">
                             <span class="text-blue-500">Preset Name</span>
-                            <span class="text-blue-500 justify-self-end">{DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptName}</span>
+                            <span class="text-blue-500 justify-self-end">{DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx].promptInfo.promptName}</span>
                             <span class="text-purple-500">Toggles</span>
                             <div class="col-span-2 max-h-32 overflow-y-auto border border-stone-500 rounded p-2 bg-gray-900">
-                                {#if DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptToggles.length === 0}
+                                {#if DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx].promptInfo.promptToggles.length === 0}
                                     <div class="text-gray-500 italic text-center py-4">{language.promptInfoEmptyToggle}</div>
                                 {:else}
                                     <div class="grid grid-cols-2 gap-y-2 gap-x-4">
-                                        {#each DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptToggles as toggle}
+                                        {#each DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx].promptInfo.promptToggles as toggle}
                                         <span class="text-gray-200 truncate">{toggle.key}</span>
                                         <span class="text-gray-200 justify-self-end truncate">{toggle.value}</span>
                                         {/each}
@@ -386,10 +386,10 @@
                             </div>
                             <span class="text-red-500">Prompt Text</span>
                             <div class="col-span-2 max-h-80 overflow-y-auto border border-stone-500 rounded p-4 bg-gray-900">
-                                {#if !DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptText}
+                                {#if !DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx].promptInfo.promptText}
                                     <div class="text-gray-500 italic text-center py-4">{language.promptInfoEmptyText}</div>
                                 {:else}
-                                    {#each DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[$alertGenerationInfoStore.idx].promptInfo.promptText as block}
+                                    {#each DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].message[AlertGenerationInfoState.data.idx].promptInfo.promptText as block}
                                         <div class="mb-2">
                                             <div class="font-bold text-gray-600">{block.role}</div>
                                             <pre class="whitespace-pre-wrap text-sm bg-stone-900 p-2 rounded border border-stone-500">{block.content}</pre>

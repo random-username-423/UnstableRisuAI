@@ -1,4 +1,3 @@
-import { writable } from "svelte/store"
 import { sleep } from "./util"
 import { language } from "../../lang"
 import { isNodeServer, isTauri } from "./env"
@@ -17,11 +16,13 @@ export interface alertData{
     stackTrace?: string;
 }
 
-type AlertGenerationInfoStoreData = {
+export type AlertGenerationInfoData = {
     genInfo: MessageGenerationInfo,
     idx: number
 }
-export const alertGenerationInfoStore = writable<AlertGenerationInfoStoreData>(null)
+export const AlertGenerationInfoState = $state({
+    data: null as AlertGenerationInfoData | null
+})
 export const alertStore = {
     set: (d:alertData) => {
         ModalState.alert = d
@@ -283,8 +284,8 @@ export async function alertModuleSelect(){
     return ModalState.alert.msg
 }
 
-export function alertRequestData(info:AlertGenerationInfoStoreData){
-    alertGenerationInfoStore.set(info)
+export function alertRequestData(info:AlertGenerationInfoData){
+    AlertGenerationInfoState.data = info
     ModalState.alert = {
         'type': 'requestdata',
         'msg': info.genInfo.generationId ?? 'none'

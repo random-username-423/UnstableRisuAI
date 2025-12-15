@@ -12,7 +12,7 @@ import { applyChatTemplate } from "../templates/chatTemplate"
 import { supportsInlayImage } from "../files/inlays"
 import { replaceAsync, simplifySchema } from "src/ts/utils/util"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { alertError, alertNormal, alertWait, showHypaV2Alert } from "src/ts/utils/alert";
+import { alertError, alertNormal, alertWait, showHypaV2Alert } from "src/ts/utils/alert.svelte";
 
 
 interface OAIResponseInputItem {

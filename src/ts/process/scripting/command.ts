@@ -1,6 +1,6 @@
 import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentChat, setDatabase } from "src/ts/data/storage/database.svelte";
 import { ChatState } from "src/ts/stores.svelte";
-import { alertInput, alertMd, alertNormal, alertSelect, alertToast } from "src/ts/utils/alert";
+import { alertInput, alertMd, alertNormal, alertSelect, alertToast } from "src/ts/utils/alert.svelte";
 import { sayTTS } from "src/ts/process/postprocess/tts";
 import { risuChatParser } from "src/ts/utils/parser.svelte";
 import { sendChat } from "src/ts/process/index.svelte";

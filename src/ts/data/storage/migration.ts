@@ -4,7 +4,7 @@
  */
 
 import { exists, readDir, readFile, remove, BaseDirectory } from '@tauri-apps/plugin-fs'
-import { alertWait } from '../../utils/alert'
+import { alertWait } from '../../utils/alert.svelte'
 import { forageStorage } from "src/ts/data/storage/autoStorage";
 import {
     initOPFSWorker,

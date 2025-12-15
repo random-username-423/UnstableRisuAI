@@ -12,7 +12,7 @@
     import { MultiuserState } from "src/ts/data/sync/multiuser.svelte"
     import { capitalize, getUserIcon, getUserName } from "src/ts/utils/util"
     import { language } from "../../lang"
-    import { alertClear, alertConfirm, alertNormal, alertRequestData, alertWait } from "../../ts/utils/alert"
+    import { alertClear, alertConfirm, alertNormal, alertRequestData, alertWait } from "../../ts/utils/alert.svelte"
     import { ParseMarkdown, type CbsConditions, type simpleCharacterArgument } from "../../ts/utils/parser.svelte"
     import { getCurrentCharacter, getCurrentChat, setCurrentChat } from "../../ts/data/storage/database.svelte"
     import type { MessageGenerationInfo } from "../../ts/data/storage/types"

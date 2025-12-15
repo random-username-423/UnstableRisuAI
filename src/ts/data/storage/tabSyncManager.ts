@@ -1,5 +1,5 @@
 import { v4 } from 'uuid'
-import { alertNormalWait } from '../../utils/alert'
+import { alertNormalWait } from '../../utils/alert.svelte'
 import { language } from 'src/lang'
 
 /**

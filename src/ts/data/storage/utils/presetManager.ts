@@ -2,7 +2,7 @@ import { getDatabase, setDatabase } from '../database.svelte';
 import { presetTemplate } from './defaultDb';
 import { checkNullish, decryptBuffer, encryptBuffer, selectSingleFile } from '../../../utils/util';
 import { downloadFile } from '../../../utils/fileIO';
-import { alertNormal } from '../../../utils/alert';
+import { alertNormal } from '../../../utils/alert.svelte';
 import { language } from '../../../../lang';
 import { prebuiltPresets } from '../../../process/templates/templates';
 import type { botPreset, Database } from '../types';

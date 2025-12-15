@@ -21,7 +21,7 @@
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
     import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
     import { openRouterModels } from "src/ts/model/openrouter";
-    import { alertConfirm } from "src/ts/utils/alert";
+    import { alertConfirm } from "src/ts/utils/alert.svelte";
     import OobaSettings from "./OobaSettings.svelte";
     import Arcodion from "src/lib/UI/Arcodion.svelte";
     import OpenrouterSettings from "./OpenrouterSettings.svelte";

@@ -4,7 +4,7 @@
     import NumberInput from "../UI/GUI/NumberInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
     import { getRequestLog } from "src/ts/utils/fetch";
-    import { alertMd, alertWait } from "src/ts/utils/alert";
+    import { alertMd, alertWait } from "src/ts/utils/alert.svelte";
     import Arcodion from "../UI/Arcodion.svelte";
     import { getCharToken, getChatToken } from "src/ts/utils/tokenizer";
     import { tokenizePreset } from "src/ts/process/utils/prompt";

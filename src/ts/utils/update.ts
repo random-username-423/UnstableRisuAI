@@ -1,4 +1,4 @@
-import { alertConfirm, alertWait } from "./alert";
+import { alertConfirm, alertWait } from "./alert.svelte";
 import { language } from "../../lang";
 import { platform } from '@tauri-apps/plugin-os';
 import { relaunch } from '@tauri-apps/plugin-process';

@@ -1,4 +1,4 @@
-import { alertConfirm } from "../../utils/alert"
+import { alertConfirm } from "../../utils/alert.svelte"
 
 /**
  * AutoSave 에러 처리 전담 클래스

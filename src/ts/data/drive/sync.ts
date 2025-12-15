@@ -4,7 +4,7 @@
  * Implements manifest-based optimistic locking for real-time synchronization.
  */
 
-import { alertError, alertSelect, alertStore } from "../../utils/alert";
+import { alertError, alertSelect, alertStore } from "../../utils/alert.svelte";
 import { getDatabase, setDatabase } from "../storage/database.svelte";
 import { type character, type groupChat, type Chat, type Database } from "../storage/types";
 import { forageStorage } from "src/ts/data/storage/autoStorage";

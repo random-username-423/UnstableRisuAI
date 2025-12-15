@@ -1,6 +1,6 @@
 import { shuffle } from "lodash";
 import { findCharacterbyId } from 'src/ts/utils/util';
-import { alertConfirm, alertError, alertSelectChar } from "src/ts/utils/alert";
+import { alertConfirm, alertError, alertSelectChar } from "src/ts/utils/alert.svelte";
 import { language } from "src/lang";
 import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte";
 import { ChatState } from "src/ts/stores.svelte";

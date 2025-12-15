@@ -1,7 +1,7 @@
 import { getDatabase, setDatabase } from "../data/storage/database.svelte";
 import { downloadFile } from "../utils/fileIO";
 import { BufferToText, selectSingleFile } from '../utils/util';
-import { alertError } from "../utils/alert";
+import { alertError } from "../utils/alert.svelte";
 import { RenderState, AppState } from "../stores.svelte";
 
 export interface ColorScheme{

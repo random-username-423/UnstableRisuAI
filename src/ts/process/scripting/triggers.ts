@@ -6,7 +6,7 @@ import { getModuleTriggers } from "src/ts/process/scripting/modules";
 import { RenderState, ChatState } from "src/ts/stores.svelte";
 import { processMultiCommand } from "src/ts/process/scripting/command";
 import { parseKeyValue, sleep } from "src/ts/utils/util";
-import { alertError, alertInput, alertNormal, alertSelect } from "src/ts/utils/alert";
+import { alertError, alertInput, alertNormal, alertSelect } from "src/ts/utils/alert.svelte";
 import type { OpenAIChat } from "src/ts/process/index.svelte";
 import { HypaProcesser } from "src/ts/process/memory/hypamemory";
 import { requestChatData, type OpenAIChatExtra } from "src/ts/process/request/request";

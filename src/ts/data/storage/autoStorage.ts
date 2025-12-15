@@ -2,7 +2,7 @@ import localforage from "localforage"
 import { replaceDbResources } from "../../utils/dbUtils"
 import { isNodeServer } from "src/ts/utils/env";
 import { NodeStorage } from "./nodeStorage"
-import { alertInput, alertSelect, alertStore } from "../../utils/alert"
+import { alertInput, alertSelect, alertStore } from "../../utils/alert.svelte"
 import { getDatabase } from "./database.svelte"
 import type { Database } from "./types"
 import { AccountStorage } from "./accountStorage.svelte"

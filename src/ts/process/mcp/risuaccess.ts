@@ -4,7 +4,7 @@ import { MCPClientLike } from "./internalmcp";
 import type { MCPTool, RPCToolCallContent } from "./mcplib";
 import { DBState } from "src/ts/stores.svelte";
 import { pickHashRand } from "src/ts/utils/util";
-import { alertConfirm } from "src/ts/utils/alert";
+import { alertConfirm } from "src/ts/utils/alert.svelte";
 import { language } from "src/lang";
 
 

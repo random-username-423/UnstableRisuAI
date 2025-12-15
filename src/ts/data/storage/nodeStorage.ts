@@ -1,5 +1,5 @@
 import { language } from "src/lang"
-import { alertInput } from "../../utils/alert"
+import { alertInput } from "../../utils/alert.svelte"
 
 let auth:string = null
 let authChecked = false

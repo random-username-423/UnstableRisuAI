@@ -1,6 +1,6 @@
 <script lang="ts">
     import { AlertOctagon, SaveIcon } from "lucide-svelte"
-    import { alertMd } from "src/ts/utils/alert"
+    import { alertMd } from "src/ts/utils/alert.svelte"
     import { saving } from "src/ts/data/storage/autoSaveManager.svelte"
     import { AccountWarning } from "src/ts/data/storage/accountStorage.svelte"
     import { DBState } from "src/ts/stores.svelte"

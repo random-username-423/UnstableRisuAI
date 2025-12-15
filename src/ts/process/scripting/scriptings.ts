@@ -3,7 +3,7 @@ import { LuaEngine, LuaFactory } from "wasmoon";
 import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase } from "src/ts/data/storage/database.svelte";
 import type { Chat, character, groupChat, triggerscript } from "src/ts/data/storage/types";
 import { RenderState, ChatState } from "src/ts/stores.svelte";
-import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "src/ts/utils/alert";
+import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "src/ts/utils/alert.svelte";
 import { HypaProcesser } from "src/ts/process/memory/hypamemory";
 import { generateAIImage } from "src/ts/process/integrations/stableDiff";
 import { writeInlayImage, getInlayAsset } from "src/ts/process/files/inlays";

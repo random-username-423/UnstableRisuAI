@@ -1,7 +1,7 @@
 import { get } from "svelte/store";
 import { getDatabase } from "./database.svelte";
 import { downloadFile } from "../../utils/fileIO";
-import { alertNormal } from "../../utils/alert";
+import { alertNormal } from "../../utils/alert.svelte";
 import { language } from "src/lang";
 
 export async function exportAsDataset(){

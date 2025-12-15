@@ -3,7 +3,7 @@ import { getDatabase } from "../data/storage/database.svelte"
 import { type character, type customscript, type groupChat } from "../data/storage/types"
 import { globalFetch } from "../utils/fetch"
 import { isTauri, isNodeServer } from "src/ts/utils/env";
-import { alertError } from "../utils/alert"
+import { alertError } from "../utils/alert.svelte"
 import { requestChatData } from "../process/request/request"
 import { DoingChatState, type OpenAIChat } from "../process/index.svelte"
 import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../utils/parser.svelte"

@@ -1,5 +1,5 @@
 <script>
-    import { alertConfirm, alertError } from "../../ts/utils/alert"
+    import { alertConfirm, alertError } from "../../ts/utils/alert.svelte"
     import { language } from "../../lang"
     import { v4 as uuidv4 } from "uuid"
 

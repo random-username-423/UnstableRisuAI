@@ -1,7 +1,7 @@
 import { v4 } from "uuid"
 import { openURL } from "../../utils/util"
 import { fetchNative } from "../../utils/fetch"
-import { alertInput } from "../../utils/alert";
+import { alertInput } from "../../utils/alert.svelte";
 
 export type MCPPrompt = {
     name: string;              // Unique identifier for the prompt

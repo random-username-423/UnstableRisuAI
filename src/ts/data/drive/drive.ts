@@ -1,4 +1,4 @@
-import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../../utils/alert";
+import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../../utils/alert.svelte";
 import { getDatabase } from "../storage/database.svelte";
 import type { Database } from "../storage/types";
 import { saving } from "src/ts/data/storage/autoSaveManager.svelte";

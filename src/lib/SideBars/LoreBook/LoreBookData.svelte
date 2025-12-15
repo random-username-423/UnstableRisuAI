@@ -4,7 +4,7 @@
     import { language } from "../../../lang";
     import { getCurrentCharacter, getCurrentChat } from "../../../ts/data/storage/database.svelte";
     import type { loreBook } from "../../../ts/data/storage/types";
-    import { alertConfirm, alertInput, alertMd } from "../../../ts/utils/alert";
+    import { alertConfirm, alertInput, alertMd } from "../../../ts/utils/alert.svelte";
     import Check from "../../UI/GUI/CheckInput.svelte";
     import Help from "../../Others/Help.svelte";
     import TextInput from "../../UI/GUI/TextInput.svelte";

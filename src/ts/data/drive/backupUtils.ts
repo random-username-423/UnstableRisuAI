@@ -1,4 +1,4 @@
-import { alertError } from "../../utils/alert";
+import { alertError } from "../../utils/alert.svelte";
 import { hubURL } from "../../character/characterCards.svelte";
 import { language } from "../../../lang";
 import type { Database } from "../storage/types";

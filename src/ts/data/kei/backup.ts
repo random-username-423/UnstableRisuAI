@@ -1,4 +1,4 @@
-import { alertNormal, alertSelect } from "../../utils/alert"
+import { alertNormal, alertSelect } from "../../utils/alert.svelte"
 import { keiServerURL } from "./kei"
 import { getDatabase, setDatabase } from "../storage/database.svelte"
 import { requiresFullEncoderReload } from "src/ts/data/storage/autoSaveManager.svelte";

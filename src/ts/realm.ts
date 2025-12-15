@@ -2,7 +2,7 @@ import { exportCharacterCard } from "./character/characterCards.svelte";
 import { VirtualWriter } from "./utils/writers";
 import { getCurrentCharacter, getDatabase } from "./data/storage/database.svelte";
 import { type character } from "./data/storage/types";
-import { alertStore } from "./utils/alert";
+import { alertStore } from "./utils/alert.svelte";
 
 let pong = false;
 

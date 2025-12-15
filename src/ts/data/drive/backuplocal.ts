@@ -1,4 +1,4 @@
-import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear, alertSelect } from "src/ts/utils/alert";
+import { alertError, alertNormal, alertStore, alertWait, alertMd, waitAlert, alertClear, alertSelect } from "src/ts/utils/alert.svelte";
 import { Buffer } from "buffer";
 import { saving, requiresFullEncoderReload } from "src/ts/data/storage/autoSaveManager.svelte";
 import { forageStorage } from "src/ts/data/storage/autoStorage";

@@ -5,7 +5,7 @@
     import Check from "src/lib/UI/GUI/CheckInput.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
-    import { alertConfirm, alertSelect } from "src/ts/utils/alert";
+    import { alertConfirm, alertSelect } from "src/ts/utils/alert.svelte";
     import { getCharImage } from "src/ts/character/characters.svelte";
     import { changeUserPersona, exportUserPersona, importUserPersona, saveUserPersona, selectUserImg } from "src/ts/character/persona";
     import Sortable from 'sortablejs/modular/sortable.core.esm.js';

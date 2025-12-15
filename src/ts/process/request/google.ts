@@ -9,7 +9,7 @@ import type { OpenAIChat } from "../index.svelte"
 import { extractJSON, getGeneralJSONSchema } from "../templates/jsonSchema"
 import { applyParameters, type Parameter, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { alertError, alertNormal, alertWait, showHypaV2Alert } from "src/ts/utils/alert";
+import { alertError, alertNormal, alertWait, showHypaV2Alert } from "src/ts/utils/alert.svelte";
 
 type GeminiFunctionCall = {
     id?: string;

@@ -1,5 +1,5 @@
 import { language } from "src/lang";
-import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../utils/alert";
+import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../utils/alert.svelte";
 import { requestChatData } from "../process/request/request";
 import { saveAsset } from "../utils/fileIO";
 import { globalFetch } from "../utils/fetch";

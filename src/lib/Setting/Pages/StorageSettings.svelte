@@ -8,7 +8,7 @@
     import { getDbBackups } from "src/ts/init"
     import { RefreshCwIcon, Trash2Icon, DatabaseIcon, ImageIcon, MessageSquareIcon, FileIcon, HardDriveIcon, UsersIcon, FolderOpenIcon } from "lucide-svelte"
     import Button from "src/lib/UI/GUI/Button.svelte"
-    import { alertConfirm, alertNormal } from "src/ts/utils/alert"
+    import { alertConfirm, alertNormal } from "src/ts/utils/alert.svelte"
     import OPFSExplorer from "./OPFSExplorer.svelte"
     import IndexedDBExplorer from "./IndexedDBExplorer.svelte"
 

@@ -1,7 +1,7 @@
 import { untrack } from "svelte";
 import type { character, Database, groupChat } from "./data/storage/types";
 import type { simpleCharacterArgument } from "./utils/parser.svelte";
-import type { alertData } from "./utils/alert";
+import type { alertData } from "./utils/alert.svelte";
 import { moduleUpdate } from "./process/scripting/modules";
 import { resetScriptCache } from "./process/scripting/scripts";
 

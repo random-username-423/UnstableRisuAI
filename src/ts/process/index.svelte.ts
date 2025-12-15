@@ -4,7 +4,7 @@ import { changeToPreset } from "../data/storage/utils/presetManager";
 import { DBState, ChatState } from '../stores.svelte';
 import { ChatTokenizer, tokenize } from "../utils/tokenizer";
 import { language } from "../../lang";
-import { alertError, alertToast } from "../utils/alert";
+import { alertError, alertToast } from "../utils/alert.svelte";
 import { findCharacterbyId, getUserName, isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax, prebuiltAssetCommand } from '../utils/util';
 import { requestChatData } from "./request/request";
 import { processScript, processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts";

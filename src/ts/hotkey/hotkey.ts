@@ -1,4 +1,4 @@
-import { alertMd, alertSelect, alertToast, alertWait, doingAlert } from "../utils/alert"
+import { alertMd, alertSelect, alertToast, alertWait, doingAlert } from "../utils/alert.svelte"
 import { getDatabase } from "../data/storage/database.svelte"
 import { changeToPreset as changeToPreset2 } from "../data/storage/utils/presetManager"
 import { ModalState, MobileState, RealmState, QuickSettings, ChatState, SettingsState, AppState } from "../stores.svelte"

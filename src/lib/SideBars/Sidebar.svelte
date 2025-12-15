@@ -24,7 +24,7 @@
     import { v4 } from "uuid"
     import { getFileSrc, saveAsset } from "src/ts/utils/fileIO"
     import { checkCharOrder } from "src/ts/character/characters.svelte"
-    import { alertInput, alertSelect } from "src/ts/utils/alert"
+    import { alertInput, alertSelect } from "src/ts/utils/alert.svelte"
     import SideChatList from "./SideChatList.svelte"
     import { MultiuserState } from "src/ts/data/sync/multiuser.svelte"
     import { GuiSizeState } from "src/ts/gui/guisize.svelte"

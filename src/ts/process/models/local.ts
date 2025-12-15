@@ -3,7 +3,7 @@ import { globalFetch } from "src/ts/utils/fetch";
 import { sleep } from "src/ts/utils/util";
 import * as path from "@tauri-apps/api/path";
 import { exists, readTextFile } from "@tauri-apps/plugin-fs";
-import { alertClear, alertError, alertMd, alertWait } from "src/ts/utils/alert";
+import { alertClear, alertError, alertMd, alertWait } from "src/ts/utils/alert.svelte";
 import { getDatabase } from "src/ts/data/storage/database.svelte";
 let serverRunning = false;
 

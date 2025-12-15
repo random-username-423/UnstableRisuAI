@@ -6,7 +6,7 @@
     import { onDestroy, onMount, tick } from "svelte";
     import { sleep, sortableOptions } from "src/ts/utils/util";
     import { v4 } from "uuid";
-    import { alertError, alertErrorWait } from "src/ts/utils/alert";
+    import { alertError, alertErrorWait } from "src/ts/utils/alert.svelte";
 
     let reinitializeSortable = false;
 

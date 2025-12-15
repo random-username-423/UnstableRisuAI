@@ -1,5 +1,5 @@
 import { language } from "../../lang";
-import { alertError, alertMd, alertPluginConfirm } from "../utils/alert";
+import { alertError, alertMd, alertPluginConfirm } from "../utils/alert.svelte";
 import { getCurrentCharacter, getDatabase, setDatabaseLite } from "../data/storage/database.svelte";
 import { checkNullish, selectSingleFile, sleep } from '../utils/util';
 import type { OpenAIChat } from "../process/index.svelte";

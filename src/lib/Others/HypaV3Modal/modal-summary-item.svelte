@@ -19,7 +19,7 @@
   import { type OpenAIChat } from "src/ts/process/index.svelte";
   import type { Message } from "src/ts/data/storage/types";
   import { translateHTML } from "src/ts/translator/translator";
-  import { alertConfirm } from "src/ts/utils/alert";
+  import { alertConfirm } from "src/ts/utils/alert.svelte";
   import { DBState, ChatState } from "src/ts/stores.svelte";
   import type {
     SummaryItemState,

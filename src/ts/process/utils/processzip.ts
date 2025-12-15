@@ -4,7 +4,7 @@ import { type LocalWriter, type VirtualWriter} from 'src/ts/utils/writers'
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import * as fflate from "fflate";
 import { getArrayBuffer, sleep } from 'src/ts/utils/util';
-import { alertStore } from "src/ts/utils/alert";
+import { alertStore } from "src/ts/utils/alert.svelte";
 
 export async function processZip(dataArray: Uint8Array): Promise<string> {
     const jszip = await import("jszip");

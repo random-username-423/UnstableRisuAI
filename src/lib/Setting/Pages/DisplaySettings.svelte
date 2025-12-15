@@ -18,7 +18,7 @@
   import Arcodion from "src/lib/UI/Arcodion.svelte";
   import Button from "src/lib/UI/GUI/Button.svelte";
   import { SettingsState } from "src/ts/stores.svelte";
-  import { alertError } from "src/ts/utils/alert";
+  import { alertError } from "src/ts/utils/alert.svelte";
 
     const onSchemeInputChange = (e:Event) => {
         changeColorScheme((e.target as HTMLInputElement).value)

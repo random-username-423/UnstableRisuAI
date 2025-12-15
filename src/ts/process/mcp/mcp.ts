@@ -2,7 +2,7 @@ import { getDatabase } from "src/ts/data/storage/database.svelte";
 import { MCPClient, type JsonRPC, type MCPTool, type RPCToolCallContent } from "./mcplib";
 import { DBState } from "src/ts/stores.svelte";
 import { getModuleMcps } from "src/ts/process/scripting/modules";
-import { alertError, alertInput, alertNormal } from "src/ts/utils/alert";
+import { alertError, alertInput, alertNormal } from "src/ts/utils/alert.svelte";
 import { v4 } from "uuid";
 import type { MCPClientLike } from "./internalmcp";
 import localforage from "localforage";
