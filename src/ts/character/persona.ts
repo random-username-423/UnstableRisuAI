@@ -1,6 +1,5 @@
-import { get } from "svelte/store"
 import { getDatabase, saveImage, setDatabase } from "../data/storage/database.svelte"
-import { getUserName, selectSingleFile, sleep } from '../utils/util'
+import { selectSingleFile, sleep } from '../utils/util'
 import { alertError, alertNormal, alertStore } from "../utils/alert.svelte"
 import { downloadFile, readImage } from "../utils/fileIO"
 import { AppendableBuffer } from "../utils/fetch"

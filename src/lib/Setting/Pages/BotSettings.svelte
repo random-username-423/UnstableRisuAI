@@ -6,7 +6,6 @@
     
     import { DBState } from 'src/ts/stores.svelte';
     import { CustomProviderState } from "src/ts/plugins/plugins.svelte";
-    import { getModelMaxContext } from "src/ts/utils/util";
     import { downloadFile } from "src/ts/utils/fileIO";
     import { isTauri } from "src/ts/utils/env";
     import { tokenizeAccurate, tokenizerList } from "src/ts/utils/tokenizer";
@@ -21,7 +20,6 @@
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
     import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
     import { openRouterModels } from "src/ts/model/openrouter";
-    import { alertConfirm } from "src/ts/utils/alert.svelte";
     import OobaSettings from "./OobaSettings.svelte";
     import Arcodion from "src/lib/UI/Arcodion.svelte";
     import OpenrouterSettings from "./OpenrouterSettings.svelte";
@@ -32,9 +30,8 @@
   import { getModelInfo, LLMFlags, LLMFormat, LLMProvider } from "src/ts/model/modellist";
   import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
   import RegexList from "src/lib/SideBars/Scripts/RegexList.svelte";
-    import { includes } from "lodash";
-
-    let tokens = $state({
+    
+let tokens = $state({
         mainPrompt: 0,
         jailbreak: 0,
         globalNote: 0,

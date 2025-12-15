@@ -1,5 +1,4 @@
-import type { character, Chat, Message, MessageGenerationInfo, MessagePresetInfo, groupChat } from "src/ts/data/storage/types";
-import type { OpenAIChat } from "src/ts/process/chatTypes";
+import type { character, Chat, MessageGenerationInfo, MessagePresetInfo, groupChat } from "src/ts/data/storage/types";
 import { DBState } from 'src/ts/stores.svelte';
 import { processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts";
 import { runTrigger } from "src/ts/process/scripting/triggers";

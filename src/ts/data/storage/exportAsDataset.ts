@@ -1,4 +1,3 @@
-import { get } from "svelte/store";
 import { getDatabase } from "./database.svelte";
 import { downloadFile } from "../../utils/fileIO";
 import { alertNormal } from "../../utils/alert.svelte";

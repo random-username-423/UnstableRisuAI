@@ -45,24 +45,13 @@ import {
     type LorebookData
 } from "src/ts/process/prompt/promptBuilder";
 // New modular imports (for future refactoring)
+
+
 import {
-    formatChatHistory,
-    createCharacterCache,
-    createFormatOptions
-} from "src/ts/process/prompt/chatHistoryFormatter";
-import {
-    saveEncryptedThinkingFromChunk,
-    type EncryptedThinkingEntry
+    saveEncryptedThinkingFromChunk
 } from "src/ts/process/chat/responseHandler";
-import {
-    tokenizeTemplate,
-    assembleTemplate,
-    assembleLegacy,
-    applyDepthPrompts,
-    applyPastThinkingBudget,
-    collectEncryptedThinkingHistory,
-    type AssembleContext
-} from "src/ts/process/prompt/promptAssembler";
+
+
 
 export type { OpenAIChat, OpenAIChatFull, MultiModal, requestTokenPart }
 

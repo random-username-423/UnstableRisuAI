@@ -1,4 +1,3 @@
-import { translatorPlugin } from "../plugins/plugins.svelte"
 import { getDatabase } from "../data/storage/database.svelte"
 import { type character, type customscript, type groupChat } from "../data/storage/types"
 import { globalFetch } from "../utils/fetch"

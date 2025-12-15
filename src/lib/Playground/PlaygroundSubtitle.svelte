@@ -12,8 +12,7 @@
     import { risuChatParser } from "src/ts/utils/parser.svelte";
     import { getLanguageCodes } from "src/ts/utils/languageCodes";
     import { downloadFile } from "src/ts/utils/fileIO";
-    import { AppendableBuffer, globalFetch } from "src/ts/utils/fetch";
-    import SliderInput from "../UI/GUI/SliderInput.svelte";
+    import { AppendableBuffer } from "src/ts/utils/fetch";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import sendSound from '../../etc/send.mp3'

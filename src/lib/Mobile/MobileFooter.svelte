@@ -1,6 +1,6 @@
 <script lang="ts">
 
-  import { SettingsIcon, GlobeIcon, HomeIcon, MessageSquare, Volume2Icon, CurlyBraces, ActivityIcon, BookIcon, SmileIcon, UserIcon } from "lucide-svelte";
+  import { SettingsIcon, GlobeIcon, HomeIcon, Volume2Icon, CurlyBraces, ActivityIcon, BookIcon, SmileIcon, UserIcon } from "lucide-svelte";
   import { language } from "src/lang";
   import { ChatState, MobileState } from "src/ts/stores.svelte";
 

@@ -4,7 +4,6 @@ import {
     readFile,
     exists,
     mkdir,
-    readDir,
     remove
 } from "@tauri-apps/plugin-fs"
 import { forageStorage } from "src/ts/data/storage/autoStorage";

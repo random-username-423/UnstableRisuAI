@@ -4,7 +4,7 @@ import type { Database } from "../storage/types";
 import { saving } from "src/ts/data/storage/autoSaveManager.svelte";
 import { openURL } from "../../utils/util";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
-import { saveToWorker, listFromWorker, deleteFromWorker, deleteDirectoryFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
+import { saveToWorker, deleteFromWorker, deleteDirectoryFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { getUnpargeables } from 'src/ts/utils/dbUtils'
 import { isTauri } from "src/ts/utils/env";
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";

@@ -1,5 +1,5 @@
 <script>
-    import { alertConfirm, alertError } from "../../ts/utils/alert.svelte";
+    import { alertConfirm } from "../../ts/utils/alert.svelte";
     import { language } from "../../lang";
     
     import { DBState } from 'src/ts/stores.svelte';

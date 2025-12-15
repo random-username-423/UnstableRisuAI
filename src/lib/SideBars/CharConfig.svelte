@@ -2,7 +2,7 @@
     import { language } from "../../lang";
     import { tokenizeAccurate } from "../../ts/utils/tokenizer";
     import { saveImage as saveAsset } from "../../ts/data/storage/database.svelte";
-    import type { Database, character, groupChat } from "../../ts/data/storage/types";
+    import type { character, groupChat } from "../../ts/data/storage/types";
     import { DBState } from 'src/ts/stores.svelte';
     import { ChatState, RealmState, ModalState } from "../../ts/stores.svelte";
     import { MobileState } from 'src/ts/stores.svelte';
@@ -10,12 +10,12 @@
     import Check from "../UI/GUI/CheckInput.svelte";
     import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/character/characters.svelte";
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
-    import { alertConfirm, alertMd, alertNormal, alertSelectChar, alertTOS, showHypaV2Alert } from "../../ts/utils/alert.svelte";
+    import { alertTOS, showHypaV2Alert } from "../../ts/utils/alert.svelte";
     import BarIcon from "./BarIcon.svelte";
     import { findCharacterbyId, getAuthorNoteDefaultText, selectMultipleFile, selectSingleFile } from "../../ts/utils/util";
     import Help from "../Others/Help.svelte";
     import { exportChar } from "src/ts/character/characterCards.svelte";
-    import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices, FixNAITTS } from "src/ts/process/postprocess/tts";
+    import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices } from "src/ts/process/postprocess/tts";
     import { getFileSrc } from "src/ts/utils/fileIO";
     import { addGroupChar, rmCharFromGroup } from "src/ts/process/chat/group";
     import TextInput from "../UI/GUI/TextInput.svelte";
@@ -30,9 +30,8 @@
     import { updateInlayScreen } from "src/ts/process/postprocess/inlayScreen";
     import { registerOnnxModel } from "src/ts/process/integrations/transformers";
     import MultiLangInput from "../UI/GUI/MultiLangInput.svelte";
-    import { applyModule, getModuleToggles } from "src/ts/process/scripting/modules";
+    import { applyModule } from "src/ts/process/scripting/modules";
     import { exportRegex, importRegex } from "src/ts/process/scripting/scripts";
-    import Arcodion from "../UI/Arcodion.svelte";
     import SliderInput from "../UI/GUI/SliderInput.svelte";
     import Toggles from "./Toggles.svelte";
 

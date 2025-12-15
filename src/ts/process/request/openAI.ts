@@ -10,9 +10,9 @@ import type { OpenAIChatFull } from "../index.svelte"
 import { extractJSON, getOpenAIJSONSchema } from "../templates/jsonSchema"
 import { applyChatTemplate } from "../templates/chatTemplate"
 import { supportsInlayImage } from "../files/inlays"
-import { replaceAsync, simplifySchema } from "src/ts/utils/util"
+import { simplifySchema } from "src/ts/utils/util"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { alertError, alertNormal, alertWait, showHypaV2Alert } from "src/ts/utils/alert.svelte";
+import { alertError } from "src/ts/utils/alert.svelte";
 
 
 interface OAIResponseInputItem {

@@ -1,7 +1,6 @@
 <script lang="ts">
     import { language } from "src/lang";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
-    import LoreBookData from "src/lib/SideBars/LoreBook/LoreBookData.svelte";
     import type { loreBook } from "src/ts/data/storage/types";
     import LoreBookList from "src/lib/SideBars/LoreBook/LoreBookList.svelte";
     import { type CCLorebook, convertExternalLorebook } from "src/ts/process/prompt/lorebook.svelte";
@@ -13,7 +12,6 @@
     import Help from "src/lib/Others/Help.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import { getFileSrc, saveAsset, downloadFile } from "src/ts/utils/fileIO";
-    import { openURL } from "src/ts/utils/util";
     import { alertNormal, alertError } from "src/ts/utils/alert.svelte";
     import { exportRegex, importRegex } from "src/ts/process/scripting/scripts";
     import { selectMultipleFile } from "src/ts/utils/util";

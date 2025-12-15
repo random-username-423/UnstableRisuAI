@@ -11,7 +11,6 @@ export const ProviderSeparatorAfter = new Set([
 
 import { getDatabase } from "../data/storage/database.svelte"
 import {
-    LLMFlags,
     LLMFormat,
     LLMProvider,
     LLMTokenizer,

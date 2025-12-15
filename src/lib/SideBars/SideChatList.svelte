@@ -2,7 +2,7 @@
     import { onDestroy, onMount } from "svelte";
     import { v4 } from "uuid";
     import Sortable from 'sortablejs/modular/sortable.core.esm.js';
-    import { DownloadIcon, PencilIcon, HardDriveUploadIcon, MenuIcon, TrashIcon, GitBranchIcon, SplitIcon, FolderPlusIcon } from "lucide-svelte";
+    import { DownloadIcon, PencilIcon, HardDriveUploadIcon, MenuIcon, TrashIcon, SplitIcon, FolderPlusIcon } from "lucide-svelte";
 
     import type { Chat, ChatFolder, character, groupChat } from "src/ts/data/storage/types";
     import { DBState, RenderState, ChatState } from 'src/ts/stores.svelte';
@@ -12,12 +12,10 @@
     import TextInput from "../UI/GUI/TextInput.svelte";
 
     import { exportChat, importChat, exportAllChats } from "src/ts/character/characters.svelte";
-    import { alertChatOptions, alertConfirm, alertError, alertInput, alertNormal, alertSelect, alertStore } from "src/ts/utils/alert.svelte";
-    import { findCharacterbyId, parseKeyValue, sleep, sortableOptions } from "src/ts/utils/util";
+    import { alertChatOptions, alertConfirm, alertError, alertNormal, alertSelect, alertStore } from "src/ts/utils/alert.svelte";
+    import { findCharacterbyId, sleep, sortableOptions } from "src/ts/utils/util";
     import { loadChat } from "src/ts/data/storage/chatStorage";
     import { createMultiuserRoom } from "src/ts/data/sync/multiuser.svelte";
-    import { getChatBranches } from "src/ts/gui/branches";
-    import { getModuleToggles } from "src/ts/process/scripting/modules";
     import { language } from "src/lang";
   import Toggles from "./Toggles.svelte";
 

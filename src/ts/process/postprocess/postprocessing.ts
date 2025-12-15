@@ -1,4 +1,3 @@
-import { get } from "svelte/store";
 import type { character, Message } from "src/ts/data/storage/types";
 import { DBState } from 'src/ts/stores.svelte';
 import { ChatState } from "src/ts/stores.svelte";

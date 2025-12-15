@@ -1,6 +1,5 @@
 import { writeFile } from "@tauri-apps/plugin-fs"
 import { save } from "@tauri-apps/plugin-dialog"
-import { getBasename } from "./util"
 import { AppendableBuffer } from './fetch'
 import { isTauri, isMobileTauri } from "./env"
 

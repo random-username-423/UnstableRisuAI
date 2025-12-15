@@ -1,9 +1,9 @@
-import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertSelect, alertStore, alertTOS, alertWait } from "../utils/alert.svelte"
+import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertStore, alertTOS, alertWait } from "../utils/alert.svelte"
 import { defaultSdDataFunc, setDatabase, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite } from "../data/storage/database.svelte"
 import { appVer } from 'src/ts/utils/env'
 import type { character, customscript, loreSettings, loreBook, triggerscript, groupChat } from "../data/storage/types"
 import { importPreset } from "../data/storage/utils/presetManager"
-import { checkNullish, decryptBuffer, encryptBuffer, getArrayBuffer, isKnownUri, selectFileByDom, selectMultipleFile, sleep } from '../utils/util'
+import { checkNullish, decryptBuffer, getArrayBuffer, isKnownUri, selectFileByDom, sleep } from '../utils/util'
 import { language } from "src/lang"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { characterFormatUpdate } from "./characters.svelte"
@@ -16,7 +16,7 @@ import { BlankWriter } from 'src/ts/utils/writers'
 import { isTauri, isNodeServer } from "src/ts/utils/env";
 import { SettingsState, RealmState, ChatState } from "../stores.svelte"
 import { checkImageType, convertImage, hasher } from "../utils/parser.svelte"
-import { CCardLib, type CharacterCardV3, type LorebookEntry } from '@risuai/ccardlib'
+import { type CharacterCardV3, type LorebookEntry } from '@risuai/ccardlib'
 import { reencodeImage } from "../process/files/inlays"
 import { PngChunk } from './pngChunk'
 import type { OnnxModelFiles } from "src/ts/process/integrations/transformers"

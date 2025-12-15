@@ -1,7 +1,6 @@
 <script lang="ts">
-    import { CheckIcon } from "lucide-svelte";
-
-    interface Props {
+    
+interface Props {
         check?: boolean;
         onChange?: any;
         margin?: boolean;

@@ -7,7 +7,7 @@
     import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
     import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";
-    import { alertNormal, alertSelect, alertConfirm } from "src/ts/utils/alert.svelte";
+    import { alertNormal, alertSelect } from "src/ts/utils/alert.svelte";
     import { downloadFile } from "src/ts/utils/fileIO";
     import { isTauri } from "src/ts/utils/env";
     import { languageEnglish } from "src/lang/en";

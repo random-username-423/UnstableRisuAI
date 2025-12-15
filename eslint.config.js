@@ -1,9 +1,10 @@
+import unusedImports from "eslint-plugin-unused-imports";
 import js from '@eslint/js';
 import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import ts from 'typescript-eslint';
 
-export default ts.config(
+export default [
   js.configs.recommended,
   ...ts.configs.recommended,
   ...svelte.configs.recommended,
@@ -14,6 +15,23 @@ export default ts.config(
         ...globals.node,
         safeStructuredClone: 'readonly'
       }
+    }
+  },
+  {
+    plugins: {
+      'unused-imports': unusedImports
+    },
+    rules: {
+      'unused-imports/no-unused-imports': 'warn',
+      'unused-imports/no-unused-vars': [
+        'warn',
+        {
+          vars: 'all',
+          varsIgnorePattern: '^_',
+          args: 'after-used',
+          argsIgnorePattern: '^_'
+        }
+      ]
     }
   },
   {
@@ -37,4 +55,4 @@ export default ts.config(
       'electron/'
     ]
   }
-);
+];

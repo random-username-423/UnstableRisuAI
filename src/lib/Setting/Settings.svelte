@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { AccessibilityIcon, ActivityIcon, AlignLeft, BookIcon, PackageIcon, BotIcon, BoxIcon, CodeIcon, ContactIcon, DiamondIcon, FolderIcon, LanguagesIcon, MonitorIcon, Sailboat, ScrollTextIcon, UserIcon, XCircleIcon, KeyboardIcon, HardDriveIcon } from "lucide-svelte";
+    import { AccessibilityIcon, ActivityIcon, PackageIcon, BotIcon, BoxIcon, CodeIcon, ContactIcon, LanguagesIcon, MonitorIcon, Sailboat, UserIcon, XCircleIcon, KeyboardIcon, HardDriveIcon } from "lucide-svelte";
     import { language } from "src/lang";
     import DisplaySettings from "./Pages/DisplaySettings.svelte";
     import UserSettings from "./Pages/UserSettings.svelte";
@@ -10,7 +10,6 @@
     import AdvancedSettings from "./Pages/AdvancedSettings.svelte";
     import { SettingsState } from "src/ts/stores.svelte";
     import { MobileState } from 'src/ts/stores.svelte';
-    import Botpreset from "./botpreset.svelte";
     import Communities from "./Pages/Communities.svelte";
     import GlobalLoreBookSettings from "./Pages/GlobalLoreBookSettings.svelte";
     import Lorepreset from "./lorepreset.svelte";

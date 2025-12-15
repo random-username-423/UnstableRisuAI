@@ -16,7 +16,6 @@
     import { addCharacter, changeChar, getCharImage } from "../../ts/character/characters.svelte"
     import CharConfig from "./CharConfig.svelte"
     import { language } from "../../lang"
-    import { onDestroy } from "svelte"
     import { isEqual } from "lodash"
     import SidebarAvatar from "./SidebarAvatar.svelte"
     import BaseRoundedButton from "../UI/BaseRoundedButton.svelte"

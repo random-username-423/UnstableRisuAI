@@ -1,12 +1,12 @@
 import { ChatState } from "src/ts/stores.svelte";
-import { type character, type customscript, type groupChat, type Database } from "src/ts/data/storage/types";
+import { type character, type customscript, type groupChat } from "src/ts/data/storage/types";
 import { getDatabase, getCurrentCharacter, getCurrentChat } from "src/ts/data/storage/database.svelte";
 import { downloadFile } from "src/ts/utils/fileIO";
 import { alertError, alertNormal } from "src/ts/utils/alert.svelte";
 import { language } from "src/lang";
 import { selectSingleFile } from 'src/ts/utils/util';
 import { assetRegex, type CbsConditions, risuChatParser as risuChatParserOrg, type simpleCharacterArgument } from "src/ts/utils/parser.svelte";
-import { getModuleAssets, getModuleRegexScripts, getModuleTriggers } from "src/ts/process/scripting/modules";
+import { getModuleAssets, getModuleRegexScripts } from "src/ts/process/scripting/modules";
 import { HypaProcesser } from "src/ts/process/memory/hypamemory";
 import { runLuaEditTrigger } from "src/ts/process/scripting/scriptings";
 import { pluginV2 } from "src/ts/plugins/plugins.svelte";

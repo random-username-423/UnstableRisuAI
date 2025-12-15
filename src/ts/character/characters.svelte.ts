@@ -2,7 +2,7 @@ import { saveImage, setDatabase, defaultSdDataFunc, getDatabase, getCharacterByI
 import type { character, Chat, loreBook } from "../data/storage/types";
 import { alertAddCharacter, alertConfirm, alertError, alertNormal, alertSelect, alertStore, alertWait } from "../utils/alert.svelte";
 import { language } from "../../lang";
-import { checkNullish, findCharacterbyId, getUserName, selectMultipleFile, selectSingleFile, sleep } from '../utils/util';
+import { checkNullish, findCharacterbyId, getUserName, selectMultipleFile, selectSingleFile } from '../utils/util';
 import { v4 as uuidv4, v4 } from 'uuid';
 import { MobileState, RealmState, ChatState } from "../stores.svelte";
 import { requiresFullEncoderReload } from "src/ts/data/storage/autoSaveManager.svelte";

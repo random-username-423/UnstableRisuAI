@@ -6,12 +6,12 @@
 
 import { alertError, alertSelect, alertStore } from "../../utils/alert.svelte";
 import { getDatabase, setDatabase } from "../storage/database.svelte";
-import { type character, type groupChat, type Chat, type Database } from "../storage/types";
+import { type character, type groupChat, type Chat } from "../storage/types";
 import { forageStorage } from "src/ts/data/storage/autoStorage";
 import { saveToWorker, loadFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { decodeChat } from 'src/ts/data/storage/risuSave'
 import { getUnpargeables } from 'src/ts/utils/dbUtils'
-import { sleep, getBasename } from '../../utils/util';
+import { sleep } from '../../utils/util';
 import { language } from "../../../lang";
 import { syncManager } from "./syncManager";
 

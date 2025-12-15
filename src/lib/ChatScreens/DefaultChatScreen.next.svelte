@@ -9,7 +9,7 @@
     import { DBState } from 'src/ts/stores.svelte';
     import { getCharImage } from "../../ts/character/characters.svelte";
     import { ChatProcessStageState, DoingChatState, sendChat } from "../../ts/process/index.svelte";
-    import { findCharacterbyId, getUserIconProtrait, messageForm, sleep } from "../../ts/utils/util";
+    import { findCharacterbyId, sleep } from "../../ts/utils/util";
     import { language } from "../../lang";
     import { isExpTranslator, translate } from "../../ts/translator/translator";
     import { alertError, alertNormal, alertWait, showHypaV2Alert } from "../../ts/utils/alert.svelte";

@@ -6,7 +6,7 @@
     import { isNodeServer, isTauri } from "src/ts/utils/env";
     import { DBState } from "src/ts/stores.svelte";
     import { onMount, onDestroy } from "svelte";
-    import { CloudIcon, RefreshCwIcon, UploadIcon, DownloadIcon, InfoIcon } from "lucide-svelte";
+    import { CloudIcon, RefreshCwIcon, UploadIcon, DownloadIcon } from "lucide-svelte";
     import Button from "src/lib/UI/GUI/Button.svelte";
     import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import Help from "src/lib/Others/Help.svelte";

@@ -4,7 +4,7 @@ import { DoingChatState, sendChat } from '../index.svelte';
 import { downloadFile } from 'src/ts/utils/fileIO';
 import { isTauri } from "src/ts/utils/env";
 import { HypaProcesser } from '../memory/hypamemory';
-import { BufferToText as BufferToText, selectSingleFile, sleep } from 'src/ts/utils/util';
+import { BufferToText as BufferToText, selectSingleFile } from 'src/ts/utils/util';
 import { postInlayAsset } from './inlays';
 
 type sendFileArg = {

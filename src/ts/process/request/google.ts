@@ -2,14 +2,13 @@ import { fetchNative, globalFetch, textifyReadableStream, addFetchLog } from "sr
 import { language } from "src/lang"
 import { LLMFlags, LLMFormat } from "src/ts/model/modellist"
 import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte"
-import { replaceAsync, simplifySchema, sleep } from "src/ts/utils/util"
+import { simplifySchema } from "src/ts/utils/util"
 import { v4 } from "uuid"
 import { setInlayAsset, writeInlayImage } from "../files/inlays"
-import type { OpenAIChat } from "../index.svelte"
 import { extractJSON, getGeneralJSONSchema } from "../templates/jsonSchema"
 import { applyParameters, type Parameter, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { alertError, alertNormal, alertWait, showHypaV2Alert } from "src/ts/utils/alert.svelte";
+import { alertError } from "src/ts/utils/alert.svelte";
 
 type GeminiFunctionCall = {
     id?: string;

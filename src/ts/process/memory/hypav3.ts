@@ -17,7 +17,7 @@ import { type ChatTokenizer } from "src/ts/utils/tokenizer";
 
 // Re-export from hypav3Types.ts to maintain backwards compatibility
 export { type HypaV3Preset, type HypaV3Settings, createHypaV3Preset, type SerializableHypaV3Data, type SerializableSummary } from "./hypav3Types";
-import { type HypaV3Preset, type HypaV3Settings, type SerializableSummary, type SerializableHypaV3Data } from "./hypav3Types";
+import { type HypaV3Preset, type SerializableHypaV3Data } from "./hypav3Types";
 
 interface HypaV3Data {
   summaries: Summary[];

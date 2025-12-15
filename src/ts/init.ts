@@ -3,7 +3,6 @@
  * Contains loadData() and related startup functions
  */
 
-import { get } from "svelte/store";
 import { BaseDirectory, readFile, exists } from "@tauri-apps/plugin-fs";
 import { v4 as uuidv4 } from 'uuid';
 

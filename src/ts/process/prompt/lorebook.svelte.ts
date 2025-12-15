@@ -1,7 +1,7 @@
 import { type Message, type loreBook } from "src/ts/data/storage/types";
 import { DBState, ChatState } from 'src/ts/stores.svelte';
 import { tokenize } from "src/ts/utils/tokenizer";
-import { checkNullish, findCharacterbyId, pickHashRand, selectSingleFile, sfc32 } from 'src/ts/utils/util';
+import { findCharacterbyId, pickHashRand, selectSingleFile } from 'src/ts/utils/util';
 import { alertError, alertNormal } from "src/ts/utils/alert.svelte";
 import { language } from "src/lang";
 import { downloadFile } from "src/ts/utils/fileIO";

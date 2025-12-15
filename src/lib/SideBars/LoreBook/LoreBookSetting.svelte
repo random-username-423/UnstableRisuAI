@@ -2,7 +2,7 @@
     
     import { DBState, ChatState } from 'src/ts/stores.svelte';
     import { language } from "../../../lang";
-    import { DownloadIcon, HardDriveUploadIcon, ImportIcon, PlusIcon, SunIcon, LinkIcon, FolderPlusIcon } from "lucide-svelte";
+    import { DownloadIcon, HardDriveUploadIcon, PlusIcon, SunIcon, LinkIcon, FolderPlusIcon } from "lucide-svelte";
     import { addLorebook, addLorebookFolder, exportLoreBook, importLoreBook } from "src/ts/process/prompt/lorebook.svelte";
     import Check from "../../UI/GUI/CheckInput.svelte";
     import NumberInput from "../../UI/GUI/NumberInput.svelte";

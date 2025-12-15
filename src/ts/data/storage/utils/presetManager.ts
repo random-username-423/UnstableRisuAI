@@ -1,6 +1,6 @@
 import { getDatabase, setDatabase } from '../database.svelte';
 import { presetTemplate } from './defaultDb';
-import { checkNullish, decryptBuffer, encryptBuffer, selectSingleFile } from '../../../utils/util';
+import { decryptBuffer, encryptBuffer, selectSingleFile } from '../../../utils/util';
 import { downloadFile } from '../../../utils/fileIO';
 import { alertNormal } from '../../../utils/alert.svelte';
 import { language } from '../../../../lang';

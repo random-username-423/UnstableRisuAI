@@ -5,7 +5,7 @@ import { risuChatParser } from "../../utils/parser.svelte";
 import { OobaParams } from "src/ts/process/utils/prompt";
 import { getStopStrings, unstringlizeChat } from "src/ts/process/prompt/stringlize";
 import { applyChatTemplate } from "../templates/chatTemplate";
-import type { KoboldGenerationInputSchema, RequestDataArgumentExtended, requestDataResponse, StreamResponseChunk } from "./types";
+import type { KoboldGenerationInputSchema, RequestDataArgumentExtended, requestDataResponse } from "./types";
 import { applyParameters } from "./utils";
 
 export async function requestOobaLegacy(arg:RequestDataArgumentExtended):Promise<requestDataResponse> {

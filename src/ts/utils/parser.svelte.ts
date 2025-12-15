@@ -2,7 +2,7 @@ import DOMPurify from 'dompurify';
 import markdownit from 'markdown-it'
 import { getCurrentCharacter, getDatabase } from '../data/storage/database.svelte';
 import { appVer } from 'src/ts/utils/env'
-import type { Database, Message, character, customscript, groupChat, loreBook, triggerscript } from '../data/storage/types';
+import type { Database, character, customscript, groupChat, triggerscript } from '../data/storage/types';
 import { DBState } from '../stores.svelte';
 import { getFileSrc } from './fileIO';
 import { isTauri, isNodeServer, isMobileUserAgent, isMobileTauri } from "src/ts/utils/env";
@@ -11,17 +11,13 @@ import css, { type CssAtRuleAST } from '@adobe/css-tools'
 import { ChatState } from '../stores.svelte';
 import { calcString } from 'src/ts/process/scripting/infunctions';
 import { findCharacterbyId, getPersonaPrompt, getUserIcon, getUserName, parseKeyValue, pickHashRand, replaceAsync} from './util';
-import { getInlayAsset, getInlayAssetBlob } from '../process/files/inlays';
-import { getModuleAssets, getModuleLorebooks, getModules, type RisuModule } from 'src/ts/process/scripting/modules';
+import { getInlayAssetBlob } from '../process/files/inlays';
+import { getModuleAssets, getModuleLorebooks, getModules } from 'src/ts/process/scripting/modules';
 import type { OpenAIChat } from '../process/index.svelte';
 import hljs from 'highlight.js/lib/core'
 import 'highlight.js/styles/atom-one-dark.min.css'
 import { language } from 'src/lang';
-import airisu from '../../etc/airisu.cbs?raw'
-import cbsIntro from '../../etc/docs/cbs_intro.cbs?raw'
-import cbsDocs from '../../etc/docs/cbs_docs.cbs?raw'
-import docsText from '../../etc/docs/docs_text.cbs?raw'
-import { getModelInfo, type LLMModel } from '../model/modellist';
+import { getModelInfo } from '../model/modellist';
 import { registerCBS, type matcherArg, type RegisterCallback } from '../character/cbs';
 
 const markdownItOptions = {
