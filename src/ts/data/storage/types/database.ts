@@ -2,7 +2,7 @@ import type { character, groupChat } from './character';
 import type { botPreset, FormatingOrderItem } from './preset';
 import type { loreBook } from './lorebook';
 import type { sdConfig, NAIImgConfig, hordeConfig, customscript, SeparateParameters, DynamicOutput, ComfyConfig, OobaSettings, AINsettings, folder } from './settings';
-import type { RisuPlugin } from '../../../plugins/plugins';
+import type { RisuPlugin } from '../../../plugins/plugins.svelte';
 import type { NAISettings } from '../../../process/models/nai';
 import type { PromptItem, PromptSettings } from '../../../process/utils/prompt';
 import type { OobaChatCompletionRequestParams } from '../../../model/ooba';

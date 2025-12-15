@@ -1,7 +1,7 @@
 import { language } from "../../../lang";
 import { getCurrentCharacter, getDatabase } from "../../data/storage/database.svelte";
 import { globalFetch } from "../../utils/fetch";
-import { pluginProcess, pluginV2 } from "../../plugins/plugins";
+import { pluginProcess, pluginV2 } from "../../plugins/plugins.svelte";
 import { stringlizeAINChat, unstringlizeAIN, unstringlizeChat } from "src/ts/process/prompt/stringlize";
 import { applyChatTemplate } from "../templates/chatTemplate";
 import { runTransformers } from "src/ts/process/integrations/transformers";

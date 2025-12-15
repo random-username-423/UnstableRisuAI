@@ -4,7 +4,7 @@
     import { alertConfirm } from "src/ts/utils/alert";
 
     import { DBState } from "src/ts/stores.svelte";
-    import { importPlugin } from "src/ts/plugins/plugins";
+    import { importPlugin } from "src/ts/plugins/plugins.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";

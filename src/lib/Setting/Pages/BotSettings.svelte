@@ -5,7 +5,7 @@
     import Help from "src/lib/Others/Help.svelte";
     
     import { DBState } from 'src/ts/stores.svelte';
-    import { customProviderStore } from "src/ts/plugins/plugins";
+    import { CustomProviderState } from "src/ts/plugins/plugins.svelte";
     import { getModelMaxContext } from "src/ts/utils/util";
     import { downloadFile } from "src/ts/utils/fileIO";
     import { isTauri } from "src/ts/utils/env";
@@ -296,7 +296,7 @@
         <span class="text-textcolor mt-2">{language.plugin}</span>
         <SelectInput className="mt-2 mb-4" bind:value={DBState.db.currentPluginProvider}>
             <OptionInput value="">None</OptionInput>
-            {#each $customProviderStore as plugin}
+            {#each CustomProviderState.providers as plugin}
                 <OptionInput value={plugin}>{plugin}</OptionInput>
             {/each}
         </SelectInput>

@@ -32,7 +32,7 @@ import { decodeRisuSave, encodeRisuSaveLegacy, decodeCharacters, decodeBotPreset
 import { presetTemplate } from "./data/storage/database.svelte";
 import { migrateOPFSAssetsToIndexedDB, migrateTauriFsAssetsToIndexedDB, migrateTauriDbToOPFS, migrateWebDBtoOPFS } from './data/storage/migration';
 import { checkRisuUpdate } from "./utils/update";
-import { loadPlugins } from "./plugins/plugins";
+import { loadPlugins } from "./plugins/plugins.svelte";
 import { alertError, alertMd, alertTOS, waitAlert } from "./utils/alert";
 import { checkDriverInit } from "./data/drive/drive";
 import { characterURLImport } from "./character/characterCards.svelte";

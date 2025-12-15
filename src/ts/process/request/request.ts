@@ -2,7 +2,7 @@ import { language } from "../../../lang";
 import { getCurrentCharacter, getCurrentChat, getDatabase } from "../../data/storage/database.svelte";
 import { getModelInfo, LLMFormat } from "../../model/modellist";
 import { risuEscape, risuUnescape } from "../../utils/parser.svelte";
-import { pluginV2 } from "../../plugins/plugins";
+import { pluginV2 } from "../../plugins/plugins.svelte";
 import { sleep } from '../../utils/util';
 import { getTools } from "../mcp/mcp";
 import { runTrigger } from "src/ts/process/scripting/triggers";

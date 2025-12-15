@@ -1,4 +1,3 @@
-import { get, writable } from "svelte/store";
 import { language } from "../../lang";
 import { alertError, alertMd, alertPluginConfirm } from "../utils/alert";
 import { getCurrentCharacter, getDatabase, setDatabaseLite } from "../data/storage/database.svelte";
@@ -8,7 +7,9 @@ import { fetchNative, globalFetch } from "../utils/fetch";
 import { ChatState } from "../stores.svelte";
 import type { ScriptMode } from "src/ts/process/scripting/scripts";
 
-export const customProviderStore = writable([] as string[])
+export const CustomProviderState = $state({
+    providers: [] as string[]
+})
 
 
 interface ProviderPlugin {
@@ -249,11 +250,11 @@ export async function loadV2Plugin(plugins: RisuPlugin[]) {
             setDatabaseLite(db)
         },
         addProvider: (name: string, func: (arg: PluginV2ProviderArgument, abortSignal?: AbortSignal) => Promise<{ success: boolean, content: string }>, options?: PluginV2ProviderOptions) => {
-            const provs = get(customProviderStore)
+            const provs = [...CustomProviderState.providers]
             provs.push(name)
             pluginV2.providers.set(name, func)
             pluginV2.providerOptions.set(name, options ?? {})
-            customProviderStore.set(provs)
+            CustomProviderState.providers = provs
         },
         addRisuScriptHandler: (name: ScriptMode, func: EditFunction) => {
             if (pluginV2['edit' + name]) {
@@ -350,5 +351,3 @@ export async function pluginProcess(arg: {
         content: "Plugin V1 is not supported anymore, please use V2 plugin instead."
     }
 }
-
-
