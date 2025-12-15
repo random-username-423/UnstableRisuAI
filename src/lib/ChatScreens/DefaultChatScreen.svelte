@@ -28,7 +28,7 @@
     import { postChatFile } from 'src/ts/process/files/multisend';
     import { getInlayAsset } from 'src/ts/process/files/inlays';
     import PlaygroundMenu from '../Playground/PlaygroundMenu.svelte';
-    import { ConnectionOpenStore } from 'src/ts/data/sync/multiuser';
+    import { MultiuserState } from 'src/ts/data/sync/multiuser.svelte';
     import { coldStorageHeader, preLoadChat } from 'src/ts/process/utils/coldstorage.svelte';
     import Chats from './Chats.svelte';
 
@@ -99,7 +99,7 @@
                         cha.push({
                             role: 'user',
                             data: '*says nothing*',
-                            name: $ConnectionOpenStore ? DBState.db.username : null
+                            name: MultiuserState.isOpen ? DBState.db.username : null
                         })
                     }
                 }
@@ -117,7 +117,7 @@
                     role: 'user',
                     data: await processScript(char,messageInput,'editinput'),
                     time: Date.now(),
-                    name: $ConnectionOpenStore ? DBState.db.username : null
+                    name: MultiuserState.isOpen ? DBState.db.username : null
                 })
             }
             else{
@@ -125,7 +125,7 @@
                     role: 'user',
                     data: messageInput,
                     time: Date.now(),
-                    name: $ConnectionOpenStore ? DBState.db.username : null
+                    name: MultiuserState.isOpen ? DBState.db.username : null
                 })
             }
         }

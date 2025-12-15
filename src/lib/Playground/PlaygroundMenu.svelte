@@ -13,7 +13,7 @@
     import PlaygroundImageGen from "./PlaygroundImageGen.svelte";
     import PlaygroundParser from "./PlaygroundParser.svelte";
     import ToolConvertion from "./ToolConvertion.svelte";
-    import { joinMultiuserRoom } from "src/ts/data/sync/multiuser";
+    import { joinMultiuserRoom } from "src/ts/data/sync/multiuser.svelte";
   import PlaygroundSubtitle from "./PlaygroundSubtitle.svelte";
   import PlaygroundImageTrans from "./PlaygroundImageTrans.svelte";
   import PlaygroundTranslation from "./PlaygroundTranslation.svelte";

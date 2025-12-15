@@ -17,7 +17,7 @@ import { groupOrder } from "src/ts/process/chat/group";
 import { runTrigger } from "src/ts/process/scripting/triggers";
 import { getInlayAsset } from "./files/inlays";
 import { getGenerationModelString } from "./models/modelString";
-import { connectionOpen, peerRevertChat, peerSafeCheck, peerSync } from "../data/sync/multiuser";
+import { connectionOpen, peerRevertChat, peerSafeCheck, peerSync } from "../data/sync/multiuser.svelte";
 import { runInlayScreen } from "src/ts/process/postprocess/inlayScreen";
 import { addRerolls } from "src/ts/process/chat/prereroll";
 import { runImageEmbedding } from "src/ts/process/integrations/transformers";

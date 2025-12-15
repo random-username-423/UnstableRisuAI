@@ -22,7 +22,7 @@ import {
 } from 'src/ts/data/storage/opfsWorkerClient.svelte'
 import { getUnpargeables } from 'src/ts/utils/dbUtils'
 import { checkCharOrder } from 'src/ts/character/characters.svelte'
-import { updateHeightMode } from 'src/ts/gui/guisize'
+import { updateHeightMode } from 'src/ts/gui/guisize.svelte'
 import { isTauri, isNodeServer, isStandaloneMode } from "src/ts/utils/env";
 import { setDatabase, getDatabase, defaultSdDataFunc } from "./data/storage/database.svelte";
 import type { character, groupChat } from "./data/storage/types";
@@ -40,7 +40,7 @@ import { loadRisuAccountData } from "./data/drive/accounter";
 import { autoServerBackup } from "./data/kei/backup";
 import { updateAnimationSpeed } from "./gui/animation";
 import { updateColorScheme, updateTextThemeAndCSS } from "./gui/colorscheme";
-import { updateGuisize } from "./gui/guisize";
+import { updateGuisize } from "./gui/guisize.svelte";
 import { startObserveDom } from "./utils/observer.svelte";
 import { initMobileGesture } from "./hotkey/hotkey";
 import { moduleUpdate } from "src/ts/process/scripting/modules";

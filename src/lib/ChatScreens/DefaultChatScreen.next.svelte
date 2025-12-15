@@ -27,7 +27,7 @@
     import { postChatFile } from 'src/ts/process/files/multisend';
     import { getInlayAsset } from 'src/ts/process/files/inlays';
     import PlaygroundMenu from '../Playground/PlaygroundMenu.svelte';
-    import { ConnectionOpenStore } from 'src/ts/data/sync/multiuser';
+    import { MultiuserState } from 'src/ts/data/sync/multiuser.svelte';
     import { coldStorageHeader, preLoadChat } from 'src/ts/process/utils/coldstorage.svelte';
     import LazyPortal from '../UI/GUI/LazyPortal.svelte';
 
@@ -102,7 +102,7 @@
                         cha.push({
                             role: 'user',
                             data: '*says nothing*',
-                            name: $ConnectionOpenStore ? DBState.db.username : null
+                            name: MultiuserState.isOpen ? DBState.db.username : null
                         })
                     }
                 }
@@ -120,7 +120,7 @@
                     role: 'user',
                     data: await processScript(char,messageInput,'editinput'),
                     time: Date.now(),
-                    name: $ConnectionOpenStore ? DBState.db.username : null
+                    name: MultiuserState.isOpen ? DBState.db.username : null
                 })
             }
             else{
@@ -128,7 +128,7 @@
                     role: 'user',
                     data: messageInput,
                     time: Date.now(),
-                    name: $ConnectionOpenStore ? DBState.db.username : null
+                    name: MultiuserState.isOpen ? DBState.db.username : null
                 })
             }
         }
@@ -718,7 +718,7 @@
                             idx={i}
                             name={chat.name ?? currentUsername}
                             message={chat.data}
-                            img={$ConnectionOpenStore ? '' : getCharImage(userIcon, 'css')}
+                            img={MultiuserState.isOpen ? '' : getCharImage(userIcon, 'css')}
                             isLastMemory={DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].lastMemory === (chat.chatId ?? 'none') && DBState.db.showMemoryLimit}
                             largePortrait={userIconProtrait}
                             messageGenerationInfo={chat.generationInfo}

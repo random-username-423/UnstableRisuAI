@@ -1,6 +1,6 @@
 import { v4 } from 'uuid';
 import { alertError, alertInput, alertNormal, alertStore, alertWait } from '../../utils/alert';
-import { get, writable } from 'svelte/store';
+import { get } from 'svelte/store';
 import { setDatabase, saveImage, getCurrentChat, setCurrentChat, getDatabase } from '../storage/database.svelte';
 import type { character, Chat } from '../storage/types';
 import { ChatState } from '../../stores.svelte';
@@ -54,13 +54,16 @@ let peer:Peer
 const connections:DataConnection[] = []
 export let connectionOpen = false
 const requestChatSafeQueue = new Map<string, {remaining:number,safe:boolean,conn?:DataConnection}>()
-export const ConnectionOpenStore = writable(false)
-export const ConnectionIsHost = writable(false)
-export const RoomIdStore = writable('')
+
+export const MultiuserState = $state({
+    isOpen: false,
+    isHost: false,
+    roomId: ''
+})
 
 export async function createMultiuserRoom(){
     //create a room with webrtc
-    ConnectionIsHost.set(true)
+    MultiuserState.isHost = true
     alertWait("Loading...")
 
     const peerJS = await importPeerJS();
@@ -247,8 +250,8 @@ export async function createMultiuserRoom(){
     }
 
     connectionOpen = true
-    ConnectionOpenStore.set(true)
-    RoomIdStore.set(roomId)
+    MultiuserState.isOpen = true
+    MultiuserState.roomId = roomId
     alertStore.set({
         type: 'none',
         msg: ''
@@ -263,7 +266,7 @@ let latestSyncChat:Chat|null = null
 export async function joinMultiuserRoom(){
 
     //join a room with webrtc
-    ConnectionIsHost.set(false)
+    MultiuserState.isHost = false
     alertWait("Loading...")
     const peerJS = await importPeerJS();
     peer = new peerJS.Peer(
@@ -276,7 +279,7 @@ export async function joinMultiuserRoom(){
     
         let open = false
         conn = peer.connect(roomId);
-        RoomIdStore.set(roomId)
+        MultiuserState.roomId = roomId
 
         conn.on('open', function() {
             alertWait("Waiting for host to accept connection")
@@ -346,7 +349,7 @@ export async function joinMultiuserRoom(){
         conn.on('close', function() {
             alertError("Connection closed")
             connectionOpen = false
-            ConnectionOpenStore.set(false)
+            MultiuserState.isOpen = false
             ChatState.selectedCharId = -1
         })
     
@@ -360,7 +363,7 @@ export async function joinMultiuserRoom(){
             }
         }        
         connectionOpen = true
-        ConnectionOpenStore.set(true)
+        MultiuserState.isOpen = true
         alertNormal("Connected")
     });
     

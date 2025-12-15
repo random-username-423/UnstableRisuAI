@@ -11,7 +11,7 @@
     import { updateAnimationSpeed } from "src/ts/gui/animation";
     import { changeColorScheme, colorSchemeList, exportColorScheme, importColorScheme, updateColorScheme, updateTextThemeAndCSS } from "src/ts/gui/colorscheme";
     import { DownloadIcon, HardDriveUploadIcon } from "lucide-svelte";
-    import { guiSizeText, updateGuisize } from "src/ts/gui/guisize";
+    import { guiSizeText, updateGuisize } from "src/ts/gui/guisize.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import ColorInput from "src/lib/UI/GUI/ColorInput.svelte";
   import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";

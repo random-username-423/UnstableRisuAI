@@ -26,8 +26,8 @@
     import { checkCharOrder } from "src/ts/character/characters.svelte"
     import { alertInput, alertSelect } from "src/ts/utils/alert"
     import SideChatList from "./SideChatList.svelte"
-    import { ConnectionIsHost, ConnectionOpenStore, RoomIdStore } from "src/ts/data/sync/multiuser"
-    import { sideBarSize } from "src/ts/gui/guisize"
+    import { MultiuserState } from "src/ts/data/sync/multiuser.svelte"
+    import { GuiSizeState } from "src/ts/gui/guisize.svelte"
     import DevTool from "./DevTool.svelte"
     import QuickSettingsGui from "../Others/QuickSettingsGUI.svelte"
     let sideBarMode = $state(0)
@@ -702,15 +702,15 @@
 <div
     class="setting-area h-full flex-col overflow-x-hidden bg-darkbg py-6 text-textcolor max-h-full"
     class:risu-sidebar={!LayoutState.sidebar.isClosing}
-    class:w-96={$sideBarSize === 0}
-    class:w-110={$sideBarSize === 1}
-    class:w-124={$sideBarSize === 2}
-    class:w-138={$sideBarSize === 3}
+    class:w-96={GuiSizeState.sideBarSize === 0}
+    class:w-110={GuiSizeState.sideBarSize === 1}
+    class:w-124={GuiSizeState.sideBarSize === 2}
+    class:w-138={GuiSizeState.sideBarSize === 3}
     class:risu-sidebar-close={LayoutState.sidebar.isClosing}
-    class:min-w-96={!LayoutState.isDynamicMode && $sideBarSize === 0}
-    class:min-w-110={!LayoutState.isDynamicMode && $sideBarSize === 1}
-    class:min-w-124={!LayoutState.isDynamicMode && $sideBarSize === 2}
-    class:min-w-138={!LayoutState.isDynamicMode && $sideBarSize === 3}
+    class:min-w-96={!LayoutState.isDynamicMode && GuiSizeState.sideBarSize === 0}
+    class:min-w-110={!LayoutState.isDynamicMode && GuiSizeState.sideBarSize === 1}
+    class:min-w-124={!LayoutState.isDynamicMode && GuiSizeState.sideBarSize === 2}
+    class:min-w-138={!LayoutState.isDynamicMode && GuiSizeState.sideBarSize === 3}
     class:px-2={LayoutState.isDynamicMode}
     class:px-4={!LayoutState.isDynamicMode}
     class:dynamic-sidebar={LayoutState.isDynamicMode}
@@ -756,17 +756,17 @@
             class:hidden={ChatState.selectedCharId < 0 ||
                 SettingsState.isOpen ||
                 DBState.db.characters[ChatState.selectedCharId]?.chaId === "§playground" ||
-                !$ConnectionOpenStore}
+                !MultiuserState.isOpen}
         >
             <div class="flex flex-col">
                 <h1 class="text-xl">{language.connectionOpen}</h1>
                 <span class="text-textcolor2 mb-4">{language.connectionOpenInfo}</span>
                 <div class="flex">
                     <span>ID: </span>
-                    <span class="text-blue-600">{$RoomIdStore}</span>
+                    <span class="text-blue-600">{MultiuserState.roomId}</span>
                 </div>
                 <div>
-                    {#if $ConnectionIsHost}
+                    {#if MultiuserState.isHost}
                         <span class="text-emerald-600">{language.connectionHost}</span>
                     {:else}
                         <span class="text-gray-500">{language.connectionGuest}</span>
@@ -780,7 +780,7 @@
             class:hidden={ChatState.selectedCharId < 0 ||
                 SettingsState.isOpen ||
                 DBState.db.characters[ChatState.selectedCharId]?.chaId === "§playground" ||
-                $ConnectionOpenStore}
+                MultiuserState.isOpen}
         >
             <div class="w-full h-8 min-h-8 border-l border-b border-r border-selected relative bottom-6 rounded-b-md flex">
                 <button

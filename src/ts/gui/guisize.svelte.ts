@@ -1,9 +1,10 @@
-import { writable } from "svelte/store";
 import { getDatabase } from "../data/storage/database.svelte";
 
-export const textAreaSize = writable(0)
-export const sideBarSize = writable(0)
-export const textAreaTextSize = writable(0)
+export const GuiSizeState = $state({
+    textAreaSize: 0,
+    sideBarSize: 0,
+    textAreaTextSize: 0
+})
 
 export function updateGuisize(){
     const db = getDatabase()
@@ -11,9 +12,9 @@ export function updateGuisize(){
     if(!root){
         return
     }
-    textAreaSize.set(db.textAreaSize)
-    sideBarSize.set(db.sideBarSize)
-    textAreaTextSize.set(db.textAreaTextSize)
+    GuiSizeState.textAreaSize = db.textAreaSize
+    GuiSizeState.sideBarSize = db.sideBarSize
+    GuiSizeState.textAreaTextSize = db.textAreaTextSize
     root.style.setProperty('--sidebar-size', (24 + (4 * db.sideBarSize)) + 'rem')
 }
 

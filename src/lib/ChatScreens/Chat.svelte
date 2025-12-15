@@ -9,7 +9,7 @@
     import { runTrigger } from 'src/ts/process/scripting/triggers'
     import { sayTTS } from "src/ts/process/postprocess/tts"
     import { DBState, RenderState, ChatState } from 'src/ts/stores.svelte'
-    import { ConnectionOpenStore } from "src/ts/data/sync/multiuser"
+    import { MultiuserState } from "src/ts/data/sync/multiuser.svelte"
     import { capitalize, getUserIcon, getUserName } from "src/ts/utils/util"
     import { language } from "../../lang"
     import { alertClear, alertConfirm, alertNormal, alertRequestData, alertWait } from "../../ts/utils/alert"
@@ -514,7 +514,7 @@
                 </button>
             {/if}
 
-            {#if !$ConnectionOpenStore}
+            {#if !MultiuserState.isOpen}
                 <button class={"ml-2 hover:text-blue-500 transition-colors button-icon-edit "+(editMode?'text-blue-400':'')} onclick={() => {
                     if(!editMode){
                         editMode = true
