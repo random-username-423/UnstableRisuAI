@@ -15,6 +15,7 @@
         parsed["en"] = parsed["xx"]
         delete parsed["xx"]
     }
+    // TODO: $derived로 변경 검토 필요 - 객체 속성 수정/삭제 및 bind:value와의 호환성 확인 필요
     let valueObject: {[code:string]:string} = $state(parsed)
     const updateValue = () => {
         for(let lang in valueObject){

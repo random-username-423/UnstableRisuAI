@@ -141,7 +141,7 @@
     let highlightId = highlight ? getNewHighlightId() : 0
     let inpa = $state(0)
     let highlightDom: HTMLDivElement = $state()
-    let optiValue = $state(value)
+    let optiValue = $derived(value)
     let autoCompleteDom: HTMLDivElement = $state()
     let autocompleteContents:string[] = $state([])
     let inputDom: HTMLDivElement = $state()
@@ -296,9 +296,6 @@
         } catch (error) {}
     }
         
-    $effect.pre(() => {
-        optiValue = value
-    });
     $effect.pre(() => {
         highlightChange(value, highlightId)
     });

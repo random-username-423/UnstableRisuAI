@@ -42,11 +42,7 @@
         isLastInContainer = false
     }: Props = $props();
     
-    let open = $state(isOpen)
-    
-    $effect(() => {
-        open = isOpen
-    })
+    let open = $derived(isOpen)
 
     async function getTokens(data:string){
         tokens = await tokenizeAccurate(data)

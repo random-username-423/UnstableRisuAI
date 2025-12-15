@@ -39,7 +39,7 @@
     let rerollid = -1
     let lastCharId = -1
     let doingChatInputTranslate = false
-    let currentCharacter:character|groupChat = $state(DBState.db.characters[ChatState.selectedCharId])
+    let currentCharacter:character|groupChat = $derived(DBState.db.characters[ChatState.selectedCharId])
     let toggleStickers:boolean = $state(false)
     let fileInput:string[] = $state([])
     let blocks = $state(new Uint8Array(500) )//hacky hacky
@@ -435,9 +435,6 @@
         }
     }
 
-    $effect.pre(() => {
-        currentCharacter = DBState.db.characters[ChatState.selectedCharId]
-    });
 </script>
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->

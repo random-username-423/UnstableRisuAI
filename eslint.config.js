@@ -22,8 +22,9 @@ export default [
       'unused-imports': unusedImports
     },
     rules: {
+      'no-unused-vars': 'off',
       'unused-imports/no-unused-imports': 'warn',
-      'unused-imports/no-unused-vars': [
+      '@typescript-eslint/no-unused-vars': [
         'warn',
         {
           vars: 'all',
@@ -31,7 +32,7 @@ export default [
           args: 'after-used',
           argsIgnorePattern: '^_'
         }
-      ]
+      ],
     }
   },
   {

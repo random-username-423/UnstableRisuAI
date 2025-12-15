@@ -10,14 +10,11 @@
 
     let { value, markdown = false }: Props = $props();
     const parsedValue = parseMultilangString(value)
-    let valueObject: {[code:string]:string} = $state(parsedValue)
+    let valueObject = $derived(parseMultilangString(value))
     let selectedLang = $state("en")
     if(parsedValue["en"] === undefined){
         selectedLang = "xx"
     }
-    $effect.pre(() => {
-        valueObject = parseMultilangString(value)
-    });
 </script>
 
 <div class="flex flex-col">

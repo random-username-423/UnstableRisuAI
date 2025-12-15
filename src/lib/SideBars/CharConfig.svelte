@@ -84,7 +84,7 @@
 
     let assetFileExtensions:string[] = $state([])
     let assetFilePath:string[] = $state([])
-    let licensed = $state((DBState.db.characters[ChatState.selectedCharId].type === 'character') ? (DBState.db.characters[ChatState.selectedCharId] as character).license : '')
+    let licensed = $derived((DBState.db.characters[ChatState.selectedCharId].type === 'character') ? (DBState.db.characters[ChatState.selectedCharId] as character).license : '')
 
     $effect.pre(() => {
         emos = DBState.db.characters[ChatState.selectedCharId].emotionImages
@@ -106,9 +106,6 @@
         
     });
 
-    $effect.pre(() => {
-        licensed = (DBState.db.characters[ChatState.selectedCharId].type === 'character') ? (DBState.db.characters[ChatState.selectedCharId] as character).license : ''
-    });
     $effect.pre(() => {
         if (DBState.db.characters[ChatState.selectedCharId].ttsMode === 'novelai' && (DBState.db.characters[ChatState.selectedCharId] as character).naittsConfig === undefined) {
             (DBState.db.characters[ChatState.selectedCharId] as character).naittsConfig = {
