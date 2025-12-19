@@ -6,7 +6,8 @@ import { simplifySchema } from "src/ts/utils/util"
 import { v4 } from "uuid"
 import { setInlayAsset, writeInlayImage } from "../files/inlays"
 import { extractJSON, getGeneralJSONSchema } from "../templates/jsonSchema"
-import { applyParameters, type Parameter, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
+import { applyParameters } from "./utils"
+import type { Parameter, RequestDataArgumentExtended, requestDataResponse, StreamResponseChunk } from "./types"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
 import { alertError } from "src/ts/utils/alert.svelte";
 

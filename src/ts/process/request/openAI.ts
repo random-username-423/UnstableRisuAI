@@ -1,5 +1,6 @@
 import { language } from "src/lang"
-import { applyParameters, setObjectValue, type OpenAIChatExtra, type OpenAIContents, type OpenAIToolCall, type Parameter, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
+import { applyParameters, setObjectValue } from "./utils"
+import type { OpenAIChatExtra, OpenAIContents, OpenAIToolCall, Parameter, RequestDataArgumentExtended, requestDataResponse, StreamResponseChunk } from "./types"
 import { getDatabase } from "src/ts/data/storage/database.svelte"
 import { LLMFlags, LLMFormat } from "src/ts/model/types"
 import { strongBan, tokenizeNum } from "src/ts/utils/tokenizer"

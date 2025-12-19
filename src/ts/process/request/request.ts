@@ -10,22 +10,12 @@ import { runTrigger } from "src/ts/process/scripting/triggers";
 
 // Import from split files
 import type {
-    ToolCall,
     requestDataArgument,
     RequestDataArgumentExtended,
     requestDataResponse,
-    StreamResponseChunk,
-    Parameter,
     ModelModeExtended,
-    OpenAITextContents,
-    OpenAIImageContents,
-    OpenAIContents,
-    OpenAIToolCall,
-    OpenAIChatExtra,
-    KoboldSamplerSettingsSchema,
-    KoboldGenerationInputSchema,
 } from "./types";
-import { applyParameters, reformater, setObjectValue } from "./utils";
+import { reformater } from "./utils";
 import { requestClaude } from './anthropic';
 import { requestGoogleCloudVertex } from './google';
 import { requestOpenAI, requestOpenAILegacyInstruct, requestOpenAIResponseAPI } from "./openAI";
@@ -36,26 +26,6 @@ import { requestCohere } from "./cohere";
 import { requestHorde } from "./horde";
 import { requestNovelList, requestPlugin, requestWebLLM } from "./others";
 
-// Re-export types for backward compatibility
-export type {
-    ToolCall,
-    requestDataArgument,
-    RequestDataArgumentExtended,
-    requestDataResponse,
-    StreamResponseChunk,
-    Parameter,
-    ModelModeExtended,
-    OpenAITextContents,
-    OpenAIImageContents,
-    OpenAIContents,
-    OpenAIToolCall,
-    OpenAIChatExtra,
-    KoboldSamplerSettingsSchema,
-    KoboldGenerationInputSchema,
-};
-
-// Re-export utilities for backward compatibility
-export { applyParameters, reformater, setObjectValue };
 
 export async function requestChatData(arg:requestDataArgument, model:ModelModeExtended, abortSignal:AbortSignal=null):Promise<requestDataResponse> {
     const db = getDatabase()
