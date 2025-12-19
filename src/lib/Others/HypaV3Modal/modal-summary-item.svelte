@@ -13,6 +13,8 @@
   import {
     type SerializableHypaV3Data,
     type SerializableSummary,
+  } from "src/ts/process/memory/hypav3Types";
+  import {
     summarize,
     getCurrentHypaV3Preset,
   } from "src/ts/process/memory/hypav3";

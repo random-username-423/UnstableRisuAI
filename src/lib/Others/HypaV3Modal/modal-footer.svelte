@@ -1,8 +1,6 @@
 <script lang="ts">
-  import {
-    type SerializableHypaV3Data,
-    getCurrentHypaV3Preset,
-  } from "src/ts/process/memory/hypav3";
+  import { type SerializableHypaV3Data } from "src/ts/process/memory/hypav3Types";
+  import { getCurrentHypaV3Preset } from "src/ts/process/memory/hypav3";
   import type { Message } from "src/ts/data/storage/types";
   import { DBState, ChatState } from "src/ts/stores.svelte";
   import { language } from "src/lang";
