@@ -2,7 +2,7 @@ import type { OobaSettings, AINsettings, DynamicOutput, SeparateParameters, cust
 import type { NAISettings } from '../../../process/models/nai';
 import type { PromptItem, PromptSettings } from '../../../process/utils/prompt';
 import type { OobaChatCompletionRequestParams } from '../../../model/ooba';
-import type { LLMFormat, LLMFlags } from '../../../model/modellist';
+import type { LLMFormat, LLMFlags } from '../../../model/types';
 
 export type FormatingOrderItem = 'main'|'jailbreak'|'chats'|'lorebook'|'globalNote'|'authorNote'|'lastChat'|'description'|'postEverything'|'personaPrompt'
 

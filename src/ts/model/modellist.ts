@@ -1,6 +1,3 @@
-// Re-export types
-export * from './types'
-
 // Provider names that should have a separator line AFTER them in the model list UI
 // Categories: Proprietary APIs | Open-source APIs | Local | Others
 export const ProviderSeparatorAfter = new Set([

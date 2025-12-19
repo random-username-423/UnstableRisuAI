@@ -5,7 +5,8 @@
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
     import { DBState } from "src/ts/stores.svelte";
-    import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
+    import { getModelInfo } from "src/ts/model/modellist";
+    import { LLMFlags } from "src/ts/model/types";
     import { requestChatData } from "src/ts/process/request/request";
     import { selectFileByDom, selectSingleFile, sleep } from "src/ts/utils/util";
     import { alertError, alertSelect } from "src/ts/utils/alert.svelte";

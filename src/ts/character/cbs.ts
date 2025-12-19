@@ -1,7 +1,7 @@
 import type { Database, character, loreBook } from '../data/storage/types';
 import type { CbsConditions } from '../utils/parser.svelte';
 import type { RisuModule } from 'src/ts/process/scripting/modules';
-import type { LLMModel } from '../model/modellist';
+import type { LLMModel } from '../model/types';
 import { ChatState } from '../stores.svelte';
 
 export const defaultCBSRegisterArg: CBSRegisterArg = {

@@ -47,7 +47,7 @@ export interface RequestDataArgumentExtended extends requestDataArgument {
     aiModel?:string
     multiGen?:boolean
     abortSignal?:AbortSignal
-    modelInfo?: import("../../model/modellist").LLMModel
+    modelInfo?: import("../../model/types").LLMModel
     customURL?:string
     mode?:ModelModeExtended
     key?:string

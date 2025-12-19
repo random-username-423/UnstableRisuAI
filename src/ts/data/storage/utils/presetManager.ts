@@ -9,7 +9,7 @@ import type { botPreset, Database } from '../types';
 import { encode as encodeMsgpack, decode as decodeMsgpack } from "msgpackr";
 import * as fflate from "fflate";
 import { decodeRPack, encodeRPack } from '../../../rpack/rpack_bg';
-import { LLMFormat } from '../../../model/modellist';
+import { LLMFormat } from '../../../model/types';
 
 export function saveCurrentPreset(){
     const db = getDatabase()

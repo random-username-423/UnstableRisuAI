@@ -27,7 +27,8 @@
     import PromptSettings from "./PromptSettings.svelte";
     import { ModalState } from "src/ts/stores.svelte";
     import { selectSingleFile } from "src/ts/utils/util";
-  import { getModelInfo, LLMFlags, LLMFormat, LLMProvider } from "src/ts/model/modellist";
+  import { getModelInfo } from "src/ts/model/modellist";
+  import { LLMFlags, LLMFormat, LLMProvider } from "src/ts/model/types";
   import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
   import RegexList from "src/lib/SideBars/Scripts/RegexList.svelte";
     

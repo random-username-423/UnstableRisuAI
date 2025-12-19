@@ -8,7 +8,8 @@ import { runImageEmbedding } from "src/ts/process/integrations/transformers";
 import { getModuleAssets } from "src/ts/process/scripting/modules";
 import { readImage } from "src/ts/utils/fileIO";
 import { findCharacterbyId, getUserName } from "src/ts/utils/util";
-import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
+import { getModelInfo } from "src/ts/model/modellist";
+import { LLMFlags } from "src/ts/model/types";
 import { v4 } from "uuid";
 
 // ─────────────────────────────────────────────────────────────────────────────

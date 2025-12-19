@@ -1,5 +1,5 @@
 import { getDatabase } from "../../data/storage/database.svelte";
-import { LLMFlags, type LLMModel } from "../../model/modellist";
+import { LLMFlags, type LLMModel } from "../../model/types";
 import type { OpenAIChat } from "../index.svelte";
 import type { ModelModeExtended, Parameter, ParameterMap } from "./types";
 

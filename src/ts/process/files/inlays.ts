@@ -2,7 +2,8 @@ import localforage from "localforage";
 import { v4 } from "uuid";
 import { getDatabase } from "../../data/storage/database.svelte";
 import { checkImageType } from "../../utils/parser.svelte";
-import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
+import { getModelInfo } from "src/ts/model/modellist";
+import { LLMFlags } from "src/ts/model/types";
 
 const inlayImageExts = [
     'jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'

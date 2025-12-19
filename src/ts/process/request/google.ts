@@ -1,6 +1,6 @@
 import { fetchNative, globalFetch, textifyReadableStream, addFetchLog } from "src/ts/utils/fetch"
 import { language } from "src/lang"
-import { LLMFlags, LLMFormat } from "src/ts/model/modellist"
+import { LLMFlags, LLMFormat } from "src/ts/model/types"
 import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte"
 import { simplifySchema } from "src/ts/utils/util"
 import { v4 } from "uuid"

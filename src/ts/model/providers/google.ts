@@ -1,6 +1,18 @@
 import { LLMFlags, LLMFormat, LLMProvider, LLMTokenizer, type LLMModel } from '../types'
 
 const GeminiAPIModels: LLMModel[] = [
+        {
+        name: "Gemini Flash 3 (Preview)",
+        id: 'gemini-3-flash-preview',
+        provider: LLMProvider.GeminiAPI,
+        format: LLMFormat.GeminiAPI,
+        flags: [LLMFlags.hasFirstSystemPrompt, LLMFlags.geminiThinking, LLMFlags.geminiBlockOff, LLMFlags.hasImageInput, LLMFlags.poolSupported, LLMFlags.hasAudioInput, LLMFlags.hasVideoInput, LLMFlags.hasStreaming, LLMFlags.requiresAlternateRole],
+        parameters: ['thinking_level', 'thinking_tokens', 'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'],
+        tokenizer: LLMTokenizer.GeminiAPI,
+        recommended: true
+    },
+
+
     // ===== Gemini 3.0 Series (2025-11) =====
     {
         name: "Gemini Pro 3 Image (Preview)",

@@ -1,7 +1,7 @@
 import { defaultAutoSuggestPrompt, defaultJailbreak, defaultMainPrompt } from '../defaultPrompts';
 import { defaultColorScheme } from '../../../gui/colorscheme.svelte';
 import type { AINsettings, botPreset, Database, OobaSettings } from '../types';
-import { LLMFormat } from '../../../model/modellist';
+import { LLMFormat } from '../../../model/types';
 
 export const defaultAIN: AINsettings = {
     top_p: 0.7,
