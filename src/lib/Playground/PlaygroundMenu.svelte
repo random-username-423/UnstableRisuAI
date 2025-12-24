@@ -20,6 +20,7 @@
   import PlaygroundMcp from "./PlaygroundMCP.svelte";
     import PlaygroundDocs from "./PlaygroundDocs.svelte";
     import Playground3DViewer from "./Playground3DViewer.svelte";
+    import PlaygroundLucide from "./PlaygroundLucide.svelte";
 
     let easterEggTouch = $state(0)
 
@@ -130,6 +131,11 @@
                 <h1 class="text-2xl font-bold text-start">3D Viewer</h1>
             </button>
             <button class="bg-darkbg rounded-md p-6 flex flex-col transition-shadow hover:ring-1" onclick={() => {
+                AppState.playground = 15
+            }}>
+                <h1 class="text-2xl font-bold text-start">Lucide Perf Test</h1>
+            </button>
+            <button class="bg-darkbg rounded-md p-6 flex flex-col transition-shadow hover:ring-1" onclick={() => {
                 easterEggTouch += 1
             }}>
                 <h1 class="text-2xl font-bold text-start">
@@ -192,6 +198,9 @@
             {/if}
             {#if AppState.playground === 14}
                 <Playground3DViewer/>
+            {/if}
+            {#if AppState.playground === 15}
+                <PlaygroundLucide/>
             {/if}
             {#if AppState.playground === 101}
                 <ToolConvertion/>
