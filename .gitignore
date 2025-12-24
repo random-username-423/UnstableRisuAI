@@ -62,7 +62,7 @@ GEMINI.md
 # Etc
 /android
 /src-tauri/gen
-src-tauri/gen/schemas/acl-manifests.json
+src-tauri/gen/schemas/
 
 # OAuth Secrets
 src/ts/config/secrets.ts
