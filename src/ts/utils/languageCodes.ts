@@ -13,7 +13,7 @@ export function getLanguageCodes(displayLanguage: string) {
         for (let j = 0x41; j <= 0x5a; j++) {
             languageCodes.push({
                 code: String.fromCharCode(i) + String.fromCharCode(j),
-                name: ''
+                name: "",
             })
         }
     }
@@ -23,10 +23,10 @@ export function getLanguageCodes(displayLanguage: string) {
         .map((v) => {
             return {
                 code: v.code.toLocaleLowerCase(),
-                name: new Intl.DisplayNames([displayLanguage === 'cn' ? 'zh' : displayLanguage], {
-                    type: 'language',
-                    fallback: 'none'
-                }).of(v.code)
+                name: new Intl.DisplayNames([displayLanguage === "cn" ? "zh" : displayLanguage], {
+                    type: "language",
+                    fallback: "none",
+                }).of(v.code),
             }
         })
         .filter((a) => {

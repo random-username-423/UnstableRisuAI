@@ -3,14 +3,14 @@
  * Handles fetch requests across different environments (Tauri, Web).
  */
 
-import { sleep } from './util'
-import { getDatabase } from '../data/storage/database.svelte'
-import { DBState } from '../stores.svelte'
-import { hubURL } from '../character/characterCards.svelte'
-import { invoke } from '@tauri-apps/api/core'
-import { listen } from '@tauri-apps/api/event'
-import { fetch as TauriHTTPFetch } from '@tauri-apps/plugin-http'
-import { isTauri, isNodeServer } from "src/ts/utils/env";
+import { sleep } from "./util"
+import { getDatabase } from "../data/storage/database.svelte"
+import { DBState } from "../stores.svelte"
+import { hubURL } from "../character/characterCards.svelte"
+import { invoke } from "@tauri-apps/api/core"
+import { listen } from "@tauri-apps/api/event"
+import { fetch as TauriHTTPFetch } from "@tauri-apps/plugin-http"
+import { isTauri, isNodeServer } from "src/ts/utils/env"
 
 // Declare userScriptFetch on window
 declare global {
@@ -43,7 +43,7 @@ export interface GlobalFetchArgs {
     body?: any
     headers?: { [key: string]: string }
     rawResponse?: boolean
-    method?: 'POST' | 'GET'
+    method?: "POST" | "GET"
     abortSignal?: AbortSignal
     useRisuToken?: boolean
     chatId?: string
@@ -60,20 +60,20 @@ export interface GlobalFetchResult {
 }
 
 interface StreamedFetchChunkData {
-    type: 'chunk'
+    type: "chunk"
     body: string
     id: string
 }
 
 interface StreamedFetchHeaderData {
-    type: 'headers'
+    type: "headers"
     body: { [key: string]: string }
     id: string
     status: number
 }
 
 interface StreamedFetchEndData {
-    type: 'end'
+    type: "end"
     id: string
 }
 
@@ -84,7 +84,7 @@ type StreamedFetchChunk = StreamedFetchChunkData | StreamedFetchHeaderData | Str
 //
 
 const fetchLog: FetchLogEntry[] = []
-const knownHostes = ['localhost', '127.0.0.1', '0.0.0.0']
+const knownHostes = ["localhost", "127.0.0.1", "0.0.0.0"]
 let fetchIndex = 0
 const nativeFetchData: { [key: string]: StreamedFetchChunk[] } = {}
 let streamedFetchListening = false
@@ -94,7 +94,7 @@ let streamedFetchListening = false
 //
 
 if (isTauri) {
-    listen('streamed_fetch', (event) => {
+    listen("streamed_fetch", (event) => {
         try {
             const parsed = JSON.parse(event.payload as string)
             const id = parsed.id
@@ -166,14 +166,14 @@ export function addFetchLog(arg: {
     chatId?: string
 }): number {
     fetchLog.unshift({
-        body: typeof arg.body === 'string' ? arg.body : JSON.stringify(arg.body, null, 2),
+        body: typeof arg.body === "string" ? arg.body : JSON.stringify(arg.body, null, 2),
         header: JSON.stringify(arg.headers ?? {}, null, 2),
-        response: typeof arg.response === 'string' ? arg.response : JSON.stringify(arg.response, null, 2),
-        responseType: arg.resType ?? 'json',
+        response: typeof arg.response === "string" ? arg.response : JSON.stringify(arg.response, null, 2),
+        responseType: arg.resType ?? "json",
         success: arg.success,
         date: new Date().toLocaleTimeString(),
         url: arg.url,
-        chatId: arg.chatId
+        chatId: arg.chatId,
     })
     return 0
 }
@@ -187,7 +187,7 @@ function addFetchLogInGlobalFetch(response: any, success: boolean, url: string, 
             success: success,
             date: new Date().toLocaleTimeString(),
             url: url,
-            chatId: arg.chatId
+            chatId: arg.chatId,
         })
     } catch {
         fetchLog.unshift({
@@ -197,7 +197,7 @@ function addFetchLogInGlobalFetch(response: any, success: boolean, url: string, 
             success: success,
             date: new Date().toLocaleTimeString(),
             url: url,
-            chatId: arg.chatId
+            chatId: arg.chatId,
         })
     }
 
@@ -207,9 +207,9 @@ function addFetchLogInGlobalFetch(response: any, success: boolean, url: string, 
 }
 
 export function getRequestLog() {
-    let logString = ''
-    const b = '\n```json\n'
-    const bend = '\n```\n'
+    let logString = ""
+    const b = "\n```json\n"
+    const bend = "\n```\n"
 
     for (const log of fetchLog) {
         logString +=
@@ -225,12 +225,12 @@ export function getRequestLog() {
 
 async function fetchWithPlainFetch(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
     try {
-        const headers = { 'Content-Type': 'application/json', ...arg.headers }
+        const headers = { "Content-Type": "application/json", ...arg.headers }
         const response = await fetch(new URL(url), {
             body: JSON.stringify(arg.body),
             headers,
-            method: arg.method ?? 'POST',
-            signal: arg.abortSignal
+            method: arg.method ?? "POST",
+            signal: arg.abortSignal,
         })
         const data = arg.rawResponse ? new Uint8Array(await response.arrayBuffer()) : await response.json()
         const ok = response.ok && response.status >= 200 && response.status < 300
@@ -243,12 +243,12 @@ async function fetchWithPlainFetch(url: string, arg: GlobalFetchArgs): Promise<G
 
 async function fetchWithUSFetch(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
     try {
-        const headers = { 'Content-Type': 'application/json', ...arg.headers }
+        const headers = { "Content-Type": "application/json", ...arg.headers }
         const response = await window.userScriptFetch!(url, {
             body: JSON.stringify(arg.body),
             headers,
-            method: arg.method ?? 'POST',
-            signal: arg.abortSignal
+            method: arg.method ?? "POST",
+            signal: arg.abortSignal,
         })
         const data = arg.rawResponse ? new Uint8Array(await response.arrayBuffer()) : await response.json()
         const ok = response.ok && response.status >= 200 && response.status < 300
@@ -261,12 +261,12 @@ async function fetchWithUSFetch(url: string, arg: GlobalFetchArgs): Promise<Glob
 
 async function fetchWithTauri(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
     try {
-        const headers = { 'Content-Type': 'application/json', ...arg.headers }
+        const headers = { "Content-Type": "application/json", ...arg.headers }
         const response = await TauriHTTPFetch(new URL(url), {
             body: JSON.stringify(arg.body),
             headers,
-            method: arg.method ?? 'POST',
-            signal: arg.abortSignal
+            method: arg.method ?? "POST",
+            signal: arg.abortSignal,
         })
         const data = arg.rawResponse ? new Uint8Array(await response.arrayBuffer()) : await response.json()
         const ok = response.status >= 200 && response.status < 300
@@ -280,31 +280,33 @@ async function fetchWithTauri(url: string, arg: GlobalFetchArgs): Promise<Global
 async function fetchWithProxy(url: string, arg: GlobalFetchArgs): Promise<GlobalFetchResult> {
     try {
         const furl = !isTauri && !isNodeServer ? `${hubURL}/proxy2` : `/proxy2`
-        arg.headers!['Content-Type'] ??= arg.body instanceof URLSearchParams ? 'application/x-www-form-urlencoded' : 'application/json'
+        arg.headers!["Content-Type"] ??=
+            arg.body instanceof URLSearchParams ? "application/x-www-form-urlencoded" : "application/json"
         const headers: { [key: string]: string } = {
-            'risu-header': encodeURIComponent(JSON.stringify(arg.headers)),
-            'risu-url': encodeURIComponent(url),
-            'Content-Type': arg.body instanceof URLSearchParams ? 'application/x-www-form-urlencoded' : 'application/json',
-            ...(arg.useRisuToken && { 'x-risu-tk': 'use' }),
-            ...(DBState?.db?.requestLocation && { 'risu-location': DBState.db.requestLocation })
+            "risu-header": encodeURIComponent(JSON.stringify(arg.headers)),
+            "risu-url": encodeURIComponent(url),
+            "Content-Type":
+                arg.body instanceof URLSearchParams ? "application/x-www-form-urlencoded" : "application/json",
+            ...(arg.useRisuToken && { "x-risu-tk": "use" }),
+            ...(DBState?.db?.requestLocation && { "risu-location": DBState.db.requestLocation }),
         }
 
         // Add risu-auth header for Node.js server
         if (isNodeServer) {
-            const auth = localStorage.getItem('risuauth')
+            const auth = localStorage.getItem("risuauth")
             if (auth) {
-                headers['risu-auth'] = auth
+                headers["risu-auth"] = auth
             }
         }
 
         const body = arg.body instanceof URLSearchParams ? arg.body.toString() : JSON.stringify(arg.body)
 
-        const response = await fetch(furl, { body, headers, method: arg.method ?? 'POST', signal: arg.abortSignal })
+        const response = await fetch(furl, { body, headers, method: arg.method ?? "POST", signal: arg.abortSignal })
         const isSuccess = response.ok && response.status >= 200 && response.status < 300
 
         if (arg.rawResponse) {
             const data = new Uint8Array(await response.arrayBuffer())
-            addFetchLogInGlobalFetch('Uint8Array Response', isSuccess, url, arg)
+            addFetchLogInGlobalFetch("Uint8Array Response", isSuccess, url, arg)
             return { ok: isSuccess, data, headers: Object.fromEntries(response.headers), status: response.status }
         }
 
@@ -314,7 +316,9 @@ async function fetchWithProxy(url: string, arg: GlobalFetchArgs): Promise<Global
             addFetchLogInGlobalFetch(data, isSuccess, url, arg)
             return { ok: isSuccess, data, headers: Object.fromEntries(response.headers), status: response.status }
         } catch (error) {
-            const errorMsg = text.startsWith('<!DOCTYPE') ? 'Responded HTML. Is your URL, API key, and password correct?' : text
+            const errorMsg = text.startsWith("<!DOCTYPE")
+                ? "Responded HTML. Is your URL, API key, and password correct?"
+                : text
             addFetchLogInGlobalFetch(text, false, url, arg)
             return { ok: false, data: errorMsg, headers: Object.fromEntries(response.headers), status: response.status }
         }
@@ -333,21 +337,23 @@ async function fetchWithProxy(url: string, arg: GlobalFetchArgs): Promise<Global
 export async function globalFetch(url: string, arg: GlobalFetchArgs = {}): Promise<GlobalFetchResult> {
     try {
         const db = getDatabase()
-        const method = arg.method ?? 'POST'
+        const method = arg.method ?? "POST"
 
         if (arg.abortSignal?.aborted) {
-            return { ok: false, data: 'aborted', headers: {}, status: 400 }
+            return { ok: false, data: "aborted", headers: {}, status: 400 }
         }
 
         const urlHost = new URL(url).hostname
-        const forcePlainFetch = ((knownHostes.includes(urlHost) && !isTauri) || db.usePlainFetch || arg.plainFetchForce) && !arg.plainFetchDeforce
+        const forcePlainFetch =
+            ((knownHostes.includes(urlHost) && !isTauri) || db.usePlainFetch || arg.plainFetchForce) &&
+            !arg.plainFetchDeforce
 
         if (knownHostes.includes(urlHost) && !isTauri && !isNodeServer) {
             return {
                 ok: false,
                 headers: {},
                 status: 400,
-                data: 'You are trying local request on web version. This is not allowed due to browser security policy. Use the desktop version instead, or use a tunneling service like ngrok and set the CORS to allow all.'
+                data: "You are trying local request on web version. This is not allowed due to browser security policy. Use the desktop version instead, or use a tunneling service like ngrok and set the CORS to allow all.",
             }
         }
 
@@ -381,20 +387,22 @@ const pipeFetchLog = (fetchLogIndex: number, readableStream: ReadableStream<Uint
               transform(chunk, controller) {
                   try {
                       textDecoderBuffer.append(chunk)
-                      const decoded = new TextDecoder('utf-8', {
-                          fatal: true
+                      const decoded = new TextDecoder("utf-8", {
+                          fatal: true,
                       }).decode(textDecoderBuffer.buffer)
                       const newString = decoded.slice(textDecoderPointer)
                       textDecoderPointer = decoded.length
                       controller.enqueue(newString)
-                  } catch { /* ignore decode error */ }
-              }
+                  } catch {
+                      /* ignore decode error */
+                  }
+              },
           })
     textDecoder.readable.pipeTo(
         new WritableStream({
             write(chunk) {
                 fetchLog[fetchLogIndex].response += chunk
-            }
+            },
         })
     )
     const writer = textDecoder.writable.getWriter()
@@ -409,10 +417,10 @@ const pipeFetchLog = (fetchLogIndex: number, readableStream: ReadableStream<Uint
                     close() {
                         controller.close()
                         writer.close()
-                    }
+                    },
                 })
             )
-        }
+        },
     })
 }
 
@@ -424,44 +432,44 @@ export async function fetchNative(
     arg: {
         body?: string | Uint8Array | ArrayBuffer
         headers?: { [key: string]: string }
-        method?: 'POST' | 'GET' | 'PUT' | 'DELETE'
+        method?: "POST" | "GET" | "PUT" | "DELETE"
         signal?: AbortSignal
         useRisuTk?: boolean
         chatId?: string
     }
 ): Promise<Response> {
-    console.log(arg.body, 'body')
-    if (arg.body === undefined && (arg.method === 'POST' || arg.method === 'PUT')) {
-        throw new Error('Body is required for POST and PUT requests')
+    console.log(arg.body, "body")
+    if (arg.body === undefined && (arg.method === "POST" || arg.method === "PUT")) {
+        throw new Error("Body is required for POST and PUT requests")
     }
 
-    arg.method = arg.method ?? 'POST'
+    arg.method = arg.method ?? "POST"
 
     const headers = arg.headers ?? {}
     let realBody: Uint8Array | undefined
 
-    if (arg.method === 'GET' || arg.method === 'DELETE') {
+    if (arg.method === "GET" || arg.method === "DELETE") {
         realBody = undefined
-    } else if (typeof arg.body === 'string') {
+    } else if (typeof arg.body === "string") {
         realBody = new TextEncoder().encode(arg.body)
     } else if (arg.body instanceof Uint8Array) {
         realBody = arg.body
     } else if (arg.body instanceof ArrayBuffer) {
         realBody = new Uint8Array(arg.body)
     } else {
-        throw new Error('Invalid body type')
+        throw new Error("Invalid body type")
     }
 
     const db = getDatabase()
     const throughProxy = !isTauri && !isNodeServer && !db.usePlainFetch
     const fetchLogIndex = addFetchLog({
-        body: realBody ? new TextDecoder().decode(realBody) : '',
+        body: realBody ? new TextDecoder().decode(realBody) : "",
         headers: arg.headers,
-        response: 'Streamed Fetch',
+        response: "Streamed Fetch",
         success: true,
         url: url,
-        resType: 'stream',
-        chatId: arg.chatId
+        resType: "stream",
+        chatId: arg.chatId,
     })
 
     if (window.userScriptFetch) {
@@ -469,31 +477,31 @@ export async function fetchNative(
             body: realBody as any,
             headers: headers,
             method: arg.method,
-            signal: arg.signal
+            signal: arg.signal,
         })
     } else if (isTauri) {
         fetchIndex++
         if (arg.signal && arg.signal.aborted) {
-            throw new Error('aborted')
+            throw new Error("aborted")
         }
         if (fetchIndex >= 100000) {
             fetchIndex = 0
         }
-        const fetchId = fetchIndex.toString().padStart(5, '0')
+        const fetchId = fetchIndex.toString().padStart(5, "0")
         nativeFetchData[fetchId] = []
         let resolved = false
 
-        let error = ''
+        let error = ""
         while (!streamedFetchListening) {
             await sleep(100)
         }
         if (isTauri) {
-            invoke('streamed_fetch', {
+            invoke("streamed_fetch", {
                 id: fetchId,
                 url: url,
                 headers: JSON.stringify(headers),
-                body: realBody ? Buffer.from(realBody).toString('base64') : '',
-                method: arg.method
+                body: realBody ? Buffer.from(realBody).toString("base64") : "",
+                method: arg.method,
             }).then((res) => {
                 try {
                     const parsedRes = JSON.parse(res as string)
@@ -518,22 +526,22 @@ export async function fetchNative(
                     while (!resolved || nativeFetchData[fetchId].length > 0) {
                         if (nativeFetchData[fetchId].length > 0) {
                             const data = nativeFetchData[fetchId].shift()!
-                            if (data.type === 'chunk') {
-                                const chunk = Buffer.from(data.body, 'base64')
+                            if (data.type === "chunk") {
+                                const chunk = Buffer.from(data.body, "base64")
                                 controller.enqueue(chunk as unknown as Uint8Array)
                             }
-                            if (data.type === 'headers') {
+                            if (data.type === "headers") {
                                 resHeaders = data.body
                                 status = data.status
                             }
-                            if (data.type === 'end') {
+                            if (data.type === "end") {
                                 resolved = true
                             }
                         }
                         await sleep(10)
                     }
                     controller.close()
-                }
+                },
             })
         )
 
@@ -545,47 +553,51 @@ export async function fetchNative(
             resHeaders = {}
         }
 
-        if (error !== '') {
+        if (error !== "") {
             throw new Error(error)
         }
 
         return new Response(readableStream, {
             headers: new Headers(resHeaders),
-            status: status
+            status: status,
         })
     } else if (throughProxy) {
         const r = await fetch(hubURL + `/proxy2`, {
             body: realBody as any,
             headers: arg.useRisuTk
                 ? {
-                      'risu-header': encodeURIComponent(JSON.stringify(headers)),
-                      'risu-url': encodeURIComponent(url),
-                      'Content-Type': 'application/json',
-                      'x-risu-tk': 'use',
-                      ...(isNodeServer && localStorage.getItem('risuauth') ? { 'risu-auth': localStorage.getItem('risuauth')! } : {}),
-                      ...(DBState?.db?.requestLocation && { 'risu-location': DBState.db.requestLocation })
+                      "risu-header": encodeURIComponent(JSON.stringify(headers)),
+                      "risu-url": encodeURIComponent(url),
+                      "Content-Type": "application/json",
+                      "x-risu-tk": "use",
+                      ...(isNodeServer && localStorage.getItem("risuauth")
+                          ? { "risu-auth": localStorage.getItem("risuauth")! }
+                          : {}),
+                      ...(DBState?.db?.requestLocation && { "risu-location": DBState.db.requestLocation }),
                   }
                 : {
-                      'risu-header': encodeURIComponent(JSON.stringify(headers)),
-                      'risu-url': encodeURIComponent(url),
-                      'Content-Type': 'application/json',
-                      ...(isNodeServer && localStorage.getItem('risuauth') ? { 'risu-auth': localStorage.getItem('risuauth')! } : {}),
-                      ...(DBState?.db?.requestLocation && { 'risu-location': DBState.db.requestLocation })
+                      "risu-header": encodeURIComponent(JSON.stringify(headers)),
+                      "risu-url": encodeURIComponent(url),
+                      "Content-Type": "application/json",
+                      ...(isNodeServer && localStorage.getItem("risuauth")
+                          ? { "risu-auth": localStorage.getItem("risuauth")! }
+                          : {}),
+                      ...(DBState?.db?.requestLocation && { "risu-location": DBState.db.requestLocation }),
                   },
             method: arg.method,
-            signal: arg.signal
+            signal: arg.signal,
         })
 
         return new Response(r.body, {
             headers: r.headers,
-            status: r.status
+            status: r.status,
         })
     } else {
         return await fetch(url, {
             body: realBody as any,
             headers: headers,
             method: arg.method,
-            signal: arg.signal
+            signal: arg.signal,
         })
     }
 }

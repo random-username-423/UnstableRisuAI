@@ -1,110 +1,111 @@
-
 <script lang="ts">
-    import { language } from "src/lang";
-    import TextInput from "../UI/GUI/TextInput.svelte";
-    import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
-    import Button from "../UI/GUI/Button.svelte";
-    import { DBState } from "src/ts/stores.svelte";
-    import { getModelInfo } from "src/ts/model/modellist";
-    import { LLMFlags } from "src/ts/model/types";
-    import { requestChatData } from "src/ts/process/request/request";
-    import { selectFileByDom, selectSingleFile, sleep } from "src/ts/utils/util";
-    import { alertError, alertSelect } from "src/ts/utils/alert.svelte";
-    import { risuChatParser } from "src/ts/utils/parser.svelte";
-    import { getLanguageCodes } from "src/ts/utils/languageCodes";
-    import { downloadFile } from "src/ts/utils/fileIO";
-    import { AppendableBuffer } from "src/ts/utils/fetch";
-    import SelectInput from "../UI/GUI/SelectInput.svelte";
-    import OptionInput from "../UI/GUI/OptionInput.svelte";
-    import sendSound from '../../etc/send.mp3'
+    import { language } from "src/lang"
+    import TextInput from "../UI/GUI/TextInput.svelte"
+    import TextAreaInput from "../UI/GUI/TextAreaInput.svelte"
+    import Button from "../UI/GUI/Button.svelte"
+    import { DBState } from "src/ts/stores.svelte"
+    import { getModelInfo } from "src/ts/model/modellist"
+    import { LLMFlags } from "src/ts/model/types"
+    import { requestChatData } from "src/ts/process/request/request"
+    import { selectFileByDom, selectSingleFile, sleep } from "src/ts/utils/util"
+    import { alertError, alertSelect } from "src/ts/utils/alert.svelte"
+    import { risuChatParser } from "src/ts/utils/parser.svelte"
+    import { getLanguageCodes } from "src/ts/utils/languageCodes"
+    import { downloadFile } from "src/ts/utils/fileIO"
+    import { AppendableBuffer } from "src/ts/utils/fetch"
+    import SelectInput from "../UI/GUI/SelectInput.svelte"
+    import OptionInput from "../UI/GUI/OptionInput.svelte"
+    import sendSound from "../../etc/send.mp3"
 
-
-
-    let LLMModePrompt ="Transcribe and create a caption and timestamp of it, according to the user's audio or video input. inside a markdown code block. (prefix ```webvtt / postfix ```)\n\nFormat\n```\n[TIME] CONTENT\n```\n\nExample\n```\n[00:00] Hildy!\n[00:01] How are you?\n[00:03] Tell me, is the lord of the universe in?\n[00:07] Somebody must've stolen the crown jewels\n```\n\nStep 2. Generate another subtitle, this time, as a translation to {{slot}}, with same format with Step 1., using step 1 as ref.\n\n The translation must be in natural {{slot}}.\n\n Now, start (Hint: media length is {{slot::time}})"
-    let WhisperModePrompt = "```\n{{slot::data}}\n``` Translate the following WEBVTT to natural {{slot}}, with keeping the timestamp and header, inside a markdown code block. (prefix ``` / postfix ```)"
+    let LLMModePrompt =
+        "Transcribe and create a caption and timestamp of it, according to the user's audio or video input. inside a markdown code block. (prefix ```webvtt / postfix ```)\n\nFormat\n```\n[TIME] CONTENT\n```\n\nExample\n```\n[00:00] Hildy!\n[00:01] How are you?\n[00:03] Tell me, is the lord of the universe in?\n[00:07] Somebody must've stolen the crown jewels\n```\n\nStep 2. Generate another subtitle, this time, as a translation to {{slot}}, with same format with Step 1., using step 1 as ref.\n\n The translation must be in natural {{slot}}.\n\n Now, start (Hint: media length is {{slot::time}})"
+    let WhisperModePrompt =
+        "```\n{{slot::data}}\n``` Translate the following WEBVTT to natural {{slot}}, with keeping the timestamp and header, inside a markdown code block. (prefix ``` / postfix ```)"
 
     let selLang = $state(DBState.db.language)
     let prompt = $state(LLMModePrompt)
     let modelInfo = $derived(getModelInfo(DBState.db.aiModel))
-    let outputText = $state('')
-    let fileB64 = $state('')
-    let vttB64 = $state('')
-    let vobj:TranscribeObj[] = $state([])
-    let mode = $state('llm')
-    let sourceLang:string|null = $state(null)    
+    let outputText = $state("")
+    let fileB64 = $state("")
+    let vttB64 = $state("")
+    let vobj: TranscribeObj[] = $state([])
+    let mode = $state("llm")
+    let sourceLang: string | null = $state(null)
 
     async function runLLMMode() {
-        outputText = 'Loading...\n\n'
+        outputText = "Loading...\n\n"
 
-        const file = await selectSingleFile([
-            'mp3', 'ogg', 'wav', 'flac',
-            'mp4', 'webm', 'mkv', 'avi', 'mov'  
-        ])
+        const file = await selectSingleFile(["mp3", "ogg", "wav", "flac", "mp4", "webm", "mkv", "avi", "mov"])
 
-        if(!file){
-            outputText = ''
+        if (!file) {
+            outputText = ""
             return
         }
 
-        const videos = [
-            'mp4', 'webm', 'mkv', 'avi', 'mov'
-        ]
+        const videos = ["mp4", "webm", "mkv", "avi", "mov"]
 
-        const ext = file.name.split('.').pop()
+        const ext = file.name.split(".").pop()
 
         fileB64 = `data:${
-            videos.includes(ext) ? 'video' : 'audio'
-        }/${ext};base64,${Buffer.from(file.data).toString('base64')}`
+            videos.includes(ext) ? "video" : "audio"
+        }/${ext};base64,${Buffer.from(file.data).toString("base64")}`
 
         const media = {
-            type: videos.includes(ext) ? 'video' : 'audio',
+            type: videos.includes(ext) ? "video" : "audio",
             base64: fileB64,
         } as const
 
-        let time = ''
+        let time = ""
 
-        if(prompt.includes('{{slot::time}}')){
-            const video = document.createElement('video')
+        if (prompt.includes("{{slot::time}}")) {
+            const video = document.createElement("video")
             video.src = fileB64
-            video.preload = 'metadata'
+            video.preload = "metadata"
             video.muted = true
             await video.play()
             const d = video.duration
             console.log(d)
-            if(isNaN(d)){
-                time = 'unknown'
-            }else{
+            if (isNaN(d)) {
+                time = "unknown"
+            } else {
                 time = `${Math.floor(d / 60)}:${Math.floor(d % 60)}`
             }
             video.pause()
             video.remove()
         }
 
-        const v =await requestChatData({
-            formated: [{
-                role: "user",
-                content: risuChatParser(prompt).replace(/{{slot}}/g, selLang).replace(/{{slot::time}}/g, time),
-                multimodals: [media]
-            }],
-            bias: {},
-            useStreaming: true
-        }, 'model')
+        const v = await requestChatData(
+            {
+                formated: [
+                    {
+                        role: "user",
+                        content: risuChatParser(prompt)
+                            .replace(/{{slot}}/g, selLang)
+                            .replace(/{{slot::time}}/g, time),
+                        multimodals: [media],
+                    },
+                ],
+                bias: {},
+                useStreaming: true,
+            },
+            "model"
+        )
 
-        if(v.type === 'multiline'){
+        if (v.type === "multiline") {
             alertError(v.result[0][1])
             return
         }
 
-        if(v.type !== 'streaming'){
+        if (v.type !== "streaming") {
             alertError(v.result)
             return
         }
 
         const reader = v.result.getReader()
 
-        while(true){
+        while (true) {
             const { done, value } = await reader.read()
-            if(done){
+            if (done) {
                 break
             }
             const firstKey = Object.keys(value)[0]
@@ -114,55 +115,47 @@
 
         const extracted = outputText.matchAll(/```(web)?(vtt)?\n(.*?)\n```/gs)
 
-        let latest = ''
-        for(const match of extracted){
+        let latest = ""
+        for (const match of extracted) {
             latest = match[3].trim()
         }
 
         vobj = convertTransToObj(latest)
         outputText = makeWebVtt(vobj)
-        vttB64 = `data:text/vtt;base64,${Buffer.from(outputText).toString('base64')}`
+        vttB64 = `data:text/vtt;base64,${Buffer.from(outputText).toString("base64")}`
 
-        const audio = new Audio(sendSound);
-        audio.play();
+        const audio = new Audio(sendSound)
+        audio.play()
     }
 
     async function runWhisperMode() {
-        outputText = 'Loading...\n\n'
+        outputText = "Loading...\n\n"
 
-        const files = await selectFileByDom([
-            'mp3', 'ogg', 'wav', 'flac',
-            'mp4', 'webm', 'mkv', 'avi', 'mov'  
-
-        ])
+        const files = await selectFileByDom(["mp3", "ogg", "wav", "flac", "mp4", "webm", "mkv", "avi", "mov"])
 
         const file = files?.[0]
 
-        let requestFile:File = null
+        let requestFile: File = null
 
-        if(!file){
-            outputText = ''
+        if (!file) {
+            outputText = ""
             return
         }
-        const videos = [
-            'mp4', 'webm', 'mkv', 'avi', 'mov'
-        ]
+        const videos = ["mp4", "webm", "mkv", "avi", "mov"]
 
-        const ext = file.name.split('.').pop()
-        if(videos.includes(ext)){
-            
-
+        const ext = file.name.split(".").pop()
+        if (videos.includes(ext)) {
             //check duration
             let duration = 0
             {
-                const video = document.createElement('video')
+                const video = document.createElement("video")
                 video.src = URL.createObjectURL(file)
-                video.preload = 'metadata'
+                video.preload = "metadata"
                 video.muted = true
                 await video.play()
                 const d = video.duration
-                if(isNaN(d)){
-                    alertError('This video does not have a duration')
+                if (isNaN(d)) {
+                    alertError("This video does not have a duration")
                     return
                 }
                 video.pause()
@@ -170,58 +163,61 @@
                 duration = d
             }
 
-            outputText = 'Converting video to audio...\n\n'
+            outputText = "Converting video to audio...\n\n"
             const audioContext = new AudioContext()
             const audioBuffer = await audioContext.decodeAudioData(await file.arrayBuffer())
 
-            const [left, right] =  [audioBuffer.getChannelData(0), audioBuffer.getChannelData(1)]
+            const [left, right] = [audioBuffer.getChannelData(0), audioBuffer.getChannelData(1)]
 
             const leftInt16 = new Int16Array(left.length)
             const rightInt16 = new Int16Array(right.length)
 
-            for(let i = 0; i < left.length; i++){
-                leftInt16[i] = left[i] * 0x7FFF
-                rightInt16[i] = right[i] * 0x7FFF
+            for (let i = 0; i < left.length; i++) {
+                leftInt16[i] = left[i] * 0x7fff
+                rightInt16[i] = right[i] * 0x7fff
             }
 
-            const lamejs = await import('@breezystack/lamejs')
-            const mp3encoder = new lamejs.Mp3Encoder(2, 44100, 128);
+            const lamejs = await import("@breezystack/lamejs")
+            const mp3encoder = new lamejs.Mp3Encoder(2, 44100, 128)
             const enc = new AppendableBuffer()
 
-            for(let pointer = 0; pointer < leftInt16.length; pointer += 1152){
-                enc.append(mp3encoder.encodeBuffer(leftInt16.subarray(pointer, pointer + 1152), rightInt16.subarray(pointer, pointer + 1152)))
-                if(pointer % 115200 === 0){
-                    outputText = `Converting  video to audio... ${(pointer / leftInt16.length * 100).toFixed(2)}%\n`
+            for (let pointer = 0; pointer < leftInt16.length; pointer += 1152) {
+                enc.append(
+                    mp3encoder.encodeBuffer(
+                        leftInt16.subarray(pointer, pointer + 1152),
+                        rightInt16.subarray(pointer, pointer + 1152)
+                    )
+                )
+                if (pointer % 115200 === 0) {
+                    outputText = `Converting  video to audio... ${((pointer / leftInt16.length) * 100).toFixed(2)}%\n`
                     await sleep(1)
                 }
             }
             enc.append(mp3encoder.flush())
 
-            const file2 = new File([enc.buffer as Uint8Array<ArrayBuffer>], 'audio.mp3', {
-                type: 'audio/mp3'
+            const file2 = new File([enc.buffer as Uint8Array<ArrayBuffer>], "audio.mp3", {
+                type: "audio/mp3",
             })
 
-            outputText = 'Transcribing audio...\n\n'
+            outputText = "Transcribing audio...\n\n"
             requestFile = file2
-        }
-        else{
+        } else {
             requestFile = file
         }
 
-
-        if(mode === 'whisperLocal'){
+        if (mode === "whisperLocal") {
             try {
-                const {pipeline} = await import('@huggingface/transformers')
-                let stats:{
-                    [key:string]:{
-                        name:string
-                        status:string
-                        file:string
-                        progress?:number
+                const { pipeline } = await import("@huggingface/transformers")
+                let stats: {
+                    [key: string]: {
+                        name: string
+                        status: string
+                        file: string
+                        progress?: number
                     }
                 } = {}
 
-                const device = ('gpu' in navigator) ? 'webgpu' : 'wasm'
+                const device = "gpu" in navigator ? "webgpu" : "wasm"
 
                 const transcriber = await pipeline(
                     "automatic-speech-recognition",
@@ -229,35 +225,40 @@
                     {
                         device: device,
                         progress_callback: (progress) => {
-                            if (progress.status === 'ready') {
+                            if (progress.status === "ready") {
                                 outputText = `Ready: ${progress.task} - ${progress.model}`
                                 return
                             }
                             stats[progress.name + progress.file] = progress
-                            outputText = Object.values(stats).map(v => `${v.name}-${v.file}: ${v.status} ${v.progress ? `[${v.progress.toFixed(2)}%]` : ''}`).join('\n')
+                            outputText = Object.values(stats)
+                                .map(
+                                    (v) =>
+                                        `${v.name}-${v.file}: ${v.status} ${v.progress ? `[${v.progress.toFixed(2)}%]` : ""}`
+                                )
+                                .join("\n")
                         },
-                        dtype: 'q8'
-                    },
-                );
+                        dtype: "q8",
+                    }
+                )
 
                 const audioContext = new AudioContext()
                 const audioBuffer = await audioContext.decodeAudioData(await requestFile.arrayBuffer())
                 const combined = new Float32Array(audioBuffer.getChannelData(0).length)
-                for(let j = 0; j < audioBuffer.getChannelData(0).length; j++){
-                    for(let i = 0; i < audioBuffer.numberOfChannels; i++){
+                for (let j = 0; j < audioBuffer.getChannelData(0).length; j++) {
+                    for (let i = 0; i < audioBuffer.numberOfChannels; i++) {
                         combined[j] += audioBuffer.getChannelData(i)[j]
                     }
 
-                    if(combined[j] > 1){
+                    if (combined[j] > 1) {
                         combined[j] = 1
                     }
-                    if(combined[j] < -1){
+                    if (combined[j] < -1) {
                         combined[j] = -1
                     }
                 }
-                
-                outputText = ('Transcribing... (This may take a while. Do not close the tab.)')
-                if(device !== 'webgpu'){
+
+                outputText = "Transcribing... (This may take a while. Do not close the tab.)"
+                if (device !== "webgpu") {
                     outputText += `\nYour browser or OS do not support WebGPU, so the transcription may be slower.`
                 }
                 await sleep(10)
@@ -268,55 +269,56 @@
                 const res2 = Array.isArray(res1) ? res1[0] : res1
                 const chunks = res2.chunks
 
-                outputText = 'WEBVTT\n\n'
+                outputText = "WEBVTT\n\n"
 
-                for(const chunk of chunks){
+                for (const chunk of chunks) {
                     outputText += `${chunk.timestamp[0]} --> ${chunk.timestamp[1]}\n${chunk.text}\n\n`
                 }
 
                 console.log(outputText)
-
             } catch (error) {
                 alertError(JSON.stringify(error))
-                outputText = ''
+                outputText = ""
                 return
             }
-        }
-        else{
+        } else {
             const formData = new FormData()
-            formData.append('file', requestFile)
-            formData.append('model', 'whisper-1')
-            formData.append('response_format', 'vtt')
+            formData.append("file", requestFile)
+            formData.append("model", "whisper-1")
+            formData.append("response_format", "vtt")
 
-
-            const d = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-                method: 'POST',
+            const d = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+                method: "POST",
                 headers: {
-                    'Authorization': `Bearer ${DBState.db.openAIKey}`
+                    Authorization: `Bearer ${DBState.db.openAIKey}`,
                 },
-                body: formData
-
+                body: formData,
             })
             outputText = await d.text()
         }
 
+        const v = await requestChatData(
+            {
+                formated: [
+                    {
+                        role: "user",
+                        content: risuChatParser(prompt)
+                            .replace(/{{slot}}/g, selLang)
+                            .replace(/{{slot::data}}/g, outputText),
+                    },
+                ],
+                bias: {},
+                useStreaming: true,
+            },
+            "model"
+        )
 
-        const v = await requestChatData({
-            formated: [{
-                role: "user",
-                content: risuChatParser(prompt).replace(/{{slot}}/g, selLang).replace(/{{slot::data}}/g, outputText),
-            }],
-            bias: {},
-            useStreaming: true
-        }, 'model')
-
-
-        if(v.type === 'multiline'){
+        if (v.type === "multiline") {
             alertError(v.result[0][1])
             return
         }
 
-        if(v.type !== 'streaming'){
+        if (v.type !== "streaming") {
             alertError(v.result)
             return
         }
@@ -325,103 +327,109 @@
 
         const reader = v.result.getReader()
 
-        while(true){
+        while (true) {
             const { done, value } = await reader.read()
-            if(done){
+            if (done) {
                 break
             }
             const firstKey = Object.keys(value)[0]
 
             outputText = value[firstKey]
         }
-        if(!outputText.trim().endsWith('```')){
-            outputText = outputText.trim() + '\n```'
+        if (!outputText.trim().endsWith("```")) {
+            outputText = outputText.trim() + "\n```"
         }
 
         const extracted = outputText.matchAll(/```(web)?(vtt)?\n(.*?)\n```/gs)
 
-        let latest = ''
-        for(const match of extracted){
+        let latest = ""
+        for (const match of extracted) {
             latest = match[3].trim()
         }
 
         const fileBuffer = await file.arrayBuffer()
         outputText = latest
-        vttB64 = `data:text/vtt;base64,${Buffer.from(outputText).toString('base64')}`
-        fileB64 = `data:audio/wav;base64,${Buffer.from(fileBuffer).toString('base64')}`
+        vttB64 = `data:text/vtt;base64,${Buffer.from(outputText).toString("base64")}`
+        fileB64 = `data:audio/wav;base64,${Buffer.from(fileBuffer).toString("base64")}`
         vobj = convertWebVTTtoObj(outputText)
 
-        const audio = new Audio(sendSound);
-        audio.play();
+        const audio = new Audio(sendSound)
+        audio.play()
     }
-
-    
-
 
     type TranscribeObj = {
         start: string
         end: string
         text: string
     }
-    
 
-    function convertTransToObj(r:string){
-        const lines = r.split('\n').map(v => v.trim()).filter(v => v)
-        const obj:TranscribeObj[] = []
-        for(let i = 0; i < lines.length; i++){
+    function convertTransToObj(r: string) {
+        const lines = r
+            .split("\n")
+            .map((v) => v.trim())
+            .filter((v) => v)
+        const obj: TranscribeObj[] = []
+        for (let i = 0; i < lines.length; i++) {
             const line = lines[i]
-            if(line.startsWith('[')){
-                let [time, ...text] = line.split(']')
+            if (line.startsWith("[")) {
+                let [time, ...text] = line.split("]")
                 time = time.slice(1)
-                if(obj.length > 0){
-                    obj[obj.length - 1].end = time + '.000'
+                if (obj.length > 0) {
+                    obj[obj.length - 1].end = time + ".000"
                 }
                 obj.push({
-                    start: time + '.000',
-                    end: '',
-                    text: text.join(' ')
+                    start: time + ".000",
+                    end: "",
+                    text: text.join(" "),
                 })
             }
         }
         //rediculously long line
-        obj[obj.length - 1].end = '99:99.000'
+        obj[obj.length - 1].end = "99:99.000"
         return obj
     }
 
-    function convertWebVTTtoObj(r:string){
-        const chunks = r.split('\n\n').map(v => v.trim()).filter(v => v)
-        const obj:TranscribeObj[] = []
-        for(const chunk of chunks){
-            if(chunk.startsWith('WEBVTT')){
+    function convertWebVTTtoObj(r: string) {
+        const chunks = r
+            .split("\n\n")
+            .map((v) => v.trim())
+            .filter((v) => v)
+        const obj: TranscribeObj[] = []
+        for (const chunk of chunks) {
+            if (chunk.startsWith("WEBVTT")) {
                 continue
             }
-            const [time, ...text] = chunk.split('\n')
-            const [start, end] = time.split(' --> ')
+            const [time, ...text] = chunk.split("\n")
+            const [start, end] = time.split(" --> ")
             obj.push({
                 start: start,
                 end: end,
-                text: text.join('\n')
+                text: text.join("\n"),
             })
         }
         return obj
     }
 
-    function makeWebVtt(obj: TranscribeObj[]){
-        let vtt = 'WEBVTT\n\n'
+    function makeWebVtt(obj: TranscribeObj[]) {
+        let vtt = "WEBVTT\n\n"
 
-        for(const line of obj){
+        for (const line of obj) {
             vtt += `${line.start} --> ${line.end}\n${line.text}\n\n`
         }
 
         return vtt
     }
 
-    function webVttToSrt(){
-        const srt = outputText.replace('WEBVTT', '').trim().split('\n\n').map((v, i) => {
-            const [time, ...text] = v.split('\n')
-            const [start, end] = time.split(' --> ')
-            return `${i + 1}\n${start.replace('.', ',')} --> ${end.replace('.', ',')}\n${text.join('\n')}`
-        })
+    function webVttToSrt() {
+        const srt = outputText
+            .replace("WEBVTT", "")
+            .trim()
+            .split("\n\n")
+            .map((v, i) => {
+                const [time, ...text] = v.split("\n")
+                const [start, end] = time.split(" --> ")
+                return `${i + 1}\n${start.replace(".", ",")} --> ${end.replace(".", ",")}\n${text.join("\n")}`
+            })
         return srt
     }
 
@@ -432,11 +440,11 @@
     }
 </script>
 
-<h2 class="text-4xl text-textcolor my-6 font-black relative">{language.subtitles}</h2>
+<h2 class="relative my-6 text-4xl font-black text-textcolor">{language.subtitles}</h2>
 
-{#if mode === 'whisperLocal'}
-    <span class="text-textcolor text-lg mt-4">{language.sourceLanguage}</span>
-    <SelectInput value={sourceLang === null ? 'auto' : sourceLang}>
+{#if mode === "whisperLocal"}
+    <span class="mt-4 text-lg text-textcolor">{language.sourceLanguage}</span>
+    <SelectInput value={sourceLang === null ? "auto" : sourceLang}>
         <OptionInput value="auto">Auto</OptionInput>
         {#each getLanguageCodes(DBState.db.language) as lang}
             <OptionInput value={lang.code}>{lang.name}</OptionInput>
@@ -444,46 +452,51 @@
     </SelectInput>
 {/if}
 
-
-<span class="text-textcolor text-lg mt-4">{language.destinationLanguage}</span>
+<span class="mt-4 text-lg text-textcolor">{language.destinationLanguage}</span>
 <TextInput bind:value={selLang} />
 
-<span class="text-textcolor text-lg mt-4">{language.prompt}</span>
+<span class="mt-4 text-lg text-textcolor">{language.prompt}</span>
 <TextAreaInput bind:value={prompt} />
 
-<span class="text-textcolor text-lg mt-4">{language.type}</span>
-<SelectInput bind:value={mode} onchange={(e) => {
-    if(mode === 'llm'){
-        prompt = LLMModePrompt
-    }
-    if(mode === 'whisper' || mode === 'whisperLocal'){
-        prompt = WhisperModePrompt
-    }
-}}>
+<span class="mt-4 text-lg text-textcolor">{language.type}</span>
+<SelectInput
+    bind:value={mode}
+    onchange={(e) => {
+        if (mode === "llm") {
+            prompt = LLMModePrompt
+        }
+        if (mode === "whisper" || mode === "whisperLocal") {
+            prompt = WhisperModePrompt
+        }
+    }}
+>
     <OptionInput value="llm">LLM</OptionInput>
     <OptionInput value="whisper">Whisper</OptionInput>
     <OptionInput value="whisperLocal">Whisper Local</OptionInput>
 </SelectInput>
 
-{#if !(modelInfo.flags.includes(LLMFlags.hasAudioInput) && modelInfo.flags.includes(LLMFlags.hasVideoInput)) && mode === 'llm'}
-    <span class="text-draculared text-lg mt-4">{language.subtitlesWarning1}</span>
+{#if !(modelInfo.flags.includes(LLMFlags.hasAudioInput) && modelInfo.flags.includes(LLMFlags.hasVideoInput)) && mode === "llm"}
+    <span class="mt-4 text-lg text-draculared">{language.subtitlesWarning1}</span>
 {/if}
 {#if !(modelInfo.flags.includes(LLMFlags.hasStreaming) && DBState.db.useStreaming)}
-    <span class="text-draculared text-lg mt-4">{language.subtitlesWarning2}</span>
+    <span class="mt-4 text-lg text-draculared">{language.subtitlesWarning2}</span>
 {/if}
-{#if !('gpu' in navigator) && mode === 'whisperLocal'}
-    <span class="text-draculared text-lg mt-4">{language.noWebGPU}</span>
+{#if !("gpu" in navigator) && mode === "whisperLocal"}
+    <span class="mt-4 text-lg text-draculared">{language.noWebGPU}</span>
 {/if}
 
 {#if !outputText}
-    <Button className="mt-4" onclick={() => {
-        if(mode === 'llm'){
-            runLLMMode()
-        }
-        if(mode === 'whisper' || mode === 'whisperLocal'){
-            runWhisperMode()
-        }
-    }}>
+    <Button
+        className="mt-4"
+        onclick={() => {
+            if (mode === "llm") {
+                runLLMMode()
+            }
+            if (mode === "whisper" || mode === "whisperLocal") {
+                runWhisperMode()
+            }
+        }}
+    >
         {language.run}
     </Button>
 {:else if vttB64 && fileB64}
@@ -503,35 +516,38 @@
         {/key}
     </div>
 
-    <span class="text-textcolor text-lg mt-4">{language.download}</span>
+    <span class="mt-4 text-lg text-textcolor">{language.download}</span>
 
-    <Button className="mt-4" onclick={() => {
-        outputText = ''
-        fileB64 = ''
-        vttB64 = ''
-    }}>
+    <Button
+        className="mt-4"
+        onclick={() => {
+            outputText = ""
+            fileB64 = ""
+            vttB64 = ""
+        }}
+    >
         {language.reset}
     </Button>
 
-    <Button className="mt-4" onclick={async () => {
-        const sel = parseInt(await alertSelect([
-            'WebVTT',
-            'SRT'
-        ]))
-        const a = document.createElement('a')
+    <Button
+        className="mt-4"
+        onclick={async () => {
+            const sel = parseInt(await alertSelect(["WebVTT", "SRT"]))
+            const a = document.createElement("a")
 
-        // WebVTT
-        if(sel === 0){
-            downloadFile('subtitle.vtt', outputText)
-            return
-        }
+            // WebVTT
+            if (sel === 0) {
+                downloadFile("subtitle.vtt", outputText)
+                return
+            }
 
-        // SRT
-        if(sel === 1){
-            downloadFile('subtitle.srt', webVttToSrt().join('\n\n'))
-            return   
-        }
-    }}>
+            // SRT
+            if (sel === 1) {
+                downloadFile("subtitle.srt", webVttToSrt().join("\n\n"))
+                return
+            }
+        }}
+    >
         {language.download}
     </Button>
 {/if}

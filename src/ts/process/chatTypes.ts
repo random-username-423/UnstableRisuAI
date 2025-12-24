@@ -1,5 +1,5 @@
 export interface OpenAIChat {
-    role: 'system' | 'user' | 'assistant' | 'function'
+    role: "system" | "user" | "assistant" | "function"
     content: string
     memo?: string
     name?: string
@@ -16,7 +16,7 @@ export interface OpenAIChat {
 }
 
 export interface MultiModal {
-    type: 'image' | 'video' | 'audio'
+    type: "image" | "video" | "audio"
     base64: string
     height?: number
     width?: number
@@ -33,7 +33,7 @@ export interface OpenAIChatFull extends OpenAIChat {
             arguments: string
         }
         id: string
-        type: 'function'
+        type: "function"
     }[]
 }
 

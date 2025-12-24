@@ -6,7 +6,16 @@
     import { listWithSizesRecursiveFromWorker, loadFromWorker } from "src/ts/data/storage/opfsWorkerClient.svelte"
     import { isTauri } from "src/ts/utils/env"
     import { getDbBackups } from "src/ts/init"
-    import { RefreshCwIcon, DatabaseIcon, ImageIcon, MessageSquareIcon, FileIcon, HardDriveIcon, UsersIcon, FolderOpenIcon } from "lucide-svelte"
+    import {
+        RefreshCwIcon,
+        DatabaseIcon,
+        ImageIcon,
+        MessageSquareIcon,
+        FileIcon,
+        HardDriveIcon,
+        UsersIcon,
+        FolderOpenIcon,
+    } from "lucide-svelte"
     import Button from "src/lib/UI/GUI/Button.svelte"
     import OPFSExplorer from "./OPFSExplorer.svelte"
     import IndexedDBExplorer from "./IndexedDBExplorer.svelte"
@@ -183,21 +192,21 @@
     })
 </script>
 
-<h2 class="mb-2 text-2xl font-bold mt-2">{language.storage}</h2>
+<h2 class="mb-2 mt-2 text-2xl font-bold">{language.storage}</h2>
 
 {#if error}
-    <div class="text-red-500 mt-4">
+    <div class="mt-4 text-red-500">
         {language.error}: {error}
     </div>
 {:else}
     <!-- Total Usage -->
-    <div class="mt-4 p-4 bg-darkbg rounded-lg">
-        <div class="flex items-center gap-2 mb-2">
+    <div class="mt-4 rounded-lg bg-darkbg p-4">
+        <div class="mb-2 flex items-center gap-2">
             <HardDriveIcon size={20} />
             <span class="font-semibold">{language.storageOverview}</span>
         </div>
         <div class="mt-2">
-            <div class="flex justify-between text-sm mb-1">
+            <div class="mb-1 flex justify-between text-sm">
                 <span>{language.storageUsed}</span>
                 {#if loading}
                     <span class="text-textcolor2">{language.storageCalculating}</span>
@@ -205,13 +214,13 @@
                     <span>{formatBytes(storageInfo.totalUsage)} / {formatBytes(storageInfo.quota)}</span>
                 {/if}
             </div>
-            <div class="w-full bg-selected rounded-full h-2">
+            <div class="h-2 w-full rounded-full bg-selected">
                 <div
-                    class="bg-green-500 h-2 rounded-full transition-all"
+                    class="h-2 rounded-full bg-green-500 transition-all"
                     style="width: {loading ? '0%' : formatPercent(storageInfo.totalUsage, storageInfo.quota)}"
                 ></div>
             </div>
-            <div class="text-xs text-textcolor2 mt-1">
+            <div class="mt-1 text-xs text-textcolor2">
                 {#if loading}
                     {language.storageCalculating}
                 {:else}
@@ -223,15 +232,15 @@
     </div>
 
     <!-- File Statistics -->
-    <div class="mt-4 p-4 bg-darkbg rounded-lg">
-        <div class="flex items-center gap-2 mb-3">
+    <div class="mt-4 rounded-lg bg-darkbg p-4">
+        <div class="mb-3 flex items-center gap-2">
             <FileIcon size={20} />
             <span class="font-semibold">{language.storageFiles}</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
             <!-- Characters -->
-            <div class="flex items-center gap-2 p-2 bg-selected rounded">
+            <div class="flex items-center gap-2 rounded bg-selected p-2">
                 <UsersIcon size={16} />
                 <div>
                     <div class="text-sm font-medium">{language.storageCharacters}</div>
@@ -240,7 +249,7 @@
             </div>
 
             <!-- Chats -->
-            <div class="flex items-center gap-2 p-2 bg-selected rounded">
+            <div class="flex items-center gap-2 rounded bg-selected p-2">
                 <MessageSquareIcon size={16} />
                 <div>
                     <div class="text-sm font-medium">{language.storageChats}</div>
@@ -255,7 +264,7 @@
             </div>
 
             <!-- Assets -->
-            <div class="flex items-center gap-2 p-2 bg-selected rounded">
+            <div class="flex items-center gap-2 rounded bg-selected p-2">
                 <ImageIcon size={16} />
                 <div>
                     <div class="text-sm font-medium">{language.storageAssets}</div>
@@ -270,7 +279,7 @@
             </div>
 
             <!-- Backups -->
-            <div class="flex items-center gap-2 p-2 bg-selected rounded">
+            <div class="flex items-center gap-2 rounded bg-selected p-2">
                 <DatabaseIcon size={16} />
                 <div>
                     <div class="text-sm font-medium">{language.storageBackups}</div>
@@ -287,8 +296,8 @@
     </div>
 
     <!-- Database Files -->
-    <div class="mt-4 p-4 bg-darkbg rounded-lg">
-        <div class="flex items-center gap-2 mb-3">
+    <div class="mt-4 rounded-lg bg-darkbg p-4">
+        <div class="mb-3 flex items-center gap-2">
             <DatabaseIcon size={20} />
             <span class="font-semibold">{language.storageDatabaseFiles}</span>
         </div>
@@ -325,16 +334,22 @@
                 </div>
             {:else if storageInfo.chatFileCount > 0}
                 <div class="flex justify-between">
-                    <span class="text-textcolor2">chats/ ({storageInfo.chatFileCount} {language.storageFilesCount})</span>
-                    <span>{#if storageInfo.chatsSize > 0}{formatBytes(storageInfo.chatsSize)}{:else}{language.storageIndividual}{/if}</span>
+                    <span class="text-textcolor2"
+                        >chats/ ({storageInfo.chatFileCount} {language.storageFilesCount})</span
+                    >
+                    <span
+                        >{#if storageInfo.chatsSize > 0}{formatBytes(
+                                storageInfo.chatsSize
+                            )}{:else}{language.storageIndividual}{/if}</span
+                    >
                 </div>
             {/if}
         </div>
     </div>
 
     <!-- Environment Info -->
-    <div class="mt-4 p-4 bg-darkbg rounded-lg">
-        <div class="flex items-center gap-2 mb-3">
+    <div class="mt-4 rounded-lg bg-darkbg p-4">
+        <div class="mb-3 flex items-center gap-2">
             <FileIcon size={20} />
             <span class="font-semibold">{language.storageEnvironment}</span>
         </div>
@@ -361,11 +376,11 @@
             <RefreshCwIcon size={16} class={loading ? "animate-spin" : ""} />
             {language.storageRefresh}
         </Button>
-        <Button onclick={() => showExplorer = true}>
+        <Button onclick={() => (showExplorer = true)}>
             <FolderOpenIcon size={16} />
             {language.openOPFSExplorer || "Open OPFS Explorer"}
         </Button>
-        <Button onclick={() => showIndexedDBExplorer = true}>
+        <Button onclick={() => (showIndexedDBExplorer = true)}>
             <FolderOpenIcon size={16} />
             {language.openIndexedDBExplorer || "Open IndexedDB Explorer"}
         </Button>
@@ -373,9 +388,9 @@
 {/if}
 
 {#if showExplorer}
-    <OPFSExplorer close={() => showExplorer = false} />
+    <OPFSExplorer close={() => (showExplorer = false)} />
 {/if}
 
 {#if showIndexedDBExplorer}
-    <IndexedDBExplorer close={() => showIndexedDBExplorer = false} />
+    <IndexedDBExplorer close={() => (showIndexedDBExplorer = false)} />
 {/if}

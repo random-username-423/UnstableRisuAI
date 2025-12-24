@@ -17,12 +17,12 @@
     let { close = () => {} } = $props()
 </script>
 
-<div class="absolute w-full h-full z-40 bg-black bg-opacity-50 flex justify-center items-center">
-    <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl w-72 max-h-full overflow-y-auto">
-        <div class="flex items-center text-textcolor mb-4">
-            <h2 class="mt-0 mb-0">{language.chatList}</h2>
-            <div class="flex-grow flex justify-end">
-                <button class="text-textcolor2 hover:text-green-500 mr-2 cursor-pointer items-center" onclick={close}>
+<div class="absolute z-40 flex h-full w-full items-center justify-center bg-black bg-opacity-50">
+    <div class="break-any flex max-h-full w-72 max-w-3xl flex-col overflow-y-auto rounded-md bg-darkbg p-4">
+        <div class="mb-4 flex items-center text-textcolor">
+            <h2 class="mb-0 mt-0">{language.chatList}</h2>
+            <div class="flex flex-grow justify-end">
+                <button class="mr-2 cursor-pointer items-center text-textcolor2 hover:text-green-500" onclick={close}>
                     <XIcon size={24} />
                 </button>
             </div>
@@ -41,17 +41,20 @@
                         close()
                     }
                 }}
-                class="flex items-center text-textcolor border-t-1 border-solid border-0 border-darkborderc p-2 cursor-pointer"
+                class="flex cursor-pointer items-center border-0 border-t-1 border-solid border-darkborderc p-2 text-textcolor"
                 class:bg-selected={i === DBState.db.characters[ChatState.selectedCharId].chatPage}
             >
                 {#if editMode}
-                    <TextInput bind:value={DBState.db.characters[ChatState.selectedCharId].chats[i].name} padding={false} />
+                    <TextInput
+                        bind:value={DBState.db.characters[ChatState.selectedCharId].chats[i].name}
+                        padding={false}
+                    />
                 {:else}
                     <span>{chat.name}</span>
                 {/if}
-                <div class="flex-grow flex justify-end">
+                <div class="flex flex-grow justify-end">
                     <div
-                        class="text-textcolor2 hover:text-green-500 mr-2 cursor-pointer"
+                        class="mr-2 cursor-pointer text-textcolor2 hover:text-green-500"
                         role="button"
                         tabindex="0"
                         onclick={async (e) => {
@@ -63,7 +66,7 @@
                         <DownloadIcon size={18} />
                     </div>
                     <div
-                        class="text-textcolor2 hover:text-green-500 cursor-pointer"
+                        class="cursor-pointer text-textcolor2 hover:text-green-500"
                         role="button"
                         tabindex="0"
                         onclick={async (e) => {
@@ -100,9 +103,9 @@
                 </div>
             </button>
         {/each}
-        <div class="flex mt-2 items-center">
+        <div class="mt-2 flex items-center">
             <button
-                class="text-textcolor2 hover:text-green-500 cursor-pointer mr-1"
+                class="mr-1 cursor-pointer text-textcolor2 hover:text-green-500"
                 onclick={() => {
                     const cha = DBState.db.characters[ChatState.selectedCharId]
                     const len = DBState.db.characters[ChatState.selectedCharId].chats.length
@@ -133,7 +136,7 @@
                 <PlusIcon />
             </button>
             <button
-                class="text-textcolor2 hover:text-green-500 mr-2 cursor-pointer"
+                class="mr-2 cursor-pointer text-textcolor2 hover:text-green-500"
                 onclick={() => {
                     importChat()
                 }}
@@ -141,7 +144,7 @@
                 <HardDriveUploadIcon size={18} />
             </button>
             <button
-                class="text-textcolor2 hover:text-green-500 cursor-pointer"
+                class="cursor-pointer text-textcolor2 hover:text-green-500"
                 onclick={() => {
                     editMode = !editMode
                 }}

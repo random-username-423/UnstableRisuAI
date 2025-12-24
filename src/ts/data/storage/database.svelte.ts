@@ -1,19 +1,19 @@
-import { checkNullish } from '../../utils/util';
-import { changeLanguage } from '../../../lang';
-import { saveAsset as saveImageGlobal } from '../../utils/fileIO';
-import { createHypaV3Preset } from '../../process/memory/hypav3Types';
+import { checkNullish } from "../../utils/util"
+import { changeLanguage } from "../../../lang"
+import { saveAsset as saveImageGlobal } from "../../utils/fileIO"
+import { createHypaV3Preset } from "../../process/memory/hypav3Types"
 
 // Types
-import type { Database, character, groupChat, Chat } from './types';
+import type { Database, character, groupChat, Chat } from "./types"
 
 // Utils & Defaults
-import { baseDatabaseDefaults, presetTemplate } from './utils/defaultDb';
-export * from './utils/defaultDb';
+import { baseDatabaseDefaults, presetTemplate } from "./utils/defaultDb"
+export * from "./utils/defaultDb"
 
 // Stores
-import { DBState, ChatState } from '../../stores.svelte';
+import { DBState, ChatState } from "../../stores.svelte"
 
-export const webAppSubVer = ''
+export const webAppSubVer = ""
 
 export function setDatabase(data: Database) {
     // 1. Apply simple defaults
@@ -46,92 +46,93 @@ export function setDatabase(data: Database) {
     }
     if (checkNullish(data.loreBook)) {
         data.loreBookPage = 0
-        data.loreBook = [{
-            name: "My First LoreBook",
-            data: []
-        }]
+        data.loreBook = [
+            {
+                name: "My First LoreBook",
+                data: [],
+            },
+        ]
     }
     if (checkNullish(data.loreBookPage) || data.loreBook.length < data.loreBookPage) {
         data.loreBookPage = 0
     }
-    
+
     // Formatting Order Logic
-    if (!data.formatingOrder.includes('personaPrompt')) {
-        data.formatingOrder.splice(data.formatingOrder.indexOf('main'), 0, 'personaPrompt')
+    if (!data.formatingOrder.includes("personaPrompt")) {
+        data.formatingOrder.splice(data.formatingOrder.indexOf("main"), 0, "personaPrompt")
     }
 
     // Personas Logic
     data.selectedPersona ??= 0
-    data.personaPrompt ??= ''
-    data.personas ??= [{
-        name: data.username,
-        personaPrompt: "",
-        icon: data.userIcon,
-        note: data.userNote,
-        largePortrait: false
-    }]
+    data.personaPrompt ??= ""
+    data.personas ??= [
+        {
+            name: data.username,
+            personaPrompt: "",
+            icon: data.userIcon,
+            note: data.userNote,
+            largePortrait: false,
+        },
+    ]
 
     // NAI Config Logic
     if (checkNullish(data.NAIImgConfig.v4_prompt)) {
-        data.NAIImgConfig.autoSmea = false;
-        data.NAIImgConfig.use_coords = false;
-        data.NAIImgConfig.legacy_uc = false;
+        data.NAIImgConfig.autoSmea = false
+        data.NAIImgConfig.use_coords = false
+        data.NAIImgConfig.legacy_uc = false
         data.NAIImgConfig.v4_prompt = {
             caption: {
                 base_caption: "",
-                char_captions: []
+                char_captions: [],
             },
             use_coords: false,
-            use_order: true
-        };
+            use_order: true,
+        }
         data.NAIImgConfig.v4_negative_prompt = {
             caption: {
                 base_caption: "",
-                char_captions: []
+                char_captions: [],
             },
             legacy_uc: false,
-        };
+        }
     }
 
     // HypaV3 Presets
     data.hypaV3Presets ??= [
         createHypaV3Preset("Default", {
             summarizationPrompt: data.supaMemoryPrompt ? data.supaMemoryPrompt : "",
-            ...data.hypaV3Settings
-        })
+            ...data.hypaV3Settings,
+        }),
     ]
     if (data.hypaV3Presets.length > 0) {
         data.hypaV3Presets = data.hypaV3Presets.map((preset, i) =>
-            createHypaV3Preset(
-                preset.name || `Preset ${i + 1}`,
-                preset.settings || {}
-            )
+            createHypaV3Preset(preset.name || `Preset ${i + 1}`, preset.settings || {})
         )
     }
 
     // Migrations
-    if (data.antiClaudeOverload) { 
+    if (data.antiClaudeOverload) {
         data.antiClaudeOverload = false
         data.antiServerOverloads = true
     }
-    
+
     // Complex Object Defaults
     data.hypaCustomSettings = {
         url: data.hypaCustomSettings?.url ?? "",
         key: data.hypaCustomSettings?.key ?? "",
-        model: data.hypaCustomSettings?.model ?? ""
+        model: data.hypaCustomSettings?.model ?? "",
     }
 
     data.fallbackModels = {
-        model: (data.fallbackModels?.model ?? []).filter((v) => v !== ''),
-        memory: (data.fallbackModels?.memory ?? []).filter((v) => v !== ''),
-        emotion: (data.fallbackModels?.emotion ?? []).filter((v) => v !== ''),
-        translate: (data.fallbackModels?.translate ?? []).filter((v) => v !== ''),
-        otherAx: (data.fallbackModels?.otherAx ?? []).filter((v) => v !== '')
+        model: (data.fallbackModels?.model ?? []).filter((v) => v !== ""),
+        memory: (data.fallbackModels?.memory ?? []).filter((v) => v !== ""),
+        emotion: (data.fallbackModels?.emotion ?? []).filter((v) => v !== ""),
+        translate: (data.fallbackModels?.translate ?? []).filter((v) => v !== ""),
+        otherAx: (data.fallbackModels?.otherAx ?? []).filter((v) => v !== ""),
     }
 
     // Type Corrections
-    if (typeof (data.top_p) !== 'number') {
+    if (typeof data.top_p !== "number") {
         data.top_p = 1
     }
 

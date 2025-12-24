@@ -1,12 +1,12 @@
 import { writeFile } from "@tauri-apps/plugin-fs"
 import { save } from "@tauri-apps/plugin-dialog"
-import { AppendableBuffer } from './fetch'
+import { AppendableBuffer } from "./fetch"
 import { isTauri, isMobileTauri } from "./env"
 
 /**
  * A writer class for Tauri environment.
  */
-export class TauriWriter{
+export class TauriWriter {
     path: string
     firstWrite: boolean = true
 
@@ -15,7 +15,7 @@ export class TauriWriter{
      *
      * @param {string} path - The file path to write to.
      */
-    constructor(path: string){
+    constructor(path: string) {
         this.path = path
     }
 
@@ -24,9 +24,9 @@ export class TauriWriter{
      *
      * @param {Uint8Array} data - The data to write.
      */
-    async write(data:Uint8Array) {
+    async write(data: Uint8Array) {
         await writeFile(this.path, data, {
-            append: !this.firstWrite
+            append: !this.firstWrite,
         })
         this.firstWrite = false
     }
@@ -34,7 +34,7 @@ export class TauriWriter{
     /**
      * Closes the writer. (No operation for TauriWriter)
      */
-    async close(){
+    async close() {
         // do nothing
     }
 }
@@ -43,32 +43,32 @@ export class TauriWriter{
  * A streaming writer for mobile Tauri that writes directly to Android's Downloads folder.
  * Uses Rust commands for efficient file I/O without buffering in JS memory.
  */
-export class MobileTauriWriter{
+export class MobileTauriWriter {
     filename: string
     filePath: string | null = null
 
-    constructor(filename: string){
+    constructor(filename: string) {
         this.filename = filename
     }
 
-    async write(data:Uint8Array) {
-        const { invoke } = await import('@tauri-apps/api/core')
+    async write(data: Uint8Array) {
+        const { invoke } = await import("@tauri-apps/api/core")
 
         if (!this.filePath) {
             // First write: create file
-            this.filePath = await invoke('create_download_file', {
-                filename: this.filename
-            }) as string
+            this.filePath = (await invoke("create_download_file", {
+                filename: this.filename,
+            })) as string
         }
 
         // Append data
-        await invoke('append_download_file', {
+        await invoke("append_download_file", {
             path: this.filePath,
-            data: Array.from(data)
+            data: Array.from(data),
         })
     }
 
-    async close(){
+    async close() {
         // File is already written, nothing to do
     }
 }
@@ -86,15 +86,17 @@ export class LocalWriter {
      * @param {string[]} [ext=['bin']] - The file extensions.
      * @returns {Promise<boolean>} - A promise that resolves to a boolean indicating success.
      */
-    async init(name = 'Binary', ext = ['bin']): Promise<boolean> {
+    async init(name = "Binary", ext = ["bin"]): Promise<boolean> {
         if (isTauri && !isMobileTauri) {
             // Desktop Tauri: use native save dialog + streaming writer
             const filePath = await save({
-                filters: [{
-                    name: name,
-                    extensions: ext
-                }]
-            });
+                filters: [
+                    {
+                        name: name,
+                        extensions: ext,
+                    },
+                ],
+            })
             if (!filePath) {
                 return false
             }
@@ -103,12 +105,12 @@ export class LocalWriter {
         }
         if (isMobileTauri) {
             // Mobile Tauri: streaming write to /storage/emulated/0/Download/
-            this.writer = new MobileTauriWriter(name + '.' + ext[0])
+            this.writer = new MobileTauriWriter(name + "." + ext[0])
             return true
         }
         // Web: use streamsaver
-        const streamSaver = await import('streamsaver')
-        const writableStream = streamSaver.createWriteStream(name + '.' + ext[0])
+        const streamSaver = await import("streamsaver")
+        const writableStream = streamSaver.createWriteStream(name + "." + ext[0])
         this.writer = writableStream.getWriter()
         return true
     }
@@ -174,16 +176,15 @@ export class VirtualWriter {
  *
  * This class is used to provide a no-op implementation of a writer, making it compatible with other writer interfaces.
  */
-export class BlankWriter{
-    constructor(){
-    }
+export class BlankWriter {
+    constructor() {}
 
     /**
      * Initializes the writer.
      *
      * This method does nothing and is provided for compatibility with other writer interfaces.
      */
-    async init(){
+    async init() {
         //do nothing, just to make compatible with other writer
     }
 
@@ -195,7 +196,7 @@ export class BlankWriter{
      * @param {string} key - The key associated with the data.
      * @param {Uint8Array|string} data - The data to be written.
      */
-    async write(key:string,data:Uint8Array|string){
+    async write(key: string, data: Uint8Array | string) {
         //do nothing, just to make compatible with other writer
     }
 
@@ -204,7 +205,7 @@ export class BlankWriter{
      *
      * This method does nothing and is provided for compatibility with other writer interfaces.
      */
-    async end(){
+    async end() {
         //do nothing, just to make compatible with other writer
     }
 }

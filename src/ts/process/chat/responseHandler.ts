@@ -1,11 +1,11 @@
-import type { character, Chat, MessageGenerationInfo, MessagePresetInfo, groupChat } from "src/ts/data/storage/types";
-import { DBState } from 'src/ts/stores.svelte';
-import { processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts";
-import { runTrigger } from "src/ts/process/scripting/triggers";
-import { runInlayScreen } from "src/ts/process/postprocess/inlayScreen";
-import { addRerolls } from "src/ts/process/chat/prereroll";
-import { sayTTS } from "src/ts/process/postprocess/tts";
-import { trimUntilPunctuation } from "src/ts/utils/util";
+import type { character, Chat, MessageGenerationInfo, MessagePresetInfo, groupChat } from "src/ts/data/storage/types"
+import { DBState } from "src/ts/stores.svelte"
+import { processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts"
+import { runTrigger } from "src/ts/process/scripting/triggers"
+import { runInlayScreen } from "src/ts/process/postprocess/inlayScreen"
+import { addRerolls } from "src/ts/process/chat/prereroll"
+import { sayTTS } from "src/ts/process/postprocess/tts"
+import { trimUntilPunctuation } from "src/ts/utils/util"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -53,55 +53,61 @@ export function saveEncryptedThinkingFromChunk(
     message: { encryptedThinking?: EncryptedThinkingEntry[] }
 ): void {
     // Gemini
-    if (lastResponseChunk['__sign_text'] || lastResponseChunk['__sign_function']) {
+    if (lastResponseChunk["__sign_text"] || lastResponseChunk["__sign_function"]) {
         const signatures: string[] = []
-        if (lastResponseChunk['__sign_text']) signatures.push(lastResponseChunk['__sign_text'])
-        if (lastResponseChunk['__sign_function']) signatures.push(lastResponseChunk['__sign_function'])
+        if (lastResponseChunk["__sign_text"]) signatures.push(lastResponseChunk["__sign_text"])
+        if (lastResponseChunk["__sign_function"]) signatures.push(lastResponseChunk["__sign_function"])
         if (signatures.length > 0) {
-            const thoughtsTokens = parseInt(lastResponseChunk['__thoughts_tokens'] || '0', 10)
-            console.log('[Gemini] Saving thinking tokens:', thoughtsTokens)
-            message.encryptedThinking = [{
-                provider: 'gemini',
-                data: { thoughtSignatures: signatures },
-                tokens: thoughtsTokens > 0 ? thoughtsTokens : undefined
-            }]
+            const thoughtsTokens = parseInt(lastResponseChunk["__thoughts_tokens"] || "0", 10)
+            console.log("[Gemini] Saving thinking tokens:", thoughtsTokens)
+            message.encryptedThinking = [
+                {
+                    provider: "gemini",
+                    data: { thoughtSignatures: signatures },
+                    tokens: thoughtsTokens > 0 ? thoughtsTokens : undefined,
+                },
+            ]
         }
     }
 
     // Anthropic
-    if (lastResponseChunk['__anthropic_signatures'] || lastResponseChunk['__anthropic_redacted']) {
+    if (lastResponseChunk["__anthropic_signatures"] || lastResponseChunk["__anthropic_redacted"]) {
         try {
-            const signatures = lastResponseChunk['__anthropic_signatures']
-                ? JSON.parse(lastResponseChunk['__anthropic_signatures'])
+            const signatures = lastResponseChunk["__anthropic_signatures"]
+                ? JSON.parse(lastResponseChunk["__anthropic_signatures"])
                 : undefined
-            const redacted = lastResponseChunk['__anthropic_redacted']
-                ? JSON.parse(lastResponseChunk['__anthropic_redacted'])
+            const redacted = lastResponseChunk["__anthropic_redacted"]
+                ? JSON.parse(lastResponseChunk["__anthropic_redacted"])
                 : undefined
-            const thinkingTokens = parseInt(lastResponseChunk['__anthropic_thinking_tokens'] || '0', 10)
+            const thinkingTokens = parseInt(lastResponseChunk["__anthropic_thinking_tokens"] || "0", 10)
             if ((signatures || redacted) && thinkingTokens > 0) {
-                console.log('[Anthropic] Saving thinking tokens:', thinkingTokens)
-                message.encryptedThinking = [{
-                    provider: 'anthropic',
-                    data: { signatures, redacted },
-                    tokens: thinkingTokens
-                }]
+                console.log("[Anthropic] Saving thinking tokens:", thinkingTokens)
+                message.encryptedThinking = [
+                    {
+                        provider: "anthropic",
+                        data: { signatures, redacted },
+                        tokens: thinkingTokens,
+                    },
+                ]
             }
         } catch (e) {
-            console.error('Failed to parse Anthropic encrypted thinking:', e)
+            console.error("Failed to parse Anthropic encrypted thinking:", e)
         }
     }
 
     // OpenAI
-    if (lastResponseChunk['__oai_reasoning_tokens']) {
-        const reasoningTokens = parseInt(lastResponseChunk['__oai_reasoning_tokens'] || '0', 10)
+    if (lastResponseChunk["__oai_reasoning_tokens"]) {
+        const reasoningTokens = parseInt(lastResponseChunk["__oai_reasoning_tokens"] || "0", 10)
         if (reasoningTokens > 0) {
-            console.log('[OpenAI] Saving reasoning tokens:', reasoningTokens)
+            console.log("[OpenAI] Saving reasoning tokens:", reasoningTokens)
             if (!message.encryptedThinking) {
-                message.encryptedThinking = [{
-                    provider: 'openai',
-                    data: {},
-                    tokens: reasoningTokens
-                }]
+                message.encryptedThinking = [
+                    {
+                        provider: "openai",
+                        data: {},
+                        tokens: reasoningTokens,
+                    },
+                ]
             } else {
                 message.encryptedThinking[0].tokens = reasoningTokens
             }
@@ -120,11 +126,22 @@ export async function handleStreamingResponse(
     reader: ReadableStreamDefaultReader<StreamingChunk>,
     ctx: ResponseHandlerContext
 ): Promise<ResponseHandlerResult> {
-    const { selectedChar, selectedChat, currentChar, nowChatroom, generationInfo, promptInfo, generationId, abortSignal, isContinue, reformatContent } = ctx
+    const {
+        selectedChar,
+        selectedChat,
+        currentChar,
+        nowChatroom,
+        generationInfo,
+        promptInfo,
+        generationId,
+        abortSignal,
+        isContinue,
+        reformatContent,
+    } = ctx
 
     let msgIndex = DBState.db.characters[selectedChar].chats[selectedChat].message.length
-    let prefix = ''
-    let result = ''
+    let prefix = ""
+    let result = ""
     let emoChanged = false
     let resendChat = false
 
@@ -133,7 +150,7 @@ export async function handleStreamingResponse(
         prefix = DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].data
     } else {
         DBState.db.characters[selectedChar].chats[selectedChat].message.push({
-            role: 'char',
+            role: "char",
             data: "",
             saying: currentChar.chaId,
             time: Date.now(),
@@ -155,7 +172,7 @@ export async function handleStreamingResponse(
             result = lastResponseChunk[firstChunkKey]
 
             if (!result) {
-                result = ''
+                result = ""
             }
 
             if (DBState.db.removeIncompleteResponse) {
@@ -165,7 +182,7 @@ export async function handleStreamingResponse(
             const result2 = await processScriptFull(
                 nowChatroom,
                 reformatContent(prefix + result),
-                'editoutput',
+                "editoutput",
                 msgIndex
             )
 
@@ -191,13 +208,10 @@ export async function handleStreamingResponse(
     )
 
     // Run chat function and triggers
-    let currentChat = runCurrentChatFunction(
-        DBState.db.characters[selectedChar].chats[selectedChat],
-        currentChar
-    )
+    let currentChat = runCurrentChatFunction(DBState.db.characters[selectedChar].chats[selectedChat], currentChar)
     DBState.db.characters[selectedChar].chats[selectedChat] = currentChat
 
-    const triggerResult = await runTrigger(currentChar, 'output', { chat: currentChat })
+    const triggerResult = await runTrigger(currentChar, "output", { chat: currentChat })
     if (triggerResult?.chat) {
         currentChat = triggerResult.chat
     }
@@ -229,8 +243,8 @@ export async function handleStreamingResponse(
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface DirectResponseData {
-    type: 'success' | 'multiline'
-    result: string | readonly (readonly ['char' | 'user', string])[]
+    type: "success" | "multiline"
+    result: string | readonly (readonly ["char" | "user", string])[]
     encryptedThinking?: EncryptedThinkingEntry
 }
 
@@ -241,13 +255,24 @@ export async function handleDirectResponse(
     response: DirectResponseData,
     ctx: ResponseHandlerContext
 ): Promise<ResponseHandlerResult> {
-    const { selectedChar, selectedChat, currentChar, nowChatroom, generationInfo, promptInfo, generationId, isContinue, reformatContent } = ctx
+    const {
+        selectedChar,
+        selectedChat,
+        currentChar,
+        nowChatroom,
+        generationInfo,
+        promptInfo,
+        generationId,
+        isContinue,
+        reformatContent,
+    } = ctx
 
-    const msgs: readonly (readonly ['char' | 'user', string])[] = response.type === 'success'
-        ? [['char', response.result as string] as const]
-        : (response.result as readonly (readonly ['char' | 'user', string])[])
+    const msgs: readonly (readonly ["char" | "user", string])[] =
+        response.type === "success"
+            ? [["char", response.result as string] as const]
+            : (response.result as readonly (readonly ["char" | "user", string])[])
 
-    let result = ''
+    let result = ""
     let emoChanged = false
     let resendChat = false
     const mrerolls: string[] = []
@@ -257,12 +282,17 @@ export async function handleDirectResponse(
         const mess = msg[1]
         let msgIndex = DBState.db.characters[selectedChar].chats[selectedChat].message.length
 
-        let result2 = await processScriptFull(nowChatroom, reformatContent(mess), 'editoutput', msgIndex)
+        let result2 = await processScriptFull(nowChatroom, reformatContent(mess), "editoutput", msgIndex)
 
         if (i === 0 && isContinue) {
             msgIndex -= 1
             const beforeChat = DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex]
-            result2 = await processScriptFull(nowChatroom, reformatContent(beforeChat.data + mess), 'editoutput', msgIndex)
+            result2 = await processScriptFull(
+                nowChatroom,
+                reformatContent(beforeChat.data + mess),
+                "editoutput",
+                msgIndex
+            )
         }
 
         if (DBState.db.removeIncompleteResponse) {
@@ -275,13 +305,12 @@ export async function handleDirectResponse(
         emoChanged = result2.emoChanged
 
         // Get encryptedThinking from response
-        const encryptedThinking = (response.type === 'success' && response.encryptedThinking)
-            ? [response.encryptedThinking]
-            : undefined
+        const encryptedThinking =
+            response.type === "success" && response.encryptedThinking ? [response.encryptedThinking] : undefined
 
         if (i === 0 && isContinue) {
             DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex] = {
-                role: 'char',
+                role: "char",
                 data: result,
                 saying: currentChar.chaId,
                 time: Date.now(),
@@ -328,13 +357,10 @@ export async function handleDirectResponse(
     }
 
     // Run chat function and triggers
-    let currentChat = runCurrentChatFunction(
-        DBState.db.characters[selectedChar].chats[selectedChat],
-        currentChar
-    )
+    let currentChat = runCurrentChatFunction(DBState.db.characters[selectedChar].chats[selectedChat], currentChar)
     DBState.db.characters[selectedChar].chats[selectedChat] = currentChat
 
-    const triggerResult = await runTrigger(currentChar, 'output', { chat: currentChat })
+    const triggerResult = await runTrigger(currentChar, "output", { chat: currentChat })
     if (triggerResult?.chat) {
         DBState.db.characters[selectedChar].chats[selectedChat] = triggerResult.chat
         currentChat = triggerResult.chat

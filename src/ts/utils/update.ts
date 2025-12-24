@@ -1,37 +1,36 @@
-import { alertConfirm, alertWait } from "./alert.svelte";
-import { language } from "../../lang";
-import { relaunch } from '@tauri-apps/plugin-process';
-import { isMobileTauri } from "src/ts/utils/env";
+import { alertConfirm, alertWait } from "./alert.svelte"
+import { language } from "../../lang"
+import { relaunch } from "@tauri-apps/plugin-process"
+import { isMobileTauri } from "src/ts/utils/env"
 
-export async function checkRisuUpdate(){
-
-    if(isMobileTauri){
-        return;
+export async function checkRisuUpdate() {
+    if (isMobileTauri) {
+        return
     }
 
     try {
         // 동적 import로 변경 (모바일에서는 여기까지 안 옴)
-        const { check } = await import('@tauri-apps/plugin-updater');
-        
-        const checked = await check();     
-        if(checked){
-            const conf = await alertConfirm(language.newVersion);
-            if(conf){
-                alertWait(`Updating to ${checked.version}...`);
-                await checked.downloadAndInstall();
-                await relaunch();
+        const { check } = await import("@tauri-apps/plugin-updater")
+
+        const checked = await check()
+        if (checked) {
+            const conf = await alertConfirm(language.newVersion)
+            if (conf) {
+                alertWait(`Updating to ${checked.version}...`)
+                await checked.downloadAndInstall()
+                await relaunch()
             }
         }
     } catch (error) {
-        console.error(error);
+        console.error(error)
     }
 }
 
-function versionStringToNumber(versionString:string):number {
+function versionStringToNumber(versionString: string): number {
     return Number(
-      versionString
-        .split(".")
-        .map((component) => component.padStart(4, "0"))
-        .join("")
-    );
+        versionString
+            .split(".")
+            .map((component) => component.padStart(4, "0"))
+            .join("")
+    )
 }

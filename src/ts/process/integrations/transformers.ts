@@ -1,8 +1,15 @@
-import type { SummarizationOutput, TextToAudioPipeline, FeatureExtractionPipeline, TextGenerationConfig, TextGenerationOutput, ImageToTextOutput } from '@huggingface/transformers';
-import { unzip } from 'fflate';
-import { loadAsset, saveAsset } from 'src/ts/utils/fileIO';
-import { getArrayBuffer, selectSingleFile } from 'src/ts/utils/util';
-import { v4 } from 'uuid';
+import type {
+    SummarizationOutput,
+    TextToAudioPipeline,
+    FeatureExtractionPipeline,
+    TextGenerationConfig,
+    TextGenerationOutput,
+    ImageToTextOutput,
+} from "@huggingface/transformers"
+import { unzip } from "fflate"
+import { loadAsset, saveAsset } from "src/ts/utils/fileIO"
+import { getArrayBuffer, selectSingleFile } from "src/ts/utils/util"
+import { v4 } from "uuid"
 let tfCache: Cache = null
 let tfLoaded = false
 const tfMap: { [key: string]: string } = {}
@@ -10,8 +17,8 @@ async function initTransformers() {
     if (tfLoaded) {
         return
     }
-    const { env } = await import('@huggingface/transformers');
-    tfCache = await caches.open('tfCache')
+    const { env } = await import("@huggingface/transformers")
+    tfCache = await caches.open("tfCache")
     env.localModelPath = "https://sv.risuai.xyz/transformers/"
     env.useBrowserCache = false
     env.useFSCache = false
@@ -22,65 +29,74 @@ async function initTransformers() {
             await tfCache.put(url, response)
         },
         match: async (url: URL | string) => {
-            if (typeof url === 'string') {
+            if (typeof url === "string") {
                 if (Object.keys(tfMap).includes(url)) {
                     const assetId = tfMap[url]
                     return new Response(getArrayBuffer(await loadAsset(assetId)))
                 }
             }
             return await tfCache.match(url)
-        }
+        },
     }
     tfLoaded = true
-    console.log('transformers loaded')
+    console.log("transformers loaded")
 }
 
-export const runTransformers = async (baseText: string, model: string, config: TextGenerationConfig, device: 'webgpu' | 'wasm' = 'wasm') => {
+export const runTransformers = async (
+    baseText: string,
+    model: string,
+    config: TextGenerationConfig,
+    device: "webgpu" | "wasm" = "wasm"
+) => {
     await initTransformers()
-    const { pipeline } = await import('@huggingface/transformers');
+    const { pipeline } = await import("@huggingface/transformers")
     const text = baseText
-    const generator = await pipeline<"text-generation">('text-generation', model, {
-        device
-    });
-    const output = await generator(text, config) as TextGenerationOutput
+    const generator = await pipeline<"text-generation">("text-generation", model, {
+        device,
+    })
+    const output = (await generator(text, config)) as TextGenerationOutput
     const outputOne = output[0]
     return outputOne
 }
 
 export const runSummarizer = async (text: string) => {
     await initTransformers()
-    const { pipeline } = await import('@huggingface/transformers');
+    const { pipeline } = await import("@huggingface/transformers")
     const classifier = await pipeline<"summarization">("summarization", "Xenova/distilbart-cnn-6-6")
-    const v = await classifier(text) as SummarizationOutput
+    const v = (await classifier(text)) as SummarizationOutput
     return v[0].summary_text
 }
 
 let extractor: FeatureExtractionPipeline = null
-let lastEmbeddingModelQuery: string = ''
-type EmbeddingModel = 'Xenova/all-MiniLM-L6-v2' | 'nomic-ai/nomic-embed-text-v1.5'
-export const runEmbedding = async (texts: string[], model: EmbeddingModel = 'Xenova/all-MiniLM-L6-v2', device: 'webgpu' | 'wasm'): Promise<Float32Array[]> => {
+let lastEmbeddingModelQuery: string = ""
+type EmbeddingModel = "Xenova/all-MiniLM-L6-v2" | "nomic-ai/nomic-embed-text-v1.5"
+export const runEmbedding = async (
+    texts: string[],
+    model: EmbeddingModel = "Xenova/all-MiniLM-L6-v2",
+    device: "webgpu" | "wasm"
+): Promise<Float32Array[]> => {
     await initTransformers()
-    console.log('running embedding')
+    console.log("running embedding")
     const embeddingModelQuery = model + device
-    const { pipeline } = await import('@huggingface/transformers');
+    const { pipeline } = await import("@huggingface/transformers")
     if (!extractor || embeddingModelQuery !== lastEmbeddingModelQuery) {
         // Dispose old extractor
         if (extractor) {
             await extractor.dispose()
         }
 
-        extractor = await pipeline<"feature-extraction">('feature-extraction', model, {
+        extractor = await pipeline<"feature-extraction">("feature-extraction", model, {
             // Default dtype for webgpu is fp32, so we can use q8, which is the default dtype in wasm.
             dtype: "q8",
             device: device,
             progress_callback: (progress) => {
                 console.log(progress)
-            }
-        });
+            },
+        })
         lastEmbeddingModelQuery = embeddingModelQuery
-        console.log('extractor loaded')
+        console.log("extractor loaded")
     }
-    const result = await extractor(texts, { pooling: 'mean', normalize: true });
+    const result = await extractor(texts, { pooling: "mean", normalize: true })
     console.log(texts, result)
     const data = result.data as Float32Array
     console.log(data)
@@ -90,13 +106,13 @@ export const runEmbedding = async (texts: string[], model: EmbeddingModel = 'Xen
         res.push(data.subarray(i * lenPerText, (i + 1) * lenPerText))
     }
     console.log(res)
-    return res ?? [];
+    return res ?? []
 }
 
 export const runImageEmbedding = async (dataurl: string) => {
     await initTransformers()
-    const { pipeline } = await import('@huggingface/transformers');
-    const captioner = await pipeline<"image-to-text">('image-to-text', 'Xenova/vit-gpt2-image-captioning');
+    const { pipeline } = await import("@huggingface/transformers")
+    const captioner = await pipeline<"image-to-text">("image-to-text", "Xenova/vit-gpt2-image-captioning")
     const output = await captioner(dataurl)
     return output as ImageToTextOutput
 }
@@ -105,71 +121,73 @@ let synthesizer: TextToAudioPipeline = null
 let lastSynth: string = null
 
 export interface OnnxModelFiles {
-    files: { [key: string]: string },
-    id: string,
+    files: { [key: string]: string }
+    id: string
     name?: string
 }
 
-export const runVITS = async (text: string, modelData: string | OnnxModelFiles = 'Xenova/mms-tts-eng') => {
+export const runVITS = async (text: string, modelData: string | OnnxModelFiles = "Xenova/mms-tts-eng") => {
     await initTransformers()
-    const { WaveFile } = await import('wavefile')
-    const { pipeline, env } = await import('@huggingface/transformers');
+    const { WaveFile } = await import("wavefile")
+    const { pipeline, env } = await import("@huggingface/transformers")
     if (modelData === null) {
         return
     }
-    if (typeof modelData === 'string') {
-        if ((!synthesizer) || (lastSynth !== modelData)) {
+    if (typeof modelData === "string") {
+        if (!synthesizer || lastSynth !== modelData) {
             lastSynth = modelData
-            synthesizer = await pipeline<"text-to-speech">('text-to-speech', modelData);
+            synthesizer = await pipeline<"text-to-speech">("text-to-speech", modelData)
         }
-    }
-    else {
-        if ((!synthesizer) || (lastSynth !== modelData.id)) {
+    } else {
+        if (!synthesizer || lastSynth !== modelData.id) {
             const files = modelData.files
             const keys = Object.keys(files)
             for (const key of keys) {
-                const fileURL = env.localModelPath + modelData.id + '/' + key
+                const fileURL = env.localModelPath + modelData.id + "/" + key
                 tfMap[fileURL] = files[key]
                 tfMap[location.origin + fileURL] = files[key]
             }
             lastSynth = modelData.id
-            synthesizer = await pipeline<"text-to-speech">('text-to-speech', modelData.id);
+            synthesizer = await pipeline<"text-to-speech">("text-to-speech", modelData.id)
         }
     }
-    const out = await synthesizer(text, {});
-    const wav = new WaveFile();
-    wav.fromScratch(1, out.sampling_rate, '32f', out.audio);
-    const audioContext = new AudioContext();
+    const out = await synthesizer(text, {})
+    const wav = new WaveFile()
+    wav.fromScratch(1, out.sampling_rate, "32f", out.audio)
+    const audioContext = new AudioContext()
     audioContext.decodeAudioData(getArrayBuffer(wav.toBuffer()), (decodedData) => {
-        const sourceNode = audioContext.createBufferSource();
-        sourceNode.buffer = decodedData;
-        sourceNode.connect(audioContext.destination);
-        sourceNode.start();
-    });
+        const sourceNode = audioContext.createBufferSource()
+        sourceNode.buffer = decodedData
+        sourceNode.connect(audioContext.destination)
+        sourceNode.start()
+    })
 }
 
 export const registerOnnxModel = async (): Promise<OnnxModelFiles> => {
-    const id = v4().replace(/-/g, '')
+    const id = v4().replace(/-/g, "")
 
-    const modelFile = await selectSingleFile(['zip'])
+    const modelFile = await selectSingleFile(["zip"])
 
     if (!modelFile) {
         return
     }
 
     const unziped = await new Promise((res, rej) => {
-        unzip(modelFile.data, {
-            filter: (file) => {
-                return file.name.endsWith('.onnx') || file.size < 10_000_000 || file.name.includes('.git')
+        unzip(
+            modelFile.data,
+            {
+                filter: (file) => {
+                    return file.name.endsWith(".onnx") || file.size < 10_000_000 || file.name.includes(".git")
+                },
+            },
+            (err, unzipped) => {
+                if (err) {
+                    rej(err)
+                } else {
+                    res(unzipped)
+                }
             }
-        }, (err, unzipped) => {
-            if (err) {
-                rej(err)
-            }
-            else {
-                res(unzipped)
-            }
-        })
+        )
     })
 
     console.log(unziped)
@@ -182,7 +200,7 @@ export const registerOnnxModel = async (): Promise<OnnxModelFiles> => {
         const file = unziped[key]
         const fid = await saveAsset(file)
         let url = key
-        if (url.startsWith('/')) {
+        if (url.startsWith("/")) {
             url = url.substring(1)
         }
         fileIdMapped[url] = fid
@@ -193,5 +211,4 @@ export const registerOnnxModel = async (): Promise<OnnxModelFiles> => {
         name: modelFile.name,
         id: id,
     }
-
 }

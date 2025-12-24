@@ -1,9 +1,9 @@
 <script lang="ts">
-	const { children } = $props();
+    const { children } = $props()
 </script>
 
 {#if children}
-	{@render children()}
+    {@render children()}
 {:else}
-	<div class="empty-portal"></div>
+    <div class="empty-portal"></div>
 {/if}

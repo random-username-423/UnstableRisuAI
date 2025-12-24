@@ -55,12 +55,12 @@
     }
 </script>
 
-<div class="h-full w-full flex justify-center">
-    <div class="h-full p-6 bg-darkbg max-w-full w-2xl flex flex-col overflow-y-auto">
+<div class="flex h-full w-full justify-center">
+    <div class="flex h-full w-2xl max-w-full flex-col overflow-y-auto bg-darkbg p-6">
         <div class="mx-4 mb-6 flex flex-col">
-            <div class="flex items-center gap-3 mb-2">
+            <div class="mb-2 flex items-center gap-3">
                 <button
-                    class="flex items-center justify-center p-2 rounded-lg hover:bg-selected transition-colors flex-shrink-0"
+                    class="flex flex-shrink-0 items-center justify-center rounded-lg p-2 transition-colors hover:bg-selected"
                     onclick={() => endGrid()}
                     title="Back"
                 >
@@ -70,7 +70,7 @@
                     <TextInput placeholder="Search" bind:value={search} size="lg" autocomplete="off" fullwidth={true} />
                 </div>
             </div>
-            <div class="flex flex-wrap gap-2 mt-2">
+            <div class="mt-2 flex flex-wrap gap-2">
                 <Button
                     styled={selected === 3 ? "primary" : "outlined"}
                     size="sm"
@@ -108,15 +108,15 @@
                     {language.trash}
                 </Button>
                 <div class="flex-grow"></div>
-                <span class="text-textcolor2 text-sm">
+                <span class="text-sm text-textcolor2">
                     {formatChars(search, DBState.db).length}
                     {language.character}
                 </span>
             </div>
         </div>
         {#if selected === 0}
-            <div class="w-full flex justify-center">
-                <div class="flex flex-wrap gap-2 w-full justify-center">
+            <div class="flex w-full justify-center">
+                <div class="flex w-full flex-wrap justify-center gap-2">
                     {#each formatChars(search, DBState.db) as char}
                         <div class="flex items-center text-textcolor">
                             {#if char.image}
@@ -131,7 +131,9 @@
                                     onClick={() => {
                                         changeChar(char.index)
                                     }}
-                                    additionalStyle={char.index === ChatState.selectedCharId ? "background:var(--risu-theme-selected)" : ""}
+                                    additionalStyle={char.index === ChatState.selectedCharId
+                                        ? "background:var(--risu-theme-selected)"
+                                        : ""}
                                 >
                                     {#if char.type === "group"}
                                         <Users />
@@ -146,21 +148,23 @@
             </div>
         {:else if selected === 1}
             {#each formatChars(search, DBState.db) as char}
-                <div class="flex p-2 border border-darkborderc rounded-md mb-2">
+                <div class="mb-2 flex rounded-md border border-darkborderc p-2">
                     <BarIcon
                         onClick={() => {
                             changeChar(char.index)
                         }}
                         additionalStyle={getCharImage(char.image, "css")}
                     ></BarIcon>
-                    <div class="flex-1 flex flex-col ml-2">
-                        <h4 class="text-textcolor font-bold text-lg mb-1">{char.name || "Unnamed"}</h4>
+                    <div class="ml-2 flex flex-1 flex-col">
+                        <h4 class="mb-1 text-lg font-bold text-textcolor">{char.name || "Unnamed"}</h4>
                         <span class="text-textcolor2"
-                            >{parseMultilangString(char.desc)["en"] || parseMultilangString(char.desc)["xx"] || "No description"}</span
+                            >{parseMultilangString(char.desc)["en"] ||
+                                parseMultilangString(char.desc)["xx"] ||
+                                "No description"}</span
                         >
-                        <div class="flex gap-2 justify-end">
+                        <div class="flex justify-end gap-2">
                             <button
-                                class="hover:text-textcolor text-textcolor2"
+                                class="text-textcolor2 hover:text-textcolor"
                                 onclick={() => {
                                     changeChar(char.index)
                                 }}
@@ -168,7 +172,7 @@
                                 <Inspect />
                             </button>
                             <button
-                                class="hover:text-textcolor text-textcolor2"
+                                class="text-textcolor2 hover:text-textcolor"
                                 onclick={() => {
                                     removeChar(char.index, char.name)
                                 }}
@@ -180,23 +184,25 @@
                 </div>
             {/each}
         {:else if selected === 2}
-            <span class="text-textcolor2 text-sm mb-2">{language.trashDesc}</span>
+            <span class="mb-2 text-sm text-textcolor2">{language.trashDesc}</span>
             {#each formatChars(search, DBState.db, true) as char}
-                <div class="flex p-2 border border-darkborderc rounded-md mb-2">
+                <div class="mb-2 flex rounded-md border border-darkborderc p-2">
                     <BarIcon
                         onClick={() => {
                             changeChar(char.index)
                         }}
                         additionalStyle={getCharImage(char.image, "css")}
                     ></BarIcon>
-                    <div class="flex-1 flex flex-col ml-2">
-                        <h4 class="text-textcolor font-bold text-lg mb-1">{char.name || "Unnamed"}</h4>
+                    <div class="ml-2 flex flex-1 flex-col">
+                        <h4 class="mb-1 text-lg font-bold text-textcolor">{char.name || "Unnamed"}</h4>
                         <span class="text-textcolor2"
-                            >{parseMultilangString(char.desc)["en"] || parseMultilangString(char.desc)["xx"] || "No description"}</span
+                            >{parseMultilangString(char.desc)["en"] ||
+                                parseMultilangString(char.desc)["xx"] ||
+                                "No description"}</span
                         >
-                        <div class="flex gap-2 justify-end">
+                        <div class="flex justify-end gap-2">
                             <button
-                                class="hover:text-textcolor text-textcolor2"
+                                class="text-textcolor2 hover:text-textcolor"
                                 onclick={() => {
                                     DBState.db.characters[char.index].trashTime = undefined
                                     checkCharOrder()
@@ -205,7 +211,7 @@
                                 <Undo2Icon />
                             </button>
                             <button
-                                class="hover:text-textcolor text-textcolor2"
+                                class="text-textcolor2 hover:text-textcolor"
                                 onclick={() => {
                                     removeChar(char.index, char.name, "permanent")
                                 }}

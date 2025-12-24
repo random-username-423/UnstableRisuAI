@@ -1,60 +1,78 @@
 <script>
-    import { ChatState, LayoutState } from '../../ts/stores.svelte';
-    import { onMount } from 'svelte';
-    import TransitionImage from './TransitionImage.svelte';
-    import { getEmotion } from '../../ts/utils/util';
+    import { ChatState, LayoutState } from "../../ts/stores.svelte"
+    import { onMount } from "svelte"
+    import TransitionImage from "./TransitionImage.svelte"
+    import { getEmotion } from "../../ts/utils/util"
 
-    import { DBState } from 'src/ts/stores.svelte';
+    import { DBState } from "src/ts/stores.svelte"
 
-    let box = $state();
-    let isResizing = false;
-    let initialWidth;
-    let initialHeight;
-    let initialX;
-    let initialY;
+    let box = $state()
+    let isResizing = false
+    let initialWidth
+    let initialHeight
+    let initialX
+    let initialY
 
     function handleStart(event) {
-        isResizing = true;
-        initialWidth = box.clientWidth;
-        initialHeight = box.clientHeight;
-        initialX = event.clientX || event.touches[0].clientX;
-        initialY = event.clientY || event.touches[0].clientY;
+        isResizing = true
+        initialWidth = box.clientWidth
+        initialHeight = box.clientHeight
+        initialX = event.clientX || event.touches[0].clientX
+        initialY = event.clientY || event.touches[0].clientY
     }
 
     function handleEnd() {
-        isResizing = false;
+        isResizing = false
     }
 
     function handleMove(event) {
-        if (!isResizing) return;
-        event.preventDefault();
+        if (!isResizing) return
+        event.preventDefault()
 
-        const clientX = event.clientX || event.touches[0].clientX;
-        const clientY = event.clientY || event.touches[0].clientY;
-        const deltaX = initialX - clientX;
-        const deltaY = clientY - initialY;
+        const clientX = event.clientX || event.touches[0].clientX
+        const clientY = event.clientY || event.touches[0].clientY
+        const deltaX = initialX - clientX
+        const deltaY = clientY - initialY
 
-        const newWidth = Math.min(initialWidth + deltaX, window.innerWidth * 0.8);
-        const newHeight = Math.min(initialHeight + deltaY, window.innerHeight * 0.8);
+        const newWidth = Math.min(initialWidth + deltaX, window.innerWidth * 0.8)
+        const newHeight = Math.min(initialHeight + deltaY, window.innerHeight * 0.8)
 
         LayoutState.viewBox.width = newWidth
         LayoutState.viewBox.height = newHeight
     }
 
     onMount(() => {
-        window.addEventListener('mousemove', handleMove);
-        window.addEventListener('mouseup', handleEnd);
-        window.addEventListener('touchmove', handleMove, { passive: false });
-        window.addEventListener('touchend', handleEnd);
+        window.addEventListener("mousemove", handleMove)
+        window.addEventListener("mouseup", handleEnd)
+        window.addEventListener("touchmove", handleMove, { passive: false })
+        window.addEventListener("touchend", handleEnd)
 
         return () => {
-        window.removeEventListener('mousemove', handleMove);
-        window.removeEventListener('mouseup', handleEnd);
-        window.removeEventListener('touchmove', handleMove);
-        window.removeEventListener('touchend', handleEnd);
-        };
-    });
+            window.removeEventListener("mousemove", handleMove)
+            window.removeEventListener("mouseup", handleEnd)
+            window.removeEventListener("touchmove", handleMove)
+            window.removeEventListener("touchend", handleEnd)
+        }
+    })
 </script>
+
+<div
+    class="box bg-darkbg bg-opacity-70"
+    bind:this={box}
+    style="width: {LayoutState.viewBox.width}px; height: {LayoutState.viewBox.height}px;"
+>
+    <!-- Your content here -->
+    <TransitionImage classType="risu" src={getEmotion(DBState.db, ChatState.emotions, "plain")} />
+    <div
+        role="button"
+        tabindex="0"
+        class="resize-handle"
+        onmousedown={handleStart}
+        onmouseup={handleEnd}
+        ontouchstart={handleStart}
+        ontouchend={handleEnd}
+    ></div>
+</div>
 
 <style>
     .box {
@@ -80,15 +98,3 @@
         z-index: 10;
     }
 </style>
-
-<div class="box bg-darkbg bg-opacity-70" bind:this="{box}" style="width: {LayoutState.viewBox.width}px; height: {LayoutState.viewBox.height}px;">
-    <!-- Your content here -->
-    <TransitionImage classType='risu' src={getEmotion(DBState.db, ChatState.emotions, 'plain')}/>
-    <div role="button" tabindex="0"
-      class="resize-handle"
-      onmousedown={handleStart}
-      onmouseup={handleEnd}
-      ontouchstart={handleStart}
-      ontouchend={handleEnd}
-    ></div>
-</div>

@@ -1,15 +1,15 @@
 import { getDatabase, saveImage, setDatabase } from "../data/storage/database.svelte"
-import { selectSingleFile, sleep } from '../utils/util'
+import { selectSingleFile, sleep } from "../utils/util"
 import { alertError, alertNormal, alertStore } from "../utils/alert.svelte"
 import { downloadFile, readImage } from "../utils/fileIO"
 import { AppendableBuffer } from "../utils/fetch"
 import { language } from "src/lang"
 import { reencodeImage } from "../process/files/inlays"
-import { PngChunk } from './pngChunk'
+import { PngChunk } from "./pngChunk"
 import { v4 } from "uuid"
 
 export async function selectUserImg() {
-    const selected = await selectSingleFile(['png'])
+    const selected = await selectSingleFile(["png"])
     if (!selected) {
         return
     }
@@ -22,7 +22,7 @@ export async function selectUserImg() {
         icon: db.userIcon,
         personaPrompt: db.personaPrompt,
         note: db.userNote,
-        id: v4()
+        id: v4(),
     }
     setDatabase(db)
 }
@@ -38,8 +38,8 @@ export function saveUserPersona() {
     setDatabase(db)
 }
 
-export function changeUserPersona(id: number, save: 'save' | 'noSave' = 'save') {
-    if (save === 'save') {
+export function changeUserPersona(id: number, save: "save" | "noSave" = "save") {
+    if (save === "save") {
         saveUserPersona()
     }
     const db = getDatabase()
@@ -64,7 +64,7 @@ export async function exportUserPersona() {
         alertError(language.errors.noUserIcon)
         return
     }
-    if ((!db.username) || (!db.personaPrompt)) {
+    if (!db.username || !db.personaPrompt) {
         alertError("username or persona prompt is empty")
         return
     }
@@ -78,19 +78,19 @@ export async function exportUserPersona() {
     })
 
     alertStore.set({
-        type: 'wait',
-        msg: 'Loading... (Writing Exif)'
+        type: "wait",
+        msg: "Loading... (Writing Exif)",
     })
 
     await sleep(10)
 
     img = (await PngChunk.write(await reencodeImage(img as Uint8Array<ArrayBuffer>), {
-        "persona": Buffer.from(JSON.stringify(card)).toString('base64')
+        persona: Buffer.from(JSON.stringify(card)).toString("base64"),
     })) as Uint8Array<ArrayBuffer>
 
     alertStore.set({
-        type: 'wait',
-        msg: 'Loading... (Writing)'
+        type: "wait",
+        msg: "Loading... (Writing)",
     })
 
     await sleep(10)
@@ -101,15 +101,15 @@ export async function exportUserPersona() {
 
 export async function importUserPersona() {
     try {
-        const v = await selectSingleFile(['png'])
+        const v = await selectSingleFile(["png"])
         if (!v) {
             return
         }
         const readGenerator = PngChunk.readGenerator(v.data)
-        let decoded: string | undefined;
+        let decoded: string | undefined
 
         for await (const chunk of readGenerator) {
-            if (chunk && !(chunk instanceof AppendableBuffer) && chunk.key === 'persona') {
+            if (chunk && !(chunk instanceof AppendableBuffer) && chunk.key === "persona") {
                 decoded = chunk.value
                 break
             }
@@ -119,7 +119,7 @@ export async function importUserPersona() {
             alertError(language.errors.noData)
             return
         }
-        const data: PersonaCard = JSON.parse(Buffer.from(decoded, 'base64').toString('utf-8'))
+        const data: PersonaCard = JSON.parse(Buffer.from(decoded, "base64").toString("utf-8"))
         if (data.name && data.personaPrompt) {
             const db = getDatabase()
             db.personas.push({
@@ -127,7 +127,7 @@ export async function importUserPersona() {
                 icon: await saveImage(await reencodeImage(v.data as Uint8Array<ArrayBuffer>)),
                 personaPrompt: data.personaPrompt,
                 note: data.note,
-                id: v4()
+                id: v4(),
             })
             setDatabase(db)
             alertNormal(language.successImport)

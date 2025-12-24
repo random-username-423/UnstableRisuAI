@@ -1,243 +1,247 @@
-import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentChat, setDatabase } from "src/ts/data/storage/database.svelte";
-import { ChatState } from "src/ts/stores.svelte";
-import { alertInput, alertMd, alertNormal, alertSelect } from "src/ts/utils/alert.svelte";
-import { sayTTS } from "src/ts/process/postprocess/tts";
-import { risuChatParser } from "src/ts/utils/parser.svelte";
-import { sendChat } from "src/ts/process/index.svelte";
-import { loadLoreBookV3Prompt } from "src/ts/process/prompt/lorebook.svelte";
-import { runTrigger } from "src/ts/process/scripting/triggers";
+import {
+    getCurrentCharacter,
+    getCurrentChat,
+    getDatabase,
+    setCurrentChat,
+    setDatabase,
+} from "src/ts/data/storage/database.svelte"
+import { ChatState } from "src/ts/stores.svelte"
+import { alertInput, alertMd, alertNormal, alertSelect } from "src/ts/utils/alert.svelte"
+import { sayTTS } from "src/ts/process/postprocess/tts"
+import { risuChatParser } from "src/ts/utils/parser.svelte"
+import { sendChat } from "src/ts/process/index.svelte"
+import { loadLoreBookV3Prompt } from "src/ts/process/prompt/lorebook.svelte"
+import { runTrigger } from "src/ts/process/scripting/triggers"
 
-export async function processMultiCommand(command:string) {
-    let pipe = ''
-    const splited:string[] = []
+export async function processMultiCommand(command: string) {
+    let pipe = ""
+    const splited: string[] = []
     let lastIndex = 0
     let quoteDepth = false
-    for(let i = 0; i<command.length; i++){
+    for (let i = 0; i < command.length; i++) {
         const char = command[i]
-        if(char === '"'){
+        if (char === '"') {
             quoteDepth = !quoteDepth
-        }
-        else if(char === '|' && quoteDepth === false){
+        } else if (char === "|" && quoteDepth === false) {
             splited.push(command.slice(lastIndex, i))
-            lastIndex = i+1
+            lastIndex = i + 1
         }
     }
     splited.push(command.slice(lastIndex))
     console.log(splited)
-    for(let i = 0; i<splited.length; i++){
+    for (let i = 0; i < splited.length; i++) {
         const result = await processCommand(splited[i].trim(), pipe)
         console.log(pipe)
-        if(result === false){
+        if (result === false) {
             return false
-        }
-        else{
+        } else {
             pipe = result
         }
     }
     return pipe
 }
 
-
-async function processCommand(command:string, pipe:string):Promise<false | string>{
+async function processCommand(command: string, pipe: string): Promise<false | string> {
     const db = getDatabase()
     const currentChar = db.characters[ChatState.selectedCharId]
     const currentChat = currentChar.chats[currentChar.chatPage]
-    let {commandName, arg, namedArg} = commandParser(command, pipe)
+    let { commandName, arg, namedArg } = commandParser(command, pipe)
 
-    if(!arg){
+    if (!arg) {
         arg = pipe
     }
 
     arg = risuChatParser(arg, {
-        chara: currentChar.type === 'character' ? currentChar : null
+        chara: currentChar.type === "character" ? currentChar : null,
     })
 
     const namedArgKeys = Object.keys(namedArg)
-    for(const key of namedArgKeys){
+    for (const key of namedArgKeys) {
         namedArg[key] = risuChatParser(namedArg[key], {
-            chara: currentChar.type === 'character' ? currentChar : null
+            chara: currentChar.type === "character" ? currentChar : null,
         })
     }
 
-    switch(commandName){
+    switch (commandName) {
         //STScript compatibility commands
-        case 'input':{
+        case "input": {
             pipe = await alertInput(arg)
             return pipe
         }
-        case 'echo':
-        case 'popup':{
+        case "echo":
+        case "popup": {
             alertNormal(arg)
             return pipe
         }
-        case 'pass':{
+        case "pass": {
             pipe = arg
             return pipe
         }
-        case 'buttons': {
-            if(namedArg.labels){
+        case "buttons": {
+            if (namedArg.labels) {
                 try {
                     const JSONLabels = JSON.parse(namedArg.labels)
-                    if(Array.isArray(JSONLabels)){
+                    if (Array.isArray(JSONLabels)) {
                         pipe = await alertSelect(JSONLabels)
                     }
                 } catch (error) {}
             }
             return pipe
         }
-        case 'setinput': {
+        case "setinput": {
             //NOT IMPLEMENTED
             return false
         }
-        case 'speak': {
-            if(currentChar.type === 'character'){
+        case "speak": {
+            if (currentChar.type === "character") {
                 await sayTTS(currentChar, arg)
                 return pipe
             }
-            if(currentChar.type === 'group'){
+            if (currentChar.type === "group") {
                 //NOT IMPLEMENTED
                 return pipe
             }
             break
         }
-        case 'send': {
+        case "send": {
             currentChat.message.push({
                 role: "user",
-                data: arg
+                data: arg,
             })
             setDatabase(db)
             return pipe
         }
-        case 'sendas': {
+        case "sendas": {
             //name not implemented
             currentChat.message.push({
                 role: "char",
-                data: arg
+                data: arg,
             })
             setDatabase(db)
             return pipe
         }
-        case 'comment': {
+        case "comment": {
             //works differently, but its close enough
             const addition = `<Comment>\n${arg}\n</Comment>`
-            currentChat.message[currentChat.message.length-1].data += addition
+            currentChat.message[currentChat.message.length - 1].data += addition
             setDatabase(db)
             return pipe
         }
-        case 'cut':{
-            if(arg.includes('-')){
-                const [start, end] = arg.split('-')
+        case "cut": {
+            if (arg.includes("-")) {
+                const [start, end] = arg.split("-")
                 currentChat.message = currentChat.message.slice(parseInt(start), parseInt(end))
                 setDatabase(db)
-            }
-            else if(!isNaN(parseInt(arg))){
+            } else if (!isNaN(parseInt(arg))) {
                 const index = parseInt(arg)
                 currentChat.message = currentChat.message.splice(index, 1)
                 setDatabase(db)
-            }
-            else{ //For risu, doesn'ts work for STScript
+            } else {
+                //For risu, doesn'ts work for STScript
                 const id = arg
-                currentChat.message = currentChat.message.filter((e)=>e.chatId !== id)
+                currentChat.message = currentChat.message.filter((e) => e.chatId !== id)
                 setDatabase(db)
             }
             return pipe
         }
-        case 'del': {
+        case "del": {
             const size = parseInt(arg)
-            if(!isNaN(size)){
-                currentChat.message = currentChat.message.slice(currentChat.message.length-size)
+            if (!isNaN(size)) {
+                currentChat.message = currentChat.message.slice(currentChat.message.length - size)
                 setDatabase(db)
             }
             return pipe
         }
-        case 'len':{
+        case "len": {
             try {
                 const parsed = JSON.parse(arg)
-                if(Array.isArray(parsed)){
+                if (Array.isArray(parsed)) {
                     pipe = parsed.length.toString()
                 }
             } catch (error) {}
             return pipe
         }
-        case 'multisend':{
-            const splited = arg.split('|||')
+        case "multisend": {
+            const splited = arg.split("|||")
             let clearMode = false
-            if(splited[0] && splited[0].trim() === 'clear'){
+            if (splited[0] && splited[0].trim() === "clear") {
                 clearMode = true
                 splited.shift()
             }
-            for(const e of splited){
-                if(clearMode){
+            for (const e of splited) {
+                if (clearMode) {
                     console.log(`[DEBUG chat.message=[]] command.ts:processCommand - clearMode`)
                     currentChat.message = []
                 }
                 currentChat.message.push({
-                    role: 'user',
-                    data: e
+                    role: "user",
+                    data: e,
                 })
                 await sendChat(-1)
             }
-            return ''
+            return ""
         }
-        case 'setvar':{
+        case "setvar": {
             console.log(namedArg, arg)
             const db = getDatabase()
             const selectedChar = ChatState.selectedCharId
             const char = db.characters[selectedChar]
             const chat = char.chats[char.chatPage]
             chat.scriptstate = chat.scriptstate ?? {}
-            chat.scriptstate['$' + namedArg['key']] = arg
+            chat.scriptstate["$" + namedArg["key"]] = arg
             console.log(chat.scriptstate)
 
             char.chats[char.chatPage] = chat
             db.characters[selectedChar] = char
             setDatabase(db)
-            return ''
+            return ""
         }
-        case 'addvar':{
+        case "addvar": {
             const db = getDatabase()
             const selectedChar = ChatState.selectedCharId
             const char = db.characters[selectedChar]
             const chat = char.chats[char.chatPage]
             chat.scriptstate = chat.scriptstate ?? {}
-            chat.scriptstate['$' + namedArg['key']] = (Number(chat.scriptstate['$' + namedArg['key']]) + Number(arg)).toString()
+            chat.scriptstate["$" + namedArg["key"]] = (
+                Number(chat.scriptstate["$" + namedArg["key"]]) + Number(arg)
+            ).toString()
 
             char.chats[char.chatPage] = chat
             db.characters[selectedChar] = char
             setDatabase(db)
-            return ''
+            return ""
         }
-        case 'getvar':{
+        case "getvar": {
             const db = getDatabase()
             const selectedChar = ChatState.selectedCharId
             const char = db.characters[selectedChar]
             const chat = char.chats[char.chatPage]
             chat.scriptstate = chat.scriptstate ?? {}
-            pipe = (chat.scriptstate['$' + namedArg['key']]).toString() ?? 'null'
+            pipe = chat.scriptstate["$" + namedArg["key"]].toString() ?? "null"
             return pipe
         }
-        case 'test_lorebook':{
+        case "test_lorebook": {
             const p = await loadLoreBookV3Prompt()
             console.log(p)
-            alertNormal(p.actives.map((e)=>e.prompt).join('§'))
+            alertNormal(p.actives.map((e) => e.prompt).join("§"))
             return JSON.stringify(p)
         }
-        case 'trigger':{
+        case "trigger": {
             const currentChar = getCurrentCharacter()
-            if(currentChar.type === 'group'){
-                return;
+            if (currentChar.type === "group") {
+                return
             }
-            const triggerResult = await runTrigger(currentChar, 'manual', {
+            const triggerResult = await runTrigger(currentChar, "manual", {
                 chat: getCurrentChat(),
-                manualName: arg
-            });
+                manualName: arg,
+            })
 
-            if(triggerResult){
-               setCurrentChat(triggerResult.chat);
+            if (triggerResult) {
+                setCurrentChat(triggerResult.chat)
             }
             return
         }
-        case '?':{
+        case "?": {
             alertMd(`
             # /input [text]
             - Show input dialog
@@ -293,35 +297,31 @@ async function processCommand(command:string, pipe:string):Promise<false | strin
             # /?
             - Show help
             `)
-            return 'help'
+            return "help"
         }
-
-
     }
     return false
 }
 
-
-function commandParser(command:string, pipe:string){
-    if(command.startsWith('/')){
+function commandParser(command: string, pipe: string) {
+    if (command.startsWith("/")) {
         command = command.slice(1)
     }
-    const sliced = command.split(' ').filter((e)=>e!='')
+    const sliced = command.split(" ").filter((e) => e != "")
     const commandName = sliced[0]
-    const argArray:string[] = []
-    const namedArg:{[key:string]:string} = {}
-    for(let i = 1; i<sliced.length; i++){
-        if(sliced[i].includes('=')){
-            const [key, value] = sliced[i].split('=')
+    const argArray: string[] = []
+    const namedArg: { [key: string]: string } = {}
+    for (let i = 1; i < sliced.length; i++) {
+        if (sliced[i].includes("=")) {
+            const [key, value] = sliced[i].split("=")
             namedArg[key] = value
-        }
-        else{
+        } else {
             argArray.push(sliced[i])
         }
     }
-    const arg = argArray.join(' ')
-        .replace('{{pipe}}', pipe) //STScript compatibility
-        .replace('{{slot}}', pipe) //Risu default
-    return {commandName, arg, namedArg}
-
+    const arg = argArray
+        .join(" ")
+        .replace("{{pipe}}", pipe) //STScript compatibility
+        .replace("{{slot}}", pipe) //Risu default
+    return { commandName, arg, namedArg }
 }

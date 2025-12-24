@@ -15,7 +15,7 @@
         isDirectory: boolean
     }
 
-    let currentPath = $state('')
+    let currentPath = $state("")
     let entries = $state<Entry[]>([])
     let loading = $state(true)
     let pathHistory = $state<string[]>([])
@@ -34,7 +34,7 @@
         try {
             entries = await listEntriesFromWorker(path)
         } catch (e) {
-            console.error('[OPFSExplorer] Error loading directory:', e)
+            console.error("[OPFSExplorer] Error loading directory:", e)
             entries = []
         }
         loading = false
@@ -58,7 +58,7 @@
     }
 
     onMount(() => {
-        loadDirectory('')
+        loadDirectory("")
     })
 </script>
 
@@ -66,41 +66,38 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-    class="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
     onclick={(e) => {
         if (e.target === e.currentTarget) close()
     }}
 >
-    <div class="bg-darkbg p-4 rounded-md flex flex-col w-[600px] max-h-[80vh]">
+    <div class="flex max-h-[80vh] w-[600px] flex-col rounded-md bg-darkbg p-4">
         <!-- 헤더 -->
-        <div class="flex items-center gap-2 mb-4">
+        <div class="mb-4 flex items-center gap-2">
             <button
                 onclick={goBack}
                 disabled={pathHistory.length === 0}
-                class="p-1 rounded hover:bg-selected disabled:opacity-30 disabled:cursor-not-allowed"
+                class="rounded p-1 hover:bg-selected disabled:cursor-not-allowed disabled:opacity-30"
             >
                 <ArrowLeftIcon size={20} />
             </button>
-            <div class="flex-grow text-sm text-textcolor2 truncate">
-                /{currentPath || language.opfsRoot || 'root'}
+            <div class="flex-grow truncate text-sm text-textcolor2">
+                /{currentPath || language.opfsRoot || "root"}
             </div>
-            <button
-                onclick={close}
-                class="p-1 rounded hover:bg-selected"
-            >
+            <button onclick={close} class="rounded p-1 hover:bg-selected">
                 <XIcon size={20} />
             </button>
         </div>
 
         <!-- 파일/폴더 목록 -->
-        <div class="overflow-y-auto flex-grow border border-selected rounded-md">
+        <div class="flex-grow overflow-y-auto rounded-md border border-selected">
             {#if loading}
                 <div class="p-4 text-center text-textcolor2">
                     {language.loading}...
                 </div>
             {:else if entries.length === 0}
                 <div class="p-4 text-center text-textcolor2">
-                    {language.opfsEmpty || 'Empty folder'}
+                    {language.opfsEmpty || "Empty folder"}
                 </div>
             {:else}
                 {#each entries as entry, i}
@@ -109,17 +106,17 @@
                     {/if}
                     <!-- svelte-ignore a11y_no_static_element_interactions -->
                     <div
-                        class="flex items-center gap-2 p-2 hover:bg-selected cursor-pointer"
+                        class="flex cursor-pointer items-center gap-2 p-2 hover:bg-selected"
                         onclick={() => enterDirectory(entry)}
                     >
                         {#if entry.isDirectory}
-                            <FolderIcon size={18} class="text-yellow-500 flex-shrink-0" />
+                            <FolderIcon size={18} class="flex-shrink-0 text-yellow-500" />
                         {:else}
-                            <FileIcon size={18} class="text-textcolor2 flex-shrink-0" />
+                            <FileIcon size={18} class="flex-shrink-0 text-textcolor2" />
                         {/if}
                         <span class="flex-grow truncate">{entry.name}</span>
                         {#if !entry.isDirectory}
-                            <span class="text-sm text-textcolor2 flex-shrink-0">
+                            <span class="flex-shrink-0 text-sm text-textcolor2">
                                 {formatBytes(entry.size)}
                             </span>
                         {/if}
@@ -129,8 +126,9 @@
         </div>
 
         <!-- 푸터 -->
-        <div class="mt-3 text-xs text-textcolor2 text-center">
-            {entries.length} {language.storageItems || 'items'}
+        <div class="mt-3 text-center text-xs text-textcolor2">
+            {entries.length}
+            {language.storageItems || "items"}
         </div>
     </div>
 </div>

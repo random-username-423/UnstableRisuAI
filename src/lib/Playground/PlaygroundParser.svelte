@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { ParseMarkdown } from "src/ts/utils/parser.svelte";
-    import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
-    let input = $state("");
-    let output = $state("");
+    import { ParseMarkdown } from "src/ts/utils/parser.svelte"
+    import TextAreaInput from "../UI/GUI/TextAreaInput.svelte"
+    let input = $state("")
+    let output = $state("")
     const onInput = async () => {
         try {
             output = await ParseMarkdown(input)
@@ -12,12 +12,12 @@
     }
 </script>
 
-<h2 class="text-4xl text-textcolor my-6 font-black relative">Full Parser</h2>
+<h2 class="relative my-6 text-4xl font-black text-textcolor">Full Parser</h2>
 
-<span class="text-textcolor text-lg">Input</span>
+<span class="text-lg text-textcolor">Input</span>
 
-<TextAreaInput onInput={onInput} bind:value={input} optimaizedInput={false} />
+<TextAreaInput {onInput} bind:value={input} optimaizedInput={false} />
 
-<span class="text-textcolor text-lg">Output HTML</span>
+<span class="text-lg text-textcolor">Output HTML</span>
 
 <TextAreaInput value={output} />

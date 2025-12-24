@@ -1,183 +1,172 @@
 <script lang="ts">
-  import { tick } from "svelte";
-  import {
-    SearchIcon,
-    StarIcon,
-    SettingsIcon,
-    MoreVerticalIcon,
-    BarChartIcon,
-    Trash2Icon,
-    XIcon,
-  } from "lucide-svelte";
-  import { language } from "src/lang";
-  import {
-    ModalState,
-    SettingsState,
-    DBState,
-    ChatState,
-  } from "src/ts/stores.svelte";
-  import type { SearchState } from "./types";
-  import { alertConfirmTwice } from "./utils";
+    import { tick } from "svelte"
+    import {
+        SearchIcon,
+        StarIcon,
+        SettingsIcon,
+        MoreVerticalIcon,
+        BarChartIcon,
+        Trash2Icon,
+        XIcon,
+    } from "lucide-svelte"
+    import { language } from "src/lang"
+    import { ModalState, SettingsState, DBState, ChatState } from "src/ts/stores.svelte"
+    import type { SearchState } from "./types"
+    import { alertConfirmTwice } from "./utils"
 
-  interface Props {
-    searchState: SearchState;
-    filterImportant: boolean;
-    dropdownOpen: boolean;
-    filterSelected: boolean;
-  }
-
-  let {
-    searchState = $bindable(),
-    filterImportant = $bindable(),
-    dropdownOpen = $bindable(),
-    filterSelected = $bindable(),
-  }: Props = $props();
-
-  async function toggleSearch() {
-    if (searchState === null) {
-      searchState = {
-        ref: null,
-        query: "",
-        results: [],
-        currentResultIndex: -1,
-        requestedSearchFromIndex: -1,
-        isNavigating: false,
-      };
-
-      // Focus on search element after it's rendered
-      await tick();
-
-      if (searchState.ref) {
-        searchState.ref.focus();
-      }
-    } else {
-      searchState = null;
+    interface Props {
+        searchState: SearchState
+        filterImportant: boolean
+        dropdownOpen: boolean
+        filterSelected: boolean
     }
-  }
 
-  function toggleFilterImportant() {
-    filterImportant = !filterImportant;
-  }
+    let {
+        searchState = $bindable(),
+        filterImportant = $bindable(),
+        dropdownOpen = $bindable(),
+        filterSelected = $bindable(),
+    }: Props = $props()
 
-  function openGlobalSettings() {
-    ModalState.hypaV3.modalOpen = false;
-    SettingsState.isOpen = true;
-    SettingsState.menuIndex = 2; // Other bot settings
-  }
+    async function toggleSearch() {
+        if (searchState === null) {
+            searchState = {
+                ref: null,
+                query: "",
+                results: [],
+                currentResultIndex: -1,
+                requestedSearchFromIndex: -1,
+                isNavigating: false,
+            }
 
-  function openDropdown(e: MouseEvent) {
-    e.stopPropagation();
-    dropdownOpen = true;
-  }
+            // Focus on search element after it's rendered
+            await tick()
 
-  function toggleFilterSelected() {
-    filterSelected = !filterSelected;
-  }
-
-  async function resetData() {
-    if (
-      await alertConfirmTwice(
-        language.hypaV3Modal.resetConfirmMessage,
-        language.hypaV3Modal.resetConfirmSecondMessage
-      )
-    ) {
-      DBState.db.characters[ChatState.selectedCharId].chats[
-        DBState.db.characters[ChatState.selectedCharId].chatPage
-      ].hypaV3Data = {
-        summaries: [],
-      };
+            if (searchState.ref) {
+                searchState.ref.focus()
+            }
+        } else {
+            searchState = null
+        }
     }
-  }
 
-  function closeModal() {
-    ModalState.hypaV3.modalOpen = false;
-  }
+    function toggleFilterImportant() {
+        filterImportant = !filterImportant
+    }
+
+    function openGlobalSettings() {
+        ModalState.hypaV3.modalOpen = false
+        SettingsState.isOpen = true
+        SettingsState.menuIndex = 2 // Other bot settings
+    }
+
+    function openDropdown(e: MouseEvent) {
+        e.stopPropagation()
+        dropdownOpen = true
+    }
+
+    function toggleFilterSelected() {
+        filterSelected = !filterSelected
+    }
+
+    async function resetData() {
+        if (
+            await alertConfirmTwice(
+                language.hypaV3Modal.resetConfirmMessage,
+                language.hypaV3Modal.resetConfirmSecondMessage
+            )
+        ) {
+            DBState.db.characters[ChatState.selectedCharId].chats[
+                DBState.db.characters[ChatState.selectedCharId].chatPage
+            ].hypaV3Data = {
+                summaries: [],
+            }
+        }
+    }
+
+    function closeModal() {
+        ModalState.hypaV3.modalOpen = false
+    }
 </script>
 
-<div class="flex items-center justify-between mb-2 sm:mb-4">
-  <!-- Modal Title -->
-  <h1 class="text-lg font-semibold sm:text-2xl text-zinc-300">
-    {language.hypaV3Modal.titleLabel}
-  </h1>
+<div class="mb-2 flex items-center justify-between sm:mb-4">
+    <!-- Modal Title -->
+    <h1 class="text-lg font-semibold text-zinc-300 sm:text-2xl">
+        {language.hypaV3Modal.titleLabel}
+    </h1>
 
-  <!-- Buttons Container -->
-  <div class="flex items-center gap-2">
-    <!-- Open Search Button -->
-    <button
-      class="p-2 transition-colors text-zinc-400 hover:text-zinc-200"
-      tabindex="-1"
-      onclick={async () => await toggleSearch()}
-    >
-      <SearchIcon class="w-6 h-6" />
-    </button>
-
-    <!-- Filter Important Summary Button -->
-    <button
-      class="p-2 transition-colors {filterImportant
-        ? 'text-yellow-400 hover:text-yellow-300'
-        : 'text-zinc-400 hover:text-zinc-200'}"
-      tabindex="-1"
-      onclick={toggleFilterImportant}
-    >
-      <StarIcon class="w-6 h-6" />
-    </button>
-
-    <!-- Open Global Settings Button -->
-    <button
-      class="p-2 transition-colors text-zinc-400 hover:text-zinc-200"
-      tabindex="-1"
-      onclick={openGlobalSettings}
-    >
-      <SettingsIcon class="w-6 h-6" />
-    </button>
-
-    <!-- Open Dropdown Button -->
-    <div class="relative">
-      <button
-        class="p-2 transition-colors text-zinc-400 hover:text-zinc-200"
-        tabindex="-1"
-        onclick={openDropdown}
-      >
-        <MoreVerticalIcon class="w-6 h-6" />
-      </button>
-
-      {#if dropdownOpen}
-        <div
-          class="absolute right-0 z-10 p-2 mt-1 border rounded-md shadow-lg border-zinc-700 bg-zinc-800"
+    <!-- Buttons Container -->
+    <div class="flex items-center gap-2">
+        <!-- Open Search Button -->
+        <button
+            class="p-2 text-zinc-400 transition-colors hover:text-zinc-200"
+            tabindex="-1"
+            onclick={async () => await toggleSearch()}
         >
-          <!-- Buttons Container -->
-          <div class="flex items-center gap-2">
-            <!-- Filter Selected Summary Button -->
-            <button
-              class="p-2 transition-colors {filterSelected
-                ? 'text-blue-400 hover:text-blue-300'
+            <SearchIcon class="h-6 w-6" />
+        </button>
+
+        <!-- Filter Important Summary Button -->
+        <button
+            class="p-2 transition-colors {filterImportant
+                ? 'text-yellow-400 hover:text-yellow-300'
                 : 'text-zinc-400 hover:text-zinc-200'}"
-              tabindex="-1"
-              onclick={toggleFilterSelected}
-            >
-              <BarChartIcon class="w-6 h-6" />
-            </button>
+            tabindex="-1"
+            onclick={toggleFilterImportant}
+        >
+            <StarIcon class="h-6 w-6" />
+        </button>
 
-            <!-- Reset Data Button -->
+        <!-- Open Global Settings Button -->
+        <button
+            class="p-2 text-zinc-400 transition-colors hover:text-zinc-200"
+            tabindex="-1"
+            onclick={openGlobalSettings}
+        >
+            <SettingsIcon class="h-6 w-6" />
+        </button>
+
+        <!-- Open Dropdown Button -->
+        <div class="relative">
             <button
-              class="p-2 transition-colors text-zinc-400 hover:text-rose-300"
-              tabindex="-1"
-              onclick={async () => await resetData()}
+                class="p-2 text-zinc-400 transition-colors hover:text-zinc-200"
+                tabindex="-1"
+                onclick={openDropdown}
             >
-              <Trash2Icon class="w-6 h-6" />
+                <MoreVerticalIcon class="h-6 w-6" />
             </button>
-          </div>
-        </div>
-      {/if}
-    </div>
 
-    <!-- Close Modal Button -->
-    <button
-      class="p-2 transition-colors text-zinc-400 hover:text-zinc-200"
-      tabindex="-1"
-      onclick={closeModal}
-    >
-      <XIcon class="w-6 h-6" />
-    </button>
-  </div>
+            {#if dropdownOpen}
+                <div class="absolute right-0 z-10 mt-1 rounded-md border border-zinc-700 bg-zinc-800 p-2 shadow-lg">
+                    <!-- Buttons Container -->
+                    <div class="flex items-center gap-2">
+                        <!-- Filter Selected Summary Button -->
+                        <button
+                            class="p-2 transition-colors {filterSelected
+                                ? 'text-blue-400 hover:text-blue-300'
+                                : 'text-zinc-400 hover:text-zinc-200'}"
+                            tabindex="-1"
+                            onclick={toggleFilterSelected}
+                        >
+                            <BarChartIcon class="h-6 w-6" />
+                        </button>
+
+                        <!-- Reset Data Button -->
+                        <button
+                            class="p-2 text-zinc-400 transition-colors hover:text-rose-300"
+                            tabindex="-1"
+                            onclick={async () => await resetData()}
+                        >
+                            <Trash2Icon class="h-6 w-6" />
+                        </button>
+                    </div>
+                </div>
+            {/if}
+        </div>
+
+        <!-- Close Modal Button -->
+        <button class="p-2 text-zinc-400 transition-colors hover:text-zinc-200" tabindex="-1" onclick={closeModal}>
+            <XIcon class="h-6 w-6" />
+        </button>
+    </div>
 </div>

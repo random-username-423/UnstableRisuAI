@@ -1,10 +1,10 @@
 <script lang="ts">
-    import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
-    import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
-    import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
-    
-    import { DBState } from 'src/ts/stores.svelte';
-    import { language } from "src/lang";
+    import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte"
+    import SelectInput from "src/lib/UI/GUI/SelectInput.svelte"
+    import OptionInput from "src/lib/UI/GUI/OptionInput.svelte"
+
+    import { DBState } from "src/ts/stores.svelte"
+    import { language } from "src/lang"
 </script>
 
 <span class="text-textcolor">{language.chatFormating}</span>
@@ -20,7 +20,7 @@
     <OptionInput value="jinja">Custom (Jinja)</OptionInput>
 </SelectInput>
 
-{#if DBState.db.instructChatTemplate === 'jinja'}
+{#if DBState.db.instructChatTemplate === "jinja"}
     <span class="text-textcolor">Jinja Template</span>
     <TextAreaInput fullwidth autocomplete="off" bind:value={DBState.db.JinjaTemplate} />
 {/if}

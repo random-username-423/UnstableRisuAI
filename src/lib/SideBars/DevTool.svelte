@@ -1,51 +1,54 @@
 <script lang="ts">
-    import { ChatState } from "src/ts/stores.svelte";
-    import TextInput from "../UI/GUI/TextInput.svelte";
-    import NumberInput from "../UI/GUI/NumberInput.svelte";
-    import Button from "../UI/GUI/Button.svelte";
-    import { getRequestLog } from "src/ts/utils/fetch";
-    import { alertMd, alertWait } from "src/ts/utils/alert.svelte";
-    import Arcodion from "../UI/Arcodion.svelte";
-    import { getCharToken, getChatToken } from "src/ts/utils/tokenizer";
-    import { tokenizePreset } from "src/ts/process/utils/prompt";
+    import { ChatState } from "src/ts/stores.svelte"
+    import TextInput from "../UI/GUI/TextInput.svelte"
+    import NumberInput from "../UI/GUI/NumberInput.svelte"
+    import Button from "../UI/GUI/Button.svelte"
+    import { getRequestLog } from "src/ts/utils/fetch"
+    import { alertMd, alertWait } from "src/ts/utils/alert.svelte"
+    import Arcodion from "../UI/Arcodion.svelte"
+    import { getCharToken, getChatToken } from "src/ts/utils/tokenizer"
+    import { tokenizePreset } from "src/ts/process/utils/prompt"
 
-    import { DBState } from 'src/ts/stores.svelte';
-    import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
-    import { HardDriveUploadIcon, PlusIcon, TrashIcon } from "lucide-svelte";
-    import { selectSingleFile } from "src/ts/utils/util";
-    import { DoingChatState, previewFormated, previewBody, sendChat } from "src/ts/process/index.svelte";
-    import SelectInput from "../UI/GUI/SelectInput.svelte";
-    import { applyChatTemplate, chatTemplates } from "src/ts/process/templates/chatTemplate";
-    import OptionInput from "../UI/GUI/OptionInput.svelte";
-  import { loadLoreBookV3Prompt } from "src/ts/process/prompt/lorebook.svelte";
-  import { getModules } from "src/ts/process/scripting/modules";
+    import { DBState } from "src/ts/stores.svelte"
+    import TextAreaInput from "../UI/GUI/TextAreaInput.svelte"
+    import { HardDriveUploadIcon, PlusIcon, TrashIcon } from "lucide-svelte"
+    import { selectSingleFile } from "src/ts/utils/util"
+    import { DoingChatState, previewFormated, previewBody, sendChat } from "src/ts/process/index.svelte"
+    import SelectInput from "../UI/GUI/SelectInput.svelte"
+    import { applyChatTemplate, chatTemplates } from "src/ts/process/templates/chatTemplate"
+    import OptionInput from "../UI/GUI/OptionInput.svelte"
+    import { loadLoreBookV3Prompt } from "src/ts/process/prompt/lorebook.svelte"
+    import { getModules } from "src/ts/process/scripting/modules"
 
-    let previewMode = $state('chat')
-    let previewJoin = $state('yes')
-    let instructType = $state('chatml')
-    let instructCustom = $state('')
+    let previewMode = $state("chat")
+    let previewJoin = $state("yes")
+    let instructType = $state("chatml")
+    let instructCustom = $state("")
 
     const preview = async () => {
-        if(DoingChatState.value){
+        if (DoingChatState.value) {
             return false
         }
         alertWait("Loading...")
         await sendChat(-1, {
-            preview: previewJoin !== 'prompt',
-            previewPrompt: previewJoin === 'prompt'
+            preview: previewJoin !== "prompt",
+            previewPrompt: previewJoin === "prompt",
         })
 
-        let md = ''
+        let md = ""
         const styledRole = {
-            "function": "📐 Function",
-            "user": "😐 User",
-            "system": "⚙️ System",
-            "assistant": "✨ Assistant",
+            function: "📐 Function",
+            user: "😐 User",
+            system: "⚙️ System",
+            assistant: "✨ Assistant",
         }
 
-        if(previewJoin === 'prompt'){
-            md += '### Prompt\n'
-            md += '```json\n' + JSON.stringify(JSON.parse(previewBody), null, 2).replaceAll('```', '\\`\\`\\`') + '\n```\n'
+        if (previewJoin === "prompt") {
+            md += "### Prompt\n"
+            md +=
+                "```json\n" +
+                JSON.stringify(JSON.parse(previewBody), null, 2).replaceAll("```", "\\`\\`\\`") +
+                "\n```\n"
             DoingChatState.value = false
             alertMd(md)
             return
@@ -53,14 +56,14 @@
 
         let formated = safeStructuredClone(previewFormated)
 
-        if(previewJoin === 'yes'){
+        if (previewJoin === "yes") {
             let newFormated = []
-            let latestRole = ''
+            let latestRole = ""
 
-            for(let i=0;i<formated.length;i++){
-                if(formated[i].role === latestRole){
-                    newFormated[newFormated.length - 1].content += '\n' + formated[i].content
-                }else{
+            for (let i = 0; i < formated.length; i++) {
+                if (formated[i].role === latestRole) {
+                    newFormated[newFormated.length - 1].content += "\n" + formated[i].content
+                } else {
                     newFormated.push(formated[i])
                     latestRole = formated[i].role
                 }
@@ -69,56 +72,67 @@
             formated = newFormated
         }
 
-        if(previewMode === 'instruct'){
+        if (previewMode === "instruct") {
             const instructed = applyChatTemplate(formated, {
                 type: instructType,
-                custom: instructCustom
+                custom: instructCustom,
             })
 
-            md += '### Instruction\n'
-            md += '```\n' + instructed.replaceAll('```', '\\`\\`\\`') + '\n```\n'
+            md += "### Instruction\n"
+            md += "```\n" + instructed.replaceAll("```", "\\`\\`\\`") + "\n```\n"
             DoingChatState.value = false
             alertMd(md)
             return
         }
 
-        for(let i=0;i<formated.length;i++){
-            
-            md += '### ' + (styledRole[formated[i].role] ?? '🤔 Unknown role') + '\n'
+        for (let i = 0; i < formated.length; i++) {
+            md += "### " + (styledRole[formated[i].role] ?? "🤔 Unknown role") + "\n"
             const modals = formated[i].multimodals
 
-            if(modals && modals.length > 0){
-                md += `> ${modals.length} non-text content(s) included\n` 
+            if (modals && modals.length > 0) {
+                md += `> ${modals.length} non-text content(s) included\n`
             }
 
-            if(formated[i].thoughts && formated[i].thoughts.length > 0){
+            if (formated[i].thoughts && formated[i].thoughts.length > 0) {
                 md += `> ${formated[i].thoughts.length} thought(s) included\n`
             }
 
-            if(formated[i].cachePoint){
+            if (formated[i].cachePoint) {
                 md += `> Cache point\n`
             }
 
-            md += '```\n' + formated[i].content.replaceAll('```', '\\`\\`\\`') + '\n```\n'
+            md += "```\n" + formated[i].content.replaceAll("```", "\\`\\`\\`") + "\n```\n"
         }
         DoingChatState.value = false
         alertMd(md)
     }
-    
+
     let autopilot = $state([])
 </script>
 
 <Arcodion styled name="Variables">
-    <div class="rounded-md border border-darkborderc grid grid-cols-2 gap-2 p-2">
-        {#if DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate &&  Object.keys(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate).length > 0}
+    <div class="grid grid-cols-2 gap-2 rounded-md border border-darkborderc p-2">
+        {#if DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate && Object.keys(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate).length > 0}
             {#each Object.keys(DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate) as key}
                 <span>{key}</span>
                 {#if typeof DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate[key] === "object"}
                     <div class="p-2 text-center">Object</div>
                 {:else if typeof DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate[key] === "string"}
-                    <TextInput bind:value={DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate[key] as string} />
+                    <TextInput
+                        bind:value={
+                            DBState.db.characters[ChatState.selectedCharId].chats[
+                                DBState.db.characters[ChatState.selectedCharId].chatPage
+                            ].scriptstate[key] as string
+                        }
+                    />
                 {:else if typeof DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate[key] === "number"}
-                    <NumberInput bind:value={DBState.db.characters[ChatState.selectedCharId].chats[DBState.db.characters[ChatState.selectedCharId].chatPage].scriptstate[key] as number} />
+                    <NumberInput
+                        bind:value={
+                            DBState.db.characters[ChatState.selectedCharId].chats[
+                                DBState.db.characters[ChatState.selectedCharId].chatPage
+                            ].scriptstate[key] as number
+                        }
+                    />
                 {/if}
             {/each}
         {:else}
@@ -128,7 +142,7 @@
 </Arcodion>
 
 <Arcodion styled name="Tokens">
-    <div class="rounded-md border border-darkborderc grid grid-cols-2 gap-2 p-2">
+    <div class="grid grid-cols-2 gap-2 rounded-md border border-darkborderc p-2">
         {#await getCharToken(DBState.db.characters[ChatState.selectedCharId])}
             <span>Character Persistant</span>
             <div class="p-2 text-center">Loading...</div>
@@ -161,83 +175,89 @@
 </Arcodion>
 
 <Arcodion styled name="Autopilot">
-    <div class="flex flex-col p-2 border border-darkborderc rounded-md">
+    <div class="flex flex-col rounded-md border border-darkborderc p-2">
         {#each autopilot as text, i}
             <TextAreaInput bind:value={autopilot[i]} />
         {/each}
     </div>
     <div class="flex justify-end">
-        <button class="text-textcolor2 hover:text-textcolor" onclick={() => {
-            autopilot.pop()
-            autopilot = autopilot
-        }}>
+        <button
+            class="text-textcolor2 hover:text-textcolor"
+            onclick={() => {
+                autopilot.pop()
+                autopilot = autopilot
+            }}
+        >
             <TrashIcon />
         </button>
 
-        <button class="text-textcolor2 hover:text-textcolor" onclick={() => {
-            autopilot.push('')
-            autopilot = autopilot
-        }}>
+        <button
+            class="text-textcolor2 hover:text-textcolor"
+            onclick={() => {
+                autopilot.push("")
+                autopilot = autopilot
+            }}
+        >
             <PlusIcon />
         </button>
 
-        <button class="text-textcolor2 hover:text-textcolor" onclick={async () => {
-            const selected = await selectSingleFile([
-                'txt', 'csv', 'json'
-            ])
-            if(!selected){
-                return
-            }
-            const file = new TextDecoder().decode(selected.data)
-            if(selected.name.endsWith('.json')){
-                const parsed = JSON.parse(file)
-                if(Array.isArray(parsed)){
-                    autopilot = parsed
+        <button
+            class="text-textcolor2 hover:text-textcolor"
+            onclick={async () => {
+                const selected = await selectSingleFile(["txt", "csv", "json"])
+                if (!selected) {
+                    return
                 }
-            }
-            if(selected.name.endsWith('.csv')){
-                autopilot = file.split('\n').map(x => {
-                    return x.replace(/\r/g, '')
-                        .replace(/\\n/g, '\n')
-                        .replace(/\\t/g, '\t')
-                        .replace(/\\r/g, '\r')
-                })
-            }
-            if(selected.name.endsWith('.txt')){
-                autopilot = file.split('\n')
-            }
-        }}>
+                const file = new TextDecoder().decode(selected.data)
+                if (selected.name.endsWith(".json")) {
+                    const parsed = JSON.parse(file)
+                    if (Array.isArray(parsed)) {
+                        autopilot = parsed
+                    }
+                }
+                if (selected.name.endsWith(".csv")) {
+                    autopilot = file.split("\n").map((x) => {
+                        return x.replace(/\r/g, "").replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r")
+                    })
+                }
+                if (selected.name.endsWith(".txt")) {
+                    autopilot = file.split("\n")
+                }
+            }}
+        >
             <HardDriveUploadIcon />
         </button>
     </div>
-    <Button className="mt-2" onclick={async () => {
-        if(DoingChatState.value){
-            return
-        }
-        for(let i=0;i<autopilot.length;i++){
-            const db = (DBState.db)
-            let currentChar = db.characters[ChatState.selectedCharId]
-            let currentChat = currentChar.chats[currentChar.chatPage]
-            currentChat.message.push({
-                role: 'user',
-                data: autopilot[i]
-            })
-            currentChar.chats[currentChar.chatPage] = currentChat
-            db.characters[ChatState.selectedCharId] = currentChar
-            if(DoingChatState.value){
+    <Button
+        className="mt-2"
+        onclick={async () => {
+            if (DoingChatState.value) {
                 return
             }
-            currentChar.chats[currentChar.chatPage] = currentChat
-            db.characters[ChatState.selectedCharId] = currentChar
+            for (let i = 0; i < autopilot.length; i++) {
+                const db = DBState.db
+                let currentChar = db.characters[ChatState.selectedCharId]
+                let currentChat = currentChar.chats[currentChar.chatPage]
+                currentChat.message.push({
+                    role: "user",
+                    data: autopilot[i],
+                })
+                currentChar.chats[currentChar.chatPage] = currentChat
+                db.characters[ChatState.selectedCharId] = currentChar
+                if (DoingChatState.value) {
+                    return
+                }
+                currentChar.chats[currentChar.chatPage] = currentChat
+                db.characters[ChatState.selectedCharId] = currentChar
+                DoingChatState.value = false
+                await sendChat(i)
+                currentChar = db.characters[ChatState.selectedCharId]
+                currentChat = currentChar.chats[currentChar.chatPage]
+            }
             DoingChatState.value = false
-            await sendChat(i);
-            currentChar = db.characters[ChatState.selectedCharId]
-            currentChat = currentChar.chats[currentChar.chatPage]
-        }
-        DoingChatState.value = false
-    }}>Run</Button>
+        }}>Run</Button
+    >
 </Arcodion>
-
 
 <Arcodion styled name="Preview Prompt">
     <span>Type</span>
@@ -245,7 +265,7 @@
         <OptionInput value="chat">Chat</OptionInput>
         <OptionInput value="instruct">Instruct</OptionInput>
     </SelectInput>
-    {#if previewMode === 'instruct'}
+    {#if previewMode === "instruct"}
         <span>Instruction Type</span>
         <SelectInput bind:value={instructType}>
             {#each Object.keys(chatTemplates) as template}
@@ -253,7 +273,7 @@
             {/each}
             <OptionInput value="jinja">Custom Jinja</OptionInput>
         </SelectInput>
-        {#if instructType === 'jinja'}
+        {#if instructType === "jinja"}
             <span>Custom Jinja</span>
             <TextAreaInput bind:value={instructCustom} />
         {/if}
@@ -264,22 +284,34 @@
         <OptionInput value="no">Without Join</OptionInput>
         <OptionInput value="prompt">As Request</OptionInput>
     </SelectInput>
-    <Button className="mt-2" onclick={() => {preview()}}>Run</Button>
+    <Button
+        className="mt-2"
+        onclick={() => {
+            preview()
+        }}>Run</Button
+    >
 </Arcodion>
 
 <Arcodion styled name="Preview Lorebook">
-    <Button className="mt-2" onclick={async () => {
-        const lorebookResult = await loadLoreBookV3Prompt()
-        const html = `
-        ${lorebookResult.actives.map((v) => {
-            return `## ${v.source}\n\n\`\`\`\n${v.prompt}\n\`\`\`\n`
-        }).join('\n')}
+    <Button
+        className="mt-2"
+        onclick={async () => {
+            const lorebookResult = await loadLoreBookV3Prompt()
+            const html = `
+        ${lorebookResult.actives
+            .map((v) => {
+                return `## ${v.source}\n\n\`\`\`\n${v.prompt}\n\`\`\`\n`
+            })
+            .join("\n")}
         `.trim()
-        alertMd(html)
-    }}>Test Lore</Button>
-    <Button className="mt-2" onclick={async () => {
-        const lorebookResult = await loadLoreBookV3Prompt()
-        const html = `
+            alertMd(html)
+        }}>Test Lore</Button
+    >
+    <Button
+        className="mt-2"
+        onclick={async () => {
+            const lorebookResult = await loadLoreBookV3Prompt()
+            const html = `
         <table>
             <thead>
                 <tr>
@@ -288,29 +320,40 @@
                 </tr>
             </thead>
             <tbody>
-                ${lorebookResult.matchLog.map((v) => {
-                    return `<tr>
+                ${lorebookResult.matchLog
+                    .map((v) => {
+                        return `<tr>
                         <td><pre>${v.activated.trim()}</pre></td>
                         <td><pre>${v.source.trim()}</pre></td>
                     </tr>`
-                }).join('\n')}
+                    })
+                    .join("\n")}
             </tbody>
         </table>
         `.trim()
-        alertMd(html)
-    }}>Match Sources</Button>
+            alertMd(html)
+        }}>Match Sources</Button
+    >
 </Arcodion>
 
-<Button className="mt-2" onclick={() => {
-    const modules = getModules()
-    const html = `
-    ${modules.map((v) => {
-        return `## ${v.name}\n\n\`\`\`\n${v.description}\n\`\`\`\n`
-    }).join('\n')}
+<Button
+    className="mt-2"
+    onclick={() => {
+        const modules = getModules()
+        const html = `
+    ${modules
+        .map((v) => {
+            return `## ${v.name}\n\n\`\`\`\n${v.description}\n\`\`\`\n`
+        })
+        .join("\n")}
     `.trim()
-    alertMd(html)
-}}>Preview Module</Button>
+        alertMd(html)
+    }}>Preview Module</Button
+>
 
-<Button className="mt-2" onclick={() => {
-    alertMd(getRequestLog())
-}}>Request Log</Button>
+<Button
+    className="mt-2"
+    onclick={() => {
+        alertMd(getRequestLog())
+    }}>Request Log</Button
+>

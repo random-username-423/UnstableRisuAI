@@ -32,21 +32,23 @@ export async function saveMainData(options: SaveMainDataOptions): Promise<SaveMa
 
     if (!forageStorage.isAccount && isWorkerReady()) {
         // Save database.bin
-        await saveToWorker('database/database.bin', dbData)
+        await saveToWorker("database/database.bin", dbData)
 
         // Create backup if needed
         if (shouldBackup) {
             const backupEncoder = new RisuSaveEncoder()
             await backupEncoder.init(db, {
                 compression: false,
-                excludeChats: false // 백업에는 모든 채팅 포함
+                excludeChats: false, // 백업에는 모든 채팅 포함
             })
             const backupEncoded = backupEncoder.encode()
             if (backupEncoded) {
                 const backupData = new Uint8Array(backupEncoded)
                 const backupName = `database/dbbackup-${(now / 100).toFixed()}.bin`
                 await saveToWorker(backupName, backupData)
-                console.log(`[dbStorage] Internal backup created: ${backupName} (${(backupData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
+                console.log(
+                    `[dbStorage] Internal backup created: ${backupName} (${(backupData.byteLength / 1024 / 1024).toFixed(2)} MB)`
+                )
             }
             backedUp = true
         }
@@ -55,8 +57,8 @@ export async function saveMainData(options: SaveMainDataOptions): Promise<SaveMa
         if (shouldExcludeChats && toSave.chat.length > 0) {
             for (const [chaId, chatId] of toSave.chat) {
                 if (!chatId || !chaId) continue
-                const char = db.characters.find(c => c.chaId === chaId)
-                const chat = char?.chats.find(c => c.id === chatId)
+                const char = db.characters.find((c) => c.chaId === chaId)
+                const chat = char?.chats.find((c) => c.id === chatId)
                 if (chat) {
                     await saveChat(chaId, chat)
                 }
@@ -65,20 +67,21 @@ export async function saveMainData(options: SaveMainDataOptions): Promise<SaveMa
 
         // Save characters.bin
         if (shouldSeparateCharactersAndPresets && toSave.character.length > 0) {
-            const charactersToSave = db.characters.map(char => {
-                const chatsMetadata = char.chats?.map(chat => ({
-                    id: chat.id,
-                    name: chat.name,
-                    folderId: chat.folderId,
-                    bindedPersona: chat.bindedPersona,
-                    modules: chat.modules,
-                    lastDate: chat.lastDate,
-                    fmIndex: chat.fmIndex,
-                })) || []
+            const charactersToSave = db.characters.map((char) => {
+                const chatsMetadata =
+                    char.chats?.map((chat) => ({
+                        id: chat.id,
+                        name: chat.name,
+                        folderId: chat.folderId,
+                        bindedPersona: chat.bindedPersona,
+                        modules: chat.modules,
+                        lastDate: chat.lastDate,
+                        fmIndex: chat.fmIndex,
+                    })) || []
                 return { ...char, chats: chatsMetadata }
             })
             const encodedCharacters = await encodeCharacters(charactersToSave as (character | groupChat)[])
-            await saveToWorker('database/characters.bin', encodedCharacters)
+            await saveToWorker("database/characters.bin", encodedCharacters)
 
             // Mark characters for sync (debounced)
             for (const chaId of toSave.character) {
@@ -91,27 +94,29 @@ export async function saveMainData(options: SaveMainDataOptions): Promise<SaveMa
         // Save botpresets.bin
         if (shouldSeparateCharactersAndPresets && toSave.botPreset) {
             const encodedPresets = await encodeBotPresets(db.botPresets)
-            await saveToWorker('database/botpresets.bin', encodedPresets)
+            await saveToWorker("database/botpresets.bin", encodedPresets)
 
             // Mark bot presets for sync (debounced)
             syncManager.markBotPresetsChanged()
         }
     } else {
         // Fallback to forageStorage (Account mode or Worker not ready)
-        await forageStorage.setItem('database/database.bin', dbData)
+        await forageStorage.setItem("database/database.bin", dbData)
 
         if (!forageStorage.isAccount && shouldBackup) {
             const backupEncoder = new RisuSaveEncoder()
             await backupEncoder.init(db, {
                 compression: false,
-                excludeChats: false // 백업에는 모든 채팅 포함
+                excludeChats: false, // 백업에는 모든 채팅 포함
             })
             const backupEncoded = backupEncoder.encode()
             if (backupEncoded) {
                 const backupData = new Uint8Array(backupEncoded)
                 const backupName = `database/dbbackup-${(now / 100).toFixed()}.bin`
                 await forageStorage.setItem(backupName, backupData)
-                console.log(`[dbStorage] Internal backup created (forageStorage): ${backupName} (${(backupData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
+                console.log(
+                    `[dbStorage] Internal backup created (forageStorage): ${backupName} (${(backupData.byteLength / 1024 / 1024).toFixed(2)} MB)`
+                )
             }
             backedUp = true
         }

@@ -1,18 +1,18 @@
-import { invoke } from "@tauri-apps/api/core";
-import { globalFetch } from "src/ts/utils/fetch";
-import { sleep } from "src/ts/utils/util";
-import * as path from "@tauri-apps/api/path";
-import { exists, readTextFile } from "@tauri-apps/plugin-fs";
-import { alertClear, alertError, alertWait } from "src/ts/utils/alert.svelte";
-import { getDatabase } from "src/ts/data/storage/database.svelte";
-let serverRunning = false;
+import { invoke } from "@tauri-apps/api/core"
+import { globalFetch } from "src/ts/utils/fetch"
+import { sleep } from "src/ts/utils/util"
+import * as path from "@tauri-apps/api/path"
+import { exists, readTextFile } from "@tauri-apps/plugin-fs"
+import { alertClear, alertError, alertWait } from "src/ts/utils/alert.svelte"
+import { getDatabase } from "src/ts/data/storage/database.svelte"
+let serverRunning = false
 
-export function checkLocalModel():Promise<string>{
+export function checkLocalModel(): Promise<string> {
     return invoke("check_requirements_local")
 }
 
-export async function startLocalModelServer(){
-    if(!serverRunning){
+export async function startLocalModelServer() {
+    if (!serverRunning) {
         serverRunning = true
         await invoke("run_server_local")
     }
@@ -21,30 +21,30 @@ export async function startLocalModelServer(){
 
 export async function checkLocalServerInstalled() {
     console.log(await path.appDataDir())
-    const p = await path.join(await path.appDataDir(), 'local_server', 'key.txt')
+    const p = await path.join(await path.appDataDir(), "local_server", "key.txt")
     return await exists(p)
 }
 
 export interface LocalLoaderItem {
-    dir: string;
-    max_seq_len?: number ;
-    max_input_len?: number ;
-    max_attention_size?: number ;
-    compress_pos_emb?: number ;
-    alpha_value?: number ;
-    gpu_peer_fixed?: boolean ;
-    auto_map?: boolean ;
-    use_flash_attn_2?: boolean ;
-    matmul_recons_thd?: number ;
-    fused_mlp_thd?: number ;
-    sdp_thd?: number ;
-    fused_attn?: boolean ;
-    matmul_fused_remap?: boolean ;
-    rmsnorm_no_half2?: boolean ;
-    rope_no_half2?: boolean ;
-    matmul_no_half2?: boolean ;
-    silu_no_half2?: boolean ;
-    concurrent_streams?: boolean ;
+    dir: string
+    max_seq_len?: number
+    max_input_len?: number
+    max_attention_size?: number
+    compress_pos_emb?: number
+    alpha_value?: number
+    gpu_peer_fixed?: boolean
+    auto_map?: boolean
+    use_flash_attn_2?: boolean
+    matmul_recons_thd?: number
+    fused_mlp_thd?: number
+    sdp_thd?: number
+    fused_attn?: boolean
+    matmul_fused_remap?: boolean
+    rmsnorm_no_half2?: boolean
+    rope_no_half2?: boolean
+    matmul_no_half2?: boolean
+    silu_no_half2?: boolean
+    concurrent_streams?: boolean
 }
 // class GeneratorItem(BaseModel):
 //     temperature: Union[float, None]
@@ -61,19 +61,19 @@ export interface LocalLoaderItem {
 //     prompt: str
 //     max_new_tokens: Union[int, None]
 interface LocalGeneratorItem {
-    temperature?: number;
-    top_k?: number;
-    top_p?: number;
-    min_p?: number;
-    typical?: number;
-    token_repetition_penalty_max?: number;
-    token_repetition_penalty_sustain?: number;
-    token_repetition_penalty_decay?: number;
-    beams?: number;
-    beam_length?: number;
-    disallowed_tokens?: number[];
-    prompt: string;
-    max_new_tokens?: number;
+    temperature?: number
+    top_k?: number
+    top_p?: number
+    min_p?: number
+    typical?: number
+    token_repetition_penalty_max?: number
+    token_repetition_penalty_sustain?: number
+    token_repetition_penalty_decay?: number
+    beams?: number
+    beam_length?: number
+    disallowed_tokens?: number[]
+    prompt: string
+    max_new_tokens?: number
 }
 
 export async function checkServerRunning() {
@@ -81,30 +81,27 @@ export async function checkServerRunning() {
         console.log("checking server")
         const res = await fetch("http://localhost:7239/")
         console.log(res)
-        return res.ok   
+        return res.ok
     } catch (error) {
         return false
     }
 }
 
-
-export async function loadExllamaFull(){
-
+export async function loadExllamaFull() {
     try {
         await startLocalModelServer()
-        if(await checkLocalServerInstalled()){
+        if (await checkLocalServerInstalled()) {
             alertWait("Loading exllama")
-        }
-        else{
+        } else {
             alertWait("Installing & Loading exllama, this would take a while for the first time")
         }
-        while(true){
+        while (true) {
             //check is server is running by fetching the status
-            if(await checkLocalServerInstalled()){
+            if (await checkLocalServerInstalled()) {
                 await sleep(1000)
                 try {
                     const res = await fetch("http://localhost:7239/")
-                    if(res.status === 200){
+                    if (res.status === 200) {
                         break
                     }
                 } catch (error) {}
@@ -112,99 +109,95 @@ export async function loadExllamaFull(){
             await sleep(1000)
         }
 
-        const body:LocalLoaderItem = {
+        const body: LocalLoaderItem = {
             dir: "C:\\Users\\blueb\\Downloads\\model",
         }
-    
+
         alertWait("Loading Local Model")
         const res = await globalFetch("http://localhost:7239/load/", {
-            body: body
+            body: body,
         })
         alertClear()
     } catch (error) {
-        alertError("Error when loading Exllama: " + error)     
+        alertError("Error when loading Exllama: " + error)
     }
-
 }
 
-
-async function runLocalModelOld(prompt:string){
+async function runLocalModelOld(prompt: string) {
     const db = getDatabase()
 
-    if(!serverRunning){
+    if (!serverRunning) {
         await loadExllamaFull()
     }
 
-    const body:LocalGeneratorItem = {
+    const body: LocalGeneratorItem = {
         prompt: prompt,
         temperature: db.temperature,
         top_k: db.ooba.top_k,
         top_p: db.ooba.top_p,
         typical: db.ooba.typical_p,
-        max_new_tokens: db.maxResponse
+        max_new_tokens: db.maxResponse,
     }
 
     console.log("generating")
 
     const gen = await globalFetch("http://localhost:7239/generate/", {
-        body: body
+        body: body,
     })
 
     console.log(gen)
 }
 
 let initPython = false
-export async function installPython(){
-    if(initPython){
+export async function installPython() {
+    if (initPython) {
         return
     }
     initPython = true
     const appDir = await path.appDataDir()
-    const completedPath = await path.join(appDir, 'python', 'completed.txt')
-    if(await exists(completedPath)){
+    const completedPath = await path.join(appDir, "python", "completed.txt")
+    if (await exists(completedPath)) {
         alertWait("Python is already installed, skipping")
-    }
-    else{
+    } else {
         alertWait("Installing Python")
         await invoke("install_python", {
-            path: appDir
+            path: appDir,
         })
         alertWait("Installing Pip")
         await invoke("install_pip", {
-            path: appDir
+            path: appDir,
         })
         alertWait("Rewriting requirements")
-        await invoke('post_py_install', {
-            path: appDir
+        await invoke("post_py_install", {
+            path: appDir,
         })
-    
+
         alertClear()
     }
     const dependencies = [
-        'pydantic',
-        'scikit-build',
-        'scikit-build-core',
-        'pyproject_metadata',
-        'pathspec',
-        'llama-cpp-python',
-        'uvicorn[standard]',
-        'fastapi'
+        "pydantic",
+        "scikit-build",
+        "scikit-build-core",
+        "pyproject_metadata",
+        "pathspec",
+        "llama-cpp-python",
+        "uvicorn[standard]",
+        "fastapi",
     ]
-    for(const dep of dependencies){
+    for (const dep of dependencies) {
         alertWait("Installing Python Dependencies (" + dep + ")")
-        await invoke('install_py_dependencies', {
+        await invoke("install_py_dependencies", {
             path: appDir,
-            dependency: dep
+            dependency: dep,
         })
     }
 
-    await invoke('run_py_server', {
+    await invoke("run_py_server", {
         pyPath: appDir,
     })
     await sleep(4000)
     alertClear()
     return
-
 }
 
 export async function getLocalKey(retry = true) {
@@ -215,24 +208,23 @@ export async function getLocalKey(retry = true) {
         const key = await readTextFile(keyPath)
         return key
     } catch (error) {
-        if(!retry){
+        if (!retry) {
             throw `Error when getting local key: ${error}`
         }
         //if is cors error
-        if(
-            error.message.includes("NetworkError when attempting to fetch resource.")
-            || error.message.includes("Failed to fetch")
-        ){
+        if (
+            error.message.includes("NetworkError when attempting to fetch resource.") ||
+            error.message.includes("Failed to fetch")
+        ) {
             await installPython()
             return await getLocalKey(false)
-        }
-        else{
+        } else {
             throw `Error when getting local key: ${error}`
         }
     }
 }
 
-export async function runGGUFModel(arg:{
+export async function runGGUFModel(arg: {
     prompt: string
     modelPath: string
     temperature: number
@@ -250,7 +242,7 @@ export async function runGGUFModel(arg:{
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "x-risu-auth": key
+            "x-risu-auth": key,
         },
         body: JSON.stringify({
             prompt: arg.prompt,
@@ -263,28 +255,28 @@ export async function runGGUFModel(arg:{
             frequency_penalty: arg.frequencyPenalty,
             repeat_penalty: arg.repeatPenalty,
             n_ctx: arg.maxContext,
-            stop: arg.stop
-        })
+            stop: arg.stop,
+        }),
     })
 
     return b.body
 }
 
-export async function tokenizeGGUFModel(prompt:string):Promise<number[]> {
+export async function tokenizeGGUFModel(prompt: string): Promise<number[]> {
     const key = await getLocalKey()
     const db = getDatabase()
-    const modelPath = db.aiModel.replace('local_', '')
+    const modelPath = db.aiModel.replace("local_", "")
     const b = await fetch("http://localhost:10026/llamacpp/tokenize", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "x-risu-auth": key
+            "x-risu-auth": key,
         },
         body: JSON.stringify({
             prompt: prompt,
             n_ctx: db.maxContext,
-            model_path: modelPath
-        })
+            model_path: modelPath,
+        }),
     })
 
     return await b.json()

@@ -1,49 +1,49 @@
-import { getDatabase } from "../data/storage/database.svelte";
+import { getDatabase } from "../data/storage/database.svelte"
 
 export const GuiSizeState = $state({
     textAreaSize: 0,
     sideBarSize: 0,
-    textAreaTextSize: 0
+    textAreaTextSize: 0,
 })
 
-export function updateGuisize(){
+export function updateGuisize() {
     const db = getDatabase()
-    const root = document.querySelector(':root') as HTMLElement;
-    if(!root){
+    const root = document.querySelector(":root") as HTMLElement
+    if (!root) {
         return
     }
     GuiSizeState.textAreaSize = db.textAreaSize
     GuiSizeState.sideBarSize = db.sideBarSize
     GuiSizeState.textAreaTextSize = db.textAreaTextSize
-    root.style.setProperty('--sidebar-size', (24 + (4 * db.sideBarSize)) + 'rem')
+    root.style.setProperty("--sidebar-size", 24 + 4 * db.sideBarSize + "rem")
 }
 
-export function guiSizeText(num:number){
-    switch(num){
+export function guiSizeText(num: number) {
+    switch (num) {
         case 0:
-            return 'Default'
+            return "Default"
         case 1:
-            return 'Big'
+            return "Big"
         case 2:
-            return 'Bigger'
+            return "Bigger"
         case 3:
-            return 'Huge'
+            return "Huge"
         case 4:
-            return 'Huger'
+            return "Huger"
         case 5:
-            return 'Hugest'
+            return "Hugest"
         case -1:
-            return 'Small'
+            return "Small"
         case -2:
-            return 'Smaller'
+            return "Smaller"
         case -3:
-            return 'Tiny'
+            return "Tiny"
         case -4:
-            return 'Tinier'
+            return "Tinier"
         case -5:
-            return 'Tiniest'
+            return "Tiniest"
         default:
-            return 'Default'
+            return "Default"
     }
 }
 
@@ -53,27 +53,27 @@ export function guiSizeText(num:number){
  * The height mode can be one of the following values: 'auto', 'vh', 'dvh', 'lvh', 'svh', or 'percent'.
  * The corresponding CSS variable '--risu-height-size' is set accordingly.
  */
-export function updateHeightMode(){
+export function updateHeightMode() {
     const db = getDatabase()
-    const root = document.querySelector(':root') as HTMLElement;
-    switch(db.heightMode){
-        case 'auto':
-            root.style.setProperty('--risu-height-size', '100%');
+    const root = document.querySelector(":root") as HTMLElement
+    switch (db.heightMode) {
+        case "auto":
+            root.style.setProperty("--risu-height-size", "100%")
             break
-        case 'vh':
-            root.style.setProperty('--risu-height-size', '100vh');
+        case "vh":
+            root.style.setProperty("--risu-height-size", "100vh")
             break
-        case 'dvh':
-            root.style.setProperty('--risu-height-size', '100dvh');
+        case "dvh":
+            root.style.setProperty("--risu-height-size", "100dvh")
             break
-        case 'lvh':
-            root.style.setProperty('--risu-height-size', '100lvh');
+        case "lvh":
+            root.style.setProperty("--risu-height-size", "100lvh")
             break
-        case 'svh':
-            root.style.setProperty('--risu-height-size', '100svh');
+        case "svh":
+            root.style.setProperty("--risu-height-size", "100svh")
             break
-        case 'percent':
-            root.style.setProperty('--risu-height-size', '100%');
+        case "percent":
+            root.style.setProperty("--risu-height-size", "100%")
             break
     }
 }

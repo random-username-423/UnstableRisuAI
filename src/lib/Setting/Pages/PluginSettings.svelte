@@ -1,32 +1,28 @@
 <script lang="ts">
-    import { PlusIcon, TrashIcon, LinkIcon } from "lucide-svelte";
-    import { language } from "src/lang";
-    import { alertConfirm } from "src/ts/utils/alert.svelte";
+    import { PlusIcon, TrashIcon, LinkIcon } from "lucide-svelte"
+    import { language } from "src/lang"
+    import { alertConfirm } from "src/ts/utils/alert.svelte"
 
-    import { DBState } from "src/ts/stores.svelte";
-    import { importPlugin } from "src/ts/plugins/plugins.svelte";
-    import TextInput from "src/lib/UI/GUI/TextInput.svelte";
-    import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";
-    import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
-    import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
+    import { DBState } from "src/ts/stores.svelte"
+    import { importPlugin } from "src/ts/plugins/plugins.svelte"
+    import TextInput from "src/lib/UI/GUI/TextInput.svelte"
+    import NumberInput from "src/lib/UI/GUI/NumberInput.svelte"
+    import SelectInput from "src/lib/UI/GUI/SelectInput.svelte"
+    import OptionInput from "src/lib/UI/GUI/OptionInput.svelte"
 </script>
 
-<h2 class="mb-2 text-2xl font-bold mt-2">{language.plugin}</h2>
+<h2 class="mb-2 mt-2 text-2xl font-bold">{language.plugin}</h2>
 
-<span class="text-draculared text-xs mb-4">{language.pluginWarn}</span>
+<span class="mb-4 text-xs text-draculared">{language.pluginWarn}</span>
 
-<div class="border-solid border-darkborderc p-2 flex flex-col border-1">
+<div class="flex flex-col border-1 border-solid border-darkborderc p-2">
     {#if !DBState.db.plugins || DBState.db.plugins?.length === 0}
         <span class="text-textcolor2">{language.noPlugins}</span>
     {/if}
     {#each DBState.db.plugins as plugin, i}
-        <div
-            class="border-darkborderc mt-2 mb-2 w-full border-solid border-b-1 seperator"
-        ></div>
+        <div class="seperator mb-2 mt-2 w-full border-b-1 border-solid border-darkborderc"></div>
         <div class="flex">
-            <span class="font-bold flex-grow"
-                >{plugin.displayName ?? plugin.name}</span
-            >
+            <span class="flex-grow font-bold">{plugin.displayName ?? plugin.name}</span>
             <!--Button line Started-->
             <!--URL from plugin metadata-->
             {#if plugin.customLink}
@@ -37,7 +33,7 @@
                             href={link.link}
                             target="_blank"
                             rel="nofollow noopener noreferrer"
-                            class="text-textcolor2 hover:text-textcolor cursor-pointer"
+                            class="cursor-pointer text-textcolor2 hover:text-textcolor"
                             title={link.hoverText}
                         >
                             <LinkIcon></LinkIcon>
@@ -50,17 +46,14 @@
             <button
                 class="textcolor2 hover:gray-200 cursor-pointer"
                 onclick={async () => {
-                    const v = await alertConfirm(
-                        language.removeConfirm +
-                            (plugin.displayName ?? plugin.name),
-                    );
+                    const v = await alertConfirm(language.removeConfirm + (plugin.displayName ?? plugin.name))
                     if (v) {
                         if (DBState.db.currentPluginProvider === plugin.name) {
-                            DBState.db.currentPluginProvider = "";
+                            DBState.db.currentPluginProvider = ""
                         }
-                        let plugins = DBState.db.plugins ?? [];
-                        plugins.splice(i, 1);
-                        DBState.db.plugins = plugins;
+                        let plugins = DBState.db.plugins ?? []
+                        plugins.splice(i, 1)
+                        DBState.db.plugins = plugins
                     }
                 }}
             >
@@ -68,40 +61,30 @@
             </button>
         </div>
         {#if plugin.version !== 2}
-            <span class="text-draculared text-xs">
+            <span class="text-xs text-draculared">
                 {language.pluginVersionWarn
                     .replace("{{plugin_version}}", "API V1")
                     .replace("{{required_version}}", "API V2")}
             </span>
             <!--List up args-->
         {:else if Object.keys(plugin.arguments).filter((i) => !i.startsWith("hidden_")).length > 0}
-            <div class="flex flex-col mt-2 bg-dark-900 bg-opacity-50 p-3">
+            <div class="bg-dark-900 mt-2 flex flex-col bg-opacity-50 p-3">
                 {#each Object.keys(plugin.arguments) as arg}
                     {#if !arg.startsWith("hidden_")}
                         <span>{arg}</span>
                         {#if Array.isArray(plugin.arguments[arg])}
                             <SelectInput
                                 className="mt-2 mb-4"
-                                bind:value={
-                                    DBState.db.plugins[i].realArg[arg] as string
-                                }
+                                bind:value={DBState.db.plugins[i].realArg[arg] as string}
                             >
                                 {#each plugin.arguments[arg] as a}
                                     <OptionInput value={a}>a</OptionInput>
                                 {/each}
                             </SelectInput>
                         {:else if plugin.arguments[arg] === "string"}
-                            <TextInput
-                                bind:value={
-                                    DBState.db.plugins[i].realArg[arg] as string
-                                }
-                            />
+                            <TextInput bind:value={DBState.db.plugins[i].realArg[arg] as string} />
                         {:else if plugin.arguments[arg] === "int"}
-                            <NumberInput
-                                bind:value={
-                                    DBState.db.plugins[i].realArg[arg] as number
-                                }
-                            />
+                            <NumberInput bind:value={DBState.db.plugins[i].realArg[arg] as number} />
                         {/if}
                     {/if}
                 {/each}
@@ -109,12 +92,12 @@
         {/if}
     {/each}
 </div>
-<div class="text-textcolor2 mt-2 flex">
+<div class="mt-2 flex text-textcolor2">
     <button
         onclick={() => {
-            importPlugin();
+            importPlugin()
         }}
-        class="hover:text-textcolor cursor-pointer"
+        class="cursor-pointer hover:text-textcolor"
     >
         <PlusIcon />
     </button>

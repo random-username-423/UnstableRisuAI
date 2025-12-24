@@ -1,23 +1,30 @@
-import { getChatVar, hasher, setChatVar, getGlobalChatVar, type simpleCharacterArgument, risuChatParser } from "src/ts/utils/parser.svelte";
-import { LuaEngine, LuaFactory } from "wasmoon";
-import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase } from "src/ts/data/storage/database.svelte";
-import type { Chat, character, groupChat, triggerscript } from "src/ts/data/storage/types";
-import { RenderState, ChatState } from "src/ts/stores.svelte";
-import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "src/ts/utils/alert.svelte";
-import { HypaProcesser } from "src/ts/process/memory/hypamemory";
-import { generateAIImage } from "src/ts/process/integrations/stableDiff";
-import { writeInlayImage, getInlayAsset } from "src/ts/process/files/inlays";
-import type { OpenAIChat, MultiModal } from "src/ts/process/chatTypes";
-import { requestChatData } from "src/ts/process/request/request";
-import { v4 } from "uuid";
-import { getModuleLorebooks, getModuleTriggers } from "src/ts/process/scripting/modules";
-import { Mutex } from 'src/ts/process/utils/mutex';
-import { tokenize } from "src/ts/utils/tokenizer";
-import { readImage } from "src/ts/utils/fileIO";
-import { fetchNative } from "src/ts/utils/fetch";
-import { loadLoreBookV3Prompt } from 'src/ts/process/prompt/lorebook.svelte';
-import { getPersonaPrompt, getUserName, getUserIcon } from 'src/ts/utils/util';
-let luaFactory:LuaFactory
+import {
+    getChatVar,
+    hasher,
+    setChatVar,
+    getGlobalChatVar,
+    type simpleCharacterArgument,
+    risuChatParser,
+} from "src/ts/utils/parser.svelte"
+import { LuaEngine, LuaFactory } from "wasmoon"
+import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase } from "src/ts/data/storage/database.svelte"
+import type { Chat, character, groupChat, triggerscript } from "src/ts/data/storage/types"
+import { RenderState, ChatState } from "src/ts/stores.svelte"
+import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "src/ts/utils/alert.svelte"
+import { HypaProcesser } from "src/ts/process/memory/hypamemory"
+import { generateAIImage } from "src/ts/process/integrations/stableDiff"
+import { writeInlayImage, getInlayAsset } from "src/ts/process/files/inlays"
+import type { OpenAIChat, MultiModal } from "src/ts/process/chatTypes"
+import { requestChatData } from "src/ts/process/request/request"
+import { v4 } from "uuid"
+import { getModuleLorebooks, getModuleTriggers } from "src/ts/process/scripting/modules"
+import { Mutex } from "src/ts/process/utils/mutex"
+import { tokenize } from "src/ts/utils/tokenizer"
+import { readImage } from "src/ts/utils/fileIO"
+import { fetchNative } from "src/ts/utils/fetch"
+import { loadLoreBookV3Prompt } from "src/ts/process/prompt/lorebook.svelte"
+import { getPersonaPrompt, getUserName, getUserIcon } from "src/ts/utils/util"
+let luaFactory: LuaFactory
 const ScriptingSafeIds = new Set<string>()
 const ScriptingEditDisplayIds = new Set<string>()
 const ScriptingLowLevelIds = new Set<string>()
@@ -25,213 +32,218 @@ let lastRequestResetTime = 0
 let lastRequestsCount = 0
 
 interface BasicScriptingEngineState {
-    code?: string;
-    mutex: Mutex;
-    chat?: Chat;
-    setVar?: (key:string, value:string) => void,
-    getVar?: (key:string) => string,
+    code?: string
+    mutex: Mutex
+    chat?: Chat
+    setVar?: (key: string, value: string) => void
+    getVar?: (key: string) => string
 }
 
 interface LuaScriptingEngineState extends BasicScriptingEngineState {
-    engine?: LuaEngine;
-    type: 'lua';
+    engine?: LuaEngine
+    type: "lua"
 }
 
 interface PythonScriptingEngineState extends BasicScriptingEngineState {
     pyodide?: PyodideContext
-    type: 'py';
+    type: "py"
 }
 
-type ScriptingEngineState = LuaScriptingEngineState | PythonScriptingEngineState;
+type ScriptingEngineState = LuaScriptingEngineState | PythonScriptingEngineState
 
 const ScriptingEngines = new Map<string, ScriptingEngineState>()
-let luaFactoryPromise: Promise<void> | null = null;
-const pendingEngineCreations = new Map<string, Promise<ScriptingEngineState>>();
+let luaFactoryPromise: Promise<void> | null = null
+const pendingEngineCreations = new Map<string, Promise<ScriptingEngineState>>()
 
-export async function runScripted(code:string, arg:{
-    char?:character|groupChat|simpleCharacterArgument,
-    chat?:Chat
-    data?: string|OpenAIChat[],
-    setVar?: (key:string, value:string) => void,
-    getVar?: (key:string) => string,
-    lowLevelAccess?: boolean,
-    meta?: object,
-    mode?: string,
-    type?: 'lua'|'py'
-}){
-    const type: 'lua'|'py' = arg.type ?? 'lua'
+export async function runScripted(
+    code: string,
+    arg: {
+        char?: character | groupChat | simpleCharacterArgument
+        chat?: Chat
+        data?: string | OpenAIChat[]
+        setVar?: (key: string, value: string) => void
+        getVar?: (key: string) => string
+        lowLevelAccess?: boolean
+        meta?: object
+        mode?: string
+        type?: "lua" | "py"
+    }
+) {
+    const type: "lua" | "py" = arg.type ?? "lua"
     const char = arg.char ?? getCurrentCharacter()
-    const data = arg.data ?? ''
+    const data = arg.data ?? ""
     const setVar = arg.setVar ?? setChatVar
     const getVar = arg.getVar ?? getChatVar
     const meta = arg.meta ?? {}
-    const mode = arg.mode ?? 'manual'
+    const mode = arg.mode ?? "manual"
 
     let chat = arg.chat ?? getCurrentChat()
     let stopSending = false
     const lowLevelAccess = arg.lowLevelAccess ?? false
 
-    if(type === 'lua'){
+    if (type === "lua") {
         await ensureLuaFactory()
     }
-    const ScriptingEngineState = await getOrCreateEngineState(mode, type);
-    
+    const ScriptingEngineState = await getOrCreateEngineState(mode, type)
+
     return await ScriptingEngineState.mutex.runExclusive(async () => {
         ScriptingEngineState.chat = chat
         ScriptingEngineState.setVar = setVar
         ScriptingEngineState.getVar = getVar
         if (code !== ScriptingEngineState.code) {
-            let declareAPI:(name: string, func:(...args: any[]) => any) => void
+            let declareAPI: (name: string, func: (...args: any[]) => any) => void
 
-            if(ScriptingEngineState.type === 'lua'){
-                console.log('Creating new Lua engine for mode:', mode)
+            if (ScriptingEngineState.type === "lua") {
+                console.log("Creating new Lua engine for mode:", mode)
                 ScriptingEngineState.engine?.global.close()
                 ScriptingEngineState.code = code
-                ScriptingEngineState.engine = await luaFactory.createEngine({injectObjects: true})
+                ScriptingEngineState.engine = await luaFactory.createEngine({ injectObjects: true })
                 const luaEngine = ScriptingEngineState.engine
-                declareAPI = (name:string, func:(...args: any[]) => any) => {
+                declareAPI = (name: string, func: (...args: any[]) => any) => {
                     luaEngine.global.set(name, func)
                 }
             }
-            if(ScriptingEngineState.type === 'py'){
-                console.log('Creating new Pyodide context for mode:', mode)
+            if (ScriptingEngineState.type === "py") {
+                console.log("Creating new Pyodide context for mode:", mode)
                 ScriptingEngineState.pyodide?.close()
                 ScriptingEngineState.pyodide = new PyodideContext()
-                declareAPI = (name:string, func:(...args: any[]) => any) => {
+                declareAPI = (name: string, func: (...args: any[]) => any) => {
                     ScriptingEngineState.pyodide?.declareAPI(name, func)
                 }
             }
-            declareAPI('getChatVar', (id:string,key:string) => {
+            declareAPI("getChatVar", (id: string, key: string) => {
                 return ScriptingEngineState.getVar(key)
             })
-            declareAPI('setChatVar', (id:string,key:string, value:string) => {
-                if(!ScriptingSafeIds.has(id) && !ScriptingEditDisplayIds.has(id)){
+            declareAPI("setChatVar", (id: string, key: string, value: string) => {
+                if (!ScriptingSafeIds.has(id) && !ScriptingEditDisplayIds.has(id)) {
                     return
                 }
                 ScriptingEngineState.setVar(key, value)
             })
-            declareAPI('getGlobalVar', (id:string, key:string) => {
+            declareAPI("getGlobalVar", (id: string, key: string) => {
                 return getGlobalChatVar(key)
             })
-            declareAPI('stopChat', (id:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("stopChat", (id: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 stopSending = true
             })
-            declareAPI('alertError', (id:string, value:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("alertError", (id: string, value: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 alertError(value)
             })
-            declareAPI('alertNormal', (id:string, value:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("alertNormal", (id: string, value: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 alertNormal(value)
             })
-            declareAPI('alertInput', (id:string, value:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("alertInput", (id: string, value: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 return alertInput(value)
             })
-            declareAPI('alertSelect', (id:string, value:string[]) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("alertSelect", (id: string, value: string[]) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 return alertSelect(value)
             })
-            declareAPI('alertConfirm', (id:string, value:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("alertConfirm", (id: string, value: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
-                return alertConfirm(value).then(res => res ? true : false)
+                return alertConfirm(value).then((res) => (res ? true : false))
             })
 
-            declareAPI('getChatMain', (id:string, index:number) => {
+            declareAPI("getChatMain", (id: string, index: number) => {
                 const chat = ScriptingEngineState.chat.message.at(index)
-                if(!chat){
+                if (!chat) {
                     return JSON.stringify(null)
                 }
                 const data = {
                     role: chat.role,
                     data: chat.data,
-                    time: chat.time ?? 0
+                    time: chat.time ?? 0,
                 }
                 return JSON.stringify(data)
             })
 
-            declareAPI('setChat', (id:string, index:number, value:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("setChat", (id: string, index: number, value: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 const message = ScriptingEngineState.chat.message?.at(index)
-                if(message){
-                    message.data = value ?? ''
+                if (message) {
+                    message.data = value ?? ""
                 }
             })
-            declareAPI('setChatRole', (id:string, index:number, value:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("setChatRole", (id: string, index: number, value: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 const message = ScriptingEngineState.chat.message?.at(index)
-                if(message){
-                    message.role = value === 'user' ? 'user' : 'char'
+                if (message) {
+                    message.role = value === "user" ? "user" : "char"
                 }
             })
-            declareAPI('cutChat', (id:string, start:number, end:number) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("cutChat", (id: string, start: number, end: number) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
-                ScriptingEngineState.chat.message = ScriptingEngineState.chat.message.slice(start,end)
+                ScriptingEngineState.chat.message = ScriptingEngineState.chat.message.slice(start, end)
             })
-            declareAPI('removeChat', (id:string, index:number) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("removeChat", (id: string, index: number) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 ScriptingEngineState.chat.message.splice(index, 1)
             })
-            declareAPI('addChat', (id:string, role:string, value:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("addChat", (id: string, role: string, value: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
-                const roleData:'user'|'char' = role === 'user' ? 'user' : 'char'
-                ScriptingEngineState.chat.message.push({role: roleData, data: value ?? ''})
+                const roleData: "user" | "char" = role === "user" ? "user" : "char"
+                ScriptingEngineState.chat.message.push({ role: roleData, data: value ?? "" })
             })
-            declareAPI('insertChat', (id:string, index:number, role:string, value:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("insertChat", (id: string, index: number, role: string, value: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
-                const roleData:'user'|'char' = role === 'user' ? 'user' : 'char'
-                ScriptingEngineState.chat.message.splice(index, 0, {role: roleData, data: value ?? ''})
+                const roleData: "user" | "char" = role === "user" ? "user" : "char"
+                ScriptingEngineState.chat.message.splice(index, 0, { role: roleData, data: value ?? "" })
             })
 
-            declareAPI('getTokens', async (id:string, value:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("getTokens", async (id: string, value: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 return await tokenize(value)
             })
 
-            declareAPI('getChatLength', (id:string) => {
+            declareAPI("getChatLength", (id: string) => {
                 return ScriptingEngineState.chat.message.length
             })
 
-            declareAPI('getFullChatMain', (id:string) => {
-                const data = JSON.stringify(ScriptingEngineState.chat.message.map((v) => {
-                    return {
-                        role: v.role,
-                        data: v.data,
-                        time: v.time ?? 0
-                    }
-                }))
+            declareAPI("getFullChatMain", (id: string) => {
+                const data = JSON.stringify(
+                    ScriptingEngineState.chat.message.map((v) => {
+                        return {
+                            role: v.role,
+                            data: v.data,
+                            time: v.time ?? 0,
+                        }
+                    })
+                )
                 return data
             })
 
-            declareAPI('sleep', (id:string, time:number) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("sleep", (id: string, time: number) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 return new Promise((resolve) => {
@@ -241,12 +253,12 @@ export async function runScripted(code:string, arg:{
                 })
             })
 
-            declareAPI('cbs', (value) => {
+            declareAPI("cbs", (value) => {
                 return risuChatParser(value, { chara: getCurrentCharacter() })
             })
-            
-            declareAPI('setFullChatMain', (id:string, value:string) => {
-                if(!ScriptingSafeIds.has(id)){
+
+            declareAPI("setFullChatMain", (id: string, value: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 const realValue = JSON.parse(value)
@@ -254,32 +266,32 @@ export async function runScripted(code:string, arg:{
                 ScriptingEngineState.chat.message = realValue.map((v) => {
                     return {
                         role: v.role,
-                        data: v.data
+                        data: v.data,
                     }
                 })
             })
 
-            declareAPI('logMain', (value:string) => {
+            declareAPI("logMain", (value: string) => {
                 console.log(JSON.parse(value))
             })
 
-            declareAPI('reloadDisplay', (id:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("reloadDisplay", (id: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 RenderState.guiReloadPointer += 1
             })
 
-            declareAPI('reloadChat', (id: string, index: number) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("reloadChat", (id: string, index: number) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 RenderState.chatReloadPointer[index] = (RenderState.chatReloadPointer[index] ?? 0) + 1
             })
 
             //Low Level Access
-            declareAPI('similarity', async (id:string, source:string, value:string[]) => {
-                if(!ScriptingLowLevelIds.has(id)){
+            declareAPI("similarity", async (id: string, source: string, value: string[]) => {
+                if (!ScriptingLowLevelIds.has(id)) {
                     return
                 }
                 const processer = new HypaProcesser()
@@ -287,20 +299,20 @@ export async function runScripted(code:string, arg:{
                 return await processer.similaritySearch(source)
             })
 
-            declareAPI('request', async (id:string, url:string) => {
-                if(!ScriptingLowLevelIds.has(id)){
+            declareAPI("request", async (id: string, url: string) => {
+                if (!ScriptingLowLevelIds.has(id)) {
                     return
                 }
 
-                if(lastRequestResetTime + 60000 < Date.now()){
+                if (lastRequestResetTime + 60000 < Date.now()) {
                     lastRequestsCount = 0
                     lastRequestResetTime = Date.now()
                 }
-                
-                if(lastRequestsCount > 5){
+
+                if (lastRequestsCount > 5) {
                     return JSON.stringify({
                         status: 429,
-                        data: 'Too many requests. you can request 5 times per minute'
+                        data: "Too many requests. you can request 5 times per minute",
                     })
                 }
 
@@ -308,61 +320,55 @@ export async function runScripted(code:string, arg:{
 
                 try {
                     //for security and other reasons, only get request in 120 char is allowed
-                    if(url.length > 120){
+                    if (url.length > 120) {
                         return JSON.stringify({
                             status: 413,
-                            data: 'URL to large. max is 120 characters'
+                            data: "URL to large. max is 120 characters",
                         })
                     }
 
-                    if(!url.startsWith('https://')){
+                    if (!url.startsWith("https://")) {
                         return JSON.stringify({
                             status: 400,
-                            data: "Only https requests are allowed"
+                            data: "Only https requests are allowed",
                         })
                     }
 
-                    const bannedURL = [
-                        "https://realm.risuai.net",
-                        "https://risuai.net",
-                        "https://risuai.xyz"
-                    ]
+                    const bannedURL = ["https://realm.risuai.net", "https://risuai.net", "https://risuai.xyz"]
 
-                    for(const burl of bannedURL){
-
-                        if(url.startsWith(burl)){
+                    for (const burl of bannedURL) {
+                        if (url.startsWith(burl)) {
                             return JSON.stringify({
                                 status: 400,
-                                data: "request to " + url + ' is not allowed'
+                                data: "request to " + url + " is not allowed",
                             })
                         }
                     }
 
                     //browser fetch
                     const d = await fetchNative(url, {
-                        method: "GET"
+                        method: "GET",
                     })
                     const text = await d.text()
                     return JSON.stringify({
                         status: d.status,
-                        data: text
+                        data: text,
                     })
-
                 } catch (error) {
                     return JSON.stringify({
                         status: 400,
-                        data: 'internal error'
+                        data: "internal error",
                     })
                 }
             })
 
-            declareAPI('generateImage', async (id:string, value:string, negValue:string = '') => {
-                if(!ScriptingLowLevelIds.has(id)){
+            declareAPI("generateImage", async (id: string, value: string, negValue: string = "") => {
+                if (!ScriptingLowLevelIds.has(id)) {
                     return
                 }
-                const gen = await generateAIImage(value, char as character, negValue, 'inlay')
-                if(!gen){
-                    return 'Error: Image generation failed'
+                const gen = await generateAIImage(value, char as character, negValue, "inlay")
+                if (!gen) {
+                    return "Error: Image generation failed"
                 }
                 const imgHTML = new Image()
                 imgHTML.src = gen
@@ -370,133 +376,135 @@ export async function runScripted(code:string, arg:{
                 return `{{inlay::${inlay}}}`
             })
 
-            declareAPI('getCharacterImageMain', async (id:string) => {
+            declareAPI("getCharacterImageMain", async (id: string) => {
                 try {
                     const db = getDatabase()
                     const selectedChar = ChatState.selectedCharId
 
                     if (selectedChar < 0 || selectedChar >= db.characters.length) {
-                        return ''
+                        return ""
                     }
 
                     const character = db.characters[selectedChar]
-                    
-                    if (!character || character.type === 'group' || !character.image) {
-                        return ''
+
+                    if (!character || character.type === "group" || !character.image) {
+                        return ""
                     }
-                    
+
                     const img = await readImage(character.image)
                     const imgObj = new Image()
-                    const extention = character.image.split('.').at(-1)
+                    const extention = character.image.split(".").at(-1)
 
-                    imgObj.src = URL.createObjectURL(new Blob([img], {type: `image/${extention}`}))
+                    imgObj.src = URL.createObjectURL(new Blob([img], { type: `image/${extention}` }))
 
-                    const imgid = await writeInlayImage(imgObj, { name: character.image, ext: extention, id: character.image})
+                    const imgid = await writeInlayImage(imgObj, {
+                        name: character.image,
+                        ext: extention,
+                        id: character.image,
+                    })
 
                     if (imgid) {
                         return `{{inlayed::${imgid}}}`
                     }
-                    console.warn('Failed to create character image inlay')
-                    return ''
+                    console.warn("Failed to create character image inlay")
+                    return ""
                 } catch (error) {
-                    console.error('Error in getCharacterImageMain:', error)
-                    return ''
+                    console.error("Error in getCharacterImageMain:", error)
+                    return ""
                 }
             })
 
-            declareAPI('getPersonaImageMain', async (id:string) => {
+            declareAPI("getPersonaImageMain", async (id: string) => {
                 try {
                     const icon = getUserIcon()
 
-                    if(!icon) {
-                        return ''
+                    if (!icon) {
+                        return ""
                     }
 
                     const img = await readImage(icon)
                     const imgObj = new Image()
-                    const extention = icon.split('.').at(-1)
+                    const extention = icon.split(".").at(-1)
 
-                    imgObj.src = URL.createObjectURL(new Blob([img], {type: `image/${extention}`}))
+                    imgObj.src = URL.createObjectURL(new Blob([img], { type: `image/${extention}` }))
 
-                    const imgid = await writeInlayImage(imgObj, { name: icon, ext: extention, id: icon})
+                    const imgid = await writeInlayImage(imgObj, { name: icon, ext: extention, id: icon })
 
                     if (imgid) {
                         return `{{inlayed::${imgid}}}`
                     }
-                    
-                    console.warn('Failed to create character image inlay')
-                    return ''
+
+                    console.warn("Failed to create character image inlay")
+                    return ""
                 } catch (error) {
-                    console.error('Error in getCharacterImageMain:', error)
-                    return ''
+                    console.error("Error in getCharacterImageMain:", error)
+                    return ""
                 }
             })
 
-            declareAPI('hash', async (id:string, value:string) => {
+            declareAPI("hash", async (id: string, value: string) => {
                 return await hasher(new TextEncoder().encode(value))
             })
 
-            declareAPI('LLMMain', async (id:string, promptStr:string, useMultimodal: boolean = false) => {
-                const prompt:{
-                    role: string,
+            declareAPI("LLMMain", async (id: string, promptStr: string, useMultimodal: boolean = false) => {
+                const prompt: {
+                    role: string
                     content: string
                 }[] = JSON.parse(promptStr)
-                if(!ScriptingLowLevelIds.has(id)){
+                if (!ScriptingLowLevelIds.has(id)) {
                     return
                 }
-                const promptbody:OpenAIChat[] = prompt.map((dict) => {
-                    let role:'system'|'user'|'assistant' = 'assistant'
-                    switch(dict['role']){
-                        case 'system':
-                        case 'sys':
-                            role = 'system'
+                const promptbody: OpenAIChat[] = prompt.map((dict) => {
+                    let role: "system" | "user" | "assistant" = "assistant"
+                    switch (dict["role"]) {
+                        case "system":
+                        case "sys":
+                            role = "system"
                             break
-                        case 'user':
-                            role = 'user'
+                        case "user":
+                            role = "user"
                             break
-                        case 'assistant':
-                        case 'bot':
-                        case 'char':{
-                            role = 'assistant'
+                        case "assistant":
+                        case "bot":
+                        case "char": {
+                            role = "assistant"
                             break
                         }
                     }
 
                     return {
-                        content: dict['content'] ?? '',
+                        content: dict["content"] ?? "",
                         role: role,
                     }
                 })
 
-                if(useMultimodal) {
-                    for(const msg of promptbody) {
-                        const inlays:string[] = []
-                        msg.content = msg.content.replace(/{{(inlay|inlayed|inlayeddata)::(.+?)}}/g, (
-                            match: string,
-                            p1: string,
-                            p2: string
-                        ) => {
-                            if(msg.role === 'assistant') {
-                                if(p2 && p1 === 'inlayeddata') {
-                                    inlays.push(p2)
+                if (useMultimodal) {
+                    for (const msg of promptbody) {
+                        const inlays: string[] = []
+                        msg.content = msg.content.replace(
+                            /{{(inlay|inlayed|inlayeddata)::(.+?)}}/g,
+                            (match: string, p1: string, p2: string) => {
+                                if (msg.role === "assistant") {
+                                    if (p2 && p1 === "inlayeddata") {
+                                        inlays.push(p2)
+                                    }
+                                } else {
+                                    if (p2) {
+                                        inlays.push(p2)
+                                    }
                                 }
+                                return ""
                             }
-                            else {
-                                if(p2) {
-                                    inlays.push(p2)
-                                }
-                            }
-                            return ''
-                        })
-                        
+                        )
+
                         const multimodals: MultiModal[] = []
-                        for(const inlay of inlays) {
+                        for (const inlay of inlays) {
                             const inlayData = await getInlayAsset(inlay)
                             multimodals.push({
                                 type: inlayData?.type,
                                 base64: inlayData?.data,
                                 width: inlayData?.width,
-                                height: inlayData?.height
+                                height: inlayData?.height,
                             })
                         }
 
@@ -504,133 +512,141 @@ export async function runScripted(code:string, arg:{
                     }
                 }
 
-                const result = await requestChatData({
-                    formated: promptbody,
-                    bias: {},
-                    useStreaming: false,
-                    noMultiGen: true,
-                }, 'model')
+                const result = await requestChatData(
+                    {
+                        formated: promptbody,
+                        bias: {},
+                        useStreaming: false,
+                        noMultiGen: true,
+                    },
+                    "model"
+                )
 
-                if(result.type === 'fail'){
+                if (result.type === "fail") {
                     return JSON.stringify({
                         success: false,
-                        result: 'Error: ' + result.result
+                        result: "Error: " + result.result,
                     })
                 }
 
-                if(result.type === 'streaming' || result.type === 'multiline'){
+                if (result.type === "streaming" || result.type === "multiline") {
                     return JSON.stringify({
                         success: false,
-                        result: result.result
+                        result: result.result,
                     })
                 }
 
                 return JSON.stringify({
                     success: true,
-                    result: result.result
+                    result: result.result,
                 })
             })
 
-            declareAPI('simpleLLM', async (id:string, prompt:string) => {
-                if(!ScriptingLowLevelIds.has(id)){
+            declareAPI("simpleLLM", async (id: string, prompt: string) => {
+                if (!ScriptingLowLevelIds.has(id)) {
                     return
                 }
-                const result = await requestChatData({
-                    formated: [{
-                        role: 'user',
-                        content: prompt
-                    }],
-                    bias: {},
-                    useStreaming: false,
-                    noMultiGen: true,
-                }, 'model')
+                const result = await requestChatData(
+                    {
+                        formated: [
+                            {
+                                role: "user",
+                                content: prompt,
+                            },
+                        ],
+                        bias: {},
+                        useStreaming: false,
+                        noMultiGen: true,
+                    },
+                    "model"
+                )
 
-                if(result.type === 'fail'){
+                if (result.type === "fail") {
                     return {
                         success: false,
-                        result: 'Error: ' + result.result
+                        result: "Error: " + result.result,
                     }
                 }
 
-                if(result.type === 'streaming' || result.type === 'multiline'){
+                if (result.type === "streaming" || result.type === "multiline") {
                     return {
                         success: false,
-                        result: result.result
+                        result: result.result,
                     }
                 }
 
                 return {
                     success: true,
-                    result: result.result
+                    result: result.result,
                 }
             })
-            
-            declareAPI('getName', async (id:string) => {
+
+            declareAPI("getName", async (id: string) => {
                 const db = getDatabase()
                 const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
                 return char.name
             })
 
-            declareAPI('setName', async (id:string, name:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("setName", async (id: string, name: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 const db = getDatabase()
                 const selectedChar = ChatState.selectedCharId
-                if(typeof name !== 'string'){
-                    throw('Invalid data type')
+                if (typeof name !== "string") {
+                    throw "Invalid data type"
                 }
                 db.characters[selectedChar].name = name
                 setDatabase(db)
             })
 
-            declareAPI('getDescription', async (id:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("getDescription", async (id: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 const db = getDatabase()
                 const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
-                if(char.type === 'group'){
-                    throw('Character is a group')
+                if (char.type === "group") {
+                    throw "Character is a group"
                 }
                 return char.desc
             })
-            
-            declareAPI('setDescription', async (id:string, desc:string) => {
-                if(!ScriptingSafeIds.has(id)){
+
+            declareAPI("setDescription", async (id: string, desc: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 const db = getDatabase()
                 const selectedChar = ChatState.selectedCharId
-                const char =db.characters[selectedChar]
-                if(typeof data !== 'string'){
-                    throw('Invalid data type')
+                const char = db.characters[selectedChar]
+                if (typeof data !== "string") {
+                    throw "Invalid data type"
                 }
-                if(char.type === 'group'){
-                    throw('Character is a group')
+                if (char.type === "group") {
+                    throw "Character is a group"
                 }
                 char.desc = desc
                 db.characters[selectedChar] = char
                 setDatabase(db)
             })
 
-            declareAPI('getCharacterFirstMessage', async (id:string) => {
+            declareAPI("getCharacterFirstMessage", async (id: string) => {
                 const db = getDatabase()
                 const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
                 return char.firstMessage
             })
 
-            declareAPI('setCharacterFirstMessage', async (id:string, data:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("setCharacterFirstMessage", async (id: string, data: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 const db = getDatabase()
                 const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
-                if(typeof data !== 'string'){
+                if (typeof data !== "string") {
                     return false
                 }
                 char.firstMessage = data
@@ -639,11 +655,11 @@ export async function runScripted(code:string, arg:{
                 return true
             })
 
-            declareAPI('getPersonaName', (id:string) => {
+            declareAPI("getPersonaName", (id: string) => {
                 return getUserName()
             })
 
-            declareAPI('getPersonaDescription', (id:string) => {
+            declareAPI("getPersonaDescription", (id: string) => {
                 const db = getDatabase()
                 const selectedChar = ChatState.selectedCharId
                 const char = db.characters[selectedChar]
@@ -651,12 +667,12 @@ export async function runScripted(code:string, arg:{
                 return risuChatParser(getPersonaPrompt(), { chara: char })
             })
 
-            declareAPI('getAuthorsNote', (id:string) => {
-                return ScriptingEngineState.chat?.note ?? ''
+            declareAPI("getAuthorsNote", (id: string) => {
+                return ScriptingEngineState.chat?.note ?? ""
             })
 
-            declareAPI('getBackgroundEmbedding', async (id:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("getBackgroundEmbedding", async (id: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 const db = getDatabase()
@@ -665,13 +681,13 @@ export async function runScripted(code:string, arg:{
                 return char.backgroundHTML
             })
 
-            declareAPI('setBackgroundEmbedding', async (id:string, data:string) => {
-                if(!ScriptingSafeIds.has(id)){
+            declareAPI("setBackgroundEmbedding", async (id: string, data: string) => {
+                if (!ScriptingSafeIds.has(id)) {
                     return
                 }
                 const db = getDatabase()
                 const selectedChar = ChatState.selectedCharId
-                if(typeof data !== 'string'){
+                if (typeof data !== "string") {
                     return false
                 }
                 db.characters[selectedChar].backgroundHTML = data
@@ -680,17 +696,23 @@ export async function runScripted(code:string, arg:{
             })
 
             // Lore books
-            declareAPI('getLoreBooksMain', (id:string, search:string) => {
+            declareAPI("getLoreBooksMain", (id: string, search: string) => {
                 const db = getDatabase()
                 const selectedChar = db.characters[ChatState.selectedCharId]
-                if (selectedChar.type !== 'character') {
+                if (selectedChar.type !== "character") {
                     return
                 }
 
-                const loreBooks = [...selectedChar.chats[selectedChar.chatPage]?.localLore ?? [], ...selectedChar.globalLore, ...getModuleLorebooks()]
+                const loreBooks = [
+                    ...(selectedChar.chats[selectedChar.chatPage]?.localLore ?? []),
+                    ...selectedChar.globalLore,
+                    ...getModuleLorebooks(),
+                ]
                 const found = loreBooks.filter((b) => b.comment === search)
 
-                return JSON.stringify(found.map((b) => ({ ...b, content: risuChatParser(b.content, { chara: selectedChar }) })))
+                return JSON.stringify(
+                    found.map((b) => ({ ...b, content: risuChatParser(b.content, { chara: selectedChar }) }))
+                )
             })
 
             type upsertLoreBookOptions = {
@@ -701,42 +723,39 @@ export async function runScripted(code:string, arg:{
                 regex?: boolean
             }
 
-            declareAPI('upsertLocalLoreBook', (id:string, name:string, content:string, options:upsertLoreBookOptions) => {
-                if(!ScriptingSafeIds.has(id)){
-                    return
+            declareAPI(
+                "upsertLocalLoreBook",
+                (id: string, name: string, content: string, options: upsertLoreBookOptions) => {
+                    if (!ScriptingSafeIds.has(id)) {
+                        return
+                    }
+
+                    if (char.type !== "character") {
+                        return
+                    }
+
+                    const { alwaysActive = false, insertOrder = 100, key = "", regex = false, secondKey = "" } = options
+
+                    const currentChat = char.chats[char.chatPage]
+
+                    const newLocalLoreBooks = currentChat.localLore.filter((book) => book.comment !== name)
+                    newLocalLoreBooks.push({
+                        alwaysActive,
+                        comment: name,
+                        content: content,
+                        insertorder: insertOrder,
+                        mode: "normal",
+                        key,
+                        secondkey: secondKey,
+                        selective: !!secondKey,
+                        useRegex: regex,
+                    })
+                    currentChat.localLore = newLocalLoreBooks
                 }
+            )
 
-                if (char.type !== 'character') {
-                    return
-                }
-
-                const {
-                    alwaysActive = false,
-                    insertOrder = 100,
-                    key = '',
-                    regex = false,
-                    secondKey = '',
-                } = options
-
-                const currentChat = char.chats[char.chatPage]
-
-                const newLocalLoreBooks = currentChat.localLore.filter((book) => book.comment !== name)
-                newLocalLoreBooks.push({
-                    alwaysActive,
-                    comment: name,
-                    content: content,
-                    insertorder: insertOrder,
-                    mode: 'normal',
-                    key,
-                    secondkey: secondKey,
-                    selective: !!secondKey,
-                    useRegex: regex,
-                })
-                currentChat.localLore = newLocalLoreBooks
-            })
-
-            declareAPI('loadLoreBooksMain', async (id:string, reserve:number) => {
-                if(!ScriptingLowLevelIds.has(id)){
+            declareAPI("loadLoreBooksMain", async (id: string, reserve: number) => {
+                if (!ScriptingLowLevelIds.has(id)) {
                     return
                 }
 
@@ -744,7 +763,7 @@ export async function runScripted(code:string, arg:{
 
                 const selectedChar = db.characters[ChatState.selectedCharId]
 
-                if (selectedChar.type !== 'character') {
+                if (selectedChar.type !== "character") {
                     return
                 }
 
@@ -771,74 +790,72 @@ export async function runScripted(code:string, arg:{
                     totalTokens += tokens
                     loreBooks.push({
                         data: parsed,
-                        role: book.role === 'assistant' ? 'char' : book.role,
+                        role: book.role === "assistant" ? "char" : book.role,
                     })
                 }
 
                 return JSON.stringify(loreBooks)
             })
 
-            declareAPI('axLLMMain', async (id:string, promptStr:string, useMultimodal: boolean = false) => {
-                const prompt:{
-                    role: string,
+            declareAPI("axLLMMain", async (id: string, promptStr: string, useMultimodal: boolean = false) => {
+                const prompt: {
+                    role: string
                     content: string
                 }[] = JSON.parse(promptStr)
-                if(!ScriptingLowLevelIds.has(id)){
+                if (!ScriptingLowLevelIds.has(id)) {
                     return
                 }
-                const promptbody:OpenAIChat[] = prompt.map((dict) => {
-                    let role:'system'|'user'|'assistant' = 'assistant'
-                    switch(dict['role']){
-                        case 'system':
-                        case 'sys':
-                            role = 'system'
+                const promptbody: OpenAIChat[] = prompt.map((dict) => {
+                    let role: "system" | "user" | "assistant" = "assistant"
+                    switch (dict["role"]) {
+                        case "system":
+                        case "sys":
+                            role = "system"
                             break
-                        case 'user':
-                            role = 'user'
+                        case "user":
+                            role = "user"
                             break
-                        case 'assistant':
-                        case 'bot':
-                        case 'char':{
-                            role = 'assistant'
+                        case "assistant":
+                        case "bot":
+                        case "char": {
+                            role = "assistant"
                             break
                         }
                     }
 
                     return {
-                        content: dict['content'] ?? '',
+                        content: dict["content"] ?? "",
                         role: role,
                     }
                 })
 
-                if(useMultimodal) {
-                    for(const msg of promptbody) {
-                        const inlays:string[] = []
-                        msg.content = msg.content.replace(/{{(inlay|inlayed|inlayeddata)::(.+?)}}/g, (
-                            match: string,
-                            p1: string,
-                            p2: string
-                        ) => {
-                            if(msg.role === 'assistant') {
-                                if(p2 && p1 === 'inlayeddata') {
-                                    inlays.push(p2)
+                if (useMultimodal) {
+                    for (const msg of promptbody) {
+                        const inlays: string[] = []
+                        msg.content = msg.content.replace(
+                            /{{(inlay|inlayed|inlayeddata)::(.+?)}}/g,
+                            (match: string, p1: string, p2: string) => {
+                                if (msg.role === "assistant") {
+                                    if (p2 && p1 === "inlayeddata") {
+                                        inlays.push(p2)
+                                    }
+                                } else {
+                                    if (p2) {
+                                        inlays.push(p2)
+                                    }
                                 }
+                                return ""
                             }
-                            else {
-                                if(p2) {
-                                    inlays.push(p2)
-                                }
-                            }
-                            return ''
-                        })
-                        
+                        )
+
                         const multimodals: MultiModal[] = []
-                        for(const inlay of inlays) {
+                        for (const inlay of inlays) {
                             const inlayData = await getInlayAsset(inlay)
                             multimodals.push({
                                 type: inlayData?.type,
                                 base64: inlayData?.data,
                                 width: inlayData?.width,
-                                height: inlayData?.height
+                                height: inlayData?.height,
                             })
                         }
 
@@ -846,55 +863,58 @@ export async function runScripted(code:string, arg:{
                     }
                 }
 
-                const result = await requestChatData({
-                    formated: promptbody,
-                    bias: {},
-                    useStreaming: false,
-                    noMultiGen: true,
-                }, 'otherAx')
+                const result = await requestChatData(
+                    {
+                        formated: promptbody,
+                        bias: {},
+                        useStreaming: false,
+                        noMultiGen: true,
+                    },
+                    "otherAx"
+                )
 
-                if(result.type === 'fail'){
+                if (result.type === "fail") {
                     return JSON.stringify({
                         success: false,
-                        result: 'Error: ' + result.result
+                        result: "Error: " + result.result,
                     })
                 }
 
-                if(result.type === 'streaming' || result.type === 'multiline'){
+                if (result.type === "streaming" || result.type === "multiline") {
                     return JSON.stringify({
                         success: false,
-                        result: result.result
+                        result: result.result,
                     })
                 }
 
                 return JSON.stringify({
                     success: true,
-                    result: result.result
+                    result: result.result,
                 })
             })
 
-            declareAPI('getUserLastMessage', (id: string) => {
+            declareAPI("getUserLastMessage", (id: string) => {
                 const chat = ScriptingEngineState.chat
                 if (!chat) {
-                    return ''
+                    return ""
                 }
 
                 let pointer = chat.message.length - 1
                 while (pointer >= 0) {
-                    if (chat.message[pointer].role === 'user') {
+                    if (chat.message[pointer].role === "user") {
                         const messageData = chat.message[pointer].data
                         return messageData
                     }
                     pointer--
                 }
 
-                return ''
+                return ""
             })
 
-            declareAPI('getCharacterLastMessage', (id: string) => {
+            declareAPI("getCharacterLastMessage", (id: string) => {
                 const chat = ScriptingEngineState.chat
                 if (!chat) {
-                    return ''
+                    return ""
                 }
 
                 const db = getDatabase()
@@ -902,7 +922,7 @@ export async function runScripted(code:string, arg:{
 
                 let pointer = chat.message.length - 1
                 while (pointer >= 0) {
-                    if (chat.message[pointer].role === 'char') {
+                    if (chat.message[pointer].role === "char") {
                         const messageData = chat.message[pointer].data
                         return messageData
                     }
@@ -912,128 +932,129 @@ export async function runScripted(code:string, arg:{
                 return selchar.firstMessage
             })
 
-            declareAPI('getUserLastMessage', (id: string) => {
+            declareAPI("getUserLastMessage", (id: string) => {
                 const chat = ScriptingEngineState.chat
                 if (!chat) {
-                    return ''
+                    return ""
                 }
 
                 let pointer = chat.message.length - 1
                 while (pointer >= 0) {
-                    if (chat.message[pointer].role === 'user') {
+                    if (chat.message[pointer].role === "user") {
                         const messageData = chat.message[pointer].data
                         return messageData
                     }
                     pointer--
                 }
-                return ''
+                return ""
             })
 
-            console.log('Running Lua code:', code)
-            if(ScriptingEngineState.type === 'lua'){
+            console.log("Running Lua code:", code)
+            if (ScriptingEngineState.type === "lua") {
                 await ScriptingEngineState.engine?.doString(luaCodeWrapper(code))
             }
-            if(ScriptingEngineState.type === 'py'){
+            if (ScriptingEngineState.type === "py") {
                 await ScriptingEngineState.pyodide?.init(code)
             }
             ScriptingEngineState.code = code
         }
         const accessKey = v4()
-        if(mode === 'editDisplay'){
+        if (mode === "editDisplay") {
             ScriptingEditDisplayIds.add(accessKey)
-        }
-        else{
+        } else {
             ScriptingSafeIds.add(accessKey)
-            if(lowLevelAccess){
+            if (lowLevelAccess) {
                 ScriptingLowLevelIds.add(accessKey)
             }
         }
-        let res:any
-        if(ScriptingEngineState.type === 'lua'){
+        let res: any
+        if (ScriptingEngineState.type === "lua") {
             const luaEngine = ScriptingEngineState.engine
             try {
-                switch(mode){
-                    case 'input':{
-                        const func = luaEngine.global.get('onInput')
-                        if(func){
+                switch (mode) {
+                    case "input": {
+                        const func = luaEngine.global.get("onInput")
+                        if (func) {
                             res = await func(accessKey)
                         }
                         break
                     }
-                    case 'output':{
-                        const func = luaEngine.global.get('onOutput')
-                        if(func){
+                    case "output": {
+                        const func = luaEngine.global.get("onOutput")
+                        if (func) {
                             res = await func(accessKey)
                         }
                         break
                     }
-                    case 'start':{
-                        const func = luaEngine.global.get('onStart')
-                        if(func){
+                    case "start": {
+                        const func = luaEngine.global.get("onStart")
+                        if (func) {
                             res = await func(accessKey)
                         }
                         break
                     }
-                    case 'onButtonClick':{
-                        const func = luaEngine.global.get('onButtonClick')
-                        if(func){
+                    case "onButtonClick": {
+                        const func = luaEngine.global.get("onButtonClick")
+                        if (func) {
                             res = await func(accessKey, data)
                         }
                         break
                     }
-                    case 'editRequest':
-                    case 'editDisplay':
-                    case 'editInput':
-                    case 'editOutput':{
-                        const func = luaEngine.global.get('callListenMain')
-                        if(func){
+                    case "editRequest":
+                    case "editDisplay":
+                    case "editInput":
+                    case "editOutput": {
+                        const func = luaEngine.global.get("callListenMain")
+                        if (func) {
                             res = await func(mode, accessKey, JSON.stringify(data), JSON.stringify(meta))
                             res = JSON.parse(res)
                         }
                         break
                     }
-                    default:{
+                    default: {
                         const func = luaEngine.global.get(mode)
-                        if(func){
+                        if (func) {
                             res = await func(accessKey)
                         }
                         break
                     }
-                }   
-                if(res === false){
+                }
+                if (res === false) {
                     stopSending = true
                 }
             } catch (error) {
                 console.error(error)
             }
         }
-        if(ScriptingEngineState.type === 'py'){
-            switch(mode){
-                case 'input':{
+        if (ScriptingEngineState.type === "py") {
+            switch (mode) {
+                case "input": {
                     res = await ScriptingEngineState.pyodide?.python(`onInput('${accessKey}')`)
                     break
                 }
-                case 'output':{
+                case "output": {
                     res = await ScriptingEngineState.pyodide?.python(`onOutput('${accessKey}')`)
                     break
                 }
-                case 'start':{
+                case "start": {
                     res = await ScriptingEngineState.pyodide?.python(`onStart('${accessKey}')`)
                     break
                 }
-                case 'onButtonClick':{
+                case "onButtonClick": {
                     res = await ScriptingEngineState.pyodide?.python(`onButtonClick('${accessKey}', '${data}')`)
                     break
                 }
-                case 'editRequest':
-                case 'editDisplay':
-                case 'editInput':
-                case 'editOutput':{
-                    res = await ScriptingEngineState.pyodide?.python(`callListenMain('${mode}', '${accessKey}', '${JSON.stringify(data)}', '${JSON.stringify(meta)}')`)
+                case "editRequest":
+                case "editDisplay":
+                case "editInput":
+                case "editOutput": {
+                    res = await ScriptingEngineState.pyodide?.python(
+                        `callListenMain('${mode}', '${accessKey}', '${JSON.stringify(data)}', '${JSON.stringify(meta)}')`
+                    )
                     res = JSON.parse(res)
                     break
                 }
-                default:{
+                default: {
                     res = await ScriptingEngineState.pyodide?.python(`${mode}('${accessKey}')`)
                     break
                 }
@@ -1044,83 +1065,82 @@ export async function runScripted(code:string, arg:{
         chat = ScriptingEngineState.chat
 
         return {
-            stopSending, chat, res
+            stopSending,
+            chat,
+            res,
         }
     })
 }
 
-async function makeLuaFactory(){
+async function makeLuaFactory() {
     const _luaFactory = new LuaFactory()
-    async function mountFile(name:string){
-        let code = ''
-        for(let i = 0; i < 3; i++){
+    async function mountFile(name: string) {
+        let code = ""
+        for (let i = 0; i < 3; i++) {
             try {
-                const res = await fetch('/lua/' + name)
-                if(res.status >= 200 && res.status < 300){
+                const res = await fetch("/lua/" + name)
+                if (res.status >= 200 && res.status < 300) {
                     code = await res.text()
                     break
                 }
             } catch (error) {}
         }
-        await _luaFactory.mountFile(name,code)
+        await _luaFactory.mountFile(name, code)
     }
 
-    await mountFile('json.lua')
+    await mountFile("json.lua")
     luaFactory = _luaFactory
 }
 
 async function ensureLuaFactory() {
-    if (luaFactory) return;
-    
+    if (luaFactory) return
+
     if (luaFactoryPromise) {
         try {
-            await luaFactoryPromise;
+            await luaFactoryPromise
         } catch (error) {
-            luaFactoryPromise = null;
+            luaFactoryPromise = null
         }
-        return;
+        return
     }
 
     try {
-        luaFactoryPromise = makeLuaFactory();
-        await luaFactoryPromise;
+        luaFactoryPromise = makeLuaFactory()
+        await luaFactoryPromise
     } finally {
-        luaFactoryPromise = null;
+        luaFactoryPromise = null
     }
 }
 
-async function getOrCreateEngineState(
-    mode: string, 
-    type: 'lua'|'py'
-): Promise<ScriptingEngineState> {
-    const engineState = ScriptingEngines.get(mode);
+async function getOrCreateEngineState(mode: string, type: "lua" | "py"): Promise<ScriptingEngineState> {
+    const engineState = ScriptingEngines.get(mode)
     if (engineState) {
-        return engineState;
+        return engineState
     }
-    
-    const pendingCreation = pendingEngineCreations.get(mode);
+
+    const pendingCreation = pendingEngineCreations.get(mode)
     if (pendingCreation) {
-        return pendingCreation;
+        return pendingCreation
     }
-    
+
     const creationPromise = (async () => {
         const engineState: ScriptingEngineState = {
             mutex: new Mutex(),
             type: type,
-        };
-        ScriptingEngines.set(mode, engineState);
-        
-        pendingEngineCreations.delete(mode);
-        
-        return engineState;
-    })();
-    
-    pendingEngineCreations.set(mode, creationPromise);
-    
-    return creationPromise;
+        }
+        ScriptingEngines.set(mode, engineState)
+
+        pendingEngineCreations.delete(mode)
+
+        return engineState
+    })()
+
+    pendingEngineCreations.set(mode, creationPromise)
+
+    return creationPromise
 }
 
-function luaCodeWrapper(code:string){
+function luaCodeWrapper(code: string) {
     return `
 json = require 'json'
 
@@ -1271,31 +1291,41 @@ ${code}
 `
 }
 
-export async function runLuaEditTrigger<T extends string|OpenAIChat[]>(char:character|groupChat|simpleCharacterArgument, mode:string, content:T, meta?:object):Promise<T>{
-    switch(mode){
-        case 'editinput':
-            mode = 'editInput'
+export async function runLuaEditTrigger<T extends string | OpenAIChat[]>(
+    char: character | groupChat | simpleCharacterArgument,
+    mode: string,
+    content: T,
+    meta?: object
+): Promise<T> {
+    switch (mode) {
+        case "editinput":
+            mode = "editInput"
             break
-        case 'editoutput':
-            mode = 'editOutput'
+        case "editoutput":
+            mode = "editOutput"
             break
-        case 'editdisplay':
-            mode = 'editDisplay'
+        case "editdisplay":
+            mode = "editDisplay"
             break
-        case 'editprocess':
+        case "editprocess":
             return content
     }
 
     try {
         let data = content
 
-        const triggers = char.type === 'group' ? (getModuleTriggers()) : (char.triggerscript.map((v) => {
-            v.lowLevelAccess = false
-            return v
-        }).concat(getModuleTriggers()))
-    
-        for(const trigger of triggers){
-            if(trigger?.effect?.[0]?.type === 'triggerlua'){
+        const triggers =
+            char.type === "group"
+                ? getModuleTriggers()
+                : char.triggerscript
+                      .map((v) => {
+                          v.lowLevelAccess = false
+                          return v
+                      })
+                      .concat(getModuleTriggers())
+
+        for (const trigger of triggers) {
+            if (trigger?.effect?.[0]?.type === "triggerlua") {
                 const runResult = await runScripted(trigger.effect[0].code, {
                     char: char,
                     lowLevelAccess: false,
@@ -1306,120 +1336,129 @@ export async function runLuaEditTrigger<T extends string|OpenAIChat[]>(char:char
                 data = runResult.res ?? data
             }
         }
-        
-    
-        return data   
+
+        return data
     } catch (error) {
         return content
     }
 }
 
-export async function runLuaButtonTrigger(char:character|groupChat|simpleCharacterArgument, data:string):Promise<any>{
+export async function runLuaButtonTrigger(
+    char: character | groupChat | simpleCharacterArgument,
+    data: string
+): Promise<any> {
     let runResult
-    const triggers = char.type === 'group' ? getModuleTriggers() : char.triggerscript.map<triggerscript>((v) => ({
-        ...v,
-        lowLevelAccess: char.type !== 'simple' ? char.lowLevelAccess ?? false : false
-    })).concat(getModuleTriggers())
+    const triggers =
+        char.type === "group"
+            ? getModuleTriggers()
+            : char.triggerscript
+                  .map<triggerscript>((v) => ({
+                      ...v,
+                      lowLevelAccess: char.type !== "simple" ? (char.lowLevelAccess ?? false) : false,
+                  }))
+                  .concat(getModuleTriggers())
 
-    for(const trigger of triggers){
-        if(trigger?.effect?.[0]?.type === 'triggerlua'){
+    for (const trigger of triggers) {
+        if (trigger?.effect?.[0]?.type === "triggerlua") {
             runResult = await runScripted(trigger.effect[0].code, {
                 char: char,
                 lowLevelAccess: trigger.lowLevelAccess,
-                mode: 'onButtonClick',
-                data: data
+                mode: "onButtonClick",
+                data: data,
             })
         }
     }
     return runResult
 }
 
-class PyodideContext{
-    worker: Worker;
-    apis: Record<string, (...args:any[]) => any> = {};
-    inited: boolean = false;
-    constructor(){
-        this.worker = new Worker(new URL('src/ts/process/integrations/pyworker.ts', import.meta.url), {
-            type: 'module'
+class PyodideContext {
+    worker: Worker
+    apis: Record<string, (...args: any[]) => any> = {}
+    inited: boolean = false
+    constructor() {
+        this.worker = new Worker(new URL("src/ts/process/integrations/pyworker.ts", import.meta.url), {
+            type: "module",
         })
-        this.worker.onmessage = (event:MessageEvent) => {
-            if(event.data.type === 'call'){
-                const { function: func, args, callId } = event.data;
-                if(this.apis[func]){
-                    this.apis[func](...args).then((result) => {
-                        this.worker.postMessage({
-                            type: 'functionResult',
-                            callId: callId,
-                            result: result
-                        });
-                    }).catch((error) => {
-                        this.worker.postMessage({
-                            type: 'error',
-                            error: error.message,
-                            id: callId
-                        });
-                    });
+        this.worker.onmessage = (event: MessageEvent) => {
+            if (event.data.type === "call") {
+                const { function: func, args, callId } = event.data
+                if (this.apis[func]) {
+                    this.apis[func](...args)
+                        .then((result) => {
+                            this.worker.postMessage({
+                                type: "functionResult",
+                                callId: callId,
+                                result: result,
+                            })
+                        })
+                        .catch((error) => {
+                            this.worker.postMessage({
+                                type: "error",
+                                error: error.message,
+                                id: callId,
+                            })
+                        })
                 } else {
                     this.worker.postMessage({
-                        type: 'error',
+                        type: "error",
                         error: `Function ${func} not found`,
-                        id: callId
-                    });
+                        id: callId,
+                    })
                 }
             }
         }
     }
-    async declareAPI(name:string, func:(...args:any[]) => any){
-        this.apis[name] = func;
+    async declareAPI(name: string, func: (...args: any[]) => any) {
+        this.apis[name] = func
     }
-    async init(code:string){
-        if(this.inited){
-            return;
+    async init(code: string) {
+        if (this.inited) {
+            return
         }
-        const id = crypto.randomUUID();
+        const id = crypto.randomUUID()
         return new Promise<void>((resolve, reject) => {
-            this.worker.onmessage = (event:MessageEvent) => {
-                if(event.data.id !== id){
+            this.worker.onmessage = (event: MessageEvent) => {
+                if (event.data.id !== id) {
                     return
                 }
 
-                if(event.data.type === 'init'){
-                    this.inited = true;
-                    resolve();
-                } else if(event.data.type === 'error'){
-                    reject(new Error(event.data.error));
+                if (event.data.type === "init") {
+                    this.inited = true
+                    resolve()
+                } else if (event.data.type === "error") {
+                    reject(new Error(event.data.error))
                 }
-            };
+            }
             this.worker.postMessage({
-                type: 'init',
+                type: "init",
                 code: code,
                 id: id,
-                moduleFunctions: Object.keys(this.apis)
-            });
-        });
+                moduleFunctions: Object.keys(this.apis),
+            })
+        })
     }
-    async python(call:string){
-        const id = crypto.randomUUID();
+    async python(call: string) {
+        const id = crypto.randomUUID()
         return new Promise<any>((resolve, reject) => {
-            this.worker.onmessage = (event:MessageEvent) => {
-                if(event.data.id !== id){
+            this.worker.onmessage = (event: MessageEvent) => {
+                if (event.data.id !== id) {
                     return
                 }
 
-                if(event.data.type === 'python'){
-                    resolve(event.data.call);
-                } else if(event.data.type === 'error'){
-                    reject(new Error(event.data.error));
+                if (event.data.type === "python") {
+                    resolve(event.data.call)
+                } else if (event.data.type === "error") {
+                    reject(new Error(event.data.error))
                 }
-            };
+            }
             this.worker.postMessage({
-                type: 'python',
+                type: "python",
                 call: call,
-                id: id
-            });
-        });
+                id: id,
+            })
+        })
     }
-    async close(){
-        this.worker.terminate();
+    async close() {
+        this.worker.terminate()
     }
 }

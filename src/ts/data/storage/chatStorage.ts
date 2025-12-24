@@ -19,13 +19,13 @@ const loadingPromises = new Map<string, Promise<Chat | null>>()
  */
 export async function loadChat(chaId: string, chatId: string): Promise<Chat | null> {
     const db = getDatabase()
-    const char = db.characters.find(c => c.chaId === chaId)
+    const char = db.characters.find((c) => c.chaId === chaId)
     if (!char) {
         console.warn(`[loadChat] Character not found: ${chaId}`)
         return null
     }
 
-    const chatIndex = char.chats.findIndex(c => c.id === chatId)
+    const chatIndex = char.chats.findIndex((c) => c.id === chatId)
     if (chatIndex === -1) {
         console.warn(`[loadChat] Chat not found: ${chatId}`)
         return null
@@ -65,11 +65,13 @@ async function loadChatInternal(chaId: string, chatId: string, chat: Chat): Prom
         const filePath = `database/chats/${chaId}/${chatId}.bin`
         console.log(`[loadChat] Loading file: ${filePath}`)
         const data = await loadFromWorker(filePath)
-        console.log(`[loadChat] File load result:`, data ? `${data.byteLength} bytes` : 'null')
+        console.log(`[loadChat] File load result:`, data ? `${data.byteLength} bytes` : "null")
         if (!data) {
             console.warn(`[loadChat] Chat file not found: ${chaId}/${chatId}.bin`)
             // Initialize empty message array
-            console.log(`[DEBUG chat.message=[]] chatStorage.ts:loadChat - file not found, chaId=${chaId}, chatId=${chatId}`)
+            console.log(
+                `[DEBUG chat.message=[]] chatStorage.ts:loadChat - file not found, chaId=${chaId}, chatId=${chatId}`
+            )
             untrack(() => {
                 chat.message = []
             })
@@ -79,7 +81,9 @@ async function loadChatInternal(chaId: string, chatId: string, chat: Chat): Prom
         const fullChat = await decodeChat(data)
         if (!fullChat) {
             console.warn(`[loadChat] Failed to decode chat: ${chatId}`)
-            console.log(`[DEBUG chat.message=[]] chatStorage.ts:loadChat - decode failed, chaId=${chaId}, chatId=${chatId}`)
+            console.log(
+                `[DEBUG chat.message=[]] chatStorage.ts:loadChat - decode failed, chaId=${chaId}, chatId=${chatId}`
+            )
             untrack(() => {
                 chat.message = []
             })

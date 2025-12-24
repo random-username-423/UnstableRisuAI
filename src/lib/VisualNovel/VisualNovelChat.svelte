@@ -1,17 +1,18 @@
 <script lang="ts">
+    import { DBState, ChatState } from "src/ts/stores.svelte"
+    import { getFileSrc } from "src/ts/utils/fileIO"
+    import { sleep } from "src/ts/utils/util"
+    import { onDestroy, onMount } from "svelte"
 
-    import { DBState, ChatState } from 'src/ts/stores.svelte';
-    import { getFileSrc } from "src/ts/utils/fileIO";
-    import { sleep } from "src/ts/utils/util";
-    import { onDestroy, onMount } from "svelte";
-
-    const style:number = 1
+    const style: number = 1
     interface Props {
-        text?: string;
+        text?: string
     }
 
-    let { text = "Hello World, this is a test, so I can see if this works. I hope it does, because I don't want to have to rewrite this. I hope this is long enough to test the text wrapping. Lonnnnnng String " }: Props = $props();
-    let renderedText = $state('')
+    let {
+        text = "Hello World, this is a test, so I can see if this works. I hope it does, because I don't want to have to rewrite this. I hope this is long enough to test the text wrapping. Lonnnnnng String ",
+    }: Props = $props()
+    let renderedText = $state("")
     let alive = true
 
     const forceRender = () => {
@@ -19,16 +20,15 @@
     }
 
     onMount(async () => {
-        while(alive){
-            if(renderedText.length >= text.length){
-                if(renderedText !== text){
-                    renderedText = ''
-                }
-                else{
+        while (alive) {
+            if (renderedText.length >= text.length) {
+                if (renderedText !== text) {
+                    renderedText = ""
+                } else {
                     renderedText = text
                 }
             }
-            if(renderedText.length < text.length){
+            if (renderedText.length < text.length) {
                 renderedText += text[renderedText.length]
             }
             await sleep(10)
@@ -36,44 +36,48 @@
     })
 
     onDestroy(() => {
-        renderedText = ''
+        renderedText = ""
         alive = false
     })
 </script>
 
-{#if DBState.db.characters[ChatState.selectedCharId].type === 'character' && DBState.db.characters[ChatState.selectedCharId].emotionImages[0]}
+{#if DBState.db.characters[ChatState.selectedCharId].type === "character" && DBState.db.characters[ChatState.selectedCharId].emotionImages[0]}
     {#await getFileSrc(DBState.db.characters[ChatState.selectedCharId].emotionImages[0][1]) then imglink}
-        <div class="w-full absolute top-0 h-full bottom-0 justify-center flex">
-            <img src={imglink} alt="character">
+        <div class="absolute bottom-0 top-0 flex h-full w-full justify-center">
+            <img src={imglink} alt="character" />
         </div>
     {/await}
 {/if}
 {#if style === 0}
-    <div class="w-full flex justify-center absolute bottom-5">
-        <div class="w-3xl max-w-full flex flex-col">
-
-            <div class="bg-slate-700 h-12 rounded-lg border-slate-500 border-1 w-40 mb-2 bg-opacity-90 text-center flex items-center justify-center">
-                <span class="font-bold p-2">{DBState.db.characters[ChatState.selectedCharId].name}</span>
+    <div class="absolute bottom-5 flex w-full justify-center">
+        <div class="flex w-3xl max-w-full flex-col">
+            <div
+                class="mb-2 flex h-12 w-40 items-center justify-center rounded-lg border-1 border-slate-500 bg-slate-700 bg-opacity-90 text-center"
+            >
+                <span class="p-2 font-bold">{DBState.db.characters[ChatState.selectedCharId].name}</span>
             </div>
-            <div class="bg-slate-700 h-40 rounded-lg border-slate-500 border-1 w-full bg-opacity-90 text-justify p-4">
+            <div class="h-40 w-full rounded-lg border-1 border-slate-500 bg-slate-700 bg-opacity-90 p-4 text-justify">
                 Test
             </div>
         </div>
     </div>
 {:else}
-    <div class="w-full flex justify-center absolute bottom-5">
-        <div class="w-3xl max-w-full flex flex-col text-black">
-
-            <div class="bg-neutral-200 h-12 rounded-lg border-pink-900 border-1 w-48 mb-2 text-center relative top-6 left-4 text-lg">
-                <div class="border-pink-300 border-4 h-full rounded-lg">
-                    <div class="border-pink-900 border-1 text-justify h-full rounded-lg flex items-center justify-center">
-                        <span class="font-bold p-2">{DBState.db.characters[ChatState.selectedCharId].name}</span>
+    <div class="absolute bottom-5 flex w-full justify-center">
+        <div class="flex w-3xl max-w-full flex-col text-black">
+            <div
+                class="relative left-4 top-6 mb-2 h-12 w-48 rounded-lg border-1 border-pink-900 bg-neutral-200 text-center text-lg"
+            >
+                <div class="h-full rounded-lg border-4 border-pink-300">
+                    <div
+                        class="flex h-full items-center justify-center rounded-lg border-1 border-pink-900 text-justify"
+                    >
+                        <span class="p-2 font-bold">{DBState.db.characters[ChatState.selectedCharId].name}</span>
                     </div>
                 </div>
             </div>
-            <div class="bg-neutral-200 h-40 rounded-lg border-pink-900 border-1 w-full">
-                <div class="border-pink-300 border-4 h-full rounded-lg">
-                    <div class="border-pink-900 border-1 px-4 pt-6 pb-4 h-full rounded-lg tracking-normal text-clip">
+            <div class="h-40 w-full rounded-lg border-1 border-pink-900 bg-neutral-200">
+                <div class="h-full rounded-lg border-4 border-pink-300">
+                    <div class="h-full text-clip rounded-lg border-1 border-pink-900 px-4 pb-4 pt-6 tracking-normal">
                         {renderedText}
                     </div>
                 </div>

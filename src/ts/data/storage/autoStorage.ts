@@ -1,137 +1,139 @@
 import localforage from "localforage"
 import { replaceDbResources } from "../../utils/dbUtils"
-import { isNodeServer } from "src/ts/utils/env";
+import { isNodeServer } from "src/ts/utils/env"
 import { NodeStorage } from "./nodeStorage"
 import { alertInput, alertSelect, alertStore } from "../../utils/alert.svelte"
 import { getDatabase } from "./database.svelte"
 import type { Database } from "./types"
 import { AccountStorage } from "./accountStorage.svelte"
-import { decodeRisuSave, encodeRisuSaveLegacy } from "./risuSave";
+import { decodeRisuSave, encodeRisuSaveLegacy } from "./risuSave"
 import { language } from "src/lang"
 
-export class AutoStorage{
-    isAccount:boolean = false
+export class AutoStorage {
+    isAccount: boolean = false
 
-    realStorage:LocalForage|NodeStorage|AccountStorage
+    realStorage: LocalForage | NodeStorage | AccountStorage
 
-    async setItem(key:string, value:Uint8Array<ArrayBuffer>):Promise<string|null> {
+    async setItem(key: string, value: Uint8Array<ArrayBuffer>): Promise<string | null> {
         await this.Init()
-        if(this.isAccount){
+        if (this.isAccount) {
             return await (this.realStorage as AccountStorage).setItem(key, value)
         }
         await this.realStorage.setItem(key, value)
         return null
     }
-    async getItem(key:string):Promise<Buffer> {
+    async getItem(key: string): Promise<Buffer> {
         await this.Init()
         return await this.realStorage.getItem(key)
-
     }
-    async keys():Promise<string[]>{
+    async keys(): Promise<string[]> {
         await this.Init()
         return await this.realStorage.keys()
-
     }
-    async removeItem(key:string){
+    async removeItem(key: string) {
         await this.Init()
         return await this.realStorage.removeItem(key)
     }
 
-    async checkAccountSync(){
+    async checkAccountSync() {
         await this.Init()
         const db = getDatabase()
-        if(this.isAccount){
+        if (this.isAccount) {
             return true
         }
-        if(localStorage.getItem('dosync') === 'avoid'){
+        if (localStorage.getItem("dosync") === "avoid") {
             return false
         }
-        if((localStorage.getItem('dosync') === 'sync' || db?.account?.useSync) && (localStorage.getItem('accountst') !== 'able')){
+        if (
+            (localStorage.getItem("dosync") === "sync" || db?.account?.useSync) &&
+            localStorage.getItem("accountst") !== "able"
+        ) {
             const keys = await this.realStorage.keys()
-            let i = 0;
+            let i = 0
             const accountStorage = new AccountStorage()
 
-            const a = accountStorage.getItem('database/database.bin')
-            if(a){
+            const a = accountStorage.getItem("database/database.bin")
+            if (a) {
                 const sel = await alertSelect([language.loadDataFromAccount, language.saveCurrentDataToAccount])
-                if(sel === "0"){
+                if (sel === "0") {
                     this.realStorage = accountStorage
                     alertStore.set({
                         type: "none",
-                        msg: ""
+                        msg: "",
                     })
-                    localStorage.setItem('accountst', 'able')
-                    localStorage.setItem('fallbackRisuToken',JSON.stringify(db.account))
+                    localStorage.setItem("accountst", "able")
+                    localStorage.setItem("fallbackRisuToken", JSON.stringify(db.account))
                     this.isAccount = true
                     return true
                 }
             }
 
             const confirm = await alertInput(`to overwrite your data, type "RISUAI"`)
-            if(confirm !== "RISUAI"){
-                localStorage.setItem('dosync', 'avoid')
+            if (confirm !== "RISUAI") {
+                localStorage.setItem("dosync", "avoid")
                 return false
             }
 
-            const replaced:{[key:string]:string} = {}
-            
-            for(const key of keys){
+            const replaced: { [key: string]: string } = {}
+
+            for (const key of keys) {
                 alertStore.set({
                     type: "wait",
-                    msg: `Migrating your data...(${i}/${keys.length})`
+                    msg: `Migrating your data...(${i}/${keys.length})`,
                 })
-                const rkey = await accountStorage.setItem(key,await this.realStorage.getItem(key) as Uint8Array<ArrayBuffer>)
-                if(rkey !== key){
+                const rkey = await accountStorage.setItem(
+                    key,
+                    (await this.realStorage.getItem(key)) as Uint8Array<ArrayBuffer>
+                )
+                if (rkey !== key) {
                     replaced[key] = rkey
                 }
                 i += 1
             }
 
             const dba = replaceDbResources(db, replaced)
-            const comp = encodeRisuSaveLegacy(dba, 'compression')
+            const comp = encodeRisuSaveLegacy(dba, "compression")
             //try decoding
             try {
-                const z:Database = await decodeRisuSave(comp)
-                if(z.formatversion){
-                    await accountStorage.setItem('database/database.bin', comp)
+                const z: Database = await decodeRisuSave(comp)
+                if (z.formatversion) {
+                    await accountStorage.setItem("database/database.bin", comp)
                 }
-                
             } catch (error) {}
             this.realStorage = accountStorage
             alertStore.set({
                 type: "none",
-                msg: ""
+                msg: "",
             })
 
-            localStorage.setItem('accountst', 'able')
-            localStorage.setItem('fallbackRisuToken',JSON.stringify(db.account))
+            localStorage.setItem("accountst", "able")
+            localStorage.setItem("fallbackRisuToken", JSON.stringify(db.account))
             this.isAccount = true
             await localforage.clear()
             return true
-        }
-        else if(localStorage.getItem('accountst') === 'able'){
-            localStorage.setItem('accountst', 'able')
+        } else if (localStorage.getItem("accountst") === "able") {
+            localStorage.setItem("accountst", "able")
             this.realStorage = new AccountStorage()
             this.isAccount = true
         }
         return false
     }
 
-    async Init(){
-        if(!this.realStorage){
-            if(localStorage.getItem('accountst') === 'able'){
+    async Init() {
+        if (!this.realStorage) {
+            if (localStorage.getItem("accountst") === "able") {
                 this.realStorage = new AccountStorage()
                 this.isAccount = true
                 return
             }
-            if(isNodeServer){
+            if (isNodeServer) {
                 console.log("using node storage")
                 this.realStorage = new NodeStorage()
                 return
             }
             console.log("using forage storage")
             this.realStorage = localforage.createInstance({
-                name: "risuai"
+                name: "risuai",
             })
         }
     }

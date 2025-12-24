@@ -1,160 +1,188 @@
-import { getChatVar, getGlobalChatVar } from "src/ts/utils/parser.svelte";
+import { getChatVar, getGlobalChatVar } from "src/ts/utils/parser.svelte"
 
-function toRPN(expression:string) {
-    let outputQueue = '';
-    const operatorStack = [];
+function toRPN(expression: string) {
+    let outputQueue = ""
+    const operatorStack = []
     const operators = {
-        '+': {precedence: 2, associativity: 'Left'},
-        '-': {precedence: 2, associativity: 'Left'},
-        '*': {precedence: 3, associativity: 'Left'},
-        '/': {precedence: 3, associativity: 'Left'},
-        '^': {precedence: 4, associativity: 'Left'},
-        '%': {precedence: 3, associativity: 'Left'},
-        '<': {precedence: 1, associativity: 'Left'},
-        '>': {precedence: 1, associativity: 'Left'},
-        '|': {precedence: 1, associativity: 'Left'},
-        '&': {precedence: 1, associativity: 'Left'},
-        '≤': {precedence: 1, associativity: 'Left'},
-        '≥': {precedence: 1, associativity: 'Left'},
-        '=': {precedence: 1, associativity: 'Left'},
-        '≠': {precedence: 1, associativity: 'Left'},
-        '!': {precedence: 5, associativity: 'Right'},
-    };
-    const operatorsKeys = Object.keys(operators);
+        "+": { precedence: 2, associativity: "Left" },
+        "-": { precedence: 2, associativity: "Left" },
+        "*": { precedence: 3, associativity: "Left" },
+        "/": { precedence: 3, associativity: "Left" },
+        "^": { precedence: 4, associativity: "Left" },
+        "%": { precedence: 3, associativity: "Left" },
+        "<": { precedence: 1, associativity: "Left" },
+        ">": { precedence: 1, associativity: "Left" },
+        "|": { precedence: 1, associativity: "Left" },
+        "&": { precedence: 1, associativity: "Left" },
+        "≤": { precedence: 1, associativity: "Left" },
+        "≥": { precedence: 1, associativity: "Left" },
+        "=": { precedence: 1, associativity: "Left" },
+        "≠": { precedence: 1, associativity: "Left" },
+        "!": { precedence: 5, associativity: "Right" },
+    }
+    const operatorsKeys = Object.keys(operators)
 
-    expression = expression.replace(/\s+/g, '');
+    expression = expression.replace(/\s+/g, "")
     const expression2 = []
 
-    let lastToken = ''
+    let lastToken = ""
 
-    for(let i = 0; i < expression.length; i++) {
+    for (let i = 0; i < expression.length; i++) {
         const char = expression[i]
-        if (char === '-' && (i === 0 || operatorsKeys.includes(expression[i - 1]) || expression[i - 1] === '(')) {
+        if (char === "-" && (i === 0 || operatorsKeys.includes(expression[i - 1]) || expression[i - 1] === "(")) {
             lastToken += char
-        }
-        else if (operatorsKeys.includes(char)) {
-            if(lastToken !== '') {
+        } else if (operatorsKeys.includes(char)) {
+            if (lastToken !== "") {
                 expression2.push(lastToken)
+            } else {
+                expression2.push("0")
             }
-            else{
-                expression2.push('0')
-            }
-            lastToken = ''
+            lastToken = ""
             expression2.push(char)
-        }
-        else{
+        } else {
             lastToken += char
         }
     }
 
-    if(lastToken !== '') {
+    if (lastToken !== "") {
         expression2.push(lastToken)
-    }
-    else{
-        expression2.push('0')
+    } else {
+        expression2.push("0")
     }
 
-    expression2.forEach(token => {
-        if (parseFloat(token) || token === '0') {
-            outputQueue += token + ' ';
+    expression2.forEach((token) => {
+        if (parseFloat(token) || token === "0") {
+            outputQueue += token + " "
         } else if (operatorsKeys.includes(token)) {
-            while (operatorStack.length > 0 &&
-            ((operators[token].associativity === 'Left' &&
-            operators[token].precedence <= operators[operatorStack[operatorStack.length - 1]].precedence) ||
-            (operators[token].associativity === 'Right' &&
-            operators[token].precedence < operators[operatorStack[operatorStack.length - 1]].precedence))) {
-                outputQueue += operatorStack.pop() + ' ';
+            while (
+                operatorStack.length > 0 &&
+                ((operators[token].associativity === "Left" &&
+                    operators[token].precedence <= operators[operatorStack[operatorStack.length - 1]].precedence) ||
+                    (operators[token].associativity === "Right" &&
+                        operators[token].precedence < operators[operatorStack[operatorStack.length - 1]].precedence))
+            ) {
+                outputQueue += operatorStack.pop() + " "
             }
 
-            operatorStack.push(token);
+            operatorStack.push(token)
         }
-    });
+    })
 
     while (operatorStack.length > 0) {
-        outputQueue += operatorStack.pop() + ' ';
+        outputQueue += operatorStack.pop() + " "
     }
 
-    return outputQueue.trim();
+    return outputQueue.trim()
 }
 
-function calculateRPN(expression:string) {
-    const stack:number[] = [];
+function calculateRPN(expression: string) {
+    const stack: number[] = []
 
-    expression.split(' ').forEach(token => {
-        if (parseFloat(token) || token === '0') {
-            stack.push(parseFloat(token));
+    expression.split(" ").forEach((token) => {
+        if (parseFloat(token) || token === "0") {
+            stack.push(parseFloat(token))
         } else {
-            const [b, a] = [stack.pop(), stack.pop()];
+            const [b, a] = [stack.pop(), stack.pop()]
             switch (token) {
-                case '+': stack.push(a + b); break;
-                case '-': stack.push(a - b); break;
-                case '*': stack.push(a * b); break;
-                case '/': stack.push(a / b); break;
-                case '^': stack.push(a ** b); break;
-                case '%': stack.push(a % b); break;
-                case '<': stack.push(a < b ? 1 : 0); break;
-                case '>': stack.push(a > b ? 1 : 0); break;
-                case '|': stack.push(a || b); break;
-                case '&': stack.push(a && b); break;
-                case '≤': stack.push(a <= b ? 1 : 0); break;
-                case '≥': stack.push(a >= b ? 1 : 0); break;
-                case '=': stack.push(a === b ? 1 : 0); break;
-                case '≠': stack.push(a !== b ? 1 : 0); break;
-                case '!': stack.push(b ? 0 : 1); break;
+                case "+":
+                    stack.push(a + b)
+                    break
+                case "-":
+                    stack.push(a - b)
+                    break
+                case "*":
+                    stack.push(a * b)
+                    break
+                case "/":
+                    stack.push(a / b)
+                    break
+                case "^":
+                    stack.push(a ** b)
+                    break
+                case "%":
+                    stack.push(a % b)
+                    break
+                case "<":
+                    stack.push(a < b ? 1 : 0)
+                    break
+                case ">":
+                    stack.push(a > b ? 1 : 0)
+                    break
+                case "|":
+                    stack.push(a || b)
+                    break
+                case "&":
+                    stack.push(a && b)
+                    break
+                case "≤":
+                    stack.push(a <= b ? 1 : 0)
+                    break
+                case "≥":
+                    stack.push(a >= b ? 1 : 0)
+                    break
+                case "=":
+                    stack.push(a === b ? 1 : 0)
+                    break
+                case "≠":
+                    stack.push(a !== b ? 1 : 0)
+                    break
+                case "!":
+                    stack.push(b ? 0 : 1)
+                    break
             }
         }
-    });
+    })
 
-    if(stack.length === 0){
+    if (stack.length === 0) {
         return 0
     }
 
     return stack.pop()
 }
 
-function executeRPNCalculation(text:string) {
-    text = text.replace(/\$([a-zA-Z0-9_]+)/g, (_, p1) => {
-        const v = getChatVar(p1)
-        const parsed = parseFloat(v)
-        if(isNaN(parsed)){
-            return "0"
-        }
-        return parsed.toString()
-    }).replace(/@([a-zA-Z0-9_]+)/g, (_, p1) => {
-        const v = getGlobalChatVar(p1)
-        const parsed = parseFloat(v)
-        if(isNaN(parsed)){
-            return "0"
-        }
-        return parsed.toString()
-    })
-    .replace(/&&/g, '&')
-    .replace(/\|\|/g, '|')
-    .replace(/<=/g, '≤')
-    .replace(/>=/g, '≥')
-    .replace(/==/g, '=')
-    .replace(/!=/g, '≠')
-    .replace(/null/gi, '0')
-    const expression = toRPN(text);
-    const evaluated = calculateRPN(expression);
+function executeRPNCalculation(text: string) {
+    text = text
+        .replace(/\$([a-zA-Z0-9_]+)/g, (_, p1) => {
+            const v = getChatVar(p1)
+            const parsed = parseFloat(v)
+            if (isNaN(parsed)) {
+                return "0"
+            }
+            return parsed.toString()
+        })
+        .replace(/@([a-zA-Z0-9_]+)/g, (_, p1) => {
+            const v = getGlobalChatVar(p1)
+            const parsed = parseFloat(v)
+            if (isNaN(parsed)) {
+                return "0"
+            }
+            return parsed.toString()
+        })
+        .replace(/&&/g, "&")
+        .replace(/\|\|/g, "|")
+        .replace(/<=/g, "≤")
+        .replace(/>=/g, "≥")
+        .replace(/==/g, "=")
+        .replace(/!=/g, "≠")
+        .replace(/null/gi, "0")
+    const expression = toRPN(text)
+    const evaluated = calculateRPN(expression)
     return evaluated
 }
 
-export function calcString(text:string) {
-    const depthText:string[] = ['']
+export function calcString(text: string) {
+    const depthText: string[] = [""]
 
-    for(let i = 0; i < text.length; i++) {
-        if(text[i] === '(') {
-            depthText.push('')
-        }
-        else if(text[i] === ')' && depthText.length > 1) {
+    for (let i = 0; i < text.length; i++) {
+        if (text[i] === "(") {
+            depthText.push("")
+        } else if (text[i] === ")" && depthText.length > 1) {
             const result = executeRPNCalculation(depthText.pop())
             depthText[depthText.length - 1] += result
-        }
-        else {
+        } else {
             depthText[depthText.length - 1] += text[i]
         }
     }
 
-    return executeRPNCalculation(depthText.join(''))
+    return executeRPNCalculation(depthText.join(""))
 }

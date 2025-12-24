@@ -1,5 +1,1 @@
-
-
-export function declareTest() {
-
-}
+export function declareTest() {}

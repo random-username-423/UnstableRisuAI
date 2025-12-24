@@ -2,34 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
-body{
-  margin: 0;
-  padding: 0;
-  margin-top: 0px;
-  background-color: var(--risu-theme-bgcolor);
-  overflow-y: hidden;
-  overflow-x: hidden;
+body {
+    margin: 0;
+    padding: 0;
+    margin-top: 0px;
+    background-color: var(--risu-theme-bgcolor);
+    overflow-y: hidden;
+    overflow-x: hidden;
 }
 
-:root{
-  --FontColorStandard: #fafafa;
-  --FontColorBold: #e5e5e5;
-  --FontColorItalic : #8C8D93;
-  --FontColorItalicBold : #8C8D93;
-  --FontColorQuote1 : #8C8D93;
-  --FontColorQuote2 : #8C8D93;
-  --risu-animation-speed: 0.2s;
-  --risu-theme-bgcolor: #282a36;
-  --risu-theme-darkbg:  #21222c;
-  --risu-theme-borderc: #6272a4;
-  --risu-theme-selected: #44475a;
-  --risu-theme-draculared: #ff5555;
-  --risu-theme-textcolor: #f5f5f5;
-  --risu-theme-textcolor2: #64748b;
-  --risu-theme-darkborderc: #4b5563;
-  --risu-theme-darkbutton: #374151;
-  --risu-height-size: 100%;
-  --risu-font-family: Arial, sans-serif, serif;
+:root {
+    --FontColorStandard: #fafafa;
+    --FontColorBold: #e5e5e5;
+    --FontColorItalic: #8c8d93;
+    --FontColorItalicBold: #8c8d93;
+    --FontColorQuote1: #8c8d93;
+    --FontColorQuote2: #8c8d93;
+    --risu-animation-speed: 0.2s;
+    --risu-theme-bgcolor: #282a36;
+    --risu-theme-darkbg: #21222c;
+    --risu-theme-borderc: #6272a4;
+    --risu-theme-selected: #44475a;
+    --risu-theme-draculared: #ff5555;
+    --risu-theme-textcolor: #f5f5f5;
+    --risu-theme-textcolor2: #64748b;
+    --risu-theme-darkborderc: #4b5563;
+    --risu-theme-darkbutton: #374151;
+    --risu-height-size: 100%;
+    --risu-font-family: Arial, sans-serif, serif;
 
     --risu-theme-neutral-50: #f9fafb;
     --risu-theme-neutral-100: #f3f4f6;
@@ -38,10 +38,10 @@ body{
     --risu-theme-neutral-400: #9ca3af;
     --risu-theme-neutral-500: #6b7280;
     --risu-theme-neutral-600: #4b5563;
-    --risu-theme-neutral-700: #374151; 
+    --risu-theme-neutral-700: #374151;
     --risu-theme-neutral-800: #1f2937;
     --risu-theme-neutral-900: #111827;
-  
+
     --risu-theme-primary-50: #eff6ff;
     --risu-theme-primary-100: #dbeafe;
     --risu-theme-primary-200: #bfdbfe;
@@ -52,7 +52,7 @@ body{
     --risu-theme-primary-700: #1d4ed8;
     --risu-theme-primary-800: #1e40af;
     --risu-theme-primary-900: #1e3a8a;
-  
+
     --risu-theme-secondary-50: #f5f3ff;
     --risu-theme-secondary-100: #ede9fe;
     --risu-theme-secondary-200: #ddd6fe;
@@ -74,7 +74,7 @@ body{
     --risu-theme-danger-700: #b91c1c;
     --risu-theme-danger-800: #991b1b;
     --risu-theme-danger-900: #7f1d1d;
-  
+
     --risu-theme-success-50: #f0fdf4;
     --risu-theme-success-100: #dcfce7;
     --risu-theme-success-200: #bbf7d0;
@@ -87,294 +87,297 @@ body{
     --risu-theme-success-900: #14532d;
 }
 
-.x-risu-language-json{
-  overflow-x: hidden;
-  white-space: pre-wrap;
-
+.x-risu-language-json {
+    overflow-x: hidden;
+    white-space: pre-wrap;
 }
 
-html, body{
-  height: var(--risu-height-size);
+html,
+body {
+    height: var(--risu-height-size);
 }
 
-.chattext p{
-  color: var(--FontColorStandard);
+.chattext p {
+    color: var(--FontColorStandard);
 }
 
-.chattext2 pre{
-  background-color: var(--risu-theme-bgcolor);
-  padding: 0.5rem;
-  overflow-x: auto;
+.chattext2 pre {
+    background-color: var(--risu-theme-bgcolor);
+    padding: 0.5rem;
+    overflow-x: auto;
 }
 
-.chattext em{
-  color: var(--FontColorItalic);
+.chattext em {
+    color: var(--FontColorItalic);
 }
 
-.chattext strong{
-  color: var(--FontColorBold);
+.chattext strong {
+    color: var(--FontColorBold);
 }
 
-.chattext strong em{
-  color: var(--FontColorItalicBold);
+.chattext strong em {
+    color: var(--FontColorItalicBold);
 }
 
-.chattext em strong{
-  color: var(--FontColorItalicBold);
+.chattext em strong {
+    color: var(--FontColorItalicBold);
 }
 
-.chattext x-em{
-  color: var(--FontColorItalicBold);
-  font-style: italic;
-  font-weight: bold;
+.chattext x-em {
+    color: var(--FontColorItalicBold);
+    font-style: italic;
+    font-weight: bold;
 }
 
-.chattext mark[risu-mark=quote1]{
-  background-color: transparent;
-  color: var(--FontColorQuote1);
+.chattext mark[risu-mark="quote1"] {
+    background-color: transparent;
+    color: var(--FontColorQuote1);
 }
 
-.chattext mark[risu-mark=quote2]{
-  background-color: transparent;
-  color: var(--FontColorQuote2);
+.chattext mark[risu-mark="quote2"] {
+    background-color: transparent;
+    color: var(--FontColorQuote2);
 }
 
 .strokeme {
-  color: #000;
-  text-shadow: -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white, 1px 1px 0 white;
+    color: #000;
+    text-shadow:
+        -1px -1px 0 white,
+        1px -1px 0 white,
+        -1px 1px 0 white,
+        1px 1px 0 white;
 }
 
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+    width: 5px;
+    height: 5px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: transparent; 
+    background: transparent;
 }
- 
+
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: rgba(136, 136, 136, 0.5); 
+    background: rgba(136, 136, 136, 0.5);
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(85, 85, 85, 0.5); 
+    background: rgba(85, 85, 85, 0.5);
 }
 
 .n-scroll::-webkit-scrollbar-thumb {
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0.5s, opacity 0.5s linear;
+    visibility: hidden;
+    opacity: 0;
+    transition:
+        visibility 0.5s,
+        opacity 0.5s linear;
 }
 
 .n-scroll:hover::-webkit-scrollbar-thumb {
-  visibility: visible;
-  opacity: 1;
+    visibility: visible;
+    opacity: 1;
 }
 
 .n-scroll:focus::-webkit-scrollbar-thumb {
-  visibility: visible;
-  opacity: 1;
+    visibility: visible;
+    opacity: 1;
 }
 
-
-.chattext p:first-child{
-  margin-top: 0.3rem;
+.chattext p:first-child {
+    margin-top: 0.3rem;
 }
 
-
-#app{
-  width: 100%;
-  height: 100%;
-  font-family: var(--risu-font-family);
+#app {
+    width: 100%;
+    height: 100%;
+    font-family: var(--risu-font-family);
 }
 
-.bgc{
-  border-top: 1px solid rgba(98, 114, 164, 0.7);
+.bgc {
+    border-top: 1px solid rgba(98, 114, 164, 0.7);
 }
 
-.text-bordered{
-  -webkit-text-stroke: 1px #000;
+.text-bordered {
+    -webkit-text-stroke: 1px #000;
 }
 
-.x-risu-risu-file{
-  padding: 1rem;
-  border: 1px solid var(--risu-theme-selected);
-  border-radius: 0.5rem;
-  color: var(--FontColorStandard);
-  min-width: 0;
-  max-width: 20rem;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+.x-risu-risu-file {
+    padding: 1rem;
+    border: 1px solid var(--risu-theme-selected);
+    border-radius: 0.5rem;
+    color: var(--FontColorStandard);
+    min-width: 0;
+    max-width: 20rem;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.x-risu-button-default{
-  @apply border text-textcolor rounded-md shadow-sm focus:outline-none focus:ring-2 transition-colors duration-200 border-darkborderc px-4 py-2 bg-darkbutton hover:bg-borderc focus:ring-borderc
+.x-risu-button-default {
+    @apply rounded-md border border-darkborderc bg-darkbutton px-4 py-2 text-textcolor shadow-sm transition-colors duration-200 hover:bg-borderc focus:outline-none focus:ring-2 focus:ring-borderc;
 }
 
 .loadmove {
-  animation: spin 1s linear infinite;
-  border-radius: 50%;
-  border: 0.4rem solid rgba(0,0,0,0);
-  width: 1rem;
-  height: 1rem;
-  border-top: 0.4rem solid var(--risu-theme-borderc);
-  border-left: 0.4rem solid var(--risu-theme-borderc);
-  /* transition colors */
-  transition: border-color 0.5s;
+    animation: spin 1s linear infinite;
+    border-radius: 50%;
+    border: 0.4rem solid rgba(0, 0, 0, 0);
+    width: 1rem;
+    height: 1rem;
+    border-top: 0.4rem solid var(--risu-theme-borderc);
+    border-left: 0.4rem solid var(--risu-theme-borderc);
+    /* transition colors */
+    transition: border-color 0.5s;
 }
 
-.x-risu-risu-comment{
-  @apply border border-darkborderc bg-darkbg text-textcolor rounded-md shadow-sm focus:outline-none transition-colors duration-200 px-4 py-2 min-w-0
+.x-risu-risu-comment {
+    @apply min-w-0 rounded-md border border-darkborderc bg-darkbg px-4 py-2 text-textcolor shadow-sm transition-colors duration-200 focus:outline-none;
 }
-
 
 ::highlight(cbsnest3) {
-  color: #f59e0b;
+    color: #f59e0b;
 }
 ::highlight(cbsnest2) {
-  color: #22c55e;
+    color: #22c55e;
 }
 ::highlight(cbsnest1) {
-  color: #3b82f6;
+    color: #3b82f6;
 }
 ::highlight(cbsnest0) {
-  color: #a855f7;
+    color: #a855f7;
 }
 ::highlight(cbsnest4) {
-  color: #ec4899;
+    color: #ec4899;
 }
 ::highlight(cbsdisplay) {
-  color: #06b6d4;
+    color: #06b6d4;
 }
 ::highlight(comment) {
-  color: var(--risu-theme-textcolor2);
+    color: var(--risu-theme-textcolor2);
 }
 
 ::highlight(decorator) {
-  color: var(--risu-theme-draculared);
+    color: var(--risu-theme-draculared);
 }
 ::highlight(deprecated) {
-  color: var(--risu-theme-textcolor2);
-  text-decoration: line-through;
+    color: var(--risu-theme-textcolor2);
+    text-decoration: line-through;
 }
 
 .prose pre {
-  background-color: var(--tw-prose-pre-bg);
-  color: var(--tw-prose-pre-code);
+    background-color: var(--tw-prose-pre-bg);
+    color: var(--tw-prose-pre-code);
 }
 
 .prose :where(pre code) * {
-  font-family: inherit;
+    font-family: inherit;
 }
 
 .prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::before {
-  content: "";
+    content: "";
 }
 
 .prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *))::after {
-  content: "";
+    content: "";
 }
 
 .prose :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *)):not(pre code) {
-  background-color: var(--tw-prose-pre-bg);
-  border-radius: 0.25rem;
-  color: var(--tw-prose-pre-code);
-  padding: 0.125rem 0.25rem;
+    background-color: var(--tw-prose-pre-bg);
+    border-radius: 0.25rem;
+    color: var(--tw-prose-pre-code);
+    padding: 0.125rem 0.25rem;
 }
 
-.x-risu-risu-inlay-image{
-  @apply w-full flex justify-center
+.x-risu-risu-inlay-image {
+    @apply flex w-full justify-center;
 }
 
-.x-risu-risu-inlay-image img{
-  @apply rounded-lg focus:outline-none max-w-80 w-full
+.x-risu-risu-inlay-image img {
+    @apply w-full max-w-80 rounded-lg focus:outline-none;
 }
 
-.x-risu-risu-inlay-image video{
-  @apply rounded-lg focus:outline-none max-w-80 w-full
+.x-risu-risu-inlay-image video {
+    @apply w-full max-w-80 rounded-lg focus:outline-none;
 }
 
-.x-risu-risu-inlay-image audio{
-  @apply rounded-lg focus:outline-none max-w-80 w-full
+.x-risu-risu-inlay-image audio {
+    @apply w-full max-w-80 rounded-lg focus:outline-none;
 }
 
 .x-risu-risu-error {
-  @apply border-2 border-red-700 bg-red-500 text-white rounded-md shadow-sm focus:outline-none transition-colors duration-200 px-4 py-2 min-w-0 break-words
+    @apply min-w-0 break-words rounded-md border-2 border-red-700 bg-red-500 px-4 py-2 text-white shadow-sm transition-colors duration-200 focus:outline-none;
 }
 
 .x-risu-risu-error h1 {
-  @apply text-xl mb-2
+    @apply mb-2 text-xl;
 }
 
-.z-100{
-  z-index: 100;
+.z-100 {
+    z-index: 100;
 }
 
 .saving-animation {
-  animation: saving-anime 1s infinite;
-  background-size: 200% auto;
+    animation: saving-anime 1s infinite;
+    background-size: 200% auto;
 }
 
 @keyframes saving-anime {
-  0% {
-    background-position: 0 0;
-  }
-  50% {
-    background-position: 100% 100%;
-  }
-  100% {
-    background-position: 0 0;
-  }
+    0% {
+        background-position: 0 0;
+    }
+    50% {
+        background-position: 100% 100%;
+    }
+    100% {
+        background-position: 0 0;
+    }
 }
 
-.flexium{
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
+.flexium {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
 }
-.chat-width{
-  max-width: calc(100% - 0.5rem);
-  word-break: normal;
-  overflow-wrap: anywhere;
-}
-
-.chat-message-container .dyna-icon{
-  display: none;
+.chat-width {
+    max-width: calc(100% - 0.5rem);
+    word-break: normal;
+    overflow-wrap: anywhere;
 }
 
-.chat-message-container:first-of-type .dyna-icon{
-  display: block;
+.chat-message-container .dyna-icon {
+    display: none;
 }
 
-.x-risu-tool-call{
-  @apply border border-darkborderc bg-darkbg text-textcolor rounded-md shadow-sm focus:outline-none transition-colors duration-200 px-4 py-2 min-w-0
+.chat-message-container:first-of-type .dyna-icon {
+    display: block;
 }
 
-.root-loaded-image{
-  /* This class is used to indicate that the image has been with root-loaded method */
-  /* We need to style it to centered and pretty */
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: calc(100% - 1rem);
-  max-width: 20rem;
-  height: auto;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 4px rgba(137, 137, 137, 0.1);  
+.x-risu-tool-call {
+    @apply min-w-0 rounded-md border border-darkborderc bg-darkbg px-4 py-2 text-textcolor shadow-sm transition-colors duration-200 focus:outline-none;
 }
 
-.root-loaded-image-dynamic{
-  max-height: 14rem;
-  transition: max-height 0.5s ease;
-  object-fit: cover;
-  object-position: top;
+.root-loaded-image {
+    /* This class is used to indicate that the image has been with root-loaded method */
+    /* We need to style it to centered and pretty */
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: calc(100% - 1rem);
+    max-width: 20rem;
+    height: auto;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(137, 137, 137, 0.1);
 }
 
-.root-loaded-image-dynamic:hover{
-  max-height: 30rem;
+.root-loaded-image-dynamic {
+    max-height: 14rem;
+    transition: max-height 0.5s ease;
+    object-fit: cover;
+    object-position: top;
+}
+
+.root-loaded-image-dynamic:hover {
+    max-height: 30rem;
 }

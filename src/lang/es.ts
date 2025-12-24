@@ -1,138 +1,192 @@
-
-
 export const languageSpanish = {
     formating: {
-        'main': "Prompt Principal",
-        'jailbreak': "Prompt Jailbreak",
-        'chats': "Chats Anteriores",
-        'lorebook': "Libro de Lore",
-        'globalNote': "Nota Global",
-        'authorNote': "Nota del Autor",
-        'lastChat': "Último Chat",
-        "description": "Descripción del Personaje",
-        'personaPrompt': "Prompt de Persona",
-        'plain': "Prompt Simple",
-        'memory': "Supa/HypaMemoria",
-        'postEverything': "Prompts Inyectados al Final",
+        main: "Prompt Principal",
+        jailbreak: "Prompt Jailbreak",
+        chats: "Chats Anteriores",
+        lorebook: "Libro de Lore",
+        globalNote: "Nota Global",
+        authorNote: "Nota del Autor",
+        lastChat: "Último Chat",
+        description: "Descripción del Personaje",
+        personaPrompt: "Prompt de Persona",
+        plain: "Prompt Simple",
+        memory: "Supa/HypaMemoria",
+        postEverything: "Prompts Inyectados al Final",
     },
     errors: {
-        toomuchtoken: 'Error: El mínimo requerido de tokens es mayor que el Tamaño Máximo del Contexto.',
-        unknownModel: 'Error: Modelo seleccionado desconocido',
-        httpError: 'Error: error en la solicitud:',
-        noData: 'No hay datos en el archivo o el archivo está corrupto',
-        onlyOneChat: 'Debe haber al menos un chat',
+        toomuchtoken: "Error: El mínimo requerido de tokens es mayor que el Tamaño Máximo del Contexto.",
+        unknownModel: "Error: Modelo seleccionado desconocido",
+        httpError: "Error: error en la solicitud:",
+        noData: "No hay datos en el archivo o el archivo está corrupto",
+        onlyOneChat: "Debe haber al menos un chat",
         alreadyCharInGroup: "Ya hay un personaje con el mismo nombre en el grupo.",
         noUserIcon: "Debes establecer tu icono primero.",
         emptyText: "El texto está vacío.",
         wrongPassword: "Contraseña incorrecta",
         networkFetch: "Esto ocurre cuando la red es inestable o el servidor está caído.",
-        networkFetchWeb: "Esto puede ser un error de CORS. Esto solo ocurre al usar la versión web debido a las limitaciones del navegador. Intenta usar la versión local de escritorio u otra versión de RisuAI.",
-        networkFetchPlain: "Esto puede ser un error de fetch simple. Intenta desactivar la opción de forzar fetch simple en la configuración.",
+        networkFetchWeb:
+            "Esto puede ser un error de CORS. Esto solo ocurre al usar la versión web debido a las limitaciones del navegador. Intenta usar la versión local de escritorio u otra versión de RisuAI.",
+        networkFetchPlain:
+            "Esto puede ser un error de fetch simple. Intenta desactivar la opción de forzar fetch simple en la configuración.",
         requestLogRemoved: "Este registro de solicitud ha sido eliminado.",
         requestLogRemovedDesc: "Este registro de solicitud se elimina cuando el cliente se actualiza o recarga.",
     },
     showHelp: "Mostrar Ayuda",
     help: {
         model: "La opción de modelo es el modelo principal usado en el chat.",
-        submodel: "El Modelo Auxiliar es un modelo que se utiliza para analizar imágenes de emociones, auto sugerencias, etc. Se recomienda GPT-3.5.",
-        oaiapikey: 'Clave API para OpenAI. Puedes obtenerla en https://platform.openai.com/account/api-keys',
-        mainprompt: 'La opción de prompt principal establece el comportamiento predeterminado del modelo.',
-        jailbreak: 'La opción de prompt jailbreak se activa cuando el interruptor jailbreak está activado en el personaje.',
-        globalNote: 'Una nota que afecta fuertemente el comportamiento del modelo, también conocida como UJB. Funciona en todos los personajes.',
-        autoSuggest: 'Prompts usados para generar opciones cuando se sugieren automáticamente respuestas al usuario.',
+        submodel:
+            "El Modelo Auxiliar es un modelo que se utiliza para analizar imágenes de emociones, auto sugerencias, etc. Se recomienda GPT-3.5.",
+        oaiapikey: "Clave API para OpenAI. Puedes obtenerla en https://platform.openai.com/account/api-keys",
+        mainprompt: "La opción de prompt principal establece el comportamiento predeterminado del modelo.",
+        jailbreak:
+            "La opción de prompt jailbreak se activa cuando el interruptor jailbreak está activado en el personaje.",
+        globalNote:
+            "Una nota que afecta fuertemente el comportamiento del modelo, también conocida como UJB. Funciona en todos los personajes.",
+        autoSuggest: "Prompts usados para generar opciones cuando se sugieren automáticamente respuestas al usuario.",
         formatOrder: "Orden de formateo del prompt. Los bloques inferiores tienen más efecto en el modelo.",
         forceUrl: "Si no está en blanco, la solicitud se enviará a la URL que hayas ingresado.",
-        tempature: "Valores más bajos hacen que el personaje siga los prompts de cerca, pero es más probable que responda como una máquina.\nValores más altos resultarán en un comportamiento creativo, pero la respuesta del personaje puede descomponerse más fácilmente.",
-        frequencyPenalty: "Valores más altos evitan el uso de palabras duplicadas en la respuesta, pero la respuesta del personaje puede descomponerse más fácilmente.",
-        presensePenalty: "Valores más altos evitan el uso de palabras duplicadas en todo el contexto, pero la respuesta del personaje puede descomponerse más fácilmente.",
+        tempature:
+            "Valores más bajos hacen que el personaje siga los prompts de cerca, pero es más probable que responda como una máquina.\nValores más altos resultarán en un comportamiento creativo, pero la respuesta del personaje puede descomponerse más fácilmente.",
+        frequencyPenalty:
+            "Valores más altos evitan el uso de palabras duplicadas en la respuesta, pero la respuesta del personaje puede descomponerse más fácilmente.",
+        presensePenalty:
+            "Valores más altos evitan el uso de palabras duplicadas en todo el contexto, pero la respuesta del personaje puede descomponerse más fácilmente.",
         sdProvider: "Proveedor para generación de imágenes.",
         msgSound: "Reproduce un sonido *ding* cuando el personaje responde.",
         charDesc: "Breve descripción del personaje. Esto afecta las respuestas del personaje.",
         charFirstMessage: "Primer mensaje del personaje. Esto afecta altamente las respuestas del personaje.",
-        charNote: "Una nota que afecta fuertemente el comportamiento del modelo. Embebida en el personaje actual. También conocida como UJB.",
+        charNote:
+            "Una nota que afecta fuertemente el comportamiento del modelo. Embebida en el personaje actual. También conocida como UJB.",
         toggleNsfw: "Activa o desactiva el prompt jailbreak.",
-        lorebook: "El Libro de Lore es un diccionario creado por el usuario para la IA. La IA solo lo ve cuando hay una clave de activación en el contexto.",
+        lorebook:
+            "El Libro de Lore es un diccionario creado por el usuario para la IA. La IA solo lo ve cuando hay una clave de activación en el contexto.",
         loreName: "Nombre del lore. No afecta a la IA.",
-        loreActivationKey: "Si una de las claves de activación existe en el contexto, el lore se activará y el prompt se insertará. Separado por comas.",
-        loreorder: "Si el Orden de Inserción es más alto, afectará más al modelo, y será menos probable que se corte cuando haya muchos lores activados.",
+        loreActivationKey:
+            "Si una de las claves de activación existe en el contexto, el lore se activará y el prompt se insertará. Separado por comas.",
+        loreorder:
+            "Si el Orden de Inserción es más alto, afectará más al modelo, y será menos probable que se corte cuando haya muchos lores activados.",
         bias: "Bias es un dato clave-valor que modifica la probabilidad de que aparezca una cadena.\nPuede ser de -100 a 100, los valores más altos serán más propensos a aparecer, y los valores más bajos serán menos propensos a aparecer. \nAdemás, si se establece en -101, funcionará como una 'palabra prohibida fuerte' para algunos modelos. \nAdvertencia: si el tokenizador es incorrecto, no funcionará correctamente.",
-        emotion: "La opción de Imágenes de Emoción muestra imágenes según la emoción del personaje, que se analiza a partir de la respuesta del personaje. Debes ingresar el nombre de la emoción como palabras *(como alegría, felicidad, miedo, etc.)*. La emoción nombrada **neutral** será la emoción predeterminada si existe. Deben ser más de 3 imágenes para que funcione correctamente.",
+        emotion:
+            "La opción de Imágenes de Emoción muestra imágenes según la emoción del personaje, que se analiza a partir de la respuesta del personaje. Debes ingresar el nombre de la emoción como palabras *(como alegría, felicidad, miedo, etc.)*. La emoción nombrada **neutral** será la emoción predeterminada si existe. Deben ser más de 3 imágenes para que funcione correctamente.",
         imggen: "Después de analizar el chat, aplica el prompt a {{slot}}.",
-        regexScript: "El Script Regex es un script personalizado que reemplaza la cadena que coincide de IN a OUT.\n\nHay cuatro opciones de tipo."
-            + "\n\n- **Modificar Entrada (Input)** modifica la entrada del usuario"
-            + "\n\n- **Modificar Salida (Output)** modifica la respuesta del personaje"
-            + "\n\n- **Modificar Datos de Solicitud** modifica los datos actuales del chat cuando se envía."
-            + "\n\n- **Modificar Visualización** solo modifica el texto cuando se muestra sin modificar los datos del chat."
-            + "\n\nIN debe ser un regex sin Flags y sin barras en el inicio y el final.\n\nOUT es una cadena que puede incluir patrones de reemplazo. Estos son los patrones:"
-            + "\n\n- $$\n\n    - inserta $"
-            + "\n\n- $&\n\n    - inserta la subcadena coincidente."
-            + "\n\n- $`\n\n    - inserta la porción de la cadena que precede a la subcadena coincidente."
-            + "\n\n- $1\n\n    - inserta el primer grupo coincidente. Funciona con otros números como 2, 3..."
-            + "\n\n- $(nombre)\n\n    - inserta el grupo nombrado"
-            + "\n\nSi OUT comienza con **@@**, no reemplaza la cadena, pero en su lugar realiza un efecto especial si se encuentra la cadena coincidente."
-            + "\n\n- @@emo (nombre de emoción)\n\n    - si el personaje está en modo Imágenes de Emoción, establece (nombre de emoción) como emoción y evita la predeterminada.",
+        regexScript:
+            "El Script Regex es un script personalizado que reemplaza la cadena que coincide de IN a OUT.\n\nHay cuatro opciones de tipo." +
+            "\n\n- **Modificar Entrada (Input)** modifica la entrada del usuario" +
+            "\n\n- **Modificar Salida (Output)** modifica la respuesta del personaje" +
+            "\n\n- **Modificar Datos de Solicitud** modifica los datos actuales del chat cuando se envía." +
+            "\n\n- **Modificar Visualización** solo modifica el texto cuando se muestra sin modificar los datos del chat." +
+            "\n\nIN debe ser un regex sin Flags y sin barras en el inicio y el final.\n\nOUT es una cadena que puede incluir patrones de reemplazo. Estos son los patrones:" +
+            "\n\n- $$\n\n    - inserta $" +
+            "\n\n- $&\n\n    - inserta la subcadena coincidente." +
+            "\n\n- $`\n\n    - inserta la porción de la cadena que precede a la subcadena coincidente." +
+            "\n\n- $1\n\n    - inserta el primer grupo coincidente. Funciona con otros números como 2, 3..." +
+            "\n\n- $(nombre)\n\n    - inserta el grupo nombrado" +
+            "\n\nSi OUT comienza con **@@**, no reemplaza la cadena, pero en su lugar realiza un efecto especial si se encuentra la cadena coincidente." +
+            "\n\n- @@emo (nombre de emoción)\n\n    - si el personaje está en modo Imágenes de Emoción, establece (nombre de emoción) como emoción y evita la predeterminada.",
         experimental: "Esta es una característica experimental. Podría ser inestable.",
-        oogaboogaURL: "Si tu WebUI admite una versión anterior de la API, tu URL debería parecerse a *https:.../run/textgen*\n\n"
-            + "Si tu WebUI admite la nueva versión de la API, tu URL debería parecerse a *https://.../api/v1/generate* y usar el servidor API como host, y agregar --api a los argumentos.",
-        exampleMessage: "Conversaciones de ejemplo que afectan la respuesta del personaje. No usa tokens permanentemente."
-            + "\n\nFormato de ejemplo de conversaciones:"
-            + "\n\n```\n<START>\n{{usuario}}: hola\n{{char}}: hola\n<START>\n{{usuario}}: hola\nHaruhi: hola\n```"
-            + "\n\n```<START>``` Marca el comienzo de una nueva conversación.",
-        creatorQuotes: "Nota que aparece en la parte superior del primer mensaje. Se utiliza para informar a los usuarios sobre este personaje. No va en el prompt.",
+        oogaboogaURL:
+            "Si tu WebUI admite una versión anterior de la API, tu URL debería parecerse a *https:.../run/textgen*\n\n" +
+            "Si tu WebUI admite la nueva versión de la API, tu URL debería parecerse a *https://.../api/v1/generate* y usar el servidor API como host, y agregar --api a los argumentos.",
+        exampleMessage:
+            "Conversaciones de ejemplo que afectan la respuesta del personaje. No usa tokens permanentemente." +
+            "\n\nFormato de ejemplo de conversaciones:" +
+            "\n\n```\n<START>\n{{usuario}}: hola\n{{char}}: hola\n<START>\n{{usuario}}: hola\nHaruhi: hola\n```" +
+            "\n\n```<START>``` Marca el comienzo de una nueva conversación.",
+        creatorQuotes:
+            "Nota que aparece en la parte superior del primer mensaje. Se utiliza para informar a los usuarios sobre este personaje. No va en el prompt.",
         systemPrompt: "Un prompt que reemplaza el prompt principal en la configuración si no está en blanco.",
-        chatNote: "Una nota que afecta fuertemente el comportamiento del modelo. Embebida en el chat actual. También conocida como memoria o ujb.",
-        personality: "Una breve descripción sobre la personalidad del personaje. \n\n**No se recomienda usar esta opción. Descríbelo en la descripción del personaje en su lugar.**",
-        scenario: "Una breve descripción sobre el escenario del personaje. \n\n**No se recomienda usar esta opción. Descríbelo en la descripción del personaje en su lugar.**",
-        utilityBot: "Cuando está activado, ignora el prompt principal, jailbreak y otros prompts. Se utiliza para bots diseñados para utilidades, no para juegos de rol.",
-        loreSelective: "Si el modo Selectivo está activado, tanto la Clave de Activación como la Clave Secundaria deben coincidir para activar el lore.",
-        loreRandomActivation: "Si la Condición de Probabilidad está habilitada, si se cumplen todas las demás condiciones del lore, el lore se activará con una probabilidad establecida por 'Probabilidad' cada vez que se envíe un chat.",
-        additionalAssets: "Activos adicionales para mostrar en tu chat. \n\n - usa `{{raw::<nombre del activo>}}` para usar como ruta.\n - usa `{{image::<nombre del activo>}}` para usar como imagen\n - usa `{{video::<nombre del activo>}}` para usar como video\n - usa `{{audio::<nombre del activo>}}` para usar como audio\n    - se recomienda poner en HTML de Fondo",
-        superMemory: "SuperMemoria hace que tu personaje memorice más dando datos resumidos a la IA.\n\n"
-            + "El modelo de SuperMemoria es un modelo que resume ese texto. Se recomienda Davinci, y no se recomienda usar modelos auxiliares a menos que sea un modelo no filtrado con más de 2000 tokens y con una gran habilidad de resumen.\n\n"
-            + "El Prompt de SuperMemoria decide qué prompt se debe enviar para resumir. Si lo dejas en blanco, usará el prompt predeterminado. Se recomienda dejarlo en blanco.\n\n"
-            + "Después de configurarlo todo, puedes habilitarlo en la configuración de un personaje.",
+        chatNote:
+            "Una nota que afecta fuertemente el comportamiento del modelo. Embebida en el chat actual. También conocida como memoria o ujb.",
+        personality:
+            "Una breve descripción sobre la personalidad del personaje. \n\n**No se recomienda usar esta opción. Descríbelo en la descripción del personaje en su lugar.**",
+        scenario:
+            "Una breve descripción sobre el escenario del personaje. \n\n**No se recomienda usar esta opción. Descríbelo en la descripción del personaje en su lugar.**",
+        utilityBot:
+            "Cuando está activado, ignora el prompt principal, jailbreak y otros prompts. Se utiliza para bots diseñados para utilidades, no para juegos de rol.",
+        loreSelective:
+            "Si el modo Selectivo está activado, tanto la Clave de Activación como la Clave Secundaria deben coincidir para activar el lore.",
+        loreRandomActivation:
+            "Si la Condición de Probabilidad está habilitada, si se cumplen todas las demás condiciones del lore, el lore se activará con una probabilidad establecida por 'Probabilidad' cada vez que se envíe un chat.",
+        additionalAssets:
+            "Activos adicionales para mostrar en tu chat. \n\n - usa `{{raw::<nombre del activo>}}` para usar como ruta.\n - usa `{{image::<nombre del activo>}}` para usar como imagen\n - usa `{{video::<nombre del activo>}}` para usar como video\n - usa `{{audio::<nombre del activo>}}` para usar como audio\n    - se recomienda poner en HTML de Fondo",
+        superMemory:
+            "SuperMemoria hace que tu personaje memorice más dando datos resumidos a la IA.\n\n" +
+            "El modelo de SuperMemoria es un modelo que resume ese texto. Se recomienda Davinci, y no se recomienda usar modelos auxiliares a menos que sea un modelo no filtrado con más de 2000 tokens y con una gran habilidad de resumen.\n\n" +
+            "El Prompt de SuperMemoria decide qué prompt se debe enviar para resumir. Si lo dejas en blanco, usará el prompt predeterminado. Se recomienda dejarlo en blanco.\n\n" +
+            "Después de configurarlo todo, puedes habilitarlo en la configuración de un personaje.",
         replaceGlobalNote: "Si no está en blanco, reemplaza la nota global actual con esta.",
-        backgroundHTML: "Datos de Markdown/HTML que se inyectarán en el fondo de la pantalla de chat.\n\n También puedes usar activos adicionales. por ejemplo, puedes usar `{{audio::<nombre del activo}}` para música de fondo."
-            + "\n\n Además, puedes usar estos con activos adicionales:"
-            + "\n - `{{bg::<nombre del activo>}}`: inyecta el fondo como activo",
-        additionalText: "El texto que se agregará a la Descripción del Personaje solo cuando la IA crea que es necesario, por lo que puedes poner textos largos aquí. Sepáralo con doble salto de línea.",
+        backgroundHTML:
+            "Datos de Markdown/HTML que se inyectarán en el fondo de la pantalla de chat.\n\n También puedes usar activos adicionales. por ejemplo, puedes usar `{{audio::<nombre del activo}}` para música de fondo." +
+            "\n\n Además, puedes usar estos con activos adicionales:" +
+            "\n - `{{bg::<nombre del activo>}}`: inyecta el fondo como activo",
+        additionalText:
+            "El texto que se agregará a la Descripción del Personaje solo cuando la IA crea que es necesario, por lo que puedes poner textos largos aquí. Sepáralo con doble salto de línea.",
         charjs: "Un código JavaScript que se ejecutará con el personaje. Por ejemplo, puedes consultar `https://github.com/kwaroran/RisuAI/blob/main/src/etc/example-char.js` ACTUALMENTE NO SE RECOMIENDA USAR DEBIDO A PROBLEMAS DE SEGURIDAD. EXPORTAR NO INCLUIRÁ ESTO.",
-        romanizer: "Romanizador es un complemento que convierte caracteres no romanos a caracteres romanos para reducir tokens al usar caracteres no romanos al solicitar datos. Esto puede resultar en una respuesta diferente del modelo original. No se recomienda usar este complemento al usar caracteres romanos en el chat.",
-        oaiRandomUser: "Si está habilitado, se colocará un UUID aleatorio en el parámetro del usuario en la solicitud, y se cambiará al actualizar. Esto se puede usar para evitar que la IA identifique al usuario.",
-        inlayImages: "Si está habilitado, las imágenes podrían incrustarse en el chat y las IA pueden verlas si lo admiten.",
-        metrica: 'Metric Systemizer es un complemento que convierte métricas a unidades imperiales al solicitar datos, y viceversa en la respuesta para mostrar al usuario el sistema métrico mientras usa el imperial para el rendimiento. No se recomienda usar este complemento al usar unidades imperiales en el chat.',
-        lorePlus: "LoreBook+ es una característica experimental que utiliza vectordb en lugar de solo coincidencia de cadenas para una mejor experiencia de creación de bots y un mejor rendimiento de coincidencia.",
+        romanizer:
+            "Romanizador es un complemento que convierte caracteres no romanos a caracteres romanos para reducir tokens al usar caracteres no romanos al solicitar datos. Esto puede resultar en una respuesta diferente del modelo original. No se recomienda usar este complemento al usar caracteres romanos en el chat.",
+        oaiRandomUser:
+            "Si está habilitado, se colocará un UUID aleatorio en el parámetro del usuario en la solicitud, y se cambiará al actualizar. Esto se puede usar para evitar que la IA identifique al usuario.",
+        inlayImages:
+            "Si está habilitado, las imágenes podrían incrustarse en el chat y las IA pueden verlas si lo admiten.",
+        metrica:
+            "Metric Systemizer es un complemento que convierte métricas a unidades imperiales al solicitar datos, y viceversa en la respuesta para mostrar al usuario el sistema métrico mientras usa el imperial para el rendimiento. No se recomienda usar este complemento al usar unidades imperiales en el chat.",
+        lorePlus:
+            "LoreBook+ es una característica experimental que utiliza vectordb en lugar de solo coincidencia de cadenas para una mejor experiencia de creación de bots y un mejor rendimiento de coincidencia.",
         topP: "Top P es un umbral de probabilidad para el muestreo de núcleo. El modelo considera los resultados de los tokens con la masa de probabilidad top_p.",
         openAIFixer: "OpenAI Fixer es un complemento que soluciona algunos de los problemas de OpenAI.",
         sayNothing: "Si está habilitado, ingresará 'no decir nada' cuando no se haya ingresado ninguna cadena.",
-        showUnrecommended: "Si está habilitado, mostrará configuraciones no recomendadas y obsoletas. NO SE RECOMIENDA usar estas configuraciones.",
-        imageCompression: "Si está habilitado, comprimirá las imágenes al exportar el personaje. Si las imágenes animadas no funcionan, intenta desactivar esta opción.",
+        showUnrecommended:
+            "Si está habilitado, mostrará configuraciones no recomendadas y obsoletas. NO SE RECOMIENDA usar estas configuraciones.",
+        imageCompression:
+            "Si está habilitado, comprimirá las imágenes al exportar el personaje. Si las imágenes animadas no funcionan, intenta desactivar esta opción.",
         useExperimental: "Si está habilitado, mostrará algunas características experimentales.",
         forceProxyAsOpenAI: "Si está habilitado, forzará el uso del formato OpenAI al usar un proxy inverso.",
-        forcePlainFetch: "Si está habilitado, usará la API de fetch del navegador en lugar de la solicitud HTTP nativa. Esto puede causar errores de CORS.",
-        autoFillRequestURL: "Si está habilitado, completará automáticamente la URL de la solicitud para que coincida con el modelo actual.",
+        forcePlainFetch:
+            "Si está habilitado, usará la API de fetch del navegador en lugar de la solicitud HTTP nativa. Esto puede causar errores de CORS.",
+        autoFillRequestURL:
+            "Si está habilitado, completará automáticamente la URL de la solicitud para que coincida con el modelo actual.",
         chainOfThought: "Si está habilitado, agregará el prompt de cadena de pensamientos al prompt.",
-        gptVisionQuality: "Esta opción se utiliza para establecer la calidad del modelo de detección de imágenes. Cuanto mayor sea la calidad, más precisa será la detección, pero se usarán más tokens.",
-        genTimes: "Esta opción se utiliza para establecer el número de respuestas a generar en los modelos compatibles. Otras que no sean la primera respuesta actuarán como un reroll en caché. Esto puede reducir el costo del modelo, pero también puede aumentarlo si lo usas sin reroll.",
-        requestretrys: "Esta opción se utiliza para establecer el número de reintentos de solicitud cuando la solicitud falla.",
-        emotionPrompt: "Esta opción se utiliza para establecer el prompt que se usa para detectar la emoción. Si está en blanco, usará el prompt predeterminado.",
+        gptVisionQuality:
+            "Esta opción se utiliza para establecer la calidad del modelo de detección de imágenes. Cuanto mayor sea la calidad, más precisa será la detección, pero se usarán más tokens.",
+        genTimes:
+            "Esta opción se utiliza para establecer el número de respuestas a generar en los modelos compatibles. Otras que no sean la primera respuesta actuarán como un reroll en caché. Esto puede reducir el costo del modelo, pero también puede aumentarlo si lo usas sin reroll.",
+        requestretrys:
+            "Esta opción se utiliza para establecer el número de reintentos de solicitud cuando la solicitud falla.",
+        emotionPrompt:
+            "Esta opción se utiliza para establecer el prompt que se usa para detectar la emoción. Si está en blanco, usará el prompt predeterminado.",
         removePunctuationHypa: "Si está habilitado, eliminará la puntuación antes de ejecutar HypaMemory.",
-        additionalParams: "Parámetros adicionales que se agregarán al cuerpo de la solicitud. Si deseas excluir algunos parámetros, puedes poner `{{none}}` en el valor. Si deseas agregar un encabezado en lugar de un cuerpo, puedes poner `header::` delante de la clave, como `header::Authorization`. Si deseas el valor como JSON, puedes poner `json::` delante del valor, como `json::{\"key\":\"value\"}`. De lo contrario, el tipo del valor se determinará automáticamente.",
-        antiClaudeOverload: "Si ocurre sobrecarga de Claude, RisuAI intentará evitarla continuando con el mismo prompt, haciéndolo menos probable que ocurra. Funciona solo para respuestas transmitidas. Esto podría no funcionar para endpoints de API no oficiales.",
-        triggerScript: "Trigger Script es un script personalizado que se ejecuta cuando se cumple una condición. Se puede usar para modificar los datos del chat, ejecutar un comando, cambiar variables, etc. El tipo depende de cuándo se activa. También puede ejecutarse mediante botones, que se pueden usar con {{button::Display::TriggerName}}, o botones HTML con el atributo `risu-trigger=\"<TriggerName>\"`.",
-        autoContinueChat: "Si está habilitado, intentará continuar el chat si no termina con un signo de puntuación. NO USES ESTO CON IDIOMAS QUE NO USAN SIGNOS DE PUNTUACIÓN.",
-        combineTranslation: "Si está habilitado, el texto que es una oración pero está separado por etiquetas HTML se combinará y se traducirá, luego se volverá a aplicar el script de Modificar Visualización a la respuesta traducida.\nEsto ayuda al traductor a realizar la traducción correcta.\nSi la interfaz de usuario se vuelve extraña cuando activas esta opción, desactiva la opción e informa sobre el problema.",
-        dynamicAssets: "Si está habilitado, si no se encuentra el nombre del activo al procesar datos, intentará encontrar el nombre del activo más cercano usando la búsqueda de vectores y reemplazarlo con el nombre del activo más cercano.",
-        dynamicAssetsEditDisplay: "Si está habilitado, los activos dinámicos se aplicarán también en la etapa de Modificar Visualización. Sin embargo, esto puede causar problemas de rendimiento.",
-        nickname: "El apodo se utilizaría en {{char}} o <char> en el chat en lugar del nombre del personaje si está configurado.",
-        useRegexLorebook: "Si está habilitado, usará regex para la búsqueda en el lorebook, en lugar de coincidencia de cadenas. Usa el formato /regex/flags.",
-        customChainOfThought: "Advertencia: el interruptor de cadena de pensamientos ya no se recomienda. Pon el prompt de cadena de pensamientos en otras entradas de prompt en su lugar.",
-        customPromptTemplateToggle: "Aquí puedes definir tus propios interruptores de prompt. Usa el formato `<variable del interruptor>=<nombre del interruptor>`, separado por nueva línea. Por ejemplo, `cot=Toggle COT`. Puedes usar estos interruptores en el prompt usando `{{getglobalvar::toggle_<variable del interruptor>}}`. Como `{{getglobalvar::toggle_cot}}`.",
-        defaultVariables: "Aquí puedes definir tus propias variables predeterminadas. Usa el formato `<nombre de la variable>=<valor de la variable>`, separado por nueva línea. Por ejemplo, `name=RisuAI`, que luego se puede usar con scripts de activación y variables CBS como `{{getvar::A}}`, `{{setvar::A::B}}` o `{{? $A + 1}}`. Si la variable predeterminada del template del prompt y la variable predeterminada del personaje tienen el mismo nombre, se usará la variable predeterminada del personaje.",
-        lowLevelAccess: "Si está habilitado, permitirá el acceso a funciones que requieren altas potencias de computación y ejecutar el modelo de IA a través de activadores en el personaje. No habilites esto a menos que realmente necesites estas características.",
-        triggerLLMPrompt: "Un prompt que se enviará al modelo. Puedes usar múltiples turnos y roles usando `@@role usuario`, `@@role sistema`, `@@role asistente`. Por ejemplo, \n```\n@@role sistema\nresponde como hola\n@@role asistente\nhola\n@@role usuario\nhola\n```",
-        legacyTranslation: "Si está habilitado, usará el método de traducción antiguo, que preprocesa Markdown y citas antes de las traducciones en lugar de postprocesar después de las traducciones.",
-        luaHelp: "Puedes usar scripts Lua como script de activación. Puedes definir funciones onInput, onOutput, onStart. onInput se llama cuando el usuario envía un mensaje, onOutput se llama cuando el personaje envía un mensaje, onStart se llama cuando comienza el chat. Para más información, consulta la documentación.",
+        additionalParams:
+            'Parámetros adicionales que se agregarán al cuerpo de la solicitud. Si deseas excluir algunos parámetros, puedes poner `{{none}}` en el valor. Si deseas agregar un encabezado en lugar de un cuerpo, puedes poner `header::` delante de la clave, como `header::Authorization`. Si deseas el valor como JSON, puedes poner `json::` delante del valor, como `json::{"key":"value"}`. De lo contrario, el tipo del valor se determinará automáticamente.',
+        antiClaudeOverload:
+            "Si ocurre sobrecarga de Claude, RisuAI intentará evitarla continuando con el mismo prompt, haciéndolo menos probable que ocurra. Funciona solo para respuestas transmitidas. Esto podría no funcionar para endpoints de API no oficiales.",
+        triggerScript:
+            'Trigger Script es un script personalizado que se ejecuta cuando se cumple una condición. Se puede usar para modificar los datos del chat, ejecutar un comando, cambiar variables, etc. El tipo depende de cuándo se activa. También puede ejecutarse mediante botones, que se pueden usar con {{button::Display::TriggerName}}, o botones HTML con el atributo `risu-trigger="<TriggerName>"`.',
+        autoContinueChat:
+            "Si está habilitado, intentará continuar el chat si no termina con un signo de puntuación. NO USES ESTO CON IDIOMAS QUE NO USAN SIGNOS DE PUNTUACIÓN.",
+        combineTranslation:
+            "Si está habilitado, el texto que es una oración pero está separado por etiquetas HTML se combinará y se traducirá, luego se volverá a aplicar el script de Modificar Visualización a la respuesta traducida.\nEsto ayuda al traductor a realizar la traducción correcta.\nSi la interfaz de usuario se vuelve extraña cuando activas esta opción, desactiva la opción e informa sobre el problema.",
+        dynamicAssets:
+            "Si está habilitado, si no se encuentra el nombre del activo al procesar datos, intentará encontrar el nombre del activo más cercano usando la búsqueda de vectores y reemplazarlo con el nombre del activo más cercano.",
+        dynamicAssetsEditDisplay:
+            "Si está habilitado, los activos dinámicos se aplicarán también en la etapa de Modificar Visualización. Sin embargo, esto puede causar problemas de rendimiento.",
+        nickname:
+            "El apodo se utilizaría en {{char}} o <char> en el chat en lugar del nombre del personaje si está configurado.",
+        useRegexLorebook:
+            "Si está habilitado, usará regex para la búsqueda en el lorebook, en lugar de coincidencia de cadenas. Usa el formato /regex/flags.",
+        customChainOfThought:
+            "Advertencia: el interruptor de cadena de pensamientos ya no se recomienda. Pon el prompt de cadena de pensamientos en otras entradas de prompt en su lugar.",
+        customPromptTemplateToggle:
+            "Aquí puedes definir tus propios interruptores de prompt. Usa el formato `<variable del interruptor>=<nombre del interruptor>`, separado por nueva línea. Por ejemplo, `cot=Toggle COT`. Puedes usar estos interruptores en el prompt usando `{{getglobalvar::toggle_<variable del interruptor>}}`. Como `{{getglobalvar::toggle_cot}}`.",
+        defaultVariables:
+            "Aquí puedes definir tus propias variables predeterminadas. Usa el formato `<nombre de la variable>=<valor de la variable>`, separado por nueva línea. Por ejemplo, `name=RisuAI`, que luego se puede usar con scripts de activación y variables CBS como `{{getvar::A}}`, `{{setvar::A::B}}` o `{{? $A + 1}}`. Si la variable predeterminada del template del prompt y la variable predeterminada del personaje tienen el mismo nombre, se usará la variable predeterminada del personaje.",
+        lowLevelAccess:
+            "Si está habilitado, permitirá el acceso a funciones que requieren altas potencias de computación y ejecutar el modelo de IA a través de activadores en el personaje. No habilites esto a menos que realmente necesites estas características.",
+        triggerLLMPrompt:
+            "Un prompt que se enviará al modelo. Puedes usar múltiples turnos y roles usando `@@role usuario`, `@@role sistema`, `@@role asistente`. Por ejemplo, \n```\n@@role sistema\nresponde como hola\n@@role asistente\nhola\n@@role usuario\nhola\n```",
+        legacyTranslation:
+            "Si está habilitado, usará el método de traducción antiguo, que preprocesa Markdown y citas antes de las traducciones en lugar de postprocesar después de las traducciones.",
+        luaHelp:
+            "Puedes usar scripts Lua como script de activación. Puedes definir funciones onInput, onOutput, onStart. onInput se llama cuando el usuario envía un mensaje, onOutput se llama cuando el personaje envía un mensaje, onStart se llama cuando comienza el chat. Para más información, consulta la documentación.",
     },
     setup: {
         chooseProvider: "Elige Proveedor de IA",
@@ -149,57 +203,63 @@ export const languageSpanish = {
         texttheme: "Selecciona el color del texto",
         inputName: "Por último, ingresa tu apodo.",
         welcome: "¡Bienvenido a RisuAI! Aquí te guiaré para configurarlo. Primero, ¿cómo puedo llamarte?",
-        welcome2: "Hola {username}! Antes de empezar, te haré algunas preguntas. Puedes cambiar estas configuraciones más tarde en la configuración.\n\nPrimero selecciona el proveedor de IA.",
+        welcome2:
+            "Hola {username}! Antes de empezar, te haré algunas preguntas. Puedes cambiar estas configuraciones más tarde en la configuración.\n\nPrimero selecciona el proveedor de IA.",
         openAIProvider: "OpenAI GPT es un modelo de IA de alta calidad, pero es de pago y filtrado.",
-        openrouterProvider: "Openrouter tiene muchos modelos, algunos de ellos sin filtro y algunos gratuitos, pero no es tan bueno como OpenAI.",
+        openrouterProvider:
+            "Openrouter tiene muchos modelos, algunos de ellos sin filtro y algunos gratuitos, pero no es tan bueno como OpenAI.",
         hordeProvider: "Horde es un proveedor gratuito, pero el tiempo de respuesta es largo y la calidad es baja.",
-        setProviderLater: "Hay otros proveedores, pero puedes configurarlo más tarde en la configuración. selecciona esto si deseas configurarlo más tarde.",
-        setupOpenAI: "Para usar OpenAI, necesitas obtener una clave API. \n1. ve a https://beta.openai.com/ \n2. inicia sesión con tu cuenta \n3. ve a https://beta.openai.com/account/api-keys \n4. haz clic en 'Crear Nueva Clave API' y nombra tu clave como quieras. \n5. copia la clave en el sitio web.\n6. regresa a RisuAI\n7. pégala y haz clic en el botón enviar.",
-        setupOpenrouter: "Para usar Openrouter, necesitas obtener una clave API. \n1. ve a https://openrouter.ai/keys\n2. haz clic en 'Crear Clave'\n3. establece el nombre de la clave como quieras.\n4. copia la clave en el sitio web\n5. regresa a RisuAI\n6. pégala y haz clic en el botón enviar.",
+        setProviderLater:
+            "Hay otros proveedores, pero puedes configurarlo más tarde en la configuración. selecciona esto si deseas configurarlo más tarde.",
+        setupOpenAI:
+            "Para usar OpenAI, necesitas obtener una clave API. \n1. ve a https://beta.openai.com/ \n2. inicia sesión con tu cuenta \n3. ve a https://beta.openai.com/account/api-keys \n4. haz clic en 'Crear Nueva Clave API' y nombra tu clave como quieras. \n5. copia la clave en el sitio web.\n6. regresa a RisuAI\n7. pégala y haz clic en el botón enviar.",
+        setupOpenrouter:
+            "Para usar Openrouter, necesitas obtener una clave API. \n1. ve a https://openrouter.ai/keys\n2. haz clic en 'Crear Clave'\n3. establece el nombre de la clave como quieras.\n4. copia la clave en el sitio web\n5. regresa a RisuAI\n6. pégala y haz clic en el botón enviar.",
         allDone: "¡Todo listo! por favor, espera un momento.",
     },
     confirm: "Confirmar",
     goback: "Volver",
-    botSettings: 'Configuración del Bot',
+    botSettings: "Configuración del Bot",
     model: "Modelo",
-    apiKey: 'Clave API',
-    providerURL: 'URL de Solicitud',
-    providerJSON: 'Cuerpo JSON de la Solicitud',
+    apiKey: "Clave API",
+    providerURL: "URL de Solicitud",
+    providerJSON: "Cuerpo JSON de la Solicitud",
     mainPrompt: "Prompt Principal",
     jailbreakPrompt: "Prompt Jailbreak",
     globalNote: "Nota Global",
     autoSuggest: "Auto Sugerir",
-    tokens: 'Tokens',
-    maxContextSize: 'Tamaño Máximo del Contexto',
-    maxResponseSize: 'Tamaño Máximo de la Respuesta',
-    temperature: 'Temperatura',
-    frequencyPenalty: 'Penalización por Frecuencia',
-    presensePenalty: 'Penalización por Presencia',
-    advancedSettings: 'Configuraciones Avanzadas',
+    tokens: "Tokens",
+    maxContextSize: "Tamaño Máximo del Contexto",
+    maxResponseSize: "Tamaño Máximo de la Respuesta",
+    temperature: "Temperatura",
+    frequencyPenalty: "Penalización por Frecuencia",
+    presensePenalty: "Penalización por Presencia",
+    advancedSettings: "Configuraciones Avanzadas",
     advancedSettingsWarn: "Advertencia: ¡Si no sabes lo que hace la opción, no la cambies!",
     formatingOrder: "Orden de Formateo",
     authorNote: "Nota del Autor",
-    firstMessage: 'Primer Mensaje',
-    description: 'Descripción',
-    note: 'Nota',
-    jailbreakToggle: 'Alternar Jailbreak',
+    firstMessage: "Primer Mensaje",
+    description: "Descripción",
+    note: "Nota",
+    jailbreakToggle: "Alternar Jailbreak",
     charIcon: "Icono del Personaje",
     characterDisplay: "Pantalla del Personaje",
-    viewScreen: 'Pantalla Adicional del Personaje',
+    viewScreen: "Pantalla Adicional del Personaje",
     none: "Ninguno",
     emotionImage: "Imágenes de Emoción",
     noImages: "Sin Imágenes",
     noBias: "Sin Bias",
-    image: 'Imagen',
-    name: 'Nombre',
-    folderName: 'Nombre de la Carpeta',
-    folderRemoveConfirm: 'Esta carpeta contiene libros de lore. ¿Estás seguro de que quieres eliminarla y todo su contenido?',
+    image: "Imagen",
+    name: "Nombre",
+    folderName: "Nombre de la Carpeta",
+    folderRemoveConfirm:
+        "Esta carpeta contiene libros de lore. ¿Estás seguro de que quieres eliminarla y todo su contenido?",
     emotion: "Nombre de la Emoción",
     value: "Valor",
-    reroll: 'Regenerar',
-    chatList: 'Lista de Chats',
+    reroll: "Regenerar",
+    chatList: "Lista de Chats",
     removeChat: "¿Eliminar este mensaje?",
-    loreBook: 'Libro de Lore',
+    loreBook: "Libro de Lore",
     character: "Personaje",
     Chat: "Chat",
     globalLoreInfo: "El Libro de Lore del Personaje se aplica a todos los chats del personaje.",
@@ -209,21 +269,21 @@ export const languageSpanish = {
     removeConfirm: "¿Realmente deseas eliminar: ",
     removeConfirm2: "¿REALMENTE deseas eliminar: ",
     exportConfirm: "¿Deseas exportar esto?",
-    insertOrder: 'Orden de Inserción',
-    activationKeys: 'Claves de Activación',
-    activationKeysInfo: 'Separado por comas',
-    prompt: 'Prompt',
+    insertOrder: "Orden de Inserción",
+    activationKeys: "Claves de Activación",
+    activationKeysInfo: "Separado por comas",
+    prompt: "Prompt",
     loreBookDepth: "Profundidad de Búsqueda del Libro de Lore",
     loreBookToken: "Máximo de Tokens del Libro de Lore",
     removeCharacter: "Eliminar Personaje",
     removeGroup: "Eliminar Grupo",
     exportCharacter: "Exportar Personaje",
     userSetting: "Configuración de Usuario",
-    username: 'Tu Nombre',
+    username: "Tu Nombre",
     userIcon: "Tu Icono",
     successExport: "Exportado y descargado exitosamente en tu directorio de descargas",
     successImport: "Importado exitosamente",
-    importedCharacter: 'Personaje Importado',
+    importedCharacter: "Personaje Importado",
     alwaysActive: "Siempre Activo",
     additionalPrompt: "Prompt Adicional",
     descriptionPrefix: "Prefijo de Descripción",
@@ -233,7 +293,7 @@ export const languageSpanish = {
     language: "Idioma",
     UiLanguage: "Idioma de la Interfaz",
     createfromScratch: "Crear desde Cero",
-    importCharacter: 'Importar Personaje',
+    importCharacter: "Importar Personaje",
     translator: "Traductor",
     disabled: "Deshabilitado",
     noPluginSelected: "Modelo seleccionado como plugin, pero no se seleccionó ningún plugin.",
@@ -286,7 +346,8 @@ export const languageSpanish = {
     promptPreprocess: "Usar Preprocesamiento de Prompt",
     SwipeRegenerate: "Usar Swipe para Regeneración",
     instantRemove: "Eliminar Subsecuente cuando se Elimina Mensaje",
-    instantRemoveConfirm: "¿Deseas eliminar solo un mensaje? Si seleccionas No, entonces el mensaje posterior también se eliminará.",
+    instantRemoveConfirm:
+        "¿Deseas eliminar solo un mensaje? Si seleccionas No, entonces el mensaje posterior también se eliminará.",
     textColor: "Color del Texto",
     classicRisu: "Risu Clásico",
     highcontrast: "Alto Contraste",
@@ -317,7 +378,7 @@ export const languageSpanish = {
     scripts: "Scripts",
     settings: "Configuración",
     selective: "Selectivo",
-    SecondaryKeys: 'Claves Secundarias',
+    SecondaryKeys: "Claves Secundarias",
     useGlobalSettings: "Usar Configuración Global",
     recursiveScanning: "Escaneo Recursivo",
     creator: "Creador",
@@ -329,8 +390,8 @@ export const languageSpanish = {
     showMemoryLimit: "Mostrar Límite de Memoria",
     roundIcons: "Iconos Redondos",
     streaming: "Streaming",
-    chatBot: 'Chat Bot',
-    otherBots: 'Otros Bots',
+    chatBot: "Chat Bot",
+    otherBots: "Otros Bots",
     user: "Usuario",
     additionalAssets: "Activos Adicionales",
     editDisplay: "Modificar Visualización",
@@ -343,15 +404,17 @@ export const languageSpanish = {
     ttsStop: "Detener TTS",
     askRemoval: "Pedir Confirmación de Eliminación",
     replaceGlobalNote: "Reemplazo de Nota Global",
-    charLoreBook: 'Libro de Lore del Personaje',
-    globalLoreBook: 'Libro de Lore Global',
+    charLoreBook: "Libro de Lore del Personaje",
+    globalLoreBook: "Libro de Lore Global",
     globalRegexScript: "Regex Global",
     accessibility: "Accesibilidad",
-    sendWithEnter: "Enviar con la Tecla Enter(Al desactivar la verificación, Shift + Enter cambia a Transmisión de Mensajes.)",
+    sendWithEnter:
+        "Enviar con la Tecla Enter(Al desactivar la verificación, Shift + Enter cambia a Transmisión de Mensajes.)",
     fixedChatTextarea: "Fijación en la parte inferior de la ventana de chat",
     clickToEdit: "Haz Clic en el Texto para Editar",
     setNodePassword: "Establece tu contraseña para la seguridad",
-    inputNodePassword: "Ingresa tu contraseña. si no la recuerdas, elimina save/__password.txt en tus archivos de servidor y reinicia el servidor.",
+    inputNodePassword:
+        "Ingresa tu contraseña. si no la recuerdas, elimina save/__password.txt en tus archivos de servidor y reinicia el servidor.",
     simple: "Simple",
     advanced: "Avanzado",
     askReRollAutoSuggestions: "Regenerar Auto Sugerencias",
@@ -372,8 +435,8 @@ export const languageSpanish = {
     useAdditionalAssetsPreview: "Usar Vista Previa de Activos Adicionales",
     autoTranslateInput: "Traducción Automática de Entrada",
     enterMessageForTranslateToEnglish: "Ingresa el Mensaje para Traducir al Inglés",
-    recent: 'Reciente',
-    downloads: 'Descargas',
+    recent: "Reciente",
+    downloads: "Descargas",
     trending: "Tendencias",
     imageCompression: "Compresión de Imágenes",
     notLoggedIn: "No has iniciado sesión en Risu",
@@ -392,7 +455,8 @@ export const languageSpanish = {
     officialWikiDesc: "Wiki Oficial de RisuAI. siéntete libre de consultarla.",
     officialDiscord: "Discord Oficial",
     officialDiscordDesc: "Discord Oficial para hablar sobre RisuAI",
-    confirmRecommendedPreset: "Hay una configuración recomendada para este modelo. ¿Deseas cambiar la configuración a esa? (puedes desactivar esta pregunta en la configuración de accesibilidad)",
+    confirmRecommendedPreset:
+        "Hay una configuración recomendada para este modelo. ¿Deseas cambiar la configuración a esa? (puedes desactivar esta pregunta en la configuración de accesibilidad)",
     toggleConfirmRecommendedPreset: "Preguntar por configuración recomendada al cambiar modelo",
     recommendedPreset: "Establecer Configuración Recomendada",
     persona: "Persona",
@@ -434,16 +498,16 @@ export const languageSpanish = {
     less: "Menor que",
     greaterEqual: "Mayor o Igual que",
     lessEqual: "Menor o Igual que",
-    triggerEffSysPrompt: 'Agregar Prompt del Sistema',
-    triggerEffSetVar: 'Modificar Variable',
-    triggerEffImperson: 'Enviar Chat',
-    triggerEffCommand: 'Ejecutar Comando',
-    triggerEffRunTrigger: 'Ejecutar Activación',
-    triggerEffStop: 'Detener Envío de Prompt',
-    triggerEffCall: 'Llamar a Activación',
+    triggerEffSysPrompt: "Agregar Prompt del Sistema",
+    triggerEffSetVar: "Modificar Variable",
+    triggerEffImperson: "Enviar Chat",
+    triggerEffCommand: "Ejecutar Comando",
+    triggerEffRunTrigger: "Ejecutar Activación",
+    triggerEffStop: "Detener Envío de Prompt",
+    triggerEffCall: "Llamar a Activación",
     varableName: "Nombre de la Variable",
     role: "Rol",
-    location: 'Ubicación',
+    location: "Ubicación",
     promptstart: "Inicio del Prompt",
     promptend: "Fin del Prompt",
     historyend: "Fin del Historial",
@@ -492,13 +556,14 @@ export const languageSpanish = {
     import: "Importar",
     supporterThanks: "Agradecimiento a los Soportes",
     supporterThanksDesc: "¡Gracias por tu apoyo!",
-    donatorPatreonDesc: "Por defecto, no se mostrará en la lista por privacidad. Si deseas mostrar tu apodo, ve a la página de patreon de RisuAI y presiona el botón de enlace.",
+    donatorPatreonDesc:
+        "Por defecto, no se mostrará en la lista por privacidad. Si deseas mostrar tu apodo, ve a la página de patreon de RisuAI y presiona el botón de enlace.",
     useNamePrefix: "Usar Prefijo de Nombre",
     textAdventureNAI: "Ejecutar como Aventura de Texto",
     appendNameNAI: "Agregar Nombre en NAI",
     customStopWords: "Palabras de Parada Personalizadas",
     defaultPrompt: "Prompt Predeterminado",
-    additionalText: 'Descripción Adicional',
+    additionalText: "Descripción Adicional",
     seed: "Semilla",
     charjs: "CharacterJS",
     depthPrompt: "Prompt de Profundidad",
@@ -512,7 +577,8 @@ export const languageSpanish = {
     imgGenPrompt: "Prompt de Generación de Imágenes",
     imgGenNegatives: "Prompt Negativo de Generación de Imágenes",
     imgGenInstructions: "Instrucciones para Generación de Imágenes",
-    usePlainFetchWarn: "Desactiva esta opción cuando uses NovelAI, ya que puede causar errores de CORS al usar NovelAI.",
+    usePlainFetchWarn:
+        "Desactiva esta opción cuando uses NovelAI, ya que puede causar errores de CORS al usar NovelAI.",
     translationPrompt: "Prompt de Traducción",
     translationResponseSize: "Tamaño de Respuesta de Traducción",
     webdeeplwarn: "Esta opción no se recomienda para su uso con la versión web, ya que puede causar errores de CORS.",
@@ -546,10 +612,12 @@ export const languageSpanish = {
     removePunctuationHypa: "Eliminación de Puntuación de Memoria",
     memoryLimitThickness: "Grosor del Límite de Memoria",
     inputCardPassword: "Ingresa la Contraseña de la Tarjeta",
-    ccv2Desc: 'Character Card V2 es un formato ampliamente utilizado en programas de chatbot.',
-    ccv3Desc: 'Character Card V3 es un formato de próxima generación que se usa en programas de chatbot.',
-    realmDesc: 'RisuRealm es una plataforma de compartición de contenido para RisuAI. Puedes compartir tu personaje con otros usuarios.',
-    rccDesc: 'Risu Refined Character Card es un formato con características adicionales como contraseña, verificación de integridad, etc.',
+    ccv2Desc: "Character Card V2 es un formato ampliamente utilizado en programas de chatbot.",
+    ccv3Desc: "Character Card V3 es un formato de próxima generación que se usa en programas de chatbot.",
+    realmDesc:
+        "RisuRealm es una plataforma de compartición de contenido para RisuAI. Puedes compartir tu personaje con otros usuarios.",
+    rccDesc:
+        "Risu Refined Character Card es un formato con características adicionales como contraseña, verificación de integridad, etc.",
     password: "Contraseña",
     license: "Licencia",
     licenseDesc: "Puedes elegir la licencia para los descargadores para limitar los usos del prompt de tu tarjeta.",
@@ -571,9 +639,11 @@ export const languageSpanish = {
     sideMenuRerollButton: "Botón de Regeneración en el Menú Lateral",
     persistentStorage: "Almacenamiento Persistente",
     persistentStorageSuccess: "El almacenamiento se ha persistido exitosamente",
-    persistentStorageFail: "El almacenamiento no se ha persistido. ¿Rechazaste la solicitud?, ¿o el navegador no es compatible?",
+    persistentStorageFail:
+        "El almacenamiento no se ha persistido. ¿Rechazaste la solicitud?, ¿o el navegador no es compatible?",
     persistentStorageRecommended: "Se recomienda el Almacenamiento Persistente",
-    persistentStorageDesc: "Tu navegador admite almacenamiento persistente. Esto se recomienda para un mejor rendimiento y experiencia del usuario.",
+    persistentStorageDesc:
+        "Tu navegador admite almacenamiento persistente. Esto se recomienda para un mejor rendimiento y experiencia del usuario.",
     enable: "Habilitar",
     postFile: "Publicar Archivo",
     requestInfoInsideChat: "Mostrar Información de la Solicitud Dentro del Chat",
@@ -581,15 +651,18 @@ export const languageSpanish = {
     outputTokens: "Tokens de Salida",
     tokenWarning: "El cálculo de tokens puede ser inexacto. se recomienda usarlo como referencia.",
     log: "Registro",
-    popularityLevelDesc: "La popularidad aumenta con las descargas, etc. Para estimar, 3.7 de popularidad equivale a aproximadamente 1 descarga.",
+    popularityLevelDesc:
+        "La popularidad aumenta con las descargas, etc. Para estimar, 3.7 de popularidad equivale a aproximadamente 1 descarga.",
     additionalParams: "Parámetros Adicionales",
     heightMode: "Modo de Altura",
     useAdvancedEditor: "Usar Editor Avanzado",
     noWaitForTranslate: "Sin Espera para Traducir",
     updateRealm: "Actualizar a RisuRealm",
-    updateRealmDesc: "Estás intentando actualizar tu personaje a RisuRealm. Esto actualizará tu personaje en RisuRealm, y no podrás revertirlo.",
+    updateRealmDesc:
+        "Estás intentando actualizar tu personaje a RisuRealm. Esto actualizará tu personaje en RisuRealm, y no podrás revertirlo.",
     antiClaudeOverload: "Anti-Sobrecarga de Claude",
-    activeTabChange: "La pestaña actual se desactivó porque otra pestaña está activa. para activar esta pestaña, haz clic en Aceptar",
+    activeTabChange:
+        "La pestaña actual se desactivó porque otra pestaña está activa. para activar esta pestaña, haz clic en Aceptar",
     maxSupaChunkSize: "Tamaño Máximo del Chunk de SupaMemoria",
     addCharacter: "Agregar Personaje",
     importFromRealm: "Elegir desde RisuRealm",
@@ -618,7 +691,8 @@ export const languageSpanish = {
     grid: "Cuadrícula",
     list: "Lista",
     trash: "Papelera",
-    trashDesc: "Los personajes eliminados se mueven a la papelera. Puedes restaurarlos o eliminarlos permanentemente. Los personajes eliminados se purgan automáticamente después de 3 días.",
+    trashDesc:
+        "Los personajes eliminados se mueven a la papelera. Puedes restaurarlos o eliminarlos permanentemente. Los personajes eliminados se purgan automáticamente después de 3 días.",
     shareExport: "Compartir/Exportar",
     risupresetDesc: "El formato Risupreset es un formato específicamente diseñado para presets de RisuAI.",
     jsonDesc: "El formato JSON es un formato fácil de leer y escribir tanto para humanos como para máquinas.",
@@ -628,7 +702,8 @@ export const languageSpanish = {
     defaultVariables: "Variables Predeterminadas",
     hypaAllocatedTokens: "Tokens Asignados",
     hypaChunkSize: "Tamaño del Chunk",
-    hypaV2Desc: "HypaMemory V2 es un sistema de memoria a largo plazo que utiliza tanto datos resumidos como búsqueda de vectores.",
+    hypaV2Desc:
+        "HypaMemory V2 es un sistema de memoria a largo plazo que utiliza tanto datos resumidos como búsqueda de vectores.",
     supaDesc: "SupaMemory es un sistema de memoria a largo plazo que utiliza datos resumidos para la IA.",
     hanuraiDesc: "HanuraiMemory es un sistema de memoria que utiliza búsqueda de vectores.",
     lowLevelAccess: "Acceso de Bajo Nivel",
@@ -641,8 +716,10 @@ export const languageSpanish = {
     error: "Error",
     input: "Entrada",
     select: "Seleccionar",
-    lowLevelAccessConfirm: "Este contenido usa Acceso de Bajo Nivel. lo que significa que este contenido puede acceder al modelo de IA y a tu almacenamiento directamente. ¿Realmente deseas importar este contenido?",
-    triggerLowLevelOnly: "Este activador solo funciona con Acceso de Bajo Nivel. para habilitar este activador, habilita Acceso de Bajo Nivel en configuraciones avanzadas en el personaje o módulo.",
+    lowLevelAccessConfirm:
+        "Este contenido usa Acceso de Bajo Nivel. lo que significa que este contenido puede acceder al modelo de IA y a tu almacenamiento directamente. ¿Realmente deseas importar este contenido?",
+    triggerLowLevelOnly:
+        "Este activador solo funciona con Acceso de Bajo Nivel. para habilitar este activador, habilita Acceso de Bajo Nivel en configuraciones avanzadas en el personaje o módulo.",
     truthy: "Truthy",
     extractRegex: "Extraer Texto con Regex",
     runImgGen: "Ejecutar Generación de Imágenes",
@@ -664,11 +741,12 @@ export const languageSpanish = {
     font: "Fuente",
     lineHeight: "Altura de Línea",
     loadAutoServerBackup: "Cargar Respaldo Automático del Servidor",
-    notCharxWarn: "Este personaje usa múltiples activos. se recomienda exportar este personaje como un formato CharX para mejor compatibilidad.",
+    notCharxWarn:
+        "Este personaje usa múltiples activos. se recomienda exportar este personaje como un formato CharX para mejor compatibilidad.",
     noPlugins: "No hay Plugins Instalados",
     legacyTranslation: "Traducción Legacy",
     clipboardSuccess: "Copiado al Portapapeles",
-    translateContent: 'Traducir Contenido',
+    translateContent: "Traducir Contenido",
     doNotTranslate: "No Traducir",
     includePersonaName: "Incluir Nombre de la Persona",
     hidePersonaName: "Ocultar Nombre de la Persona",
@@ -688,51 +766,54 @@ export const languageSpanish = {
     parameters: "Parámetros",
     sizeAndSpeed: "Tamaño y Velocidad",
     useLegacyGUI: "Usar Interfaz Legacy",
-    "hypaV3Settings": {
-        "descriptionLabel": "HypaMemory V3 es un sistema de memoria a largo plazo que utiliza tanto resúmenes como búsqueda vectorial.",
-        "supaMemoryPromptPlaceHolder": "Dejar en blanco para usar el valor predeterminado",
-        "maxMemoryTokensRatioLabel": "Ratio Máximo de Tokens de Memoria (Estimado)",
-        "maxMemoryTokensRatioError": "No se puede calcular el ratio máximo de tokens de memoria",
-        "memoryTokensRatioLabel": "Ratio de Tokens de Memoria",
-        "extraSummarizationRatioLabel": "Ratio de Resumen Adicional",
-        "maxChatsPerSummaryLabel": "Mensajes Máximos por Resumen",
-        "recentMemoryRatioLabel": "Ratio de Memoria Reciente",
-        "similarMemoryRatioLabel": "Ratio de Memoria Similar",
-        "randomMemoryRatioLabel": "Ratio de Memoria Aleatoria",
-        "enableSimilarityCorrectionLabel": "Activar Corrección de Similitud",
-        "preserveOrphanedMemoryLabel": "Preservar Memoria Huérfana",
-        "applyRegexScriptWhenRerollingLabel": "Aplicar Script Regex al Regenerar",
-        "doNotSummarizeUserMessageLabel": "No Resumir Mensajes del Usuario",
+    hypaV3Settings: {
+        descriptionLabel:
+            "HypaMemory V3 es un sistema de memoria a largo plazo que utiliza tanto resúmenes como búsqueda vectorial.",
+        supaMemoryPromptPlaceHolder: "Dejar en blanco para usar el valor predeterminado",
+        maxMemoryTokensRatioLabel: "Ratio Máximo de Tokens de Memoria (Estimado)",
+        maxMemoryTokensRatioError: "No se puede calcular el ratio máximo de tokens de memoria",
+        memoryTokensRatioLabel: "Ratio de Tokens de Memoria",
+        extraSummarizationRatioLabel: "Ratio de Resumen Adicional",
+        maxChatsPerSummaryLabel: "Mensajes Máximos por Resumen",
+        recentMemoryRatioLabel: "Ratio de Memoria Reciente",
+        similarMemoryRatioLabel: "Ratio de Memoria Similar",
+        randomMemoryRatioLabel: "Ratio de Memoria Aleatoria",
+        enableSimilarityCorrectionLabel: "Activar Corrección de Similitud",
+        preserveOrphanedMemoryLabel: "Preservar Memoria Huérfana",
+        applyRegexScriptWhenRerollingLabel: "Aplicar Script Regex al Regenerar",
+        doNotSummarizeUserMessageLabel: "No Resumir Mensajes del Usuario",
     },
-    "hypaV3Modal": {
-        "titleLabel": "HypaV3",
-        "resetConfirmMessage": "Esta acción no se puede deshacer. ¿Desea restablecer los datos de HypaV3?",
-        "resetConfirmSecondMessage": "Esta acción es irreversible. ¿Está realmente seguro de querer restablecer los datos de HypaV3?",
-        "convertLabel": "Aún no hay resúmenes, pero puede convertir datos de HypaV2 a V3.",
-        "convertButton": "Convertir a V3",
-        "convertSuccessMessage": "Datos de HypaV2 convertidos exitosamente a V3",
-        "convertErrorMessage": "Error al convertir datos de HypaV2 a V3: {0}",
-        "noSummariesLabel": "Aún no hay resúmenes",
-        "searchPlaceholder": "Ingrese #N, ID o búsqueda",
-        "summaryNumberLabel": "Resumen #{0}",
-        "deleteThisConfirmMessage": "¿Eliminar este resumen?",
-        "deleteAfterConfirmMessage": "¿Eliminar todos los resúmenes después de este?",
-        "deleteAfterConfirmSecondMessage": "Esta acción no se puede deshacer. ¿Está realmente seguro?",
-        "translationLabel": "Traducción",
-        "rerolledSummaryLabel": "Resumen Regenerado",
-        "rerolledTranslationLabel": "Traducción del Resumen Regenerado",
-        "connectedMessageCountLabel": "Mensajes Conectados ({0})",
-        "connectedFirstMessageLabel": "Primer Mensaje",
-        "connectedMessageRoleLabel": "Mensaje de {0}",
-        "connectedMessageNotFoundLabel": "Mensaje no encontrado",
-        "connectedMessageLoadingError": "Error al cargar mensaje conectado: {0}",
-        "connectedMessageTranslationLabel": "Traducción",
-        "nextSummarizationFirstMessageLabel": "Primer Mensaje",
-        "nextSummarizationNoMessageIdLabel": "Sin ID de Mensaje",
-        "nextSummarizationLabel": "HypaV3 resumirá [{0}]",
-        "nextSummarizationNoMessagesFoundLabel": "ADVERTENCIA: No se encontraron mensajes",
-        "nextSummarizationLoadingError": "Error al cargar el siguiente objetivo de resumen: {0}",
-        "summarizationConditionLabel": "Consejo: HypaV3 comienza a resumir cuando los tokens de entrada superan el tamaño máximo de contexto.",
-        "emptySelectedFirstMessageLabel": "ADVERTENCIA: El primer mensaje seleccionado está vacío"
+    hypaV3Modal: {
+        titleLabel: "HypaV3",
+        resetConfirmMessage: "Esta acción no se puede deshacer. ¿Desea restablecer los datos de HypaV3?",
+        resetConfirmSecondMessage:
+            "Esta acción es irreversible. ¿Está realmente seguro de querer restablecer los datos de HypaV3?",
+        convertLabel: "Aún no hay resúmenes, pero puede convertir datos de HypaV2 a V3.",
+        convertButton: "Convertir a V3",
+        convertSuccessMessage: "Datos de HypaV2 convertidos exitosamente a V3",
+        convertErrorMessage: "Error al convertir datos de HypaV2 a V3: {0}",
+        noSummariesLabel: "Aún no hay resúmenes",
+        searchPlaceholder: "Ingrese #N, ID o búsqueda",
+        summaryNumberLabel: "Resumen #{0}",
+        deleteThisConfirmMessage: "¿Eliminar este resumen?",
+        deleteAfterConfirmMessage: "¿Eliminar todos los resúmenes después de este?",
+        deleteAfterConfirmSecondMessage: "Esta acción no se puede deshacer. ¿Está realmente seguro?",
+        translationLabel: "Traducción",
+        rerolledSummaryLabel: "Resumen Regenerado",
+        rerolledTranslationLabel: "Traducción del Resumen Regenerado",
+        connectedMessageCountLabel: "Mensajes Conectados ({0})",
+        connectedFirstMessageLabel: "Primer Mensaje",
+        connectedMessageRoleLabel: "Mensaje de {0}",
+        connectedMessageNotFoundLabel: "Mensaje no encontrado",
+        connectedMessageLoadingError: "Error al cargar mensaje conectado: {0}",
+        connectedMessageTranslationLabel: "Traducción",
+        nextSummarizationFirstMessageLabel: "Primer Mensaje",
+        nextSummarizationNoMessageIdLabel: "Sin ID de Mensaje",
+        nextSummarizationLabel: "HypaV3 resumirá [{0}]",
+        nextSummarizationNoMessagesFoundLabel: "ADVERTENCIA: No se encontraron mensajes",
+        nextSummarizationLoadingError: "Error al cargar el siguiente objetivo de resumen: {0}",
+        summarizationConditionLabel:
+            "Consejo: HypaV3 comienza a resumir cuando los tokens de entrada superan el tamaño máximo de contexto.",
+        emptySelectedFirstMessageLabel: "ADVERTENCIA: El primer mensaje seleccionado está vacío",
     },
 }

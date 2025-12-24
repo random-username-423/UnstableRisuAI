@@ -1,12 +1,12 @@
-import type { character, Message } from "src/ts/data/storage/types";
-import { DBState } from 'src/ts/stores.svelte';
-import { ChatState } from "src/ts/stores.svelte";
-import { tokenizeNum } from "src/ts/utils/tokenizer";
-import { language } from "src/lang";
-import { requestChatData } from "src/ts/process/request/request";
-import { stableDiff } from "src/ts/process/integrations/stableDiff";
-import { HypaProcesser } from "src/ts/process/memory/hypamemory";
-import type { OpenAIChat } from "src/ts/process/chatTypes";
+import type { character, Message } from "src/ts/data/storage/types"
+import { DBState } from "src/ts/stores.svelte"
+import { ChatState } from "src/ts/stores.svelte"
+import { tokenizeNum } from "src/ts/utils/tokenizer"
+import { language } from "src/lang"
+import { requestChatData } from "src/ts/process/request/request"
+import { stableDiff } from "src/ts/process/integrations/stableDiff"
+import { HypaProcesser } from "src/ts/process/memory/hypamemory"
+import type { OpenAIChat } from "src/ts/process/chatTypes"
 
 export interface EmotionProcessResult {
     success: boolean
@@ -35,11 +35,11 @@ export async function processEmotionScreen(
     }
 
     // Embedding-based emotion detection
-    if (DBState.db.emotionProcesser === 'embedding') {
+    if (DBState.db.emotionProcesser === "embedding") {
         const hypaProcesser = new HypaProcesser()
-        await hypaProcesser.addText(emotionList.map((v) => 'emotion:' + v))
+        await hypaProcesser.addText(emotionList.map((v) => "emotion:" + v))
         const searched = (await hypaProcesser.similaritySearchScored(result)).map((v) => {
-            v[0] = v[0].replace("emotion:", '')
+            v[0] = v[0].replace("emotion:", "")
             return v
         })
 
@@ -47,7 +47,7 @@ export async function processEmotionScreen(
         for (let i = 0; i < tempEmotion.length; i++) {
             const emo = tempEmotion[i]
             const index = searched.findIndex((v) => v[0] === emo[0])
-            const modifier = ((5 - ((tempEmotion.length - (i + 1))))) / 200
+            const modifier = (5 - (tempEmotion.length - (i + 1))) / 200
 
             if (index !== -1) {
                 searched[index][1] -= modifier
@@ -73,8 +73,8 @@ export async function processEmotionScreen(
     // LLM-based emotion detection
     function shuffleArray(array: string[]) {
         for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]]
+            const j = Math.floor(Math.random() * (i + 1))
+            ;[array[i], array[j]] = [array[j], array[i]]
         }
         return array
     }
@@ -91,7 +91,7 @@ export async function processEmotionScreen(
     for (let i = 0; i < tempEmotion.length; i++) {
         const emo = tempEmotion[i]
         const tokens = await tokenizeNum(emo[0])
-        const modifier = 20 - ((tempEmotion.length - (i + 1)) * (20 / 4))
+        const modifier = 20 - (tempEmotion.length - (i + 1)) * (20 / 4)
 
         for (const token of tokens) {
             emobias[token] -= modifier
@@ -103,31 +103,35 @@ export async function processEmotionScreen(
 
     const promptbody: OpenAIChat[] = [
         {
-            role: 'system',
-            content: `${DBState.db.emotionPrompt2 || "From the list below, choose a word that best represents a character's outfit description, action, or emotion in their dialogue. Prioritize selecting words related to outfit first, then action, and lastly emotion. Print out the chosen word."}\n\n list: ${shuffleArray(emotionList).join(', ')} \noutput only one word.`
+            role: "system",
+            content: `${DBState.db.emotionPrompt2 || "From the list below, choose a word that best represents a character's outfit description, action, or emotion in their dialogue. Prioritize selecting words related to outfit first, then action, and lastly emotion. Print out the chosen word."}\n\n list: ${shuffleArray(emotionList).join(", ")} \noutput only one word.`,
         },
         {
-            role: 'user',
-            content: `"Good morning, Master! Is there anything I can do for you today?"`
+            role: "user",
+            content: `"Good morning, Master! Is there anything I can do for you today?"`,
         },
         {
-            role: 'assistant',
-            content: 'happy'
+            role: "assistant",
+            content: "happy",
         },
         {
-            role: 'user',
-            content: result
+            role: "user",
+            content: result,
         },
     ]
 
-    const rq = await requestChatData({
-        formated: promptbody,
-        bias: emobias,
-        currentChar: currentChar,
-        maxTokens: 30,
-    }, 'emotion', abortSignal)
+    const rq = await requestChatData(
+        {
+            formated: promptbody,
+            bias: emobias,
+            currentChar: currentChar,
+            maxTokens: 30,
+        },
+        "emotion",
+        abortSignal
+    )
 
-    if (rq.type === 'fail' || rq.type === 'streaming' || rq.type === 'multiline') {
+    if (rq.type === "fail" || rq.type === "streaming" || rq.type === "multiline") {
         if (abortSignal.aborted) {
             return { success: true }
         }
@@ -137,7 +141,7 @@ export async function processEmotionScreen(
 
     emotionList = currentEmotion.map((a) => a[0])
     try {
-        const emotion: string = rq.result.replace(/ |\n/g, '').trim().toLocaleLowerCase()
+        const emotion: string = rq.result.replace(/ |\n/g, "").trim().toLocaleLowerCase()
         let emotionSelected = false
 
         // Exact match
@@ -167,8 +171,8 @@ export async function processEmotionScreen(
         }
 
         // Fallback to neutral
-        if (!emotionSelected && emotionList.includes('neutral')) {
-            const emo = currentEmotion[emotionList.indexOf('neutral')]
+        if (!emotionSelected && emotionList.includes("neutral")) {
+            const emo = currentEmotion[emotionList.indexOf("neutral")]
             const emos: [string, string, number] = [emo[0], emo[1], Date.now()]
             tempEmotion.push(emos)
             charemotions[currentChar.chaId] = tempEmotion
@@ -196,12 +200,12 @@ export async function processImageGenScreen(
         return
     }
 
-    let msgStr = ''
-    for (let i = (messages.length - 1); i >= 0; i--) {
-        if (messages[i].role === 'char') {
-            msgStr = `character: ${messages[i].data.replace(/\n/g, ' ')} \n` + msgStr
+    let msgStr = ""
+    for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === "char") {
+            msgStr = `character: ${messages[i].data.replace(/\n/g, " ")} \n` + msgStr
         } else {
-            msgStr = `user: ${messages[i].data.replace(/\n/g, ' ')} \n` + msgStr
+            msgStr = `user: ${messages[i].data.replace(/\n/g, " ")} \n` + msgStr
             break
         }
     }
@@ -212,10 +216,7 @@ export async function processImageGenScreen(
 /**
  * Update emotion from special response data
  */
-export function updateEmotionFromSpecial(
-    currentChar: character,
-    emotionName: string
-): boolean {
+export function updateEmotionFromSpecial(currentChar: character, emotionName: string): boolean {
     const charemotions = ChatState.emotions
     const currentEmotion = currentChar.emotionImages
 

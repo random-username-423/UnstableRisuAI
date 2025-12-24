@@ -1,9 +1,9 @@
-import { alertError } from "../../utils/alert.svelte";
-import { hubURL } from "../../character/characterCards.svelte";
-import { language } from "../../../lang";
-import type { Database } from "../storage/types";
-import { isTauri } from "src/ts/utils/env";
-import { fetch as TauriFetch } from "@tauri-apps/plugin-http";
+import { alertError } from "../../utils/alert.svelte"
+import { hubURL } from "../../character/characterCards.svelte"
+import { language } from "../../../lang"
+import type { Database } from "../storage/types"
+import { isTauri } from "src/ts/utils/env"
+import { fetch as TauriFetch } from "@tauri-apps/plugin-http"
 
 /**
  * Checks if backup data is corrupted by sending it to the server.
@@ -15,13 +15,13 @@ export async function checkBackupCorruption(db: Database): Promise<boolean> {
     }
 
     try {
-        console.log('[BackupCheck] Checking backup corruption...')
+        console.log("[BackupCheck] Checking backup corruption...")
         // Use Tauri HTTP plugin to bypass CORS
         const fetchFn = isTauri ? TauriFetch : fetch
-        const response = await fetchFn(hubURL + '/backupcheck', {
-            method: 'POST',
+        const response = await fetchFn(hubURL + "/backupcheck", {
+            method: "POST",
             headers: {
-                'Content-Type': 'application/json'
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(db),
         })
@@ -29,7 +29,7 @@ export async function checkBackupCorruption(db: Database): Promise<boolean> {
         console.log(`[BackupCheck] Response status: ${response.status}`)
 
         if (response.status === 400) {
-            alertError('Failed, Backup data is corrupted')
+            alertError("Failed, Backup data is corrupted")
             return false
         }
 
@@ -40,18 +40,18 @@ export async function checkBackupCorruption(db: Database): Promise<boolean> {
 
         if (!response.ok) {
             // Other HTTP errors (500, 404, etc.)
-            const errorText = await response.text().catch(() => 'Unknown error')
+            const errorText = await response.text().catch(() => "Unknown error")
             console.error(`[BackupCheck] Server error: ${response.status} - ${errorText}`)
             alertError(`Backup check failed: Server error ${response.status}`)
             return false
         }
 
-        console.log('[BackupCheck] Backup data is valid')
+        console.log("[BackupCheck] Backup data is valid")
         return true
     } catch (e) {
         // Network error - log it but let the backup proceed
         // The actual backup will handle its own errors
-        console.warn('[BackupCheck] Network error, skipping check:', e)
+        console.warn("[BackupCheck] Network error, skipping check:", e)
         return true
     }
 }

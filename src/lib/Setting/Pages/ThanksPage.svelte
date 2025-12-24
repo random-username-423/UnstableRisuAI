@@ -1,27 +1,25 @@
 <script lang="ts">
-    import { language } from "src/lang";
-    import { openURL } from "src/ts/utils/util";
+    import { language } from "src/lang"
+    import { openURL } from "src/ts/utils/util"
 
-
-    interface supporters{
-        I: string[],
-        II: string[],
-        III: string[],
-        IV: string[],
-        V: string[],
+    interface supporters {
+        I: string[]
+        II: string[]
+        III: string[]
+        IV: string[]
+        V: string[]
     }
 
-    interface supporterL{
-        amount: number,
-        name: string,
+    interface supporterL {
+        amount: number
+        name: string
     }
 
     async function loadSupporters() {
-
         const supp = await fetch("https://sv.risuai.xyz/patreon/list")
 
-        const list = await supp.json() as supporterL[]
-        const thanks:supporters = {
+        const list = (await supp.json()) as supporterL[]
+        const thanks: supporters = {
             //random names
             I: list.filter((v) => v.amount < 5).map((v) => v.name),
             II: list.filter((v) => v.amount >= 5 && v.amount < 10).map((v) => v.name),
@@ -33,19 +31,29 @@
     }
 </script>
 
-<h2 class="text-2xl font-bold mt-2">{language.supporterThanks}</h2>
+<h2 class="mt-2 text-2xl font-bold">{language.supporterThanks}</h2>
 <span class="mb-2 text-textcolor2">{language.supporterThanksDesc}</span>
 
 <!-- Patreon Button -->
-<div class="flex items-center justify-center rounded-md flex-wrap gap-2">
-    <button class="h-12 w-44" onclick={() => {
-        openURL("https://www.patreon.com/RisuAI")
-    }}>
-        <img src="https://c5.patreon.com/external/logo/become_a_patron_button.png" alt="patreon button" class="w-full h-full"/>
+<div class="flex flex-wrap items-center justify-center gap-2 rounded-md">
+    <button
+        class="h-12 w-44"
+        onclick={() => {
+            openURL("https://www.patreon.com/RisuAI")
+        }}
+    >
+        <img
+            src="https://c5.patreon.com/external/logo/become_a_patron_button.png"
+            alt="patreon button"
+            class="h-full w-full"
+        />
     </button>
-    <button class="h-12 w-44 bg-slate-700 font-bold text-sm" onclick={() => {
-        openURL("https://sv.risuai.xyz/patreon")
-    }}>
+    <button
+        class="h-12 w-44 bg-slate-700 text-sm font-bold"
+        onclick={() => {
+            openURL("https://sv.risuai.xyz/patreon")
+        }}
+    >
         ADD YOUR NAME
     </button>
 </div>
@@ -54,97 +62,94 @@
 
 {#await loadSupporters()}
     <span>Loading...</span>
-
 {:then supporter}
-    <h3 class="text-xl font-bold mt-4">Supporter V</h3>
-    <div class="flex w-full max-w-full flex-wrap gap-2"> 
+    <h3 class="mt-4 text-xl font-bold">Supporter V</h3>
+    <div class="flex w-full max-w-full flex-wrap gap-2">
         {#each supporter.V as support}
-            <div class="flex flex-col items-center justify-center border-selected border rounded">
-                <div class="flex justify-center items-center py-4 px-8">
-                    <span class="font-black prism-font prism-font-gold text-3xl">{support}</span>
+            <div class="flex flex-col items-center justify-center rounded border border-selected">
+                <div class="flex items-center justify-center px-8 py-4">
+                    <span class="prism-font prism-font-gold text-3xl font-black">{support}</span>
                 </div>
             </div>
         {/each}
     </div>
-    <h3 class="text-xl font-bold mt-4">Supporter IV</h3>
-    <div class="flex w-full max-w-3xl flex-wrap gap-2"> 
+    <h3 class="mt-4 text-xl font-bold">Supporter IV</h3>
+    <div class="flex w-full max-w-3xl flex-wrap gap-2">
         {#each supporter.IV as support}
-            <div class="flex flex-col items-center justify-center border-selected border rounded">
-                <div class="flex justify-center items-center py-4 px-8">
-                    <span class="font-black prism-font prism-font-silver text-2xl">{support}</span>
+            <div class="flex flex-col items-center justify-center rounded border border-selected">
+                <div class="flex items-center justify-center px-8 py-4">
+                    <span class="prism-font prism-font-silver text-2xl font-black">{support}</span>
                 </div>
             </div>
         {/each}
     </div>
-    <h3 class="text-xl font-bold mt-4">Supporter III</h3>
-    <div class="flex w-full max-w-3xl flex-wrap gap-2"> 
+    <h3 class="mt-4 text-xl font-bold">Supporter III</h3>
+    <div class="flex w-full max-w-3xl flex-wrap gap-2">
         {#each supporter.III as support}
             <!-- make a card -->
-            <div class="flex flex-col items-center justify-center border-selected border rounded">
-                <div class="w-32 flex justify-center items-center py-3 px-6">
-                    <span class="font-black prism-font prism-font-silver text-xl">{support}</span>
+            <div class="flex flex-col items-center justify-center rounded border border-selected">
+                <div class="flex w-32 items-center justify-center px-6 py-3">
+                    <span class="prism-font prism-font-silver text-xl font-black">{support}</span>
                 </div>
             </div>
         {/each}
     </div>
-    <h3 class="text-xl font-bold mt-4">Supporter II</h3>
-    <div class="flex w-full max-w-3xl flex-wrap gap-2"> 
+    <h3 class="mt-4 text-xl font-bold">Supporter II</h3>
+    <div class="flex w-full max-w-3xl flex-wrap gap-2">
         {#each supporter.II as support}
             <!-- make a card -->
-            <div class="flex flex-col items-center justify-center border-selected border rounded">
-                <div class="w-32 flex justify-center items-center p-1">
-                    <span class="font-bold prism-font prism-font-copper text-lg">{support}</span>
+            <div class="flex flex-col items-center justify-center rounded border border-selected">
+                <div class="flex w-32 items-center justify-center p-1">
+                    <span class="prism-font prism-font-copper text-lg font-bold">{support}</span>
                 </div>
             </div>
         {/each}
     </div>
-    <h3 class="text-xl font-bold mt-4">Supporter I</h3>
-    <div class="flex w-full max-w-3xl flex-wrap gap-2"> 
+    <h3 class="mt-4 text-xl font-bold">Supporter I</h3>
+    <div class="flex w-full max-w-3xl flex-wrap gap-2">
         {#each supporter.I as support}
             <!-- make a card -->
-            <div class="flex flex-col items-center justify-center border-selected border rounded">
-                <div class="w-32 flex justify-center items-center p-1">
-                    <span class="font-bold prism-font prism-font-copper">{support}</span>
+            <div class="flex flex-col items-center justify-center rounded border border-selected">
+                <div class="flex w-32 items-center justify-center p-1">
+                    <span class="prism-font prism-font-copper font-bold">{support}</span>
                 </div>
             </div>
         {/each}
     </div>
 {/await}
 
-
 <style>
+    .prism-font-silver {
+        background: linear-gradient(to right, #777, #fff, #777, #fff, #777);
+    }
+    .prism-font-gold {
+        background: linear-gradient(to right, #d4af32, #fff, #d4af32, #fff, #d4af32);
+    }
+    .prism-font-copper {
+        background: linear-gradient(to right, #b87333, #fff, #b87333, #fff, #b87333);
+    }
 
-    .prism-font-silver{
-        background: linear-gradient(to right, #777, #fff ,#777, #fff, #777);
-    }
-    .prism-font-gold{
-        background: linear-gradient(to right, #D4AF32, #fff ,#D4AF32, #fff, #D4AF32);
-    }
-    .prism-font-copper{
-        background: linear-gradient(to right, #B87333, #fff ,#B87333, #fff, #B87333);
-    }
-
-    .prism-font{
-		text-align: center;
-		color: transparent;
+    .prism-font {
+        text-align: center;
+        color: transparent;
         background-size: 150px 100%;
-		background-clip: text;
-		animation-name: shimmer;
-		animation-duration: 2s;
-		animation-iteration-count: infinite;
-		background-repeat: no-repeat;
-		background-position: 0 0;
-		background-color: #222;
+        background-clip: text;
+        animation-name: shimmer;
+        animation-duration: 2s;
+        animation-iteration-count: infinite;
+        background-repeat: no-repeat;
+        background-position: 0 0;
+        background-color: #222;
     }
     @keyframes shimmer {
-		0% {
-			background-position: top left;
-		}
-		50% {
-			background-position: top right;
-		}
         0% {
-			background-position: top left;
-		}
+            background-position: top left;
+        }
+        50% {
+            background-position: top right;
+        }
+        0% {
+            background-position: top left;
+        }
     }
 </style>

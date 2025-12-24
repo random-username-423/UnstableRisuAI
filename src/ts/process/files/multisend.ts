@@ -1,125 +1,131 @@
-import { getDatabase, setDatabase } from 'src/ts/data/storage/database.svelte';
-import { ChatState } from 'src/ts/stores.svelte';
-import { DoingChatState, sendChat } from '../index.svelte';
-import { downloadFile } from 'src/ts/utils/fileIO';
-import { isTauri } from "src/ts/utils/env";
-import { HypaProcesser } from '../memory/hypamemory';
-import { BufferToText as BufferToText, selectSingleFile } from 'src/ts/utils/util';
-import { postInlayAsset } from './inlays';
+import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte"
+import { ChatState } from "src/ts/stores.svelte"
+import { DoingChatState, sendChat } from "../index.svelte"
+import { downloadFile } from "src/ts/utils/fileIO"
+import { isTauri } from "src/ts/utils/env"
+import { HypaProcesser } from "../memory/hypamemory"
+import { BufferToText as BufferToText, selectSingleFile } from "src/ts/utils/util"
+import { postInlayAsset } from "./inlays"
 
 type sendFileArg = {
-    file:string
-    query:string
+    file: string
+    query: string
 }
 
-async function sendPofile(arg:sendFileArg){
-
-    let result = ''
-    let msgId = ''
-    let note = ''
-    let speaker = ''
+async function sendPofile(arg: sendFileArg) {
+    let result = ""
+    let msgId = ""
+    let note = ""
+    let speaker = ""
     let parseMode = 0
     const db = getDatabase()
     let currentChar = db.characters[ChatState.selectedCharId]
     let currentChat = currentChar.chats[currentChar.chatPage]
-    const lines = arg.file.split('\n')
-    for(let i=0;i<lines.length;i++){
+    const lines = arg.file.split("\n")
+    for (let i = 0; i < lines.length; i++) {
         console.log(i)
         const line = lines[i]
-        if(line === ''){
-            if(msgId === ''){
-                result += '\n'
+        if (line === "") {
+            if (msgId === "") {
+                result += "\n"
                 continue
             }
             let text = msgId
-            if(speaker !== ''){
+            if (speaker !== "") {
                 text = `Speaker: ${speaker}\n${text}`
             }
-            if(note !== ''){
+            if (note !== "") {
                 text = `Note: ${note}\n${text}`
             }
             currentChat.message.push({
-                role: 'user',
-                data: text
+                role: "user",
+                data: text,
             })
             currentChar.chats[currentChar.chatPage] = currentChat
             db.characters[ChatState.selectedCharId] = currentChar
             setDatabase(db)
             DoingChatState.value = false
-            await sendChat(-1);
+            await sendChat(-1)
             currentChar = db.characters[ChatState.selectedCharId]
             currentChat = currentChar.chats[currentChar.chatPage]
-            const res = currentChat.message[currentChat.message.length-1]
-            const msgStr = res.data.split('\n').filter((a) => {
-                return a !== ''
-            }).map((str) => {
-                return `"${str.replaceAll('"', '\\"')}"`
-            }).join('\n')
+            const res = currentChat.message[currentChat.message.length - 1]
+            const msgStr = res.data
+                .split("\n")
+                .filter((a) => {
+                    return a !== ""
+                })
+                .map((str) => {
+                    return `"${str.replaceAll('"', '\\"')}"`
+                })
+                .join("\n")
             result += `msgstr ""\n${msgStr}\n\n`
-            note = ''
-            speaker = ''
-            msgId = ''
-            if(isTauri){
-                await downloadFile('translated.po', result)
+            note = ""
+            speaker = ""
+            msgId = ""
+            if (isTauri) {
+                await downloadFile("translated.po", result)
             }
             continue
         }
-        if(line.startsWith('#. Note =')){
-            note = line.replace('#. Notes =', '').trim()
+        if (line.startsWith("#. Note =")) {
+            note = line.replace("#. Notes =", "").trim()
             continue
         }
-        if(line.startsWith('#. Speaker =')){
-            speaker = line.replace('#. Speaker =', '').trim()
+        if (line.startsWith("#. Speaker =")) {
+            speaker = line.replace("#. Speaker =", "").trim()
             continue
         }
-        if(line.startsWith('msgid')){
+        if (line.startsWith("msgid")) {
             parseMode = 0
-            msgId = line.replace('msgid ', '').trim().replaceAll('\\"', '♠#').replaceAll('"', '').replaceAll('♠#', '\\"')
-            if(msgId === ''){
+            msgId = line
+                .replace("msgid ", "")
+                .trim()
+                .replaceAll('\\"', "♠#")
+                .replaceAll('"', "")
+                .replaceAll("♠#", '\\"')
+            if (msgId === "") {
                 parseMode = 1
             }
-            result += line + '\n'
+            result += line + "\n"
             continue
         }
-        if(parseMode === 1 && line.startsWith('"') && line.endsWith('"')){
-            msgId += line.substring(1, line.length-1).replaceAll('\\"', '"')
-            result += line + '\n'
+        if (parseMode === 1 && line.startsWith('"') && line.endsWith('"')) {
+            msgId += line.substring(1, line.length - 1).replaceAll('\\"', '"')
+            result += line + "\n"
             continue
         }
-        if(line.startsWith('msgstr')){
-            if(msgId === ''){
-                result += line + '\n'
+        if (line.startsWith("msgstr")) {
+            if (msgId === "") {
+                result += line + "\n"
                 parseMode = 0
-            }
-            else{
+            } else {
                 parseMode = 2
             }
             continue
         }
-        if(parseMode === 2 && line.startsWith('"') && line.endsWith('"')){
+        if (parseMode === 2 && line.startsWith('"') && line.endsWith('"')) {
             continue
         }
-        result += line + '\n'
+        result += line + "\n"
 
-        if(i > 100){
+        if (i > 100) {
             break //prevent too long message in testing
         }
-
     }
-    await downloadFile('translated.po', result)
+    await downloadFile("translated.po", result)
 }
 
-async function sendPDFFile(arg:sendFileArg) {
-    const pdfjsLib = (await import('pdfjs-dist'));
-    const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker?worker&url');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker.default;
-    const pdf = await pdfjsLib.getDocument({data: arg.file}).promise;
-    const texts:string[] = []
-    for(let i = 1; i<=pdf.numPages; i++){
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        const items = content.items as {str:string}[];
-        for(const item of items){
+async function sendPDFFile(arg: sendFileArg) {
+    const pdfjsLib = await import("pdfjs-dist")
+    const pdfjsWorker = await import("pdfjs-dist/build/pdf.worker?worker&url")
+    pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker.default
+    const pdf = await pdfjsLib.getDocument({ data: arg.file }).promise
+    const texts: string[] = []
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i)
+        const content = await page.getTextContent()
+        const items = content.items as { str: string }[]
+        for (const item of items) {
             texts.push(item.str)
         }
     }
@@ -127,177 +133,184 @@ async function sendPDFFile(arg:sendFileArg) {
     const hypa = new HypaProcesser()
     hypa.addText(texts)
     const result = await hypa.similaritySearch(arg.query)
-    let message = ''
-    for(let i = 0; i<result.length; i++){
+    let message = ""
+    for (let i = 0; i < result.length; i++) {
         message += "\n" + result[i]
-        if(i>5){
+        if (i > 5) {
             break
         }
     }
     console.log(message)
-    return Buffer.from(`<File>\n${message}\n</File>\n`).toString('base64')
+    return Buffer.from(`<File>\n${message}\n</File>\n`).toString("base64")
 }
 
-async function sendTxtFile(arg:sendFileArg) {
-    const lines = arg.file.split('\n').filter((a) => {
-        return a !== ''
+async function sendTxtFile(arg: sendFileArg) {
+    const lines = arg.file.split("\n").filter((a) => {
+        return a !== ""
     })
     const hypa = new HypaProcesser()
     hypa.addText(lines)
     const result = await hypa.similaritySearch(arg.query)
-    let message = ''
-    for(let i = 0; i<result.length; i++){
+    let message = ""
+    for (let i = 0; i < result.length; i++) {
         message += "\n" + result[i]
-        if(i>5){
+        if (i > 5) {
             break
         }
     }
     console.log(message)
-    return Buffer.from(`<File>\n${message}\n</File>\n`).toString('base64')
+    return Buffer.from(`<File>\n${message}\n</File>\n`).toString("base64")
 }
 
-async function sendXMLFile(arg:sendFileArg) {
+async function sendXMLFile(arg: sendFileArg) {
     const hypa = new HypaProcesser()
-    const nodeTexts:string[] = []
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(arg.file, "text/xml");
-    const nodes = xmlDoc.getElementsByTagName('*')
-    for(const node of nodes){
+    const nodeTexts: string[] = []
+    const parser = new DOMParser()
+    const xmlDoc = parser.parseFromString(arg.file, "text/xml")
+    const nodes = xmlDoc.getElementsByTagName("*")
+    for (const node of nodes) {
         nodeTexts.push(node.textContent)
     }
     hypa.addText(nodeTexts)
     const result = await hypa.similaritySearch(arg.query)
-    let message = ''
-    for(let i = 0; i<result.length; i++){
+    let message = ""
+    for (let i = 0; i < result.length; i++) {
         message += "\n" + result[i]
-        if(i>5){
+        if (i > 5) {
             break
         }
     }
     console.log(message)
-    return Buffer.from(`<File>\n${message}\n</File>\n`).toString('base64')    
+    return Buffer.from(`<File>\n${message}\n</File>\n`).toString("base64")
 }
 
 type postFileResult = postFileResultAsset | postFileResultVoid | postFileResultText
 
 type postFileResultAsset = {
-    data: string,
-    type: 'asset',
+    data: string
+    type: "asset"
 }
 
 type postFileResultVoid = {
-    type: 'void',
+    type: "void"
 }
 
 type postFileResultText = {
-    data: string,
-    type: 'text',
+    data: string
+    type: "text"
     name: string
 }
-export async function postChatFile(query:string|{
-    name:string,
-    data:Uint8Array<ArrayBufferLike>
-}):Promise<postFileResult>{
-    const file = typeof(query) === 'string' ? (await selectSingleFile([
-        //image format
-        'jpg',
-        'jpeg',
-        'png',
-        'webp',
-        'gif',
-        'avif',
+export async function postChatFile(
+    query:
+        | string
+        | {
+              name: string
+              data: Uint8Array<ArrayBufferLike>
+          }
+): Promise<postFileResult> {
+    const file =
+        typeof query === "string"
+            ? await selectSingleFile([
+                  //image format
+                  "jpg",
+                  "jpeg",
+                  "png",
+                  "webp",
+                  "gif",
+                  "avif",
 
-        //audio format
-        'wav',
-        'mp3',
-        'ogg',
-        'flac',
+                  //audio format
+                  "wav",
+                  "mp3",
+                  "ogg",
+                  "flac",
 
-        //video format
-        'mp4',
-        'webm',
-        'mpeg',
-        'avi',
+                  //video format
+                  "mp4",
+                  "webm",
+                  "mpeg",
+                  "avi",
 
-        //other format
-        'po',
-        // 'pdf',
-        'txt'
-    ])) : query
+                  //other format
+                  "po",
+                  // 'pdf',
+                  "txt",
+              ])
+            : query
 
-    if(!file){
+    if (!file) {
         return null
     }
 
-    const xquery = typeof(query) === 'string' ? query : ''
-    const extention = file.name.split('.').at(-1)
+    const xquery = typeof query === "string" ? query : ""
+    const extention = file.name.split(".").at(-1)
     console.log(extention)
 
-    switch(extention){
-        case 'po':{
+    switch (extention) {
+        case "po": {
             await sendPofile({
                 file: BufferToText(file.data),
-                query: xquery
+                query: xquery,
             })
             return {
-                type: 'void'
+                type: "void",
             }
         }
-        case 'pdf':{
+        case "pdf": {
             return {
-                type: 'text',
+                type: "text",
                 data: await sendPDFFile({
                     file: BufferToText(file.data),
-                    query: xquery
+                    query: xquery,
                 }),
-                name: file.name
+                name: file.name,
             }
         }
-        case 'xml':{
+        case "xml": {
             return {
-                type: 'text',
+                type: "text",
                 data: await sendXMLFile({
                     file: BufferToText(file.data),
-                    query: xquery
+                    query: xquery,
                 }),
-                name: file.name
+                name: file.name,
             }
         }
 
-        case 'jpg': //image format
-        case 'jpeg':
-        case 'png':
-        case 'webp':
-        case 'gif':
-        case 'avif':
-        case 'wav': //audio format
-        case 'mp3':
-        case 'ogg':
-        case 'flac':
-        case 'mp4': //video format
-        case 'webm':
-        case 'mpeg':
-        case 'avi':{
-            const postData = await postInlayAsset({name: file.name, data: file.data as Uint8Array<ArrayBuffer>})
-            if(!postData){
+        case "jpg": //image format
+        case "jpeg":
+        case "png":
+        case "webp":
+        case "gif":
+        case "avif":
+        case "wav": //audio format
+        case "mp3":
+        case "ogg":
+        case "flac":
+        case "mp4": //video format
+        case "webm":
+        case "mpeg":
+        case "avi": {
+            const postData = await postInlayAsset({ name: file.name, data: file.data as Uint8Array<ArrayBuffer> })
+            if (!postData) {
                 return null
             }
             return {
                 data: postData,
-                type: 'asset'
+                type: "asset",
             }
         }
-        case 'txt':{
+        case "txt": {
             return {
-                type: 'text',
+                type: "text",
                 data: await sendTxtFile({
                     file: BufferToText(file.data),
-                    query: xquery
+                    query: xquery,
                 }),
-                name: file.name
+                name: file.name,
             }
         }
     }
 
-    return 
+    return
 }

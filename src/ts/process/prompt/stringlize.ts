@@ -1,92 +1,91 @@
-import type { OpenAIChat } from "src/ts/process/chatTypes";
-import { getDatabase } from "src/ts/data/storage/database.svelte";
-import { getUserName } from "src/ts/utils/util";
+import type { OpenAIChat } from "src/ts/process/chatTypes"
+import { getDatabase } from "src/ts/data/storage/database.svelte"
+import { getUserName } from "src/ts/utils/util"
 
-export function multiChatReplacer(){
+export function multiChatReplacer() {}
 
-}
-
-export function stringlizeChat(formated:OpenAIChat[], char:string, continued:boolean){
-    const resultString:string[] = []
-    for(const form of formated){
-        if(form.memo?.startsWith('inlayImage')){
+export function stringlizeChat(formated: OpenAIChat[], char: string, continued: boolean) {
+    const resultString: string[] = []
+    for (const form of formated) {
+        if (form.memo?.startsWith("inlayImage")) {
             continue
         }
-        if(form.role === 'system'){
+        if (form.role === "system") {
             resultString.push("system: " + form.content)
-        }
-        else if(form.name){
+        } else if (form.name) {
             resultString.push(form.name + ": " + form.content)
-        }
-        else{
+        } else {
             resultString.push(form.content)
         }
     }
-    let res = resultString.join('\n\n')
+    let res = resultString.join("\n\n")
 
-    if(!continued){
+    if (!continued) {
         res += `\n\n${char}:`
     }
     return res
 }
 
-function appendWhitespace(prefix:string, seperator:string=" ") {
-    if(!prefix){
+function appendWhitespace(prefix: string, seperator: string = " ") {
+    if (!prefix) {
         return ""
     }
-    if(prefix && !"> \n".includes(prefix[prefix.length-1])){
+    if (prefix && !"> \n".includes(prefix[prefix.length - 1])) {
         prefix += seperator.includes("\n\n") ? "\n" : " "
     }
     return prefix
 }
-export function stringlizeChatOba(formated:OpenAIChat[], characterName:string, suggesting:boolean, continued:boolean){
+export function stringlizeChatOba(
+    formated: OpenAIChat[],
+    characterName: string,
+    suggesting: boolean,
+    continued: boolean
+) {
     const db = getDatabase()
-    const resultString:string[] = []
-    let { systemPrefix, userPrefix, assistantPrefix, seperator } = db.ooba.formating;
+    const resultString: string[] = []
+    let { systemPrefix, userPrefix, assistantPrefix, seperator } = db.ooba.formating
     systemPrefix = systemPrefix ?? ""
     userPrefix = userPrefix ?? ""
     assistantPrefix = assistantPrefix ?? ""
     seperator = seperator ?? "\n"
 
-    for(const form of formated){
-        if(form.content === "[Start a new chat]"){
+    for (const form of formated) {
+        if (form.content === "[Start a new chat]") {
             resultString.push("<START>")
             continue
         }
         let prefix = ""
         let name = form.name
-        if(form.role === 'user'){
+        if (form.role === "user") {
             prefix = appendWhitespace(suggesting ? assistantPrefix : userPrefix, seperator)
             name ??= `${getUserName()}`
-            name += ': '
-        }
-        else if(form.role === 'assistant'){
+            name += ": "
+        } else if (form.role === "assistant") {
             prefix = appendWhitespace(suggesting ? userPrefix : assistantPrefix, seperator)
             name ??= `${characterName}`
-            name += ': '
-        }
-        else if(form.role === 'system'){
+            name += ": "
+        } else if (form.role === "system") {
             prefix = appendWhitespace(systemPrefix, seperator)
             name = ""
         }
-        if(db.ooba.formating.useName){
+        if (db.ooba.formating.useName) {
             console.log(name)
             resultString.push(prefix + name + form.content)
-        }
-        else{
+        } else {
             resultString.push(prefix + form.content)
         }
     }
-    if(!continued){
-        if(db.ooba.formating.useName){
-            if (suggesting){
-                resultString.push(appendWhitespace(assistantPrefix, seperator) + `${getUserName()}:\n` + db.autoSuggestPrefix)
+    if (!continued) {
+        if (db.ooba.formating.useName) {
+            if (suggesting) {
+                resultString.push(
+                    appendWhitespace(assistantPrefix, seperator) + `${getUserName()}:\n` + db.autoSuggestPrefix
+                )
             } else {
                 resultString.push(assistantPrefix + `${characterName}:`)
             }
-        }
-        else{
-            if (suggesting){
+        } else {
+            if (suggesting) {
                 resultString.push(appendWhitespace(assistantPrefix, seperator) + `\n` + db.autoSuggestPrefix)
             } else {
                 resultString.push(assistantPrefix)
@@ -98,33 +97,22 @@ export function stringlizeChatOba(formated:OpenAIChat[], characterName:string, s
 }
 
 const userStrings = ["user", "human", "input", "inst", "instruction"]
-function toTitleCase(s:string){
+function toTitleCase(s: string) {
     return s[0].toUpperCase() + s.slice(1).toLowerCase()
 }
-export function getStopStrings(suggesting:boolean=false){
+export function getStopStrings(suggesting: boolean = false) {
     const db = getDatabase()
-    let { userPrefix, seperator } = db.ooba.formating;
-    if(!seperator){
+    let { userPrefix, seperator } = db.ooba.formating
+    if (!seperator) {
         seperator = "\n"
     }
     const { username } = db
-    const stopStrings = [
-        "GPT4 User",
-        "</s>",
-        "<|end",
-        "<|im_end",
-        userPrefix,
-        `${username}:`,
-    ]
-    if(suggesting){
+    const stopStrings = ["GPT4 User", "</s>", "<|end", "<|im_end", userPrefix, `${username}:`]
+    if (suggesting) {
         stopStrings.push("\n\n")
     }
-    for (const user of userStrings){
-        for (const u of [
-            user.toLowerCase(),
-            user.toUpperCase(),
-            user.replace(/\w\S*/g, toTitleCase),
-        ]){
+    for (const user of userStrings) {
+        for (const u of [user.toLowerCase(), user.toUpperCase(), user.replace(/\w\S*/g, toTitleCase)]) {
             stopStrings.push(`${u}:`)
             stopStrings.push(`<<${u}>>`)
             stopStrings.push(`### ${u}`)
@@ -133,23 +121,22 @@ export function getStopStrings(suggesting:boolean=false){
     return [...new Set(stopStrings)]
 }
 
-export function unstringlizeChat(text:string, formated:OpenAIChat[], char:string = ''){
+export function unstringlizeChat(text: string, formated: OpenAIChat[], char: string = "") {
     let minIndex = -1
 
     const chunks = getUnstringlizerChunks(formated, char).chunks
 
-
-    for(const chunk of chunks){
+    for (const chunk of chunks) {
         const ind = text.indexOf(chunk)
-        if(ind === -1){
+        if (ind === -1) {
             continue
         }
-        if(minIndex === -1 || minIndex > ind){
+        if (minIndex === -1 || minIndex > ind) {
             minIndex = ind
         }
     }
 
-    if(minIndex !== -1){
+    if (minIndex !== -1) {
         text = text.substring(0, minIndex).trim()
     }
 
@@ -157,240 +144,223 @@ export function unstringlizeChat(text:string, formated:OpenAIChat[], char:string
 }
 
 /* eslint-disable no-irregular-whitespace */
-export function getUnstringlizerChunks(formated:OpenAIChat[], char:string, mode:'ain'|'normal' = 'normal'){
-    const chunks:string[] = ["system note:", "system:","system note：", "system："]
-    const charNames:string[] = []
+export function getUnstringlizerChunks(formated: OpenAIChat[], char: string, mode: "ain" | "normal" = "normal") {
+    const chunks: string[] = ["system note:", "system:", "system note：", "system："]
+    const charNames: string[] = []
     const db = getDatabase()
-    if(char){
+    if (char) {
         charNames.push(char)
-        
-        if(mode === 'ain'){
+
+        if (mode === "ain") {
             chunks.push(`${char} `)
             chunks.push(`${char}　`)
-        }
-        else{
+        } else {
             chunks.push(`${char}:`)
             chunks.push(`${char}：`)
             chunks.push(`${char}: `)
-            chunks.push(`${char}： `) 
+            chunks.push(`${char}： `)
         }
     }
-    if(getUserName()){
+    if (getUserName()) {
         charNames.push(getUserName())
-        if(mode === 'ain'){
+        if (mode === "ain") {
             chunks.push(`${getUserName()} `)
             chunks.push(`${getUserName()}　`)
-        }
-        else{
+        } else {
             chunks.push(`${getUserName()}:`)
             chunks.push(`${getUserName()}：`)
             chunks.push(`${getUserName()}: `)
-            chunks.push(`${getUserName()}： `) 
+            chunks.push(`${getUserName()}： `)
         }
     }
 
-    for(const form of formated){
-        if(form.name){
+    for (const form of formated) {
+        if (form.name) {
             charNames.push(form.name)
-            if(mode === 'ain'){
-                if(!chunks.includes(`${form.name} `)){
+            if (mode === "ain") {
+                if (!chunks.includes(`${form.name} `)) {
                     chunks.push(`${form.name} `)
                     chunks.push(`${form.name}　`)
                 }
-            }
-            else{
-                if(!chunks.includes(`${form.name}:`)){
+            } else {
+                if (!chunks.includes(`${form.name}:`)) {
                     chunks.push(`${form.name}:`)
                     chunks.push(`${form.name}：`)
                     chunks.push(`${form.name}: `)
-                    chunks.push(`${form.name}： `) 
+                    chunks.push(`${form.name}： `)
                 }
             }
         }
     }
-    return {chunks,extChunk:charNames.concat(chunks)}
+    return { chunks, extChunk: charNames.concat(chunks) }
 }
 /* eslint-enable no-irregular-whitespace */
 
-export function stringlizeAINChat(formated:OpenAIChat[], char:string, continued: boolean){
-    const resultString:string[] = []
+export function stringlizeAINChat(formated: OpenAIChat[], char: string, continued: boolean) {
+    const resultString: string[] = []
     const db = getDatabase()
 
-    for(const form of formated){
+    for (const form of formated) {
         console.log(form)
-        if(form.memo && form.memo.startsWith("newChat") || form.content === "[Start a new chat]"){
+        if ((form.memo && form.memo.startsWith("newChat")) || form.content === "[Start a new chat]") {
             resultString.push("[新しいチャットの始まり]")
             continue
         }
-        if(form.role === 'system'){
+        if (form.role === "system") {
             resultString.push(form.content)
-        }
-        else if(form.role === 'user'){
+        } else if (form.role === "user") {
             resultString.push(...formatToAIN(getUserName(), form.content))
-        }
-        else if(form.name || form.role === 'assistant'){
+        } else if (form.name || form.role === "assistant") {
             resultString.push(...formatToAIN(form.name ?? char, form.content))
-        }
-        else{
+        } else {
             resultString.push(form.content)
         }
     }
-    let res = resultString.join('\n\n')
-    if(!continued){
-        res +=  + `\n\n${char} 「`
-    }
-    else{
+    let res = resultString.join("\n\n")
+    if (!continued) {
+        res += +`\n\n${char} 「`
+    } else {
         res += " 「"
     }
     return res
 }
 
-function extractAINOutputStrings(inputString:string, characters:string[]) {
-    const results:{
-        content:string
-        character:string
-    }[] = [];
-    
-    let remainingString = inputString;
-    
+function extractAINOutputStrings(inputString: string, characters: string[]) {
+    const results: {
+        content: string
+        character: string
+    }[] = []
+
+    let remainingString = inputString
+
     while (remainingString.length > 0) {
-        let characterIndex = -1;
-        let character = null;
+        let characterIndex = -1
+        let character = null
         for (let i = 0; i < characters.length; i++) {
-        const index = remainingString.indexOf(characters[i] + '「');
-        if (index >= 0 && (characterIndex == -1 || index < characterIndex)) {
-            character = characters[i];
-            characterIndex = index;
+            const index = remainingString.indexOf(characters[i] + "「")
+            if (index >= 0 && (characterIndex == -1 || index < characterIndex)) {
+                character = characters[i]
+                characterIndex = index
+            }
         }
-        }
-    
+
         if (characterIndex > 0) {
-        results.push({content: remainingString.substring(0, characterIndex).trim(), character: '[narrator]'});
+            results.push({ content: remainingString.substring(0, characterIndex).trim(), character: "[narrator]" })
         }
-    
+
         if (characterIndex == -1) {
-            results.push({content: remainingString.trim(),  character: '[narrator]'});
-            break;
+            results.push({ content: remainingString.trim(), character: "[narrator]" })
+            break
         } else {
-            const endQuoteIndex = remainingString.indexOf('」', characterIndex + character.length);
+            const endQuoteIndex = remainingString.indexOf("」", characterIndex + character.length)
             if (endQuoteIndex == -1) {
                 results.push({
-                character, 
-                content: remainingString.substring(characterIndex + character.length + 1).trim() // plus 1 to exclude 「
-                });
-                break;
+                    character,
+                    content: remainingString.substring(characterIndex + character.length + 1).trim(), // plus 1 to exclude 「
+                })
+                break
             } else {
                 results.push({
-                character, 
-                content: remainingString.substring(characterIndex + character.length + 1, endQuoteIndex).trim() // plus 1 to exclude 「
-                });
-                remainingString = remainingString.substring(endQuoteIndex + 1);
+                    character,
+                    content: remainingString.substring(characterIndex + character.length + 1, endQuoteIndex).trim(), // plus 1 to exclude 「
+                })
+                remainingString = remainingString.substring(endQuoteIndex + 1)
             }
         }
     }
 
-    return results;
+    return results
 }
 
-export function unstringlizeAIN(data:string,formated:OpenAIChat[], char:string = ''){
-
+export function unstringlizeAIN(data: string, formated: OpenAIChat[], char: string = "") {
     const db = getDatabase()
-    const chunksResult = getUnstringlizerChunks(formated, char ,'ain')
+    const chunksResult = getUnstringlizerChunks(formated, char, "ain")
     const chunks = chunksResult.chunks
-    const result:['char'|'user',string][] = []
+    const result: ["char" | "user", string][] = []
     data = `${char} 「` + data
 
-    for(const n of chunksResult.extChunk){
-        if(data.endsWith(n)){
+    for (const n of chunksResult.extChunk) {
+        if (data.endsWith(n)) {
             data = data.substring(0, data.length - n.length)
-            console.log('trimed')
+            console.log("trimed")
         }
     }
 
     const contents = extractAINOutputStrings(data, chunks)
-    for(const cont of contents){
-        if(cont.character === '[narrator]'){
-            if(result.length === 0){
-                result[0] = ['char', cont.content]
-            }
-            else{
+    for (const cont of contents) {
+        if (cont.character === "[narrator]") {
+            if (result.length === 0) {
+                result[0] = ["char", cont.content]
+            } else {
                 result[result.length - 1][1] += "\n" + cont.content
             }
-        }
-        else{
-            const role = (cont.character.trim() ===  getUserName() ? 'user' : 'char')
-            result.push([
-                role,
-                `「${cont.content}」`
-            ])
+        } else {
+            const role = cont.character.trim() === getUserName() ? "user" : "char"
+            result.push([role, `「${cont.content}」`])
         }
     }
 
     return result
 }
 
+function formatToAIN(name: string, content: string) {
+    function extractContent(str: string) {
+        const result: {
+            type: "outside" | "inside"
+            content: string
+        }[] = []
+        let lastEndIndex = 0
+        const regex = /「(.*?)」/g
+        let match: RegExpExecArray | null = null
 
-function formatToAIN(name:string, content:string){
-    function extractContent(str:string) {
-        const result:{
-            type: "outside"|"inside"
-           content:string
-        }[] = [];
-        let lastEndIndex = 0;
-        const regex = /「(.*?)」/g;
-        let match:RegExpExecArray | null = null;
-
-        
-    
         while ((match = regex.exec(str)) !== null) {
-            const start = match.index;
-            const end = start + match[0].length;
-            const inside = match[1];
-            
+            const start = match.index
+            const end = start + match[0].length
+            const inside = match[1]
+
             if (start != lastEndIndex) {
-                const outside = str.slice(lastEndIndex, start);
+                const outside = str.slice(lastEndIndex, start)
                 result.push({
                     type: "outside",
-                    content: outside
-                });
+                    content: outside,
+                })
             }
-    
+
             result.push({
                 type: "inside",
-                content: inside
-            });
-            
-            lastEndIndex = end;
+                content: inside,
+            })
+
+            lastEndIndex = end
         }
-    
+
         if (lastEndIndex < str.length) {
-            const outside = str.slice(lastEndIndex);
+            const outside = str.slice(lastEndIndex)
             result.push({
                 type: "outside",
-                content: outside
-            });
+                content: outside,
+            })
         }
-        
-        return result;
+
+        return result
     }
 
-    let quoteCounter = 0;
+    let quoteCounter = 0
     content = content.replace(/"/g, () => {
-        quoteCounter++;
+        quoteCounter++
         if (quoteCounter % 2 !== 0) {
-            return '「';
+            return "「"
         } else {
-            return '」';
+            return "」"
         }
-    });
+    })
 
     const conts = extractContent(content)
-    const strs:string[] = []
-    for(const cont of conts){
-        if(cont.type === 'inside'){
+    const strs: string[] = []
+    for (const cont of conts) {
+        if (cont.type === "inside") {
             strs.push(`${name} 「${cont.content}」`)
-        }
-        else{
+        } else {
             strs.push(cont.content)
         }
     }

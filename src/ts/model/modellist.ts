@@ -1,32 +1,25 @@
 // Provider names that should have a separator line AFTER them in the model list UI
 // Categories: Proprietary APIs | Open-source APIs | Local | Others
 export const ProviderSeparatorAfter = new Set([
-    'Vertex AI',      // End of proprietary models
-    'Cohere',         // End of open-source APIs
-    'Horde',          // End of local models
+    "Vertex AI", // End of proprietary models
+    "Cohere", // End of open-source APIs
+    "Horde", // End of local models
 ])
 
 import { getDatabase } from "../data/storage/database.svelte"
-import {
-    LLMFormat,
-    LLMProvider,
-    LLMTokenizer,
-    OpenAIParameters,
-    ProviderNames,
-    type LLMModel
-} from './types'
+import { LLMFormat, LLMProvider, LLMTokenizer, OpenAIParameters, ProviderNames, type LLMModel } from "./types"
 
 // Import models from provider files
-import { OpenAIModels } from './providers/openai'
-import { AnthropicModels } from './providers/anthropic'
-import { AWSModels } from './providers/aws'
-import { GoogleModels } from './providers/google'
-import { MistralModels } from './providers/mistral'
-import { CohereModels } from './providers/cohere'
-import { NovelAIModels } from './providers/novelai'
-import { DeepSeekModels } from './providers/deepseek'
-import { DeepInfraModels } from './providers/deepinfra'
-import { OtherModels } from './providers/others'
+import { OpenAIModels } from "./providers/openai"
+import { AnthropicModels } from "./providers/anthropic"
+import { AWSModels } from "./providers/aws"
+import { GoogleModels } from "./providers/google"
+import { MistralModels } from "./providers/mistral"
+import { CohereModels } from "./providers/cohere"
+import { NovelAIModels } from "./providers/novelai"
+import { DeepSeekModels } from "./providers/deepseek"
+import { DeepInfraModels } from "./providers/deepinfra"
+import { OtherModels } from "./providers/others"
 
 // Combine all models
 export const LLMModels: LLMModel[] = [
@@ -52,13 +45,15 @@ export const LLMModels: LLMModel[] = [
 for (const model of LLMModels) {
     model.shortName ??= model.name
     model.internalID ??= model.id
-    model.fullName ??= model.provider !== LLMProvider.AsIs ? `${ProviderNames.get(model.provider) ?? ''} ${model.name}`.trim() : model.name
+    model.fullName ??=
+        model.provider !== LLMProvider.AsIs
+            ? `${ProviderNames.get(model.provider) ?? ""} ${model.name}`.trim()
+            : model.name
 }
-
 
 export function getModelInfo(id: string): LLMModel {
     const db = getDatabase()
-    const found: LLMModel = safeStructuredClone(LLMModels.find(model => model.id === id))
+    const found: LLMModel = safeStructuredClone(LLMModels.find((model) => model.id === id))
 
     if (found) {
         if (db.enableCustomFlags) {
@@ -67,8 +62,8 @@ export function getModelInfo(id: string): LLMModel {
         return found
     }
 
-    if (id.startsWith('hf:::')) {
-        const withoutPrefix = id.replace('hf:::', '')
+    if (id.startsWith("hf:::")) {
+        const withoutPrefix = id.replace("hf:::", "")
         return {
             id,
             name: withoutPrefix,
@@ -79,11 +74,11 @@ export function getModelInfo(id: string): LLMModel {
             format: LLMFormat.WebLLM,
             flags: [],
             parameters: OpenAIParameters,
-            tokenizer: LLMTokenizer.Local
+            tokenizer: LLMTokenizer.Local,
         }
     }
-    if (id.startsWith('horde:::')) {
-        const withoutPrefix = id.replace('horde:::', '')
+    if (id.startsWith("horde:::")) {
+        const withoutPrefix = id.replace("horde:::", "")
         return {
             id,
             name: withoutPrefix,
@@ -94,10 +89,10 @@ export function getModelInfo(id: string): LLMModel {
             format: LLMFormat.Horde,
             flags: [],
             parameters: OpenAIParameters,
-            tokenizer: LLMTokenizer.Unknown
+            tokenizer: LLMTokenizer.Unknown,
         }
     }
-    if (id.startsWith('xcustom:::')) {
+    if (id.startsWith("xcustom:::")) {
         const customModels = db?.customModels || []
         const found = customModels.find((model) => model.id === id)
         if (found) {
@@ -110,8 +105,18 @@ export function getModelInfo(id: string): LLMModel {
                 provider: LLMProvider.AsIs,
                 format: found.format,
                 flags: found.flags,
-                parameters: ['temperature', 'top_p', 'frequency_penalty', 'presence_penalty', 'repetition_penalty', 'min_p', 'top_a', 'top_k', 'thinking_tokens'],
-                tokenizer: found.tokenizer
+                parameters: [
+                    "temperature",
+                    "top_p",
+                    "frequency_penalty",
+                    "presence_penalty",
+                    "repetition_penalty",
+                    "min_p",
+                    "top_a",
+                    "top_k",
+                    "thinking_tokens",
+                ],
+                tokenizer: found.tokenizer,
             }
         }
     }
@@ -126,7 +131,7 @@ export function getModelInfo(id: string): LLMModel {
         format: LLMFormat.OpenAICompatible,
         flags: [],
         parameters: OpenAIParameters,
-        tokenizer: LLMTokenizer.Unknown
+        tokenizer: LLMTokenizer.Unknown,
     }
 }
 
@@ -135,31 +140,33 @@ interface GetModelListGroup {
     models: LLMModel[]
 }
 
-export function getModelList<T extends boolean>(arg: {
-    recommendedOnly?: boolean,
-    groupedByProvider?: T
-} = {}): T extends true ? GetModelListGroup[] : LLMModel[] {
+export function getModelList<T extends boolean>(
+    arg: {
+        recommendedOnly?: boolean
+        groupedByProvider?: T
+    } = {}
+): T extends true ? GetModelListGroup[] : LLMModel[] {
     let models = LLMModels
     if (arg.recommendedOnly) {
-        models = models.filter(model => model.recommended)
+        models = models.filter((model) => model.recommended)
     }
     if (arg.groupedByProvider) {
         const group: GetModelListGroup[] = []
         for (const model of models) {
             if (model.provider === LLMProvider.AsIs) {
                 group.push({
-                    providerName: '@as-is',
-                    models: [model]
+                    providerName: "@as-is",
+                    models: [model],
                 })
                 continue
             }
 
-            const providerName = ProviderNames.get(model.provider) || 'Unknown'
-            const groupIndex = group.findIndex(g => g.providerName === providerName)
+            const providerName = ProviderNames.get(model.provider) || "Unknown"
+            const groupIndex = group.findIndex((g) => g.providerName === providerName)
             if (groupIndex === -1) {
                 group.push({
                     providerName,
-                    models: [model]
+                    models: [model],
                 })
             } else {
                 group[groupIndex].models.push(model)

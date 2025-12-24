@@ -16,106 +16,106 @@ interface FileSystemFileHandleWithSync extends FileSystemFileHandle {
 }
 
 interface SaveMessage {
-    type: 'save'
+    type: "save"
     key: string
     data: Uint8Array
 }
 
 interface LoadMessage {
-    type: 'load'
+    type: "load"
     key: string
 }
 
 interface ListMessage {
-    type: 'list'
+    type: "list"
     dirPath: string
 }
 
 interface ListWithSizesMessage {
-    type: 'listWithSizes'
+    type: "listWithSizes"
     dirPath: string
 }
 
 interface DeleteMessage {
-    type: 'delete'
+    type: "delete"
     key: string
 }
 
 interface ListRecursiveMessage {
-    type: 'listRecursive'
+    type: "listRecursive"
     dirPath: string
 }
 
 interface ListWithSizesRecursiveMessage {
-    type: 'listWithSizesRecursive'
+    type: "listWithSizesRecursive"
     dirPath: string
 }
 
 interface DeleteDirectoryMessage {
-    type: 'deleteDirectory'
+    type: "deleteDirectory"
     dirPath: string
 }
 
 interface ListEntriesMessage {
-    type: 'listEntries'
+    type: "listEntries"
     dirPath: string
 }
 
 interface SaveResponse {
-    type: 'success' | 'error'
+    type: "success" | "error"
     key: string
     error?: string
 }
 
 interface LoadResponse {
-    type: 'load_success' | 'load_error'
+    type: "load_success" | "load_error"
     key: string
     data?: Uint8Array
     error?: string
 }
 
 interface ListResponse {
-    type: 'list_success' | 'list_error'
+    type: "list_success" | "list_error"
     dirPath: string
     files?: string[]
     error?: string
 }
 
 interface ListWithSizesResponse {
-    type: 'listWithSizes_success' | 'listWithSizes_error'
+    type: "listWithSizes_success" | "listWithSizes_error"
     dirPath: string
     files?: { name: string; size: number }[]
     error?: string
 }
 
 interface DeleteResponse {
-    type: 'delete_success' | 'delete_error'
+    type: "delete_success" | "delete_error"
     key: string
     error?: string
 }
 
 interface ListRecursiveResponse {
-    type: 'listRecursive_success' | 'listRecursive_error'
+    type: "listRecursive_success" | "listRecursive_error"
     dirPath: string
-    files?: string[]  // 상대 경로 (예: "chaId/chatId.bin")
+    files?: string[] // 상대 경로 (예: "chaId/chatId.bin")
     error?: string
 }
 
 interface ListWithSizesRecursiveResponse {
-    type: 'listWithSizesRecursive_success' | 'listWithSizesRecursive_error'
+    type: "listWithSizesRecursive_success" | "listWithSizesRecursive_error"
     dirPath: string
-    files?: { path: string; size: number }[]  // 상대 경로
+    files?: { path: string; size: number }[] // 상대 경로
     error?: string
 }
 
 interface DeleteDirectoryResponse {
-    type: 'deleteDirectory_success' | 'deleteDirectory_error'
+    type: "deleteDirectory_success" | "deleteDirectory_error"
     dirPath: string
     error?: string
 }
 
 interface ListEntriesResponse {
-    type: 'listEntries_success' | 'listEntries_error'
+    type: "listEntries_success" | "listEntries_error"
     dirPath: string
     entries?: { name: string; size: number; isDirectory: boolean }[]
     error?: string
@@ -131,11 +131,11 @@ async function getRoot(): Promise<FileSystemDirectoryHandle> {
 }
 
 // Worker 준비 완료 신호 전송
-self.postMessage({ type: 'ready' })
+self.postMessage({ type: "ready" })
 
 async function ensureDirectory(dirPath: string): Promise<FileSystemDirectoryHandle> {
     const root = await getRoot()
-    const parts = dirPath.split('/').filter(p => p)
+    const parts = dirPath.split("/").filter((p) => p)
     let current = root
     for (const part of parts) {
         current = await current.getDirectoryHandle(part, { create: true })
@@ -146,7 +146,7 @@ async function ensureDirectory(dirPath: string): Promise<FileSystemDirectoryHand
 async function getDirectory(dirPath: string): Promise<FileSystemDirectoryHandle | null> {
     try {
         const root = await getRoot()
-        const parts = dirPath.split('/').filter(p => p)
+        const parts = dirPath.split("/").filter((p) => p)
         let current = root
         for (const part of parts) {
             current = await current.getDirectoryHandle(part)
@@ -158,13 +158,13 @@ async function getDirectory(dirPath: string): Promise<FileSystemDirectoryHandle 
 }
 
 // 재귀적으로 모든 파일 경로를 수집
-async function listFilesRecursive(dir: FileSystemDirectoryHandle, prefix: string = ''): Promise<string[]> {
+async function listFilesRecursive(dir: FileSystemDirectoryHandle, prefix: string = ""): Promise<string[]> {
     const files: string[] = []
     for await (const [name, handle] of (dir as any).entries()) {
         const path = prefix ? `${prefix}/${name}` : name
-        if (handle.kind === 'file') {
+        if (handle.kind === "file") {
             files.push(path)
-        } else if (handle.kind === 'directory') {
+        } else if (handle.kind === "directory") {
             const subFiles = await listFilesRecursive(handle, path)
             files.push(...subFiles)
         }
@@ -173,7 +173,10 @@ async function listFilesRecursive(dir: FileSystemDirectoryHandle, prefix: string
 }
 
 // 재귀적으로 모든 파일 경로와 크기를 수집 (병렬 처리)
-async function listFilesWithSizesRecursive(dir: FileSystemDirectoryHandle, prefix: string = ''): Promise<{ path: string; size: number }[]> {
+async function listFilesWithSizesRecursive(
+    dir: FileSystemDirectoryHandle,
+    prefix: string = ""
+): Promise<{ path: string; size: number }[]> {
     // 먼저 모든 항목 수집
     const entries: [string, FileSystemHandle][] = []
     for await (const entry of (dir as any).entries()) {
@@ -185,9 +188,9 @@ async function listFilesWithSizesRecursive(dir: FileSystemDirectoryHandle, prefi
     const dirEntries: [string, FileSystemDirectoryHandle][] = []
 
     for (const [name, handle] of entries) {
-        if (handle.kind === 'file') {
+        if (handle.kind === "file") {
             fileEntries.push([name, handle as FileSystemFileHandle])
-        } else if (handle.kind === 'directory') {
+        } else if (handle.kind === "directory") {
             dirEntries.push([name, handle as FileSystemDirectoryHandle])
         }
     }
@@ -221,18 +224,30 @@ async function deleteDirectoryRecursive(parentDir: FileSystemDirectoryHandle, di
     await parentDir.removeEntry(dirName, { recursive: true })
 }
 
-self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage | ListWithSizesMessage | DeleteMessage | ListRecursiveMessage | ListWithSizesRecursiveMessage | DeleteDirectoryMessage | ListEntriesMessage>) => {
+self.onmessage = async (
+    e: MessageEvent<
+        | SaveMessage
+        | LoadMessage
+        | ListMessage
+        | ListWithSizesMessage
+        | DeleteMessage
+        | ListRecursiveMessage
+        | ListWithSizesRecursiveMessage
+        | DeleteDirectoryMessage
+        | ListEntriesMessage
+    >
+) => {
     const { type } = e.data
 
-    if (type === 'save') {
+    if (type === "save") {
         const { key, data } = e.data as SaveMessage
         try {
-            const parts = key.split('/')
+            const parts = key.split("/")
             const fileName = parts.pop()!
-            const dirPath = parts.join('/')
+            const dirPath = parts.join("/")
 
             const dir = dirPath ? await ensureDirectory(dirPath) : await getRoot()
-            const fileHandle = await dir.getFileHandle(fileName, { create: true }) as FileSystemFileHandleWithSync
+            const fileHandle = (await dir.getFileHandle(fileName, { create: true })) as FileSystemFileHandleWithSync
 
             // SyncAccessHandle 사용 (Worker에서만 가능, 매우 빠름)
             const accessHandle = await fileHandle.createSyncAccessHandle()
@@ -241,60 +256,60 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage 
             accessHandle.flush()
             accessHandle.close()
 
-            const response: SaveResponse = { type: 'success', key }
+            const response: SaveResponse = { type: "success", key }
             self.postMessage(response)
         } catch (error) {
             const response: SaveResponse = {
-                type: 'error',
+                type: "error",
                 key,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             }
             self.postMessage(response)
         }
-    } else if (type === 'load') {
+    } else if (type === "load") {
         const { key } = e.data as LoadMessage
         try {
-            const parts = key.split('/')
+            const parts = key.split("/")
             const fileName = parts.pop()!
-            const dirPath = parts.join('/')
+            const dirPath = parts.join("/")
 
             const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
             if (!dir) {
                 const response: LoadResponse = {
-                    type: 'load_error',
+                    type: "load_error",
                     key,
-                    error: 'Directory not found'
+                    error: "Directory not found",
                 }
                 self.postMessage(response)
                 return
             }
 
-            const fileHandle = await dir.getFileHandle(fileName) as FileSystemFileHandleWithSync
+            const fileHandle = (await dir.getFileHandle(fileName)) as FileSystemFileHandleWithSync
             const accessHandle = await fileHandle.createSyncAccessHandle()
             const size = accessHandle.getSize()
             const data = new Uint8Array(size)
             accessHandle.read(data)
             accessHandle.close()
 
-            const response: LoadResponse = { type: 'load_success', key, data }
+            const response: LoadResponse = { type: "load_success", key, data }
             self.postMessage(response, { transfer: [data.buffer] })
         } catch (error) {
             const response: LoadResponse = {
-                type: 'load_error',
+                type: "load_error",
                 key,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             }
             self.postMessage(response)
         }
-    } else if (type === 'list') {
+    } else if (type === "list") {
         const { dirPath } = e.data as ListMessage
         try {
             const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
             if (!dir) {
                 const response: ListResponse = {
-                    type: 'list_success',
+                    type: "list_success",
                     dirPath,
-                    files: []
+                    files: [],
                 }
                 self.postMessage(response)
                 return
@@ -302,30 +317,30 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage 
 
             const files: string[] = []
             for await (const [name, handle] of (dir as any).entries()) {
-                if (handle.kind === 'file') {
+                if (handle.kind === "file") {
                     files.push(name)
                 }
             }
 
-            const response: ListResponse = { type: 'list_success', dirPath, files }
+            const response: ListResponse = { type: "list_success", dirPath, files }
             self.postMessage(response)
         } catch (error) {
             const response: ListResponse = {
-                type: 'list_error',
+                type: "list_error",
                 dirPath,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             }
             self.postMessage(response)
         }
-    } else if (type === 'listWithSizes') {
+    } else if (type === "listWithSizes") {
         const { dirPath } = e.data as ListWithSizesMessage
         try {
             const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
             if (!dir) {
                 const response: ListWithSizesResponse = {
-                    type: 'listWithSizes_success',
+                    type: "listWithSizes_success",
                     dirPath,
-                    files: []
+                    files: [],
                 }
                 self.postMessage(response)
                 return
@@ -334,7 +349,7 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage 
             // 먼저 모든 파일 항목 수집
             const fileEntries: [string, FileSystemFileHandle][] = []
             for await (const [name, handle] of (dir as any).entries()) {
-                if (handle.kind === 'file') {
+                if (handle.kind === "file") {
                     fileEntries.push([name, handle as FileSystemFileHandle])
                 }
             }
@@ -351,151 +366,151 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage 
                 })
             )
 
-            const response: ListWithSizesResponse = { type: 'listWithSizes_success', dirPath, files }
+            const response: ListWithSizesResponse = { type: "listWithSizes_success", dirPath, files }
             self.postMessage(response)
         } catch (error) {
             const response: ListWithSizesResponse = {
-                type: 'listWithSizes_error',
+                type: "listWithSizes_error",
                 dirPath,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             }
             self.postMessage(response)
         }
-    } else if (type === 'delete') {
+    } else if (type === "delete") {
         const { key } = e.data as DeleteMessage
         try {
-            const parts = key.split('/')
+            const parts = key.split("/")
             const fileName = parts.pop()!
-            const dirPath = parts.join('/')
+            const dirPath = parts.join("/")
 
             const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
             if (!dir) {
                 // 디렉토리가 없으면 파일도 없는 것이므로 성공 처리
-                const response: DeleteResponse = { type: 'delete_success', key }
+                const response: DeleteResponse = { type: "delete_success", key }
                 self.postMessage(response)
                 return
             }
 
             await dir.removeEntry(fileName)
 
-            const response: DeleteResponse = { type: 'delete_success', key }
+            const response: DeleteResponse = { type: "delete_success", key }
             self.postMessage(response)
         } catch (error) {
             // 파일이 없어도 성공으로 처리 (이미 삭제된 상태)
-            if (error instanceof Error && error.name === 'NotFoundError') {
-                const response: DeleteResponse = { type: 'delete_success', key }
+            if (error instanceof Error && error.name === "NotFoundError") {
+                const response: DeleteResponse = { type: "delete_success", key }
                 self.postMessage(response)
                 return
             }
             const response: DeleteResponse = {
-                type: 'delete_error',
+                type: "delete_error",
                 key,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             }
             self.postMessage(response)
         }
-    } else if (type === 'listRecursive') {
+    } else if (type === "listRecursive") {
         const { dirPath } = e.data as ListRecursiveMessage
         try {
             const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
             if (!dir) {
                 const response: ListRecursiveResponse = {
-                    type: 'listRecursive_success',
+                    type: "listRecursive_success",
                     dirPath,
-                    files: []
+                    files: [],
                 }
                 self.postMessage(response)
                 return
             }
 
             const files = await listFilesRecursive(dir)
-            const response: ListRecursiveResponse = { type: 'listRecursive_success', dirPath, files }
+            const response: ListRecursiveResponse = { type: "listRecursive_success", dirPath, files }
             self.postMessage(response)
         } catch (error) {
             const response: ListRecursiveResponse = {
-                type: 'listRecursive_error',
+                type: "listRecursive_error",
                 dirPath,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             }
             self.postMessage(response)
         }
-    } else if (type === 'listWithSizesRecursive') {
+    } else if (type === "listWithSizesRecursive") {
         const { dirPath } = e.data as ListWithSizesRecursiveMessage
         try {
             const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
             if (!dir) {
                 const response: ListWithSizesRecursiveResponse = {
-                    type: 'listWithSizesRecursive_success',
+                    type: "listWithSizesRecursive_success",
                     dirPath,
-                    files: []
+                    files: [],
                 }
                 self.postMessage(response)
                 return
             }
 
             const files = await listFilesWithSizesRecursive(dir)
-            const response: ListWithSizesRecursiveResponse = { type: 'listWithSizesRecursive_success', dirPath, files }
+            const response: ListWithSizesRecursiveResponse = { type: "listWithSizesRecursive_success", dirPath, files }
             self.postMessage(response)
         } catch (error) {
             const response: ListWithSizesRecursiveResponse = {
-                type: 'listWithSizesRecursive_error',
+                type: "listWithSizesRecursive_error",
                 dirPath,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             }
             self.postMessage(response)
         }
-    } else if (type === 'deleteDirectory') {
+    } else if (type === "deleteDirectory") {
         const { dirPath } = e.data as DeleteDirectoryMessage
         try {
-            const parts = dirPath.split('/').filter(p => p)
+            const parts = dirPath.split("/").filter((p) => p)
             if (parts.length === 0) {
                 // 루트 삭제는 허용하지 않음
                 const response: DeleteDirectoryResponse = {
-                    type: 'deleteDirectory_error',
+                    type: "deleteDirectory_error",
                     dirPath,
-                    error: 'Cannot delete root directory'
+                    error: "Cannot delete root directory",
                 }
                 self.postMessage(response)
                 return
             }
 
             const dirName = parts.pop()!
-            const parentPath = parts.join('/')
+            const parentPath = parts.join("/")
             const parentDir = parentPath ? await getDirectory(parentPath) : await getRoot()
 
             if (!parentDir) {
                 // 부모 디렉토리가 없으면 이미 삭제된 것으로 성공 처리
-                const response: DeleteDirectoryResponse = { type: 'deleteDirectory_success', dirPath }
+                const response: DeleteDirectoryResponse = { type: "deleteDirectory_success", dirPath }
                 self.postMessage(response)
                 return
             }
 
             await deleteDirectoryRecursive(parentDir, dirName)
-            const response: DeleteDirectoryResponse = { type: 'deleteDirectory_success', dirPath }
+            const response: DeleteDirectoryResponse = { type: "deleteDirectory_success", dirPath }
             self.postMessage(response)
         } catch (error) {
             // 디렉토리가 없어도 성공으로 처리 (이미 삭제된 상태)
-            if (error instanceof Error && error.name === 'NotFoundError') {
-                const response: DeleteDirectoryResponse = { type: 'deleteDirectory_success', dirPath }
+            if (error instanceof Error && error.name === "NotFoundError") {
+                const response: DeleteDirectoryResponse = { type: "deleteDirectory_success", dirPath }
                 self.postMessage(response)
                 return
             }
             const response: DeleteDirectoryResponse = {
-                type: 'deleteDirectory_error',
+                type: "deleteDirectory_error",
                 dirPath,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             }
             self.postMessage(response)
         }
-    } else if (type === 'listEntries') {
+    } else if (type === "listEntries") {
         const { dirPath } = e.data as ListEntriesMessage
         try {
             const dir = dirPath ? await getDirectory(dirPath) : await getRoot()
             if (!dir) {
                 const response: ListEntriesResponse = {
-                    type: 'listEntries_success',
+                    type: "listEntries_success",
                     dirPath,
-                    entries: []
+                    entries: [],
                 }
                 self.postMessage(response)
                 return
@@ -512,9 +527,9 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage 
             const dirNames: string[] = []
 
             for (const [name, handle] of allEntries) {
-                if (handle.kind === 'file') {
+                if (handle.kind === "file") {
                     fileHandles.push([name, handle as FileSystemFileHandle])
-                } else if (handle.kind === 'directory') {
+                } else if (handle.kind === "directory") {
                     dirNames.push(name)
                 }
             }
@@ -532,21 +547,21 @@ self.onmessage = async (e: MessageEvent<SaveMessage | LoadMessage | ListMessage 
             )
 
             // 디렉토리 항목 (크기 0)
-            const dirEntries = dirNames.map(name => ({ name, size: 0, isDirectory: true }))
+            const dirEntries = dirNames.map((name) => ({ name, size: 0, isDirectory: true }))
 
             // 디렉토리 먼저, 그 다음 파일 (이름순 정렬)
             const entries = [
                 ...dirEntries.sort((a, b) => a.name.localeCompare(b.name)),
-                ...fileEntries.sort((a, b) => a.name.localeCompare(b.name))
+                ...fileEntries.sort((a, b) => a.name.localeCompare(b.name)),
             ]
 
-            const response: ListEntriesResponse = { type: 'listEntries_success', dirPath, entries }
+            const response: ListEntriesResponse = { type: "listEntries_success", dirPath, entries }
             self.postMessage(response)
         } catch (error) {
             const response: ListEntriesResponse = {
-                type: 'listEntries_error',
+                type: "listEntries_error",
                 dirPath,
-                error: error instanceof Error ? error.message : String(error)
+                error: error instanceof Error ? error.message : String(error),
             }
             self.postMessage(response)
         }

@@ -1,10 +1,10 @@
-import type { character, Chat, groupChat } from "src/ts/data/storage/types";
-import { DBState } from 'src/ts/stores.svelte';
-import { getAuthorNoteDefaultText, getPersonaPrompt } from 'src/ts/utils/util';
-import { risuChatParser } from "src/ts/process/scripting/scripts";
-import { loadLoreBookV3Prompt } from "src/ts/process/prompt/lorebook.svelte";
-import { additionalInformations } from "src/ts/process/embedding/addinfo";
-import type { OpenAIChat } from "src/ts/process/chatTypes";
+import type { character, Chat, groupChat } from "src/ts/data/storage/types"
+import { DBState } from "src/ts/stores.svelte"
+import { getAuthorNoteDefaultText, getPersonaPrompt } from "src/ts/utils/util"
+import { risuChatParser } from "src/ts/process/scripting/scripts"
+import { loadLoreBookV3Prompt } from "src/ts/process/prompt/lorebook.svelte"
+import { additionalInformations } from "src/ts/process/embedding/addinfo"
+import type { OpenAIChat } from "src/ts/process/chatTypes"
 
 export interface UnformatedPrompts {
     main: OpenAIChat[]
@@ -24,10 +24,10 @@ export interface LorebookData {
         prompt: string
         pos: string
         depth?: number
-        role: 'system' | 'user' | 'assistant'
+        role: "system" | "user" | "assistant"
         inject: {
             location: string
-            operation: 'append' | 'prepend' | 'replace'
+            operation: "append" | "prepend" | "replace"
             param?: string
             lore?: boolean
         } | null
@@ -55,7 +55,7 @@ export function createEmptyUnformated(): UnformatedPrompts {
         lastChat: [],
         description: [],
         postEverything: [],
-        personaPrompt: []
+        personaPrompt: [],
     }
 }
 
@@ -63,7 +63,7 @@ export function createEmptyUnformated(): UnformatedPrompts {
  * Parse prompt string with @@ role markers into OpenAIChat array
  */
 export function formatPrompt(data: string): OpenAIChat[] {
-    if (!data.startsWith('@@')) {
+    if (!data.startsWith("@@")) {
         data = "@@system\n" + data
     }
     const parts = data.split(/@@@?(user|assistant|system)\n/)
@@ -71,8 +71,8 @@ export function formatPrompt(data: string): OpenAIChat[] {
     const chatObjects: OpenAIChat[] = []
 
     for (let i = 1; i < parts.length; i += 2) {
-        const role = parts[i] as 'user' | 'assistant' | 'system'
-        const content = parts[i + 1]?.trim() || ''
+        const role = parts[i] as "user" | "assistant" | "system"
+        const content = parts[i + 1]?.trim() || ""
         chatObjects.push({ role, content })
     }
 
@@ -82,15 +82,11 @@ export function formatPrompt(data: string): OpenAIChat[] {
 /**
  * Build main, jailbreak, and globalNote prompts (legacy mode without template)
  */
-export function buildLegacyPrompts(
-    unformated: UnformatedPrompts,
-    currentChar: character
-): void {
-    const mainp = currentChar.systemPrompt?.replaceAll('{{original}}', DBState.db.mainPrompt) || DBState.db.mainPrompt
+export function buildLegacyPrompts(unformated: UnformatedPrompts, currentChar: character): void {
+    const mainp = currentChar.systemPrompt?.replaceAll("{{original}}", DBState.db.mainPrompt) || DBState.db.mainPrompt
 
-    const additionalPrompt = (DBState.db.additionalPrompt === '' || (!DBState.db.promptPreprocess))
-        ? ''
-        : `\n${DBState.db.additionalPrompt}`
+    const additionalPrompt =
+        DBState.db.additionalPrompt === "" || !DBState.db.promptPreprocess ? "" : `\n${DBState.db.additionalPrompt}`
 
     unformated.main.push(...formatPrompt(risuChatParser(mainp + additionalPrompt, { chara: currentChar })))
 
@@ -98,27 +94,24 @@ export function buildLegacyPrompts(
         unformated.jailbreak.push(...formatPrompt(risuChatParser(DBState.db.jailbreak, { chara: currentChar })))
     }
 
-    const globalNote = currentChar.replaceGlobalNote?.replaceAll('{{original}}', DBState.db.globalNote) || DBState.db.globalNote
+    const globalNote =
+        currentChar.replaceGlobalNote?.replaceAll("{{original}}", DBState.db.globalNote) || DBState.db.globalNote
     unformated.globalNote.push(...formatPrompt(risuChatParser(globalNote, { chara: currentChar })))
 }
 
 /**
  * Build author note prompt
  */
-export function buildAuthorNote(
-    unformated: UnformatedPrompts,
-    currentChat: Chat,
-    currentChar: character
-): void {
+export function buildAuthorNote(unformated: UnformatedPrompts, currentChat: Chat, currentChar: character): void {
     if (currentChat.note) {
         unformated.authorNote.push({
-            role: 'system',
-            content: risuChatParser(currentChat.note, { chara: currentChar })
+            role: "system",
+            content: risuChatParser(currentChat.note, { chara: currentChar }),
         })
-    } else if (getAuthorNoteDefaultText() !== '') {
+    } else if (getAuthorNoteDefaultText() !== "") {
         unformated.authorNote.push({
-            role: 'system',
-            content: risuChatParser(getAuthorNoteDefaultText(), { chara: currentChar })
+            role: "system",
+            content: risuChatParser(getAuthorNoteDefaultText(), { chara: currentChar }),
         })
     }
 }
@@ -126,14 +119,11 @@ export function buildAuthorNote(
 /**
  * Build chain of thought prompt
  */
-export function buildChainOfThought(
-    unformated: UnformatedPrompts,
-    usingPromptTemplate: boolean
-): void {
-    if (DBState.db.chainOfThought && (!(usingPromptTemplate && DBState.db.promptSettings.customChainOfThought))) {
+export function buildChainOfThought(unformated: UnformatedPrompts, usingPromptTemplate: boolean): void {
+    if (DBState.db.chainOfThought && !(usingPromptTemplate && DBState.db.promptSettings.customChainOfThought)) {
         unformated.postEverything.push({
-            role: 'system',
-            content: `<instruction> - before respond everything, Think step by step as a ai assistant how would you respond inside <Thoughts> xml tag. this must be less than 5 paragraphs.</instruction>`
+            role: "system",
+            content: `<instruction> - before respond everything, Think step by step as a ai assistant how would you respond inside <Thoughts> xml tag. this must be less than 5 paragraphs.</instruction>`,
         })
     }
 }
@@ -148,13 +138,13 @@ export async function buildDescription(
     isGroup: boolean
 ): Promise<void> {
     let description = risuChatParser(
-        (DBState.db.promptPreprocess ? DBState.db.descriptionPrefix : '') + currentChar.desc,
+        (DBState.db.promptPreprocess ? DBState.db.descriptionPrefix : "") + currentChar.desc,
         { chara: currentChar }
     )
 
     const additionalInfo = await additionalInformations(currentChar, currentChat)
     if (additionalInfo) {
-        description += '\n\n' + risuChatParser(additionalInfo, { chara: currentChar })
+        description += "\n\n" + risuChatParser(additionalInfo, { chara: currentChar })
     }
 
     if (currentChar.personality) {
@@ -162,18 +152,20 @@ export async function buildDescription(
     }
 
     if (currentChar.scenario) {
-        description += risuChatParser("\n\nCircumstances and context of the dialogue: " + currentChar.scenario, { chara: currentChar })
+        description += risuChatParser("\n\nCircumstances and context of the dialogue: " + currentChar.scenario, {
+            chara: currentChar,
+        })
     }
 
     unformated.description.push({
-        role: 'system',
-        content: description
+        role: "system",
+        content: description,
     })
 
     if (isGroup) {
         unformated.postEverything.push({
-            role: 'system',
-            content: `[Write the next reply only as ${currentChar.name}]`
+            role: "system",
+            content: `[Write the next reply only as ${currentChar.name}]`,
         })
     }
 }
@@ -188,24 +180,24 @@ export async function buildLorebookPrompts(
     const lorepmt = await loadLoreBookV3Prompt()
 
     // Normal lorebook entries
-    const normalActives = lorepmt.actives.filter(v => v.pos === '' && v.inject === null)
+    const normalActives = lorepmt.actives.filter((v) => v.pos === "" && v.inject === null)
     for (const lorebook of normalActives) {
         unformated.lorebook.push({
             role: lorebook.role,
-            content: risuChatParser(lorebook.prompt, { chara: currentChar })
+            content: risuChatParser(lorebook.prompt, { chara: currentChar }),
         })
     }
 
     // Description position entries
-    const descActives = lorepmt.actives.filter(v =>
-        v.pos === 'after_desc' || v.pos === 'before_desc' || v.pos === 'personality' || v.pos === 'scenario'
+    const descActives = lorepmt.actives.filter(
+        (v) => v.pos === "after_desc" || v.pos === "before_desc" || v.pos === "personality" || v.pos === "scenario"
     )
     for (const lorebook of descActives) {
         const c = {
             role: lorebook.role,
-            content: risuChatParser(lorebook.prompt, { chara: currentChar })
+            content: risuChatParser(lorebook.prompt, { chara: currentChar }),
         }
-        if (lorebook.pos === 'before_desc') {
+        if (lorebook.pos === "before_desc") {
             unformated.description.unshift(c)
         } else {
             unformated.description.push(c)
@@ -218,14 +210,11 @@ export async function buildLorebookPrompts(
 /**
  * Build persona prompt
  */
-export function buildPersonaPrompt(
-    unformated: UnformatedPrompts,
-    currentChar: character
-): void {
+export function buildPersonaPrompt(unformated: UnformatedPrompts, currentChar: character): void {
     if (DBState.db.personaPrompt) {
         unformated.personaPrompt.push({
-            role: 'system',
-            content: risuChatParser(getPersonaPrompt(), { chara: currentChar })
+            role: "system",
+            content: risuChatParser(getPersonaPrompt(), { chara: currentChar }),
         })
     }
 }
@@ -233,24 +222,21 @@ export function buildPersonaPrompt(
 /**
  * Build inlay view screen prompts (emotion/imggen)
  */
-export function buildInlayViewScreenPrompts(
-    unformated: UnformatedPrompts,
-    currentChar: character
-): void {
+export function buildInlayViewScreenPrompts(unformated: UnformatedPrompts, currentChar: character): void {
     if (currentChar.inlayViewScreen) {
-        if (currentChar.viewScreen === 'emotion') {
+        if (currentChar.viewScreen === "emotion") {
             unformated.postEverything.push({
-                role: 'system',
+                role: "system",
                 content: currentChar.newGenData.emotionInstructions.replaceAll(
-                    '{{slot}}',
-                    currentChar.emotionImages.map((v) => v[0]).join(', ')
-                )
+                    "{{slot}}",
+                    currentChar.emotionImages.map((v) => v[0]).join(", ")
+                ),
             })
         }
-        if (currentChar.viewScreen === 'imggen') {
+        if (currentChar.viewScreen === "imggen") {
             unformated.postEverything.push({
-                role: 'system',
-                content: currentChar.newGenData.instructions
+                role: "system",
+                content: currentChar.newGenData.instructions,
             })
         }
     }
@@ -265,24 +251,24 @@ export function buildPostEverythingLorebooks(
     currentChar: character
 ): void {
     // Non-assistant lorebooks first
-    const postEverythingLorebooks = lorepmt.actives.filter(v =>
-        v.pos === 'depth' && v.depth === 0 && v.role !== 'assistant'
+    const postEverythingLorebooks = lorepmt.actives.filter(
+        (v) => v.pos === "depth" && v.depth === 0 && v.role !== "assistant"
     )
     for (const lorebook of postEverythingLorebooks) {
         unformated.postEverything.push({
             role: lorebook.role,
-            content: risuChatParser(lorebook.prompt, { chara: currentChar })
+            content: risuChatParser(lorebook.prompt, { chara: currentChar }),
         })
     }
 
     // Assistant lorebooks after (for prefill)
-    const postEverythingAssistantLorebooks = lorepmt.actives.filter(v =>
-        v.pos === 'depth' && v.depth === 0 && v.role === 'assistant'
+    const postEverythingAssistantLorebooks = lorepmt.actives.filter(
+        (v) => v.pos === "depth" && v.depth === 0 && v.role === "assistant"
     )
     for (const lorebook of postEverythingAssistantLorebooks) {
         unformated.postEverything.push({
             role: lorebook.role,
-            content: risuChatParser(lorebook.prompt, { chara: currentChar })
+            content: risuChatParser(lorebook.prompt, { chara: currentChar }),
         })
     }
 }
@@ -291,10 +277,10 @@ export function buildPostEverythingLorebooks(
  * Get injection lorebooks data
  */
 export function getInjectionLorebooks(lorepmt: LorebookData): {
-    injectionLorebooks: LorebookData['actives']
+    injectionLorebooks: LorebookData["actives"]
     injectionLorePosSet: Set<string>
 } {
-    const injectionLorebooks = lorepmt.actives.filter(v => v.inject && !v.inject.lore)
+    const injectionLorebooks = lorepmt.actives.filter((v) => v.inject && !v.inject.lore)
     const injectionLorePosSet = new Set<string>()
     for (const lorebook of injectionLorebooks) {
         injectionLorePosSet.add(lorebook.inject!.location)
@@ -306,7 +292,7 @@ export function getInjectionLorebooks(lorepmt: LorebookData): {
  * Create position parser function for lorebook injection
  */
 export function createPositionParser(
-    injectionLorebooks: LorebookData['actives'],
+    injectionLorebooks: LorebookData["actives"],
     injectionLorePosSet: Set<string>,
     lorepmt: LorebookData
 ): (text: string, loc: string) => string {
@@ -314,24 +300,24 @@ export function createPositionParser(
 
     return (text: string, loc: string) => {
         if (injectionLorePosSet.has(loc)) {
-            const matchings = injectionLorebooks.filter(v => v.inject!.location === loc)
+            const matchings = injectionLorebooks.filter((v) => v.inject!.location === loc)
             for (const lore of matchings) {
                 switch (lore.inject!.operation) {
-                    case 'append':
-                        text += ' ' + lore.prompt
+                    case "append":
+                        text += " " + lore.prompt
                         break
-                    case 'prepend':
-                        text = lore.prompt + ' ' + text
+                    case "prepend":
+                        text = lore.prompt + " " + text
                         break
-                    case 'replace':
-                        text = text.replace(lore.inject!.param || '', lore.prompt)
+                    case "replace":
+                        text = text.replace(lore.inject!.param || "", lore.prompt)
                         break
                 }
             }
         }
         return text.replace(positionRegex, (match, p1) => {
-            const matchingLorebooks = lorepmt.actives.filter(v => v.pos === ('pt_' + p1))
-            return matchingLorebooks.map(v => v.prompt).join('\n')
+            const matchingLorebooks = lorepmt.actives.filter((v) => v.pos === "pt_" + p1)
+            return matchingLorebooks.map((v) => v.prompt).join("\n")
         })
     }
 }
@@ -339,40 +325,27 @@ export function createPositionParser(
 /**
  * Get depth prompts for insertion into chat history
  */
-export function getDepthPrompts(
-    lorepmt: LorebookData,
-    currentChar: character
-): OpenAIChat[] {
-    const depthPrompts = lorepmt.actives.filter(v =>
-        (v.pos === 'depth' && v.depth! > 0) || v.pos === 'reverse_depth'
-    )
+export function getDepthPrompts(lorepmt: LorebookData, currentChar: character): OpenAIChat[] {
+    const depthPrompts = lorepmt.actives.filter((v) => (v.pos === "depth" && v.depth! > 0) || v.pos === "reverse_depth")
 
-    return depthPrompts.map(dp => ({
+    return depthPrompts.map((dp) => ({
         role: dp.role,
-        content: risuChatParser(dp.prompt, { chara: currentChar })
+        content: risuChatParser(dp.prompt, { chara: currentChar }),
     }))
 }
 
 /**
  * Insert depth prompts into unformated chats
  */
-export function insertDepthPrompts(
-    unformated: UnformatedPrompts,
-    lorepmt: LorebookData,
-    currentChar: character
-): void {
-    const depthPrompts = lorepmt.actives.filter(v =>
-        (v.pos === 'depth' && v.depth! > 0) || v.pos === 'reverse_depth'
-    )
+export function insertDepthPrompts(unformated: UnformatedPrompts, lorepmt: LorebookData, currentChar: character): void {
+    const depthPrompts = lorepmt.actives.filter((v) => (v.pos === "depth" && v.depth! > 0) || v.pos === "reverse_depth")
 
     for (const depthPrompt of depthPrompts) {
         const chat: OpenAIChat = {
             role: depthPrompt.role,
-            content: risuChatParser(depthPrompt.prompt, { chara: currentChar })
+            content: risuChatParser(depthPrompt.prompt, { chara: currentChar }),
         }
-        const depth = depthPrompt.pos === 'depth'
-            ? depthPrompt.depth!
-            : (unformated.chats.length - depthPrompt.depth!)
+        const depth = depthPrompt.pos === "depth" ? depthPrompt.depth! : unformated.chats.length - depthPrompt.depth!
         unformated.chats.splice(depth, 0, chat)
     }
 }

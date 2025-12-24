@@ -1,70 +1,73 @@
-import { Packr, Unpackr, decode } from "msgpackr";
-import * as fflate from "fflate";
-import { type Database, type Chat } from "./types";
+import { Packr, Unpackr, decode } from "msgpackr"
+import * as fflate from "fflate"
+import { type Database, type Chat } from "./types"
 
 const packr = new Packr({
-    useRecords:false
-});
-
-const unpackr = new Unpackr({
-    int64AsType: 'number',
-    useRecords:false
+    useRecords: false,
 })
 
-const magicHeader = new Uint8Array([0, 82, 73, 83, 85, 83, 65, 86, 69, 0, 7]); 
-const magicCompressedHeader = new Uint8Array([0, 82, 73, 83, 85, 83, 65, 86, 69, 0, 8]);
-const magicStreamCompressedHeader = new Uint8Array([0, 82, 73, 83, 85, 83, 65, 86, 69, 0, 9]);
-const magicRisuSaveHeader = new TextEncoder().encode("RISUSAVE\0");
+const unpackr = new Unpackr({
+    int64AsType: "number",
+    useRecords: false,
+})
 
+const magicHeader = new Uint8Array([0, 82, 73, 83, 85, 83, 65, 86, 69, 0, 7])
+const magicCompressedHeader = new Uint8Array([0, 82, 73, 83, 85, 83, 65, 86, 69, 0, 8])
+const magicStreamCompressedHeader = new Uint8Array([0, 82, 73, 83, 85, 83, 65, 86, 69, 0, 9])
+const magicRisuSaveHeader = new TextEncoder().encode("RISUSAVE\0")
 
-async function checkCompressionStreams(){
+async function checkCompressionStreams() {
     // TODO: Consider centralizing/caching compression-stream initialization to avoid repeating this call pattern.
-    if(!globalThis.CompressionStream){
-        const {makeCompressionStream} = await import('compression-streams-polyfill/ponyfill');
-        globalThis.CompressionStream = makeCompressionStream(TransformStream) as unknown as typeof CompressionStream;
+    if (!globalThis.CompressionStream) {
+        const { makeCompressionStream } = await import("compression-streams-polyfill/ponyfill")
+        globalThis.CompressionStream = makeCompressionStream(TransformStream) as unknown as typeof CompressionStream
     }
-    if(!globalThis.DecompressionStream){
-        const {makeDecompressionStream} = await import('compression-streams-polyfill/ponyfill');
-        globalThis.DecompressionStream = makeDecompressionStream(TransformStream) as unknown as typeof DecompressionStream;
+    if (!globalThis.DecompressionStream) {
+        const { makeDecompressionStream } = await import("compression-streams-polyfill/ponyfill")
+        globalThis.DecompressionStream = makeDecompressionStream(
+            TransformStream
+        ) as unknown as typeof DecompressionStream
     }
 }
 
-export function encodeRisuSaveLegacy(data:any, compression:'noCompression'|'compression' = 'noCompression'): Uint8Array<ArrayBuffer> {
-    let encoded:Uint8Array<ArrayBuffer> = packr.encode(data) as Uint8Array<ArrayBuffer>
-    if(compression === 'compression'){
+export function encodeRisuSaveLegacy(
+    data: any,
+    compression: "noCompression" | "compression" = "noCompression"
+): Uint8Array<ArrayBuffer> {
+    let encoded: Uint8Array<ArrayBuffer> = packr.encode(data) as Uint8Array<ArrayBuffer>
+    if (compression === "compression") {
         encoded = fflate.compressSync(encoded) as Uint8Array<ArrayBuffer>
-        const result = new Uint8Array(encoded.length + magicCompressedHeader.length);
+        const result = new Uint8Array(encoded.length + magicCompressedHeader.length)
         result.set(magicCompressedHeader, 0)
         result.set(encoded, magicCompressedHeader.length)
         return result
-    }
-    else{
-        const result = new Uint8Array(encoded.length + magicHeader.length);
+    } else {
+        const result = new Uint8Array(encoded.length + magicHeader.length)
         result.set(magicHeader, 0)
         result.set(encoded, magicHeader.length)
         return result
     }
 }
 
-export async function encodeRisuSaveCompressionStream(data:any) {
+export async function encodeRisuSaveCompressionStream(data: any) {
     await checkCompressionStreams()
-    const encoded:Uint8Array = packr.encode(data)
-    const cs = new CompressionStream('gzip');
-    const writer = cs.writable.getWriter();
-    writer.write(encoded as any);
-    writer.close();
+    const encoded: Uint8Array = packr.encode(data)
+    const cs = new CompressionStream("gzip")
+    const writer = cs.writable.getWriter()
+    writer.write(encoded as any)
+    writer.close()
     const buf = await new Response(cs.readable).arrayBuffer()
-    const result = new Uint8Array(new Uint8Array(buf).length + magicStreamCompressedHeader.length);
+    const result = new Uint8Array(new Uint8Array(buf).length + magicStreamCompressedHeader.length)
     result.set(magicStreamCompressedHeader, 0)
     result.set(new Uint8Array(buf), magicStreamCompressedHeader.length)
     return result
 }
 
 export type toSaveType = {
-    character: string[];
-    chat: [string, string][];
-    botPreset: boolean;
-    modules: boolean;
+    character: string[]
+    chat: [string, string][]
+    botPreset: boolean
+    modules: boolean
 }
 
 enum RisuSaveType {
@@ -73,278 +76,277 @@ enum RisuSaveType {
     CHARACTERWITHCHAT = 2,
     CHAT = 3,
     BOTPRESET = 4,
-    MODULES = 5
+    MODULES = 5,
 }
 
 export class RisuSaveEncoder {
+    private blocks: { [key: string]: Uint8Array } = {}
+    private compression: boolean = false
+    private excludeChats: boolean = false
+    private separateCharactersAndPresets: boolean = false
 
-    private blocks: { [key: string]: Uint8Array } = {};
-    private compression: boolean = false;
-    private excludeChats: boolean = false;
-    private separateCharactersAndPresets: boolean = false;
-
-    async init(data:Database,arg:{
-        compression?: boolean
-        excludeChats?: boolean
-        separateCharactersAndPresets?: boolean
-    } = {}){
-        const { compression = false, excludeChats = false, separateCharactersAndPresets = false } = arg;
-        this.compression = compression;
-        this.excludeChats = excludeChats;
-        this.separateCharactersAndPresets = separateCharactersAndPresets;
-        const obj:Record<any,any> = {}
+    async init(
+        data: Database,
+        arg: {
+            compression?: boolean
+            excludeChats?: boolean
+            separateCharactersAndPresets?: boolean
+        } = {}
+    ) {
+        const { compression = false, excludeChats = false, separateCharactersAndPresets = false } = arg
+        this.compression = compression
+        this.excludeChats = excludeChats
+        this.separateCharactersAndPresets = separateCharactersAndPresets
+        const obj: Record<any, any> = {}
         const keys = Object.keys(data)
-        for(const key of keys){
-            if(key !== 'characters' && key !== 'botPresets' && key !== 'modules'){
+        for (const key of keys) {
+            if (key !== "characters" && key !== "botPresets" && key !== "modules") {
                 obj[key] = data[key]
             }
         }
-        this.blocks['root'] = await this.encodeBlock({
+        this.blocks["root"] = await this.encodeBlock({
             compression,
             data: JSON.stringify(obj),
             type: RisuSaveType.ROOT,
-            name: 'root'
-        });
+            name: "root",
+        })
         // Only include botPresets and characters in database.bin if not separating
         if (!separateCharactersAndPresets) {
-            this.blocks['preset'] = await this.encodeBlock({
+            this.blocks["preset"] = await this.encodeBlock({
                 compression,
                 data: JSON.stringify(data.botPresets),
                 type: RisuSaveType.BOTPRESET,
-                name: 'preset'
-            });
+                name: "preset",
+            })
         }
-        this.blocks['modules'] = await this.encodeBlock({
+        this.blocks["modules"] = await this.encodeBlock({
             compression,
             data: JSON.stringify(data.modules),
             type: RisuSaveType.MODULES,
-            name: 'modules'
-        });
+            name: "modules",
+        })
         // Only include characters in database.bin if not separating
         if (!separateCharactersAndPresets) {
-            for( const character of data.characters) {
-                let charToSave;
+            for (const character of data.characters) {
+                let charToSave
                 if (excludeChats) {
                     // Save only chat metadata (id, name, folderId, etc.) without heavy data
-                    const chatsMetadata = character.chats?.map(chat => ({
-                        id: chat.id,
-                        name: chat.name,
-                        folderId: chat.folderId,
-                        bindedPersona: chat.bindedPersona,
-                        modules: chat.modules,
-                        lastDate: chat.lastDate,
-                        fmIndex: chat.fmIndex,
-                        // Note: message, note, localLore, sdData, supaMemoryData, hypaV2Data, hypaV3Data,
-                        // lastMemory, suggestMessages, scriptstate are stored in individual files
-                    })) || [];
-                    charToSave = { ...character, chats: chatsMetadata };
+                    const chatsMetadata =
+                        character.chats?.map((chat) => ({
+                            id: chat.id,
+                            name: chat.name,
+                            folderId: chat.folderId,
+                            bindedPersona: chat.bindedPersona,
+                            modules: chat.modules,
+                            lastDate: chat.lastDate,
+                            fmIndex: chat.fmIndex,
+                            // Note: message, note, localLore, sdData, supaMemoryData, hypaV2Data, hypaV3Data,
+                            // lastMemory, suggestMessages, scriptstate are stored in individual files
+                        })) || []
+                    charToSave = { ...character, chats: chatsMetadata }
                 } else {
-                    charToSave = character;
+                    charToSave = character
                 }
                 this.blocks[character.chaId] = await this.encodeBlock({
                     compression,
                     data: JSON.stringify(charToSave),
                     type: RisuSaveType.CHARACTERWITHCHAT,
-                    name: character.chaId
-                });
+                    name: character.chaId,
+                })
             }
         }
-        this.blocks['config'] = await this.encodeBlock({
+        this.blocks["config"] = await this.encodeBlock({
             compression,
             data: JSON.stringify({
-                version: separateCharactersAndPresets ? 3 : (excludeChats ? 2 : 1)  // version 3 = characters and presets separated
+                version: separateCharactersAndPresets ? 3 : excludeChats ? 2 : 1, // version 3 = characters and presets separated
             }),
             type: RisuSaveType.CONFIG,
-            name: "config"
+            name: "config",
         })
     }
 
-    async set(data:Database, toSave:toSaveType){
-        const obj:Record<any,any> = {}
+    async set(data: Database, toSave: toSaveType) {
+        const obj: Record<any, any> = {}
         const keys = Object.keys(data)
-        for(const key of keys){
-            if(key !== 'characters' && key !== 'botPresets'){
+        for (const key of keys) {
+            if (key !== "characters" && key !== "botPresets") {
                 obj[key] = data[key]
             }
         }
-        this.blocks['root'] = await this.encodeBlock({
+        this.blocks["root"] = await this.encodeBlock({
             compression: this.compression,
             data: JSON.stringify(obj),
             type: RisuSaveType.ROOT,
-            name: 'root'
-        });
+            name: "root",
+        })
 
         // Only include characters in database.bin if not separating
         if (!this.separateCharactersAndPresets) {
-            const savedId = new Set<string>();
-            for(const character of data.characters) {
-                let charToSave;
+            const savedId = new Set<string>()
+            for (const character of data.characters) {
+                let charToSave
                 if (this.excludeChats) {
                     // Save only chat metadata (id, name, folderId, etc.) without heavy data
-                    const chatsMetadata = character.chats?.map(chat => ({
-                        id: chat.id,
-                        name: chat.name,
-                        folderId: chat.folderId,
-                        bindedPersona: chat.bindedPersona,
-                        modules: chat.modules,
-                        lastDate: chat.lastDate,
-                        fmIndex: chat.fmIndex,
-                    })) || [];
-                    charToSave = { ...character, chats: chatsMetadata };
+                    const chatsMetadata =
+                        character.chats?.map((chat) => ({
+                            id: chat.id,
+                            name: chat.name,
+                            folderId: chat.folderId,
+                            bindedPersona: chat.bindedPersona,
+                            modules: chat.modules,
+                            lastDate: chat.lastDate,
+                            fmIndex: chat.fmIndex,
+                        })) || []
+                    charToSave = { ...character, chats: chatsMetadata }
                 } else {
-                    charToSave = character;
+                    charToSave = character
                 }
-                const index = toSave.character.indexOf(character.chaId);
+                const index = toSave.character.indexOf(character.chaId)
                 if (index !== -1) {
                     this.blocks[character.chaId] = await this.encodeBlock({
                         compression: this.compression,
                         data: JSON.stringify(charToSave),
                         type: RisuSaveType.CHARACTERWITHCHAT,
-                        name: character.chaId
-                    });
-                    savedId.add(character.chaId);
-                    toSave.character.splice(index, 1);
-                }
-                else if(!this.blocks[character.chaId]){
+                        name: character.chaId,
+                    })
+                    savedId.add(character.chaId)
+                    toSave.character.splice(index, 1)
+                } else if (!this.blocks[character.chaId]) {
                     this.blocks[character.chaId] = await this.encodeBlock({
                         compression: this.compression,
                         data: JSON.stringify(charToSave),
                         type: RisuSaveType.CHARACTERWITHCHAT,
-                        name: character.chaId
-                    });
-                    savedId.add(character.chaId);
+                        name: character.chaId,
+                    })
+                    savedId.add(character.chaId)
                 }
             }
-            if(toSave.character.length > 0){
-                console.log(`Deleting character data: ${toSave.character.join(', ')}`);
+            if (toSave.character.length > 0) {
+                console.log(`Deleting character data: ${toSave.character.join(", ")}`)
                 //probably deleted characters
-                for(const chaId of toSave.character){
-                    if(!savedId.has(chaId)){
-                        delete this.blocks[chaId];
+                for (const chaId of toSave.character) {
+                    if (!savedId.has(chaId)) {
+                        delete this.blocks[chaId]
                     }
                 }
             }
         }
 
         // Only include botPresets in database.bin if not separating
-        if(!this.separateCharactersAndPresets && toSave.botPreset){
-            this.blocks['preset'] = await this.encodeBlock({
+        if (!this.separateCharactersAndPresets && toSave.botPreset) {
+            this.blocks["preset"] = await this.encodeBlock({
                 compression: this.compression,
                 data: JSON.stringify(data.botPresets),
                 type: RisuSaveType.BOTPRESET,
-                name: 'preset'
-            });
+                name: "preset",
+            })
         }
-        if(toSave.modules){
-            this.blocks['modules'] = await this.encodeBlock({
+        if (toSave.modules) {
+            this.blocks["modules"] = await this.encodeBlock({
                 compression: this.compression,
                 data: JSON.stringify(data.modules),
                 type: RisuSaveType.MODULES,
-                name: 'modules'
-            });
+                name: "modules",
+            })
         }
     }
 
-    encode(arg:{
-        compression?: boolean
-    } = {}){
-        if(!this.blocks['config']){
+    encode(
+        arg: {
+            compression?: boolean
+        } = {}
+    ) {
+        if (!this.blocks["config"]) {
             return null
         }
         let totalLength = 0
-        for(const key in this.blocks){
-            totalLength += this.blocks[key].length;
+        for (const key in this.blocks) {
+            totalLength += this.blocks[key].length
         }
-        totalLength += magicRisuSaveHeader.length;
-        const arrayBuf = new ArrayBuffer(totalLength);
-        const view = new Uint8Array(arrayBuf);
-        let offset = 0;
-        view.set(magicRisuSaveHeader, offset);
-        offset += magicRisuSaveHeader.length;
-        for(const key in this.blocks){
-            view.set(this.blocks[key], offset);
-            offset += this.blocks[key].length;
+        totalLength += magicRisuSaveHeader.length
+        const arrayBuf = new ArrayBuffer(totalLength)
+        const view = new Uint8Array(arrayBuf)
+        let offset = 0
+        view.set(magicRisuSaveHeader, offset)
+        offset += magicRisuSaveHeader.length
+        for (const key in this.blocks) {
+            view.set(this.blocks[key], offset)
+            offset += this.blocks[key].length
         }
-        console.log(Object.keys(this.blocks).length, 'blocks encoded');
-        return arrayBuf;
+        console.log(Object.keys(this.blocks).length, "blocks encoded")
+        return arrayBuf
     }
 
-    async encodeBlock(arg:{
-        compression:boolean
-        data:string
-        type:RisuSaveType
-        name:string
-    }){
-        let databuf: Uint8Array;
-        if(arg.compression){
-            await checkCompressionStreams();
-            const cs = new CompressionStream('gzip');
-            const writer = cs.writable.getWriter();
-            writer.write(new TextEncoder().encode(arg.data));
-            writer.close();
-            const compressedData = await new Response(cs.readable).arrayBuffer();
-            databuf = (new Uint8Array(compressedData));
+    async encodeBlock(arg: { compression: boolean; data: string; type: RisuSaveType; name: string }) {
+        let databuf: Uint8Array
+        if (arg.compression) {
+            await checkCompressionStreams()
+            const cs = new CompressionStream("gzip")
+            const writer = cs.writable.getWriter()
+            writer.write(new TextEncoder().encode(arg.data))
+            writer.close()
+            const compressedData = await new Response(cs.readable).arrayBuffer()
+            databuf = new Uint8Array(compressedData)
+        } else {
+            databuf = new TextEncoder().encode(arg.data)
         }
-        else{
-            databuf = (new TextEncoder().encode(arg.data));
-        }
-        const nameBuf = new TextEncoder().encode(arg.name);
-        const lengthBuf = new ArrayBuffer(4);
-        new Uint32Array(lengthBuf)[0] = databuf.length;
-        const arrayBuf = new ArrayBuffer(2 + 1 + nameBuf.length + 4 + databuf.length);
-        const buf = new Uint8Array(arrayBuf);
-        buf.set(new Uint8Array([arg.type, arg.compression ? 1 : 0]), 0);
-        buf.set(new Uint8Array([nameBuf.length]), 2);
-        buf.set(nameBuf, 3);
-        buf.set(new Uint8Array(lengthBuf), 3 + nameBuf.length);
-        buf.set(databuf, 7 + nameBuf.length);
-        return buf;
+        const nameBuf = new TextEncoder().encode(arg.name)
+        const lengthBuf = new ArrayBuffer(4)
+        new Uint32Array(lengthBuf)[0] = databuf.length
+        const arrayBuf = new ArrayBuffer(2 + 1 + nameBuf.length + 4 + databuf.length)
+        const buf = new Uint8Array(arrayBuf)
+        buf.set(new Uint8Array([arg.type, arg.compression ? 1 : 0]), 0)
+        buf.set(new Uint8Array([nameBuf.length]), 2)
+        buf.set(nameBuf, 3)
+        buf.set(new Uint8Array(lengthBuf), 3 + nameBuf.length)
+        buf.set(databuf, 7 + nameBuf.length)
+        return buf
     }
 }
 
 export class RisuSaveDecoder {
     private blocks: {
-        name: string;
-        type: RisuSaveType;
-        compression: boolean;
-        content: string;
+        name: string
+        type: RisuSaveType
+        compression: boolean
+        content: string
     }[] = []
     async decode(data: Uint8Array): Promise<Database> {
-        console.log('Decoding RisuSave data');
-        let offset = magicRisuSaveHeader.length;
+        console.log("Decoding RisuSave data")
+        let offset = magicRisuSaveHeader.length
         // TODO: Start with Partial<Database> and validate/normalize before returning.
         const db = {} as Database
         while (offset < data.length) {
-            const type = data[offset];
-            const compression = data[offset + 1] === 1;
-            offset += 2;
+            const type = data[offset]
+            const compression = data[offset + 1] === 1
+            offset += 2
 
-            const nameLength = data[offset];
-            offset += 1;
-            const name = new TextDecoder().decode(data.subarray(offset, offset + nameLength));
-            offset += nameLength;
+            const nameLength = data[offset]
+            offset += 1
+            const name = new TextDecoder().decode(data.subarray(offset, offset + nameLength))
+            offset += nameLength
 
-            const newArrayBuf = new ArrayBuffer(4);
-            const lengthSubUint8Buf = data.slice(offset, offset + 4);
-            new Uint8Array(newArrayBuf).set(lengthSubUint8Buf);
-            const length = new Uint32Array(newArrayBuf)[0];
-            offset += 4;
+            const newArrayBuf = new ArrayBuffer(4)
+            const lengthSubUint8Buf = data.slice(offset, offset + 4)
+            new Uint8Array(newArrayBuf).set(lengthSubUint8Buf)
+            const length = new Uint32Array(newArrayBuf)[0]
+            offset += 4
 
-            let blockData = data.subarray(offset, offset + length);
-            offset += length;
+            let blockData = data.subarray(offset, offset + length)
+            offset += length
 
             if (compression) {
                 try {
                     //decode using DecompressionStream
-                    await checkCompressionStreams();
-                    const cs = new DecompressionStream('gzip');
-                    const writer = cs.writable.getWriter();
-                    writer.write(blockData as any);
-                    writer.close();
-                    const buf = await new Response(cs.readable).arrayBuffer();
-                    blockData = new Uint8Array(buf);   
+                    await checkCompressionStreams()
+                    const cs = new DecompressionStream("gzip")
+                    const writer = cs.writable.getWriter()
+                    writer.write(blockData as any)
+                    writer.close()
+                    const buf = await new Response(cs.readable).arrayBuffer()
+                    blockData = new Uint8Array(buf)
                 } catch (error) {
-                    console.error(`Error decompressing block ${name}:`, error);
+                    console.error(`Error decompressing block ${name}:`, error)
                     continue
                 }
             }
@@ -353,86 +355,87 @@ export class RisuSaveDecoder {
                 name,
                 type,
                 compression,
-                content: new TextDecoder().decode(blockData)
+                content: new TextDecoder().decode(blockData),
             })
-            console.log(`Decoded block: ${name} (type: ${type}, compression: ${compression}, length: ${blockData.length})`);
+            console.log(
+                `Decoded block: ${name} (type: ${type}, compression: ${compression}, length: ${blockData.length})`
+            )
         }
-        console.log('blocks',this.blocks)
-        for(const key in this.blocks){
-            switch(this.blocks[key].type){
-                case RisuSaveType.ROOT:{
-                    const rootData = JSON.parse(this.blocks[key].content);
-                    for(const rootKey in rootData){
-                        if(!db[rootKey]){
-                            db[rootKey] = rootData[rootKey];
+        console.log("blocks", this.blocks)
+        for (const key in this.blocks) {
+            switch (this.blocks[key].type) {
+                case RisuSaveType.ROOT: {
+                    const rootData = JSON.parse(this.blocks[key].content)
+                    for (const rootKey in rootData) {
+                        if (!db[rootKey]) {
+                            db[rootKey] = rootData[rootKey]
                         }
                     }
-                    break;
-                }
-                case RisuSaveType.CHARACTERWITHCHAT:{
-                    db.characters ??= [];
-                    const character = JSON.parse(this.blocks[key].content);
-                    db.characters.push(character);
                     break
                 }
-                case RisuSaveType.BOTPRESET:{
-                    db.botPresets = JSON.parse(this.blocks[key].content);
-                    break;
+                case RisuSaveType.CHARACTERWITHCHAT: {
+                    db.characters ??= []
+                    const character = JSON.parse(this.blocks[key].content)
+                    db.characters.push(character)
+                    break
                 }
-                case RisuSaveType.MODULES:{
-                    db.modules = JSON.parse(this.blocks[key].content);
-                    break;
+                case RisuSaveType.BOTPRESET: {
+                    db.botPresets = JSON.parse(this.blocks[key].content)
+                    break
                 }
-                default:{
-                    console.warn(`Not Implemented RisuSaveType: ${this.blocks[key].type} for ${this.blocks[key].name}`);
+                case RisuSaveType.MODULES: {
+                    db.modules = JSON.parse(this.blocks[key].content)
+                    break
+                }
+                default: {
+                    console.warn(`Not Implemented RisuSaveType: ${this.blocks[key].type} for ${this.blocks[key].name}`)
                 }
             }
         }
         // Note: botPresets validation is handled in init.ts after loading botpresets.bin
-        console.log('Decoded RisuSave data', db);
-        return db;
+        console.log("Decoded RisuSave data", db)
+        return db
     }
 }
 
-export async function decodeRisuSave(data:Uint8Array){
+export async function decodeRisuSave(data: Uint8Array) {
     try {
         const header = checkHeader(data)
-        switch(header){
+        switch (header) {
             case "compressed":
                 data = data.slice(magicCompressedHeader.length)
                 return decode(fflate.decompressSync(data))
             case "raw":
                 data = data.slice(magicHeader.length)
                 return unpackr.decode(data)
-            case "stream":{
+            case "stream": {
                 await checkCompressionStreams()
                 data = data.slice(magicStreamCompressedHeader.length)
-                const cs = new DecompressionStream('gzip');
-                const writer = cs.writable.getWriter();
-                writer.write(data as any);
-                writer.close();
+                const cs = new DecompressionStream("gzip")
+                const writer = cs.writable.getWriter()
+                writer.write(data as any)
+                writer.close()
                 const buf = await new Response(cs.readable).arrayBuffer()
                 return unpackr.decode(new Uint8Array(buf))
             }
-            case "risusave":{
-                const decoder = new RisuSaveDecoder();
-                return await decoder.decode(data);
+            case "risusave": {
+                const decoder = new RisuSaveDecoder()
+                return await decoder.decode(data)
             }
         }
         return unpackr.decode(data)
-    }
-    catch (error) {
-        console.error('Error decoding RisuSave data:', error);
+    } catch (error) {
+        console.error("Error decoding RisuSave data:", error)
         try {
-            console.log('risudecode')
-            const risuSaveHeader = new Uint8Array(Buffer.from("\u0000\u0000RISU",'utf-8'))
+            console.log("risudecode")
+            const risuSaveHeader = new Uint8Array(Buffer.from("\u0000\u0000RISU", "utf-8"))
             const realData = data.subarray(risuSaveHeader.length)
             const dec = unpackr.decode(realData)
-            return dec   
+            return dec
         } catch (error) {
             const buf = Buffer.from(fflate.decompressSync(Buffer.from(data)))
             try {
-                return JSON.parse(buf.toString('utf-8'))                            
+                return JSON.parse(buf.toString("utf-8"))
             } catch (error) {
                 return unpackr.decode(buf)
             }
@@ -441,76 +444,75 @@ export async function decodeRisuSave(data:Uint8Array){
 }
 
 function checkHeader(data: Uint8Array) {
-
-    let header:'none'|'compressed'|'raw'|'stream'|'risusave' = 'raw'
+    let header: "none" | "compressed" | "raw" | "stream" | "risusave" = "raw"
 
     if (data.length < magicHeader.length) {
-      return false;
-    }
-  
-    for (let i = 0; i < magicHeader.length; i++) {
-      if (data[i] !== magicHeader[i]) {
-        header = 'none'
-        break
-      }
+        return false
     }
 
-    if(header === 'none'){
-        header = 'compressed'
+    for (let i = 0; i < magicHeader.length; i++) {
+        if (data[i] !== magicHeader[i]) {
+            header = "none"
+            break
+        }
+    }
+
+    if (header === "none") {
+        header = "compressed"
         for (let i = 0; i < magicCompressedHeader.length; i++) {
             if (data[i] !== magicCompressedHeader[i]) {
-                header = 'none'
+                header = "none"
                 break
             }
         }
     }
 
-    if(header === 'none'){
-        header = 'stream'
+    if (header === "none") {
+        header = "stream"
         for (let i = 0; i < magicStreamCompressedHeader.length; i++) {
             if (data[i] !== magicStreamCompressedHeader[i]) {
-                header = 'none'
+                header = "none"
                 break
             }
         }
     }
 
-    if(header === 'none'){
-        header = 'risusave'
+    if (header === "none") {
+        header = "risusave"
         for (let i = 0; i < magicRisuSaveHeader.length; i++) {
             if (data[i] !== magicRisuSaveHeader[i]) {
-                header = 'none'
+                header = "none"
                 break
             }
         }
     }
 
     // All bytes matched
-    return header;
-  }
+    return header
+}
 
-const magicChatHeader = new TextEncoder().encode("RISUCHAT\0");
-const magicCharactersHeader = new TextEncoder().encode("RISUCHAR\0");
-const magicBotPresetsHeader = new TextEncoder().encode("RISUBPRE\0");
+const magicChatHeader = new TextEncoder().encode("RISUCHAT\0")
+const magicCharactersHeader = new TextEncoder().encode("RISUCHAR\0")
+const magicBotPresetsHeader = new TextEncoder().encode("RISUBPRE\0")
 
 /**
  * Encodes a Chat object to a compressed binary format
  */
 export async function encodeChat(chat: Chat): Promise<Uint8Array<ArrayBuffer>> {
-    await checkCompressionStreams();
-    const jsonStr = JSON.stringify(chat);
-    const jsonBytes = new TextEncoder().encode(jsonStr);
+    await checkCompressionStreams()
+    const jsonStr = JSON.stringify(chat)
+    const jsonBytes = new TextEncoder().encode(jsonStr)
 
-    const cs = new CompressionStream('gzip');
-    const writer = cs.writable.getWriter();
-    writer.write(jsonBytes);
-    writer.close();
-    const compressedData = await new Response(cs.readable).arrayBuffer();
+    const cs = new CompressionStream("gzip")
+    const writer = cs.writable.getWriter()
+    writer.write(jsonBytes)
+    writer.close()
+    const compressedData = await new Response(cs.readable).arrayBuffer()
 
-    const result = new Uint8Array(magicChatHeader.length + compressedData.byteLength) as Uint8Array<ArrayBuffer>;
-    result.set(magicChatHeader, 0);
-    result.set(new Uint8Array(compressedData), magicChatHeader.length);
-    return result;
+    const result = new Uint8Array(magicChatHeader.length + compressedData.byteLength) as Uint8Array<ArrayBuffer>
+    result.set(magicChatHeader, 0)
+    result.set(new Uint8Array(compressedData), magicChatHeader.length)
+    return result
 }
 
 /**
@@ -520,44 +522,44 @@ export async function decodeChat(data: Uint8Array): Promise<Chat | null> {
     // Check magic header
     for (let i = 0; i < magicChatHeader.length; i++) {
         if (data[i] !== magicChatHeader[i]) {
-            console.error('Invalid chat file header');
-            return null;
+            console.error("Invalid chat file header")
+            return null
         }
     }
 
-    await checkCompressionStreams();
-    const compressedData = data.subarray(magicChatHeader.length);
+    await checkCompressionStreams()
+    const compressedData = data.subarray(magicChatHeader.length)
 
-    const ds = new DecompressionStream('gzip');
-    const writer = ds.writable.getWriter();
-    writer.write(compressedData as any);
-    writer.close();
-    const decompressed = await new Response(ds.readable).arrayBuffer();
+    const ds = new DecompressionStream("gzip")
+    const writer = ds.writable.getWriter()
+    writer.write(compressedData as any)
+    writer.close()
+    const decompressed = await new Response(ds.readable).arrayBuffer()
 
-    const jsonStr = new TextDecoder().decode(decompressed);
-    return JSON.parse(jsonStr) as Chat;
+    const jsonStr = new TextDecoder().decode(decompressed)
+    return JSON.parse(jsonStr) as Chat
 }
 
-import type { character, groupChat, botPreset } from "./types";
+import type { character, groupChat, botPreset } from "./types"
 
 /**
  * Encodes characters array to a compressed binary format
  */
 export async function encodeCharacters(characters: (character | groupChat)[]): Promise<Uint8Array<ArrayBuffer>> {
-    await checkCompressionStreams();
-    const jsonStr = JSON.stringify(characters);
-    const jsonBytes = new TextEncoder().encode(jsonStr);
+    await checkCompressionStreams()
+    const jsonStr = JSON.stringify(characters)
+    const jsonBytes = new TextEncoder().encode(jsonStr)
 
-    const cs = new CompressionStream('gzip');
-    const writer = cs.writable.getWriter();
-    writer.write(jsonBytes);
-    writer.close();
-    const compressedData = await new Response(cs.readable).arrayBuffer();
+    const cs = new CompressionStream("gzip")
+    const writer = cs.writable.getWriter()
+    writer.write(jsonBytes)
+    writer.close()
+    const compressedData = await new Response(cs.readable).arrayBuffer()
 
-    const result = new Uint8Array(magicCharactersHeader.length + compressedData.byteLength) as Uint8Array<ArrayBuffer>;
-    result.set(magicCharactersHeader, 0);
-    result.set(new Uint8Array(compressedData), magicCharactersHeader.length);
-    return result;
+    const result = new Uint8Array(magicCharactersHeader.length + compressedData.byteLength) as Uint8Array<ArrayBuffer>
+    result.set(magicCharactersHeader, 0)
+    result.set(new Uint8Array(compressedData), magicCharactersHeader.length)
+    return result
 }
 
 /**
@@ -567,42 +569,42 @@ export async function decodeCharacters(data: Uint8Array): Promise<(character | g
     // Check magic header
     for (let i = 0; i < magicCharactersHeader.length; i++) {
         if (data[i] !== magicCharactersHeader[i]) {
-            console.error('Invalid characters file header');
-            return null;
+            console.error("Invalid characters file header")
+            return null
         }
     }
 
-    await checkCompressionStreams();
-    const compressedData = data.subarray(magicCharactersHeader.length);
+    await checkCompressionStreams()
+    const compressedData = data.subarray(magicCharactersHeader.length)
 
-    const ds = new DecompressionStream('gzip');
-    const writer = ds.writable.getWriter();
-    writer.write(compressedData as any);
-    writer.close();
-    const decompressed = await new Response(ds.readable).arrayBuffer();
+    const ds = new DecompressionStream("gzip")
+    const writer = ds.writable.getWriter()
+    writer.write(compressedData as any)
+    writer.close()
+    const decompressed = await new Response(ds.readable).arrayBuffer()
 
-    const jsonStr = new TextDecoder().decode(decompressed);
-    return JSON.parse(jsonStr) as (character | groupChat)[];
+    const jsonStr = new TextDecoder().decode(decompressed)
+    return JSON.parse(jsonStr) as (character | groupChat)[]
 }
 
 /**
  * Encodes botPresets array to a compressed binary format
  */
 export async function encodeBotPresets(botPresets: botPreset[]): Promise<Uint8Array<ArrayBuffer>> {
-    await checkCompressionStreams();
-    const jsonStr = JSON.stringify(botPresets);
-    const jsonBytes = new TextEncoder().encode(jsonStr);
+    await checkCompressionStreams()
+    const jsonStr = JSON.stringify(botPresets)
+    const jsonBytes = new TextEncoder().encode(jsonStr)
 
-    const cs = new CompressionStream('gzip');
-    const writer = cs.writable.getWriter();
-    writer.write(jsonBytes);
-    writer.close();
-    const compressedData = await new Response(cs.readable).arrayBuffer();
+    const cs = new CompressionStream("gzip")
+    const writer = cs.writable.getWriter()
+    writer.write(jsonBytes)
+    writer.close()
+    const compressedData = await new Response(cs.readable).arrayBuffer()
 
-    const result = new Uint8Array(magicBotPresetsHeader.length + compressedData.byteLength) as Uint8Array<ArrayBuffer>;
-    result.set(magicBotPresetsHeader, 0);
-    result.set(new Uint8Array(compressedData), magicBotPresetsHeader.length);
-    return result;
+    const result = new Uint8Array(magicBotPresetsHeader.length + compressedData.byteLength) as Uint8Array<ArrayBuffer>
+    result.set(magicBotPresetsHeader, 0)
+    result.set(new Uint8Array(compressedData), magicBotPresetsHeader.length)
+    return result
 }
 
 /**
@@ -612,20 +614,20 @@ export async function decodeBotPresets(data: Uint8Array): Promise<botPreset[] | 
     // Check magic header
     for (let i = 0; i < magicBotPresetsHeader.length; i++) {
         if (data[i] !== magicBotPresetsHeader[i]) {
-            console.error('Invalid botPresets file header');
-            return null;
+            console.error("Invalid botPresets file header")
+            return null
         }
     }
 
-    await checkCompressionStreams();
-    const compressedData = data.subarray(magicBotPresetsHeader.length);
+    await checkCompressionStreams()
+    const compressedData = data.subarray(magicBotPresetsHeader.length)
 
-    const ds = new DecompressionStream('gzip');
-    const writer = ds.writable.getWriter();
-    writer.write(compressedData as any);
-    writer.close();
-    const decompressed = await new Response(ds.readable).arrayBuffer();
+    const ds = new DecompressionStream("gzip")
+    const writer = ds.writable.getWriter()
+    writer.write(compressedData as any)
+    writer.close()
+    const decompressed = await new Response(ds.readable).arrayBuffer()
 
-    const jsonStr = new TextDecoder().decode(decompressed);
-    return JSON.parse(jsonStr) as botPreset[];
+    const jsonStr = new TextDecoder().decode(decompressed)
+    return JSON.parse(jsonStr) as botPreset[]
 }

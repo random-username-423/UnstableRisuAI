@@ -22,16 +22,16 @@ class AutoSaveErrorHandler {
      * 에러 발생 시 호출: 로깅 및 사용자 알림 결정
      * @returns 'retry' - 재시도, 'completeFail' - 완전 실패 (더 긴 대기)
      */
-    async onError(error: unknown): Promise<'retry' | 'completeFail'> {
+    async onError(error: unknown): Promise<"retry" | "completeFail"> {
         this.failureCount++
         console.error(`AutoSave failed (${this.failureCount}/${this.ALERT_THRESHOLD}):`, error)
 
         if (this.failureCount >= this.ALERT_THRESHOLD) {
             const msg = error instanceof Error ? error.message : String(error)
             await alertConfirm(`DBSaveError: ${msg}. Please report to the developer.`)
-            return 'completeFail'
+            return "completeFail"
         }
-        return 'retry'
+        return "retry"
     }
 }
 

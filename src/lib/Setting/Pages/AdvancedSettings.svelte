@@ -1,189 +1,194 @@
 <script lang="ts">
-    import Check from "src/lib/UI/GUI/CheckInput.svelte";
-    import { language } from "src/lang";
-    import Button from "src/lib/UI/GUI/Button.svelte";
-    import { DBState } from 'src/ts/stores.svelte';
-    import { alertMd, alertNormal } from "src/ts/utils/alert.svelte";
-    import { downloadFile } from "src/ts/utils/fileIO";
-    import { getRequestLog } from "src/ts/utils/fetch";
-    import { isTauri, isNodeServer, currentUserAgent, currentPlatform } from "src/ts/utils/env";
-    import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";
-    import TextInput from "src/lib/UI/GUI/TextInput.svelte";
-    import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
-    import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
-    import Help from "src/lib/Others/Help.svelte";
-    import Arcodion from "src/lib/UI/Arcodion.svelte";
-  import { PlusIcon, TrashIcon, ArrowUp, ArrowDown } from "lucide-svelte";
-  import { v4 } from "uuid";
-  import { getDatabase } from "src/ts/data/storage/database.svelte";
+    import Check from "src/lib/UI/GUI/CheckInput.svelte"
+    import { language } from "src/lang"
+    import Button from "src/lib/UI/GUI/Button.svelte"
+    import { DBState } from "src/ts/stores.svelte"
+    import { alertMd, alertNormal } from "src/ts/utils/alert.svelte"
+    import { downloadFile } from "src/ts/utils/fileIO"
+    import { getRequestLog } from "src/ts/utils/fetch"
+    import { isTauri, isNodeServer, currentUserAgent, currentPlatform } from "src/ts/utils/env"
+    import NumberInput from "src/lib/UI/GUI/NumberInput.svelte"
+    import TextInput from "src/lib/UI/GUI/TextInput.svelte"
+    import SelectInput from "src/lib/UI/GUI/SelectInput.svelte"
+    import OptionInput from "src/lib/UI/GUI/OptionInput.svelte"
+    import Help from "src/lib/Others/Help.svelte"
+    import Arcodion from "src/lib/UI/Arcodion.svelte"
+    import { PlusIcon, TrashIcon, ArrowUp, ArrowDown } from "lucide-svelte"
+    import { v4 } from "uuid"
+    import { getDatabase } from "src/ts/data/storage/database.svelte"
 
     let openedModels = $state(new Set<string>())
 
     const characterSets = [
-        'Latn',
-        'Hani',
-        'Arab',
-        'Deva',
-        'Cyrl',
-        'Beng',
-        'Hira',
-        'Kana',
-        'Telu',
-        'Hang',
-        'Taml',
-        'Thai',
-        'Gujr',
-        'Knda',
-        'Ethi',
-        'Khmr',
-        'Grek',
-        'Hebr',
+        "Latn",
+        "Hani",
+        "Arab",
+        "Deva",
+        "Cyrl",
+        "Beng",
+        "Hira",
+        "Kana",
+        "Telu",
+        "Hang",
+        "Taml",
+        "Thai",
+        "Gujr",
+        "Knda",
+        "Ethi",
+        "Khmr",
+        "Grek",
+        "Hebr",
     ]
 
     const characterSetsPreview = {
-        'Latn': "ABC",
-        'Hani': "汉漢",
-        'Arab': "اعب",
-        'Deva': "अआइ",
-        'Cyrl': "АБВ",
-        'Beng': "অআই",
-        'Hira': "あい",
-        'Kana': "アイ",
-        'Telu': "అఆఇ",
-        'Hang': "가나다",
-        'Taml': "அஆஇ",
-        'Thai': "กขค",
-        'Gujr': "અઆઇ",
-        'Knda': "ಅಆಇ",
-        'Ethi': "ሀሁሂ",
-        'Khmr': "កខគ",
-        'Grek': "ΑΒΓ",
-        'Hebr': "אבג",
-
+        Latn: "ABC",
+        Hani: "汉漢",
+        Arab: "اعب",
+        Deva: "अआइ",
+        Cyrl: "АБВ",
+        Beng: "অআই",
+        Hira: "あい",
+        Kana: "アイ",
+        Telu: "అఆఇ",
+        Hang: "가나다",
+        Taml: "அஆஇ",
+        Thai: "กขค",
+        Gujr: "અઆઇ",
+        Knda: "ಅಆಇ",
+        Ethi: "ሀሁሂ",
+        Khmr: "កខគ",
+        Grek: "ΑΒΓ",
+        Hebr: "אבג",
     }
 </script>
 
-<h2 class="text-2xl font-bold mt-2">{language.advancedSettings}</h2>
-<span class="text-draculared text-xs mb-2">{language.advancedSettingsWarn}</span>
+<h2 class="mt-2 text-2xl font-bold">{language.advancedSettings}</h2>
+<span class="mb-2 text-xs text-draculared">{language.advancedSettingsWarn}</span>
 
 <!-- ==================== Developer/Debug Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsDevDebugSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsDevDebugSection}</h3>
 
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.useExperimental} name={language.useExperimental}> <Help key="useExperimental"/></Check>
+<div class="mt-4 flex items-center">
+    <Check bind:check={DBState.db.useExperimental} name={language.useExperimental}>
+        <Help key="useExperimental" /></Check
+    >
 </div>
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.showUnrecommended} name={language.showUnrecommended}> <Help key="showUnrecommended"/></Check>
+<div class="mt-4 flex items-center">
+    <Check bind:check={DBState.db.showUnrecommended} name={language.showUnrecommended}>
+        <Help key="showUnrecommended" /></Check
+    >
 </div>
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.enableDevTools} name={language.enableDevTools}>
-        <Help key="enableDevTools"/>
+        <Help key="enableDevTools" />
     </Check>
 </div>
 {#if isNodeServer || isTauri}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.promptInfoInsideChat} name={language.promptInfoInsideChat}>
-            <Help key="promptInfoInsideChatDesc"/>
+            <Help key="promptInfoInsideChatDesc" />
         </Check>
     </div>
     {#if DBState.db.promptInfoInsideChat}
-        <div class="flex items-center mt-4">
+        <div class="mt-4 flex items-center">
             <Check bind:check={DBState.db.promptTextInfoInsideChat} name={language.promptTextInfoInsideChat}>
-                <Help key="promptTextInfoInsideChat"/>
+                <Help key="promptTextInfoInsideChat" />
             </Check>
         </div>
     {/if}
 {/if}
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.returnCSSError} name={language.returnCSSError}>
-        <Help key="returnCSSError"/>
+        <Help key="returnCSSError" />
     </Check>
 </div>
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Claude Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsClaudeSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsClaudeSection}</h3>
 
 {#if DBState.db.useExperimental}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.automaticCachePoint} name={language.claudeAutomaticCaching}>
-            <Help key="claudeAutomaticCaching"/><Help key="experimental"/>
+            <Help key="claudeAutomaticCaching" /><Help key="experimental" />
         </Check>
     </div>
 {/if}
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.claude1HourCaching} name={language.claude1HourCaching}>
-        <Help key="claude1HourCaching"/>
+        <Help key="claude1HourCaching" />
     </Check>
 </div>
 {#if DBState.db.useExperimental}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.claudeRetrivalCaching} name={language.claudeCachingRetrival}>
-            <Help key="claudeCachingRetrival"/><Help key="unrecommended" unrecommended/>
+            <Help key="claudeCachingRetrival" /><Help key="unrecommended" unrecommended />
         </Check>
     </div>
 {/if}
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.claudeBatching} name={language.claudeBatching}>
-        <Help key="claudeBatching"/><Help key="experimental"/>
+        <Help key="claudeBatching" /><Help key="experimental" />
     </Check>
 </div>
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== OpenAI Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsOpenAISection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsOpenAISection}</h3>
 
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.forceProxyAsOpenAI} name={language.forceProxyAsOpenAI}> <Help key="forceProxyAsOpenAI"/></Check>
+<div class="mt-4 flex items-center">
+    <Check bind:check={DBState.db.forceProxyAsOpenAI} name={language.forceProxyAsOpenAI}>
+        <Help key="forceProxyAsOpenAI" /></Check
+    >
 </div>
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.newOAIHandle} name={language.newOAIHandle}>
-        <Help key="newOAIHandle"/>
+        <Help key="newOAIHandle" />
     </Check>
 </div>
 {#if DBState.db.useExperimental}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.putUserOpen} name={language.oaiRandomUser}>
-            <Help key="experimental"/><Help key="oaiRandomUser"/>
+            <Help key="experimental" /><Help key="oaiRandomUser" />
         </Check>
     </div>
 {/if}
 
-<span class="text-textcolor mt-4">Vision Quality <Help key="gptVisionQuality"/></span>
+<span class="mt-4 text-textcolor">Vision Quality <Help key="gptVisionQuality" /></span>
 <SelectInput bind:value={DBState.db.gptVisionQuality}>
     <OptionInput value="auto">Auto</OptionInput>
     <OptionInput value="low">Low</OptionInput>
     <OptionInput value="high">High</OptionInput>
 </SelectInput>
 
-<span class="text-textcolor mt-4">Service Tier <Help key="openAIServiceTier"/></span>
+<span class="mt-4 text-textcolor">Service Tier <Help key="openAIServiceTier" /></span>
 <SelectInput bind:value={DBState.db.openAIServiceTier}>
     <OptionInput value="">Unspecified</OptionInput>
     <OptionInput value="default">Default</OptionInput>
     <OptionInput value="flex">Flex</OptionInput>
 </SelectInput>
 
-<span class="text-textcolor mt-4">{language.genTimes} <Help key="genTimes"/></span>
-<NumberInput marginBottom={true} size="sm" min={1} max={10} bind:value={DBState.db.genTime}/>
+<span class="mt-4 text-textcolor">{language.genTimes} <Help key="genTimes" /></span>
+<NumberInput marginBottom={true} size="sm" min={1} max={10} bind:value={DBState.db.genTime} />
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Google Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsGoogleSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsGoogleSection}</h3>
 
 {#if DBState.db.useExperimental}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.googleClaudeTokenizing} name={language.googleCloudTokenization}>
-            <Help key="googleCloudTokenization"/><Help key="experimental"/>
+            <Help key="googleCloudTokenization" /><Help key="experimental" />
         </Check>
     </div>
 {:else}
-    <span class="text-textcolor2 text-sm">{language.useExperimental} {language.required}</span>
+    <span class="text-sm text-textcolor2">{language.useExperimental} {language.required}</span>
 {/if}
 
-<span class="text-textcolor mt-4">Vision Quality <Help key="geminiVisionQuality"/></span>
+<span class="mt-4 text-textcolor">Vision Quality <Help key="geminiVisionQuality" /></span>
 <SelectInput bind:value={DBState.db.geminiVisionQuality}>
     <OptionInput value="unspecified">Unspecified</OptionInput>
     <OptionInput value="low">Low</OptionInput>
@@ -191,206 +196,230 @@
     <OptionInput value="high">High</OptionInput>
 </SelectInput>
 
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.geminiMergeSystemToUser} name={language.geminiMergeSystemToUser}>
-        <Help key="geminiMergeSystemToUser"/>
+        <Help key="geminiMergeSystemToUser" />
     </Check>
 </div>
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Lore Book Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsLoreBookSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsLoreBookSection}</h3>
 
-<span class="text-textcolor mt-4 mb-2">{language.loreBookDepth} <Help key="loreBookDepth"/></span>
-<NumberInput marginBottom={true} size="sm" min={0} max={20} bind:value={DBState.db.loreBookDepth}/>
-<span class="text-textcolor">{language.loreBookToken} <Help key="loreBookToken"/></span>
-<NumberInput marginBottom={true} size="sm" min={0} max={4096} bind:value={DBState.db.loreBookToken}/>
+<span class="mb-2 mt-4 text-textcolor">{language.loreBookDepth} <Help key="loreBookDepth" /></span>
+<NumberInput marginBottom={true} size="sm" min={0} max={20} bind:value={DBState.db.loreBookDepth} />
+<span class="text-textcolor">{language.loreBookToken} <Help key="loreBookToken" /></span>
+<NumberInput marginBottom={true} size="sm" min={0} max={4096} bind:value={DBState.db.loreBookToken} />
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Image/Media Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsImageMediaSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsImageMediaSection}</h3>
 
-<span class="text-textcolor mt-4">{language.assetMaxDifference} <Help key="assetMaxDifference"/></span>
-<NumberInput marginBottom={true} size="sm" bind:value={DBState.db.assetMaxDifference}/>
+<span class="mt-4 text-textcolor">{language.assetMaxDifference} <Help key="assetMaxDifference" /></span>
+<NumberInput marginBottom={true} size="sm" bind:value={DBState.db.assetMaxDifference} />
 
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.imageCompression} name={language.imageCompression}> <Help key="imageCompression"/></Check>
+<div class="mt-4 flex items-center">
+    <Check bind:check={DBState.db.imageCompression} name={language.imageCompression}>
+        <Help key="imageCompression" /></Check
+    >
 </div>
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.legacyMediaFindings} name={language.legacyMediaFindings}> <Help key="legacyMediaFindings"/></Check>
+<div class="mt-4 flex items-center">
+    <Check bind:check={DBState.db.legacyMediaFindings} name={language.legacyMediaFindings}>
+        <Help key="legacyMediaFindings" /></Check
+    >
 </div>
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.newImageHandlingBeta} name={language.newImageHandlingBeta}>
-        <Help key="newImageHandlingBeta"/>
+        <Help key="newImageHandlingBeta" />
     </Check>
 </div>
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.dynamicAssets} name={language.dynamicAssets}>
-        <Help key="dynamicAssets"/>
+        <Help key="dynamicAssets" />
     </Check>
 </div>
 {#if DBState.db.dynamicAssets}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.dynamicAssetsEditDisplay} name={language.dynamicAssetsEditDisplay}>
-            <Help key="dynamicAssetsEditDisplay"/>
+            <Help key="dynamicAssetsEditDisplay" />
         </Check>
     </div>
 {/if}
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Translation Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsTranslationSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsTranslationSection}</h3>
 
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.noWaitForTranslate} name={language.noWaitForTranslate}>
-        <Help key="noWaitForTranslate"/>
+        <Help key="noWaitForTranslate" />
     </Check>
 </div>
 {#if DBState.db.useExperimental}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.useExperimentalGoogleTranslator} name="New Google Translate Experimental">
-            <Help key="useExperimentalGoogleTranslator"/><Help key="unrecommended" unrecommended/>
+            <Help key="useExperimentalGoogleTranslator" /><Help key="unrecommended" unrecommended />
         </Check>
     </div>
 {/if}
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Tool Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsToolSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsToolSection}</h3>
 
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.rememberToolUsage} name={language.rememberToolUsage}>
-        <Help key="rememberToolUsage"/>
+        <Help key="rememberToolUsage" />
     </Check>
 </div>
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.simplifiedToolUse} name={language.simplifiedToolUse}>
-        <Help key="simplifiedToolUse"/>
+        <Help key="simplifiedToolUse" />
     </Check>
 </div>
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Chat Input Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsChatInputSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsChatInputSection}</h3>
 
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.newChatSeparator} name={language.newChatSeparator}>
-        <Help key="newChatSeparator"/>
+        <Help key="newChatSeparator" />
     </Check>
 </div>
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.useSayNothing} name={language.sayNothing}> <Help key="sayNothing"/></Check>
+<div class="mt-4 flex items-center">
+    <Check bind:check={DBState.db.useSayNothing} name={language.sayNothing}><Help key="sayNothing" /></Check>
 </div>
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Chat/Response Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsChatResponseSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsChatResponseSection}</h3>
 
-<span class="text-textcolor">{language.autoContinueMinTokens} <Help key="autoContinueMinTokens"/></span>
-<NumberInput marginBottom={true} size="sm" min={0} bind:value={DBState.db.autoContinueMinTokens}/>
+<span class="text-textcolor">{language.autoContinueMinTokens} <Help key="autoContinueMinTokens" /></span>
+<NumberInput marginBottom={true} size="sm" min={0} bind:value={DBState.db.autoContinueMinTokens} />
 
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.autoContinueChat} name={language.autoContinueChat}> <Help key="autoContinueChat"/></Check>
+<div class="mt-4 flex items-center">
+    <Check bind:check={DBState.db.autoContinueChat} name={language.autoContinueChat}>
+        <Help key="autoContinueChat" /></Check
+    >
 </div>
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.removeIncompleteResponse} name={language.removeIncompleteResponse}>
-        <Help key="removeIncompleteResponse"/>
+        <Help key="removeIncompleteResponse" />
     </Check>
 </div>
 {#if DBState.db.useExperimental}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.chatCompression} name={language.experimentalChatCompression}>
-            <Help key="experimentalChatCompressionDesc"/><Help key="experimental"/>
+            <Help key="experimentalChatCompressionDesc" /><Help key="experimental" />
         </Check>
     </div>
 {/if}
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Prompt Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsPromptSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsPromptSection}</h3>
 
-<span class="text-textcolor">{language.additionalPrompt} <Help key="additionalPrompt"/></span>
-<TextInput marginBottom={true} size="sm" bind:value={DBState.db.additionalPrompt}/>
+<span class="text-textcolor">{language.additionalPrompt} <Help key="additionalPrompt" /></span>
+<TextInput marginBottom={true} size="sm" bind:value={DBState.db.additionalPrompt} />
 
-<span class="text-textcolor">{language.descriptionPrefix} <Help key="descriptionPrefix"/></span>
-<TextInput marginBottom={true} size="sm" bind:value={DBState.db.descriptionPrefix}/>
+<span class="text-textcolor">{language.descriptionPrefix} <Help key="descriptionPrefix" /></span>
+<TextInput marginBottom={true} size="sm" bind:value={DBState.db.descriptionPrefix} />
 
-<span class="text-textcolor">{language.emotionPrompt} <Help key="emotionPrompt"/></span>
-<TextInput marginBottom={true} size="sm" bind:value={DBState.db.emotionPrompt2} placeholder="Leave it blank to use default"/>
+<span class="text-textcolor">{language.emotionPrompt} <Help key="emotionPrompt" /></span>
+<TextInput
+    marginBottom={true}
+    size="sm"
+    bind:value={DBState.db.emotionPrompt2}
+    placeholder="Leave it blank to use default"
+/>
 
-<span class="text-textcolor">{language.presetChain} <Help key="presetChain"/></span>
-<TextInput marginBottom={true} size="sm" bind:value={DBState.db.presetChain} placeholder="Leave it blank to not use">
-</TextInput>
+<span class="text-textcolor">{language.presetChain} <Help key="presetChain" /></span>
+<TextInput
+    marginBottom={true}
+    size="sm"
+    bind:value={DBState.db.presetChain}
+    placeholder="Leave it blank to not use"
+></TextInput>
 
 {#if DBState.db.showUnrecommended}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.chainOfThought} name={language.cot}>
-            <Help key="customChainOfThought" unrecommended/>
+            <Help key="customChainOfThought" unrecommended />
         </Check>
     </div>
 {/if}
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Performance Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsPerformanceSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsPerformanceSection}</h3>
 
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.useTokenizerCaching} name={language.useTokenizerCaching}>
-        <Help key="useTokenizerCaching"/>
+        <Help key="useTokenizerCaching" />
     </Check>
 </div>
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Network Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsNetworkSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsNetworkSection}</h3>
 
 {#if DBState.db.showUnrecommended}
-    <div class="flex items-center mt-4">
-        <Check bind:check={DBState.db.usePlainFetch} name={language.forcePlainFetch}> <Help key="forcePlainFetch" unrecommended/></Check>
+    <div class="mt-4 flex items-center">
+        <Check bind:check={DBState.db.usePlainFetch} name={language.forcePlainFetch}>
+            <Help key="forcePlainFetch" unrecommended /></Check
+        >
     </div>
 {/if}
-<div class="flex items-center mt-4">
-    <Check bind:check={DBState.db.autofillRequestUrl} name={language.autoFillRequestURL}> <Help key="autoFillRequestURL"/></Check>
+<div class="mt-4 flex items-center">
+    <Check bind:check={DBState.db.autofillRequestUrl} name={language.autoFillRequestURL}>
+        <Help key="autoFillRequestURL" /></Check
+    >
 </div>
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.antiServerOverloads} name={language.antiServerOverload}>
-        <Help key="antiServerOverload"/>
+        <Help key="antiServerOverload" />
     </Check>
 </div>
-<span class="text-textcolor mt-4">{language.requestretrys} <Help key="requestretrys"/></span>
-<NumberInput marginBottom={true} size="sm" min={0} max={20} bind:value={DBState.db.requestRetrys}/>
-<span class="text-textcolor mt-4">{language.driveParallelConnections} <Help key="driveParallelConnections"/></span>
-<NumberInput marginBottom={true} size="sm" min={1} max={50} bind:value={DBState.db.driveParallelConnections}/>
-<span class="text-textcolor mt-4">{language.maxDbBackups} <Help key="maxDbBackups"/></span>
-<NumberInput marginBottom={true} size="sm" min={1} max={50} bind:value={DBState.db.maxDbBackups}/>
-<span class="text-textcolor mt-4">{language.dbBackupIntervalMinutes} <Help key="dbBackupIntervalMinutes"/></span>
-<NumberInput marginBottom={true} size="sm" min={1} max={60} bind:value={DBState.db.dbBackupIntervalMinutes}/>
+<span class="mt-4 text-textcolor">{language.requestretrys} <Help key="requestretrys" /></span>
+<NumberInput marginBottom={true} size="sm" min={0} max={20} bind:value={DBState.db.requestRetrys} />
+<span class="mt-4 text-textcolor">{language.driveParallelConnections} <Help key="driveParallelConnections" /></span>
+<NumberInput marginBottom={true} size="sm" min={1} max={50} bind:value={DBState.db.driveParallelConnections} />
+<span class="mt-4 text-textcolor">{language.maxDbBackups} <Help key="maxDbBackups" /></span>
+<NumberInput marginBottom={true} size="sm" min={1} max={50} bind:value={DBState.db.maxDbBackups} />
+<span class="mt-4 text-textcolor">{language.dbBackupIntervalMinutes} <Help key="dbBackupIntervalMinutes" /></span>
+<NumberInput marginBottom={true} size="sm" min={1} max={60} bind:value={DBState.db.dbBackupIntervalMinutes} />
 {#if !isNodeServer && !isTauri}
-    <span class="text-textcolor mt-4">{language.requestLocation} <Help key="requestLocation"/></span>
+    <span class="mt-4 text-textcolor">{language.requestLocation} <Help key="requestLocation" /></span>
     <SelectInput bind:value={DBState.db.requestLocation}>
         <OptionInput value="">Default</OptionInput>
         <OptionInput value="eu">EU (GDPR)</OptionInput>
         <OptionInput value="fedramp">US (FedRAMP)</OptionInput>
     </SelectInput>
 {/if}
-<span class="text-textcolor mt-4">Kei Server URL <Help key="keiServerURL"/></span>
-<TextInput marginBottom={true} size="sm" bind:value={DBState.db.keiServerURL} placeholder="Leave it blank to use default"/>
+<span class="mt-4 text-textcolor">Kei Server URL <Help key="keiServerURL" /></span>
+<TextInput
+    marginBottom={true}
+    size="sm"
+    bind:value={DBState.db.keiServerURL}
+    placeholder="Leave it blank to use default"
+/>
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Other Settings ==================== -->
-<h3 class="text-xl font-bold mt-6 mb-2">{language.advSettingsOtherSection}</h3>
+<h3 class="mb-2 mt-6 text-xl font-bold">{language.advSettingsOtherSection}</h3>
 
-<span class="text-textcolor">{language.heightMode} <Help key="heightMode"/></span>
+<span class="text-textcolor">{language.heightMode} <Help key="heightMode" /></span>
 <SelectInput bind:value={DBState.db.heightMode}>
     <OptionInput value="normal">Normal</OptionInput>
     <OptionInput value="percent">Percent</OptionInput>
@@ -400,74 +429,82 @@
     <OptionInput value="lvh">LVH</OptionInput>
 </SelectInput>
 
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.allowAllExtentionFiles} name="Allow all in file select">
-        <Help key="allowAllExtentionFiles"/>
+        <Help key="allowAllExtentionFiles" />
     </Check>
 </div>
-<div class="flex items-center mt-4">
+<div class="mt-4 flex items-center">
     <Check bind:check={DBState.db.removePunctuationHypa} name={language.removePunctuationHypa}>
-        <Help key="removePunctuationHypa"/>
+        <Help key="removePunctuationHypa" />
     </Check>
 </div>
 {#if DBState.db.useExperimental}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.personaNote} name={language.personaNote}>
-            <Help key="personaNote"/><Help key="experimental"/>
+            <Help key="personaNote" /><Help key="experimental" />
         </Check>
     </div>
 {/if}
 {#if DBState.db.showUnrecommended}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.showDeprecatedTriggerV1} name={language.showDeprecatedTriggerV1}>
-            <Help key="showDeprecatedTriggerV1"/><Help key='unrecommended' unrecommended/>
+            <Help key="showDeprecatedTriggerV1" /><Help key="unrecommended" unrecommended />
         </Check>
     </div>
 {/if}
 {#if DBState.db?.account?.useSync}
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.lightningRealmImport} name="Lightning Realm Import">
-            <Help key="lightningRealmImport"/><Help key="experimental"/>
+            <Help key="lightningRealmImport" /><Help key="experimental" />
         </Check>
     </div>
 {/if}
 
-<div class="border-b border-darkborderc mt-4 mb-2"></div>
+<div class="mb-2 mt-4 border-b border-darkborderc"></div>
 
 <!-- ==================== Ban Character Set (Arcodion) ==================== -->
 <Arcodion styled name={language.banCharacterset} help="banCharacterset">
     {#each characterSets as set}
-        <Button styled={DBState.db.banCharacterset.includes(set) ? 'primary' : "outlined"} onclick={(e) => {
-            if (DBState.db.banCharacterset.includes(set)) {
-                DBState.db.banCharacterset = DBState.db.banCharacterset.filter((item) => item !== set)
-            } else {
-                DBState.db.banCharacterset.push(set)
-            }
-        }}>
-            {new Intl.DisplayNames([navigator.language,'en'], { type: 'script' }).of(set)} ({characterSetsPreview[set]})
+        <Button
+            styled={DBState.db.banCharacterset.includes(set) ? "primary" : "outlined"}
+            onclick={(e) => {
+                if (DBState.db.banCharacterset.includes(set)) {
+                    DBState.db.banCharacterset = DBState.db.banCharacterset.filter((item) => item !== set)
+                } else {
+                    DBState.db.banCharacterset.push(set)
+                }
+            }}
+        >
+            {new Intl.DisplayNames([navigator.language, "en"], { type: "script" }).of(set)} ({characterSetsPreview[
+                set
+            ]})
         </Button>
     {/each}
 </Arcodion>
 
 <!-- ==================== Custom Models (Arcodion) ==================== -->
-{#snippet CustomFlagButton(index:number,name:string,flag:number)}
-    <Button className="mt-2" onclick={(e) => {
-        if(DBState.db.customModels[index].flags.includes(flag)){
-            DBState.db.customModels[index].flags = DBState.db.customModels[index].flags.filter((f) => f !== flag)
-        }
-        else{
-            DBState.db.customModels[index].flags.push(flag)
-        }
-    }} styled={DBState.db.customModels[index].flags.includes(flag) ? 'primary' : 'outlined'}>
+{#snippet CustomFlagButton(index: number, name: string, flag: number)}
+    <Button
+        className="mt-2"
+        onclick={(e) => {
+            if (DBState.db.customModels[index].flags.includes(flag)) {
+                DBState.db.customModels[index].flags = DBState.db.customModels[index].flags.filter((f) => f !== flag)
+            } else {
+                DBState.db.customModels[index].flags.push(flag)
+            }
+        }}
+        styled={DBState.db.customModels[index].flags.includes(flag) ? "primary" : "outlined"}
+    >
         {name}
     </Button>
 {/snippet}
 
 <Arcodion styled name={language.customModels} className="overflow-x-auto">
-
     {#each DBState.db.customModels as model, index (model.id)}
-        <div class="flex flex-col mt-2">
-            <button class="hover:bg-selected px-6 py-2 text-lg rounded-t-md border-selected border flex justify-between items-center"
+        <div class="mt-2 flex flex-col">
+            <button
+                class="flex items-center justify-between rounded-t-md border border-selected px-6 py-2 text-lg hover:bg-selected"
                 class:bg-selected={openedModels.has(model.id)}
                 class:rounded-b-md={!openedModels.has(model.id)}
                 onclick={() => {
@@ -481,128 +518,151 @@
             >
                 <span class="text-left">{model.name ?? "Unnamed"}</span>
                 <div class="flex items-center gap-1">
-                    <Button size="sm" styled="outlined" onclick={(e) => {
-                        e.stopPropagation()
-                        if(index === 0) return
-                        let models = DBState.db.customModels
-                        let temp = models[index]
-                        models[index] = models[index - 1]
-                        models[index - 1] = temp
-                        DBState.db.customModels = models
-                    }}>
+                    <Button
+                        size="sm"
+                        styled="outlined"
+                        onclick={(e) => {
+                            e.stopPropagation()
+                            if (index === 0) return
+                            let models = DBState.db.customModels
+                            let temp = models[index]
+                            models[index] = models[index - 1]
+                            models[index - 1] = temp
+                            DBState.db.customModels = models
+                        }}
+                    >
                         <ArrowUp />
                     </Button>
-                    <Button size="sm" styled="outlined" onclick={(e) => {
-                        e.stopPropagation()
-                        if(index === DBState.db.customModels.length - 1) return
-                        let models = DBState.db.customModels
-                        let temp = models[index]
-                        models[index] = models[index + 1]
-                        models[index + 1] = temp
-                        DBState.db.customModels = models
-                    }}>
+                    <Button
+                        size="sm"
+                        styled="outlined"
+                        onclick={(e) => {
+                            e.stopPropagation()
+                            if (index === DBState.db.customModels.length - 1) return
+                            let models = DBState.db.customModels
+                            let temp = models[index]
+                            models[index] = models[index + 1]
+                            models[index + 1] = temp
+                            DBState.db.customModels = models
+                        }}
+                    >
                         <ArrowDown />
                     </Button>
-                    <Button size="sm" styled="outlined" onclick={(e) => {
-                        e.stopPropagation()
-                        let models = DBState.db.customModels
-                        models.splice(index, 1)
-                        DBState.db.customModels = models
-                        openedModels.delete(model.id)
-                        openedModels = new Set(openedModels)
-                    }}>
+                    <Button
+                        size="sm"
+                        styled="outlined"
+                        onclick={(e) => {
+                            e.stopPropagation()
+                            let models = DBState.db.customModels
+                            models.splice(index, 1)
+                            DBState.db.customModels = models
+                            openedModels.delete(model.id)
+                            openedModels = new Set(openedModels)
+                        }}
+                    >
                         <TrashIcon />
                     </Button>
                 </div>
             </button>
             {#if openedModels.has(model.id)}
-                <div class="flex flex-col border border-selected p-2 rounded-b-md overflow-x-auto">
-            <span class="text-textcolor">{language.name}</span>
-            <TextInput size="sm" bind:value={DBState.db.customModels[index].name}/>
-            <span class="text-textcolor">{language.proxyRequestModel}</span>
-            <TextInput size="sm" bind:value={DBState.db.customModels[index].internalId}/>
-            <span class="text-textcolor">URL</span>
-            <TextInput size="sm" bind:value={DBState.db.customModels[index].url}/>
-            <span class="text-textcolor">{language.tokenizer}</span>
-            <SelectInput size="sm" value={DBState.db.customModels[index].tokenizer.toString()} onchange={(e) => {
-                DBState.db.customModels[index].tokenizer = parseInt(e.currentTarget.value)
-            }}>
-                <OptionInput value="0">tiktokenCl100kBase</OptionInput>
-                <OptionInput value="1">tiktokenO200Base</OptionInput>
-                <OptionInput value="2">Mistral</OptionInput>
-                <OptionInput value="3">Llama</OptionInput>
-                <OptionInput value="4">NovelAI</OptionInput>
-                <OptionInput value="5">Claude</OptionInput>
-                <OptionInput value="6">NovelList</OptionInput>
-                <OptionInput value="7">Llama3</OptionInput>
-                <OptionInput value="8">Gemma</OptionInput>
-                <OptionInput value="9">GeminiAPI</OptionInput>
-                <OptionInput value="10">Cohere</OptionInput>
-                <OptionInput value="12">DeepSeek</OptionInput>
-            </SelectInput>
-            <span class="text-textcolor">{language.format}</span>
-            <SelectInput size="sm" value={DBState.db.customModels[index].format.toString()} onchange={(e) => {
-                DBState.db.customModels[index].format = parseInt(e.currentTarget.value)
-            }}>
-                <OptionInput value="0">OpenAICompatible</OptionInput>
-                <OptionInput value="1">OpenAILegacyInstruct</OptionInput>
-                <OptionInput value="2">Anthropic</OptionInput>
-                <OptionInput value="3">AnthropicLegacy</OptionInput>
-                <OptionInput value="4">Mistral</OptionInput>
-                <OptionInput value="5">GeminiAPI</OptionInput>
-                <OptionInput value="6">VertexAIGemini</OptionInput>
-                <OptionInput value="7">NovelList</OptionInput>
-                <OptionInput value="8">Cohere</OptionInput>
-                <OptionInput value="9">NovelAI</OptionInput>
-                <OptionInput value="11">OobaLegacy</OptionInput>
-                <OptionInput value="13">Ooba</OptionInput>
-                <OptionInput value="14">Kobold</OptionInput>
-                <OptionInput value="17">AWSBedrockClaude</OptionInput>
-                <OptionInput value="18">OpenAIResponseAPI</OptionInput>
-            </SelectInput>
-            <span class="text-textcolor">{language.proxyAPIKey}</span>
-            <TextInput size="sm" bind:value={DBState.db.customModels[index].key}/>
-            <span class="text-textcolor">{language.additionalParams}</span>
-            <TextInput size="sm" bind:value={DBState.db.customModels[index].params}/>
-            <Arcodion styled name={language.flags}>
-                {@render CustomFlagButton(index,'hasImageInput', 0)}
-                {@render CustomFlagButton(index,'hasImageOutput', 1)}
-                {@render CustomFlagButton(index,'hasAudioInput', 2)}
-                {@render CustomFlagButton(index,'hasAudioOutput', 3)}
-                {@render CustomFlagButton(index,'hasPrefill', 4)}
-                {@render CustomFlagButton(index,'hasCache', 5)}
-                {@render CustomFlagButton(index,'hasFullSystemPrompt', 6)}
-                {@render CustomFlagButton(index,'hasFirstSystemPrompt', 7)}
-                {@render CustomFlagButton(index,'hasStreaming', 8)}
-                {@render CustomFlagButton(index,'requiresAlternateRole', 9)}
-                {@render CustomFlagButton(index,'mustStartWithUserInput', 10)}
-                {@render CustomFlagButton(index,'hasVideoInput', 12)}
-                {@render CustomFlagButton(index,'OAICompletionTokens', 13)}
-                {@render CustomFlagButton(index,'DeveloperRole', 14)}
-                {@render CustomFlagButton(index,'geminiThinking', 15)}
-                {@render CustomFlagButton(index,'geminiBlockOff', 16)}
-                {@render CustomFlagButton(index,'deepSeekPrefix', 17)}
-                {@render CustomFlagButton(index,'deepSeekThinkingInput', 18)}
-                {@render CustomFlagButton(index,'deepSeekThinkingOutput', 19)}
-            </Arcodion>
+                <div class="flex flex-col overflow-x-auto rounded-b-md border border-selected p-2">
+                    <span class="text-textcolor">{language.name}</span>
+                    <TextInput size="sm" bind:value={DBState.db.customModels[index].name} />
+                    <span class="text-textcolor">{language.proxyRequestModel}</span>
+                    <TextInput size="sm" bind:value={DBState.db.customModels[index].internalId} />
+                    <span class="text-textcolor">URL</span>
+                    <TextInput size="sm" bind:value={DBState.db.customModels[index].url} />
+                    <span class="text-textcolor">{language.tokenizer}</span>
+                    <SelectInput
+                        size="sm"
+                        value={DBState.db.customModels[index].tokenizer.toString()}
+                        onchange={(e) => {
+                            DBState.db.customModels[index].tokenizer = parseInt(e.currentTarget.value)
+                        }}
+                    >
+                        <OptionInput value="0">tiktokenCl100kBase</OptionInput>
+                        <OptionInput value="1">tiktokenO200Base</OptionInput>
+                        <OptionInput value="2">Mistral</OptionInput>
+                        <OptionInput value="3">Llama</OptionInput>
+                        <OptionInput value="4">NovelAI</OptionInput>
+                        <OptionInput value="5">Claude</OptionInput>
+                        <OptionInput value="6">NovelList</OptionInput>
+                        <OptionInput value="7">Llama3</OptionInput>
+                        <OptionInput value="8">Gemma</OptionInput>
+                        <OptionInput value="9">GeminiAPI</OptionInput>
+                        <OptionInput value="10">Cohere</OptionInput>
+                        <OptionInput value="12">DeepSeek</OptionInput>
+                    </SelectInput>
+                    <span class="text-textcolor">{language.format}</span>
+                    <SelectInput
+                        size="sm"
+                        value={DBState.db.customModels[index].format.toString()}
+                        onchange={(e) => {
+                            DBState.db.customModels[index].format = parseInt(e.currentTarget.value)
+                        }}
+                    >
+                        <OptionInput value="0">OpenAICompatible</OptionInput>
+                        <OptionInput value="1">OpenAILegacyInstruct</OptionInput>
+                        <OptionInput value="2">Anthropic</OptionInput>
+                        <OptionInput value="3">AnthropicLegacy</OptionInput>
+                        <OptionInput value="4">Mistral</OptionInput>
+                        <OptionInput value="5">GeminiAPI</OptionInput>
+                        <OptionInput value="6">VertexAIGemini</OptionInput>
+                        <OptionInput value="7">NovelList</OptionInput>
+                        <OptionInput value="8">Cohere</OptionInput>
+                        <OptionInput value="9">NovelAI</OptionInput>
+                        <OptionInput value="11">OobaLegacy</OptionInput>
+                        <OptionInput value="13">Ooba</OptionInput>
+                        <OptionInput value="14">Kobold</OptionInput>
+                        <OptionInput value="17">AWSBedrockClaude</OptionInput>
+                        <OptionInput value="18">OpenAIResponseAPI</OptionInput>
+                    </SelectInput>
+                    <span class="text-textcolor">{language.proxyAPIKey}</span>
+                    <TextInput size="sm" bind:value={DBState.db.customModels[index].key} />
+                    <span class="text-textcolor">{language.additionalParams}</span>
+                    <TextInput size="sm" bind:value={DBState.db.customModels[index].params} />
+                    <Arcodion styled name={language.flags}>
+                        {@render CustomFlagButton(index, "hasImageInput", 0)}
+                        {@render CustomFlagButton(index, "hasImageOutput", 1)}
+                        {@render CustomFlagButton(index, "hasAudioInput", 2)}
+                        {@render CustomFlagButton(index, "hasAudioOutput", 3)}
+                        {@render CustomFlagButton(index, "hasPrefill", 4)}
+                        {@render CustomFlagButton(index, "hasCache", 5)}
+                        {@render CustomFlagButton(index, "hasFullSystemPrompt", 6)}
+                        {@render CustomFlagButton(index, "hasFirstSystemPrompt", 7)}
+                        {@render CustomFlagButton(index, "hasStreaming", 8)}
+                        {@render CustomFlagButton(index, "requiresAlternateRole", 9)}
+                        {@render CustomFlagButton(index, "mustStartWithUserInput", 10)}
+                        {@render CustomFlagButton(index, "hasVideoInput", 12)}
+                        {@render CustomFlagButton(index, "OAICompletionTokens", 13)}
+                        {@render CustomFlagButton(index, "DeveloperRole", 14)}
+                        {@render CustomFlagButton(index, "geminiThinking", 15)}
+                        {@render CustomFlagButton(index, "geminiBlockOff", 16)}
+                        {@render CustomFlagButton(index, "deepSeekPrefix", 17)}
+                        {@render CustomFlagButton(index, "deepSeekThinkingInput", 18)}
+                        {@render CustomFlagButton(index, "deepSeekThinkingOutput", 19)}
+                    </Arcodion>
                 </div>
             {/if}
         </div>
     {/each}
-    <div class="flex flex-col mt-2">
-        <button class="hover:bg-selected px-6 py-2 text-lg rounded-md border-selected border flex justify-center items-center cursor-pointer" onclick={() => {
-            DBState.db.customModels.push({
-                internalId: "",
-                url: "",
-                tokenizer: 0,
-                format: 0,
-                id: 'xcustom:::' + v4(),
-                key: "",
-                name: "",
-                params: "",
-                flags: [],
-            })
-        }}>
+    <div class="mt-2 flex flex-col">
+        <button
+            class="flex cursor-pointer items-center justify-center rounded-md border border-selected px-6 py-2 text-lg hover:bg-selected"
+            onclick={() => {
+                DBState.db.customModels.push({
+                    internalId: "",
+                    url: "",
+                    tokenizer: 0,
+                    format: 0,
+                    id: "xcustom:::" + v4(),
+                    key: "",
+                    name: "",
+                    params: "",
+                    flags: [],
+                })
+            }}
+        >
             <PlusIcon />
         </button>
     </div>
@@ -629,28 +689,57 @@
         alertMd(mdTable)
     }}
 >
-Show Statistics
+    Show Statistics
 </Button>
 
 <Button
     className="mt-4"
     onclick={async () => {
-        const db = safeStructuredClone(getDatabase({
-            snapshot: true
-        }))
+        const db = safeStructuredClone(
+            getDatabase({
+                snapshot: true,
+            })
+        )
 
         const keyToRemove = [
-            'characters', 'loreBook', 'plugins', 'account', 'personas', 'username', 'userIcon', 'userNote',
-            'modules', 'enabledModules', 'botPresets', 'characterOrder', 'webUiUrl', 'characterOrder',
-            'hordeConfig', 'novelai', 'koboldURL', 'ooba', 'ainconfig', 'personaPrompt', 'promptTemplate',
-            'deeplOptions', 'google', 'customPromptTemplateToggle', 'globalChatVariables', 'comfyConfig',
-            'comfyUiUrl', 'translatorPrompt', 'customModels', 'mcpURLs', 'authRefreshes'
+            "characters",
+            "loreBook",
+            "plugins",
+            "account",
+            "personas",
+            "username",
+            "userIcon",
+            "userNote",
+            "modules",
+            "enabledModules",
+            "botPresets",
+            "characterOrder",
+            "webUiUrl",
+            "characterOrder",
+            "hordeConfig",
+            "novelai",
+            "koboldURL",
+            "ooba",
+            "ainconfig",
+            "personaPrompt",
+            "promptTemplate",
+            "deeplOptions",
+            "google",
+            "customPromptTemplateToggle",
+            "globalChatVariables",
+            "comfyConfig",
+            "comfyUiUrl",
+            "translatorPrompt",
+            "customModels",
+            "mcpURLs",
+            "authRefreshes",
         ]
-        for(const key in db) {
-            if(
+        for (const key in db) {
+            if (
                 keyToRemove.includes(key) ||
-                key.toLowerCase().includes('key') || key.toLowerCase().includes('proxy')
-                || key.toLowerCase().includes('hypa')
+                key.toLowerCase().includes("key") ||
+                key.toLowerCase().includes("proxy") ||
+                key.toLowerCase().includes("hypa")
             ) {
                 delete db[key]
             }
@@ -661,16 +750,14 @@ Show Statistics
             isNodeServer: isNodeServer,
             currentUserAgent: currentUserAgent,
             currentPlatform: currentPlatform,
-            protocol: location.protocol
+            protocol: location.protocol,
         }
 
         const json = JSON.stringify({ ...db, meta }, null, 2)
-        await downloadFile('risuai-settings-report.json', new TextEncoder().encode(json))
+        await downloadFile("risuai-settings-report.json", new TextEncoder().encode(json))
         await navigator.clipboard.writeText(json)
         alertNormal(language.settingsExported)
-
-
     }}
 >
-Export Settings for Bug Report
+    Export Settings for Bug Report
 </Button>

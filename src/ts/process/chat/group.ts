@@ -1,31 +1,30 @@
-import { shuffle } from "lodash";
-import { findCharacterbyId } from 'src/ts/utils/util';
-import { alertConfirm, alertError, alertSelectChar } from "src/ts/utils/alert.svelte";
-import { language } from "src/lang";
-import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte";
-import { ChatState } from "src/ts/stores.svelte";
+import { shuffle } from "lodash"
+import { findCharacterbyId } from "src/ts/utils/util"
+import { alertConfirm, alertError, alertSelectChar } from "src/ts/utils/alert.svelte"
+import { language } from "src/lang"
+import { getDatabase, setDatabase } from "src/ts/data/storage/database.svelte"
+import { ChatState } from "src/ts/stores.svelte"
 
-export async function addGroupChar(){
+export async function addGroupChar() {
     const db = getDatabase()
     const selectedId = ChatState.selectedCharId
     const group = db.characters[selectedId]
-    if(group.type === 'group'){
+    if (group.type === "group") {
         const res = await alertSelectChar()
-        if(res){
-            if(group.characters.includes(res)){
+        if (res) {
+            if (group.characters.includes(res)) {
                 alertError(language.errors.alreadyCharInGroup)
-            }
-            else{
-                if(await alertConfirm(language.askLoadFirstMsg)){
+            } else {
+                if (await alertConfirm(language.askLoadFirstMsg)) {
                     group.chats[group.chatPage].message.push({
-                        role:'char',
+                        role: "char",
                         data: findCharacterbyId(res).firstMessage,
                         saying: res,
                     })
                 }
 
                 group.characters.push(res)
-                group.characterTalks.push(1 / 6 * 4)
+                group.characterTalks.push((1 / 6) * 4)
                 group.characterActive.push(true)
             }
         }
@@ -33,12 +32,11 @@ export async function addGroupChar(){
     }
 }
 
-
-export function rmCharFromGroup(index:number){
+export function rmCharFromGroup(index: number) {
     const db = getDatabase()
     const selectedId = ChatState.selectedCharId
     const group = db.characters[selectedId]
-    if(group.type === 'group'){
+    if (group.type === "group") {
         group.characters.splice(index, 1)
         group.characterTalks.splice(index, 1)
         group.characterActive.splice(index, 1)
@@ -48,14 +46,14 @@ export function rmCharFromGroup(index:number){
 }
 
 export type GroupOrder = {
-    id: string,
-    talkness: number,
+    id: string
+    talkness: number
     index: number
 }
 
-export function groupOrder(chars:GroupOrder[], input:string):GroupOrder[] {
-    const order:GroupOrder[] = [];
-    const ids:string[] = []
+export function groupOrder(chars: GroupOrder[], input: string): GroupOrder[] {
+    const order: GroupOrder[] = []
+    const ids: string[] = []
     if (input) {
         const words = getWords(input)
 
@@ -64,9 +62,9 @@ export function groupOrder(chars:GroupOrder[], input:string):GroupOrder[] {
                 const charNameChunks = getWords(findCharacterbyId(char.id).name)
 
                 if (charNameChunks.includes(word)) {
-                    order.push(char);
+                    order.push(char)
                     ids.push(char.id)
-                    break;
+                    break
                 }
             }
         }
@@ -74,32 +72,32 @@ export function groupOrder(chars:GroupOrder[], input:string):GroupOrder[] {
 
     const shuffled = shuffle(chars)
     for (const char of shuffled) {
-        if(ids.includes(char.id)){
+        if (ids.includes(char.id)) {
             continue
         }
 
         const chance = char.talkness ?? 0.5
 
         if (chance >= Math.random()) {
-            order.push(char);
+            order.push(char)
             ids.push(char.id)
         }
     }
 
     while (order.length === 0) {
-        order.push(chars[Math.floor(Math.random() * chars.length)]);
+        order.push(chars[Math.floor(Math.random() * chars.length)])
     }
 
-    return order;
+    return order
 }
 
-function getWords(data:string){
-    const matches =  data.split(/\n| /g)
-    const words:string[] = []
-    if(!matches){
+function getWords(data: string) {
+    const matches = data.split(/\n| /g)
+    const words: string[] = []
+    if (!matches) {
         return [data]
     }
-    for(const match of matches){
+    for (const match of matches) {
         words.push(match.toLocaleLowerCase())
     }
     return words

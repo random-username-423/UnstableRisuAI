@@ -1,28 +1,26 @@
-export function preLoadCheck(){
-    const searchParams = new URLSearchParams(location.search);
+export function preLoadCheck() {
+    const searchParams = new URLSearchParams(location.search)
 
     const isTauri = !!window.__TAURI_INTERNALS__
     const isNodeServer = !!globalThis.__NODE__
 
-    const isWeb = !isTauri && !isNodeServer && location.hostname === 'risuai.xyz';
-
+    const isWeb = !isTauri && !isNodeServer && location.hostname === "risuai.xyz"
 
     // Check if the user has visited the main page
-    if(!isWeb) {
-        localStorage.setItem('mainpage', 'visited');
-    }
-    else if(searchParams.has('mainpage')) {
-        localStorage.setItem('mainpage', searchParams.get('mainpage'));
+    if (!isWeb) {
+        localStorage.setItem("mainpage", "visited")
+    } else if (searchParams.has("mainpage")) {
+        localStorage.setItem("mainpage", searchParams.get("mainpage"))
     }
 
-    if(isWeb) {
+    if (isWeb) {
         //Add beforeunload event listener to prevent the user from leaving the page
-        window.addEventListener('beforeunload', (e) => {
+        window.addEventListener("beforeunload", (e) => {
             e.preventDefault()
             //legacy browser
             e.returnValue = true
         })
     }
 
-    return true;
+    return true
 }

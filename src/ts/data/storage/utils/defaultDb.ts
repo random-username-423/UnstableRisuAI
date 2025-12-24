@@ -1,7 +1,7 @@
-import { defaultAutoSuggestPrompt, defaultJailbreak, defaultMainPrompt } from '../defaultPrompts';
-import { defaultColorScheme } from '../../../gui/colorscheme.svelte';
-import type { AINsettings, botPreset, Database, OobaSettings } from '../types';
-import { LLMFormat } from '../../../model/types';
+import { defaultAutoSuggestPrompt, defaultJailbreak, defaultMainPrompt } from "../defaultPrompts"
+import { defaultColorScheme } from "../../../gui/colorscheme.svelte"
+import type { AINsettings, botPreset, Database, OobaSettings } from "../types"
+import { LLMFormat } from "../../../model/types"
 
 export const defaultAIN: AINsettings = {
     top_p: 0.7,
@@ -10,10 +10,10 @@ export const defaultAIN: AINsettings = {
     rep_pen_slope: 1.7,
     rep_pen_range: 1024,
     typical_p: 1.0,
-    badwords: '',
-    stoptokens: '',
-    top_k: 140
-};
+    badwords: "",
+    stoptokens: "",
+    top_k: 140,
+}
 
 export const defaultOoba: OobaSettings = {
     max_new_tokens: 180,
@@ -46,35 +46,45 @@ export const defaultOoba: OobaSettings = {
         assistantPrefix: "### Response:",
         seperator: "",
         useName: false,
-    }
-};
+    },
+}
 
 // botPreset과 Database에서 공통으로 사용되는 기본값
 const commonPresetDefaults = {
     mainPrompt: defaultMainPrompt,
     jailbreak: defaultJailbreak,
-    globalNote: '',
+    globalNote: "",
     temperature: 80,
     maxContext: 8000,
     maxResponse: 600,
     frequencyPenalty: 70,
     PresensePenalty: 70,
-    formatingOrder: ['main', 'description', 'personaPrompt', 'chats', 'lastChat', 'jailbreak', 'lorebook', 'globalNote', 'authorNote'] as const,
-    aiModel: 'claude-sonnet-4-5-20250929',
-    subModel: 'gemini-2.5-flash',
-    currentPluginProvider: '',
-    textgenWebUIStreamURL: 'wss://localhost/api/',
-    textgenWebUIBlockingURL: 'https://localhost/api/',
-    forceReplaceUrl: '',
+    formatingOrder: [
+        "main",
+        "description",
+        "personaPrompt",
+        "chats",
+        "lastChat",
+        "jailbreak",
+        "lorebook",
+        "globalNote",
+        "authorNote",
+    ] as const,
+    aiModel: "claude-sonnet-4-5-20250929",
+    subModel: "gemini-2.5-flash",
+    currentPluginProvider: "",
+    textgenWebUIStreamURL: "wss://localhost/api/",
+    textgenWebUIBlockingURL: "https://localhost/api/",
+    forceReplaceUrl: "",
     promptPreprocess: false,
-    proxyKey: '',
+    proxyKey: "",
     bias: [] as [string, number][],
     reverseProxyOobaArgs: {
-        mode: 'instruct' as const
+        mode: "instruct" as const,
     },
     top_p: 1,
     useInstructPrompt: false,
-} satisfies Partial<botPreset> & Partial<Database>;
+} satisfies Partial<botPreset> & Partial<Database>
 
 export const presetTemplate: botPreset = {
     ...commonPresetDefaults,
@@ -82,62 +92,62 @@ export const presetTemplate: botPreset = {
     openAIKey: "",
     ooba: structuredClone(defaultOoba),
     ainconfig: structuredClone(defaultAIN),
-    verbosity: 1
-};
+    verbosity: 1,
+}
 
 export const defaultSdData: [string, string][] = [
     ["always", "solo, 1girl"],
-    ['negative', ''],
-    ["|character's appearance", ''],
-    ['current situation', ''],
-    ['$character\'s pose', ''],
-    ['$character\'s emotion', ''],
-    ['current location', ''],
-];
+    ["negative", ""],
+    ["|character's appearance", ""],
+    ["current situation", ""],
+    ["$character's pose", ""],
+    ["$character's emotion", ""],
+    ["current location", ""],
+]
 
 export const defaultSdDataFunc = () => {
-    return structuredClone(defaultSdData);
-};
+    return structuredClone(defaultSdData)
+}
 
 // 순수 기본값들만 모아놓은 객체입니다.
 // 로직이 필요한 기본값(예: 다른 필드 참조)은 setDatabase 함수 내에서 처리합니다.
 export const baseDatabaseDefaults: Partial<Database> = {
     ...commonPresetDefaults,
     characters: [],
-    openAIKey: '',
+    openAIKey: "",
     jailbreakToggle: false,
     loreBookDepth: 5,
     loreBookToken: 800,
-    username: 'User',
-    userIcon: '',
-    userNote: '',
-    additionalPrompt: 'The assistant must act as {{char}}. user is {{user}}.',
-    descriptionPrefix: 'description of {{char}}: ',
-    language: 'en',
+    username: "User",
+    userIcon: "",
+    userNote: "",
+    additionalPrompt: "The assistant must act as {{char}}. user is {{user}}.",
+    descriptionPrefix: "description of {{char}}: ",
+    language: "en",
     swipe: true,
-    translator: '',
+    translator: "",
     translatorMaxResponse: 1000,
     plugins: [],
     zoomsize: 100,
-    lastup: '',
-    customBackground: '',
+    lastup: "",
+    customBackground: "",
     autoTranslate: false,
     fullScreen: false,
     playMessage: false,
     iconsize: 100,
-    theme: '',
+    theme: "",
     timeOut: 120,
     waifuWidth: 100,
     waifuWidth2: 100,
     emotionPrompt: "",
     botPresetsId: 0,
-    sdProvider: '',
-    webUiUrl: 'http://127.0.0.1:7860/',
+    sdProvider: "",
+    webUiUrl: "http://127.0.0.1:7860/",
     sdSteps: 30,
     sdCFG: 7,
-    NAIImgUrl: 'https://image.novelai.net/ai/generate-image',
-    NAIApiKey: '',
-    NAIImgModel: 'nai-diffusion-4-5-full',
+    NAIImgUrl: "https://image.novelai.net/ai/generate-image",
+    NAIApiKey: "",
+    NAIImgModel: "nai-diffusion-4-5-full",
     NAII2I: false,
     NAIREF: false,
     textTheme: "standard",
@@ -148,9 +158,9 @@ export const baseDatabaseDefaults: Partial<Database> = {
     dbBackupIntervalMinutes: 10,
     useSayNothing: true,
     showUnrecommended: false,
-    elevenLabKey: '',
-    voicevoxUrl: '',
-    supaMemoryPrompt: '',
+    elevenLabKey: "",
+    voicevoxUrl: "",
+    supaMemoryPrompt: "",
     showMemoryLimit: false,
     showFirstMessagePages: false,
     supaMemoryKey: "",
@@ -162,13 +172,13 @@ export const baseDatabaseDefaults: Partial<Database> = {
         FontColorBold: "#f8f8f2",
         FontColorItalic: "#8C8D93",
         FontColorItalicBold: "#8C8D93",
-        FontColorQuote1: '#8BE9FD',
-        FontColorQuote2: '#FFB86C'
+        FontColorQuote1: "#8BE9FD",
+        FontColorQuote2: "#FFB86C",
     },
     hordeConfig: {
         apiKey: "",
         model: "",
-        softPrompt: ""
+        softPrompt: "",
     },
     novelai: {
         token: "",
@@ -180,62 +190,62 @@ export const baseDatabaseDefaults: Partial<Database> = {
     sendWithEnter: true,
     autoSuggestPrompt: defaultAutoSuggestPrompt,
     autoSuggestPrefix: "",
-    OAIPrediction: '',
+    OAIPrediction: "",
     autoSuggestClean: true,
     imageCompression: true,
     // personas는 username 참조가 필요해서 제외 (setDatabase에서 처리)
     selectedPersona: 0,
-    personaPrompt: '',
+    personaPrompt: "",
     classicMaxWidth: false,
-    openrouterKey: '',
-    openrouterRequestModel: 'google/gemini-2.5-flash',
+    openrouterKey: "",
+    openrouterRequestModel: "google/gemini-2.5-flash",
     toggleConfirmRecommendedPreset: true,
     officialplugins: {},
     assetWidth: -1,
     animationSpeed: 0.4,
-    colorSchemeName: 'default',
+    colorSchemeName: "default",
     colorScheme: defaultColorScheme,
-    hypaModel: 'MiniLM',
-    mancerHeader: '',
-    emotionProcesser: 'submodel',
-    translatorType: 'google',
+    hypaModel: "MiniLM",
+    mancerHeader: "",
+    emotionProcesser: "submodel",
+    translatorType: "google",
     htmlTranslation: false,
     deeplOptions: {
-        key: '',
-        freeApi: false
+        key: "",
+        freeApi: false,
     },
     deeplXOptions: {
-        url: '',
-        token: ''
+        url: "",
+        token: "",
     },
     NAIadventure: false,
     NAIappendName: true,
     autofillRequestUrl: true,
-    customProxyRequestModel: '',
+    customProxyRequestModel: "",
     generationSeed: -1,
     newOAIHandle: true,
-    gptVisionQuality: 'auto',
-    geminiVisionQuality: 'unspecified',
+    gptVisionQuality: "auto",
+    geminiVisionQuality: "unspecified",
     geminiMergeSystemToUser: false,
-    huggingfaceKey: '',
-    fishSpeechKey: '',
+    huggingfaceKey: "",
+    fishSpeechKey: "",
     statistics: {},
     presetRegex: [],
     google: {
-        accessToken: '',
-        projectId: ''
+        accessToken: "",
+        projectId: "",
     },
     genTime: 1,
     promptSettings: {
-        assistantPrefill: '',
-        postEndInnerFormat: '',
+        assistantPrefill: "",
+        postEndInnerFormat: "",
         sendChatAsSystem: false,
         sendName: false,
         utilOverride: false,
         customChainOfThought: false,
-        maxThoughtTagDepth: -1
+        maxThoughtTagDepth: -1,
     },
-    keiServerURL: '',
+    keiServerURL: "",
     top_k: 0,
     openrouterFallback: true,
     openrouterMiddleOut: false,
@@ -244,19 +254,19 @@ export const baseDatabaseDefaults: Partial<Database> = {
     modules: [],
     enabledModules: [],
     additionalParams: [],
-    heightMode: 'normal',
+    heightMode: "normal",
     antiClaudeOverload: false, // 마이그레이션 대상이지만 기본값은 false
     maxSupaChunkSize: 1200,
-    ollamaURL: '',
-    ollamaModel: '',
+    ollamaURL: "",
+    ollamaModel: "",
     autoContinueChat: false,
     autoContinueMinTokens: 0,
     repetition_penalty: 1,
     min_p: 0,
     top_a: 0,
-    customTokenizer: 'tik',
+    customTokenizer: "tik",
     instructChatTemplate: "chatml",
-    openrouterProvider: '',
+    openrouterProvider: "",
     hanuraiEnable: false,
     hanuraiSplit: false,
     hanuraiTokens: 1000,
@@ -264,57 +274,57 @@ export const baseDatabaseDefaults: Partial<Database> = {
     sideBarSize: 0,
     textAreaTextSize: 0,
     combineTranslation: false,
-    customPromptTemplateToggle: '',
+    customPromptTemplateToggle: "",
     globalChatVariables: {},
-    templateDefaultVariables: '',
+    templateDefaultVariables: "",
     hypaAllocatedTokens: 3000,
     hypaChunkSize: 3000,
-    dallEQuality: 'standard',
-    font: 'default',
-    customFont: '',
+    dallEQuality: "standard",
+    font: "default",
+    customFont: "",
     lineHeight: 1.25,
-    stabilityModel: 'sd3-large',
-    stabllityStyle: '',
+    stabilityModel: "sd3-large",
+    stabllityStyle: "",
     legacyTranslation: false,
-    comfyUiUrl: 'http://localhost:8188',
+    comfyUiUrl: "http://localhost:8188",
     comfyConfig: {
-        workflow: '',
-        posNodeID: '',
-        posInputName: 'text',
-        negNodeID: '',
-        negInputName: 'text',
-        timeout: 30
+        workflow: "",
+        posNodeID: "",
+        posInputName: "text",
+        negNodeID: "",
+        negInputName: "text",
+        timeout: 30,
     },
     hideApiKey: true,
     unformatQuotes: false,
     ttsAutoSpeech: false,
-    translatorInputLanguage: 'auto',
-    falModel: 'fal-ai/flux/dev',
+    translatorInputLanguage: "auto",
+    falModel: "fal-ai/flux/dev",
     falLoraScale: 1,
-    customCSS: '',
+    customCSS: "",
     strictJsonSchema: true,
     statics: {
         messages: 0,
-        imports: 0
+        imports: 0,
     },
     customQuotes: false,
-    customQuotesData: ['“', '”', '‘', '’'],
-    groupOtherBotRole: 'user',
-    customGUI: '',
+    customQuotesData: ["“", "”", "‘", "’"],
+    groupOtherBotRole: "user",
+    customGUI: "",
     customAPIFormat: LLMFormat.OpenAICompatible,
     systemContentReplacement: `system: {{slot}}`,
-    systemRoleReplacement: 'user',
-    vertexAccessToken: '',
+    systemRoleReplacement: "user",
+    vertexAccessToken: "",
     vertexAccessTokenExpires: 0,
-    vertexClientEmail: '',
-    vertexPrivateKey: '',
-    vertexRegion: 'global',
+    vertexClientEmail: "",
+    vertexPrivateKey: "",
+    vertexRegion: "global",
     seperateParametersEnabled: false,
     seperateParameters: {
         memory: {},
         emotion: {},
         translate: {},
-        otherAx: {}
+        otherAx: {},
     },
     customFlags: [],
     enableCustomFlags: false,
@@ -337,11 +347,11 @@ export const baseDatabaseDefaults: Partial<Database> = {
     rememberToolUsage: true,
     simplifiedToolUse: false,
     streamGeminiThoughts: false,
-    ImagenModel: 'imagen-4.0-generate-001',
-    ImagenImageSize: '1K',
-    ImagenAspectRatio: '1:1',
-    ImagenPersonGeneration: 'allow_all',
-    openAIServiceTier: '',
+    ImagenModel: "imagen-4.0-generate-001",
+    ImagenImageSize: "1K",
+    ImagenAspectRatio: "1:1",
+    ImagenPersonGeneration: "allow_all",
+    openAIServiceTier: "",
 
     // 객체로 된 복잡한 기본값들 (참조 없는 것들)
     sdConfig: {
@@ -352,7 +362,7 @@ export const baseDatabaseDefaults: Partial<Database> = {
         denoising_strength: 0.7,
         enable_hr: false,
         hr_scale: 1.25,
-        hr_upscaler: "Latent"
+        hr_upscaler: "Latent",
     },
     NAIImgConfig: {
         width: 1024,
@@ -374,27 +384,27 @@ export const baseDatabaseDefaults: Partial<Database> = {
         use_coords: false,
         v4_prompt: {
             caption: {
-                base_caption: '',
-                char_captions: []
+                base_caption: "",
+                char_captions: [],
             },
             use_coords: false,
-            use_order: true
+            use_order: true,
         },
         v4_negative_prompt: {
             caption: {
-                base_caption: '',
-                char_captions: []
+                base_caption: "",
+                char_captions: [],
             },
             legacy_uc: false,
         },
         variety_plus: false,
         decrisp: false,
-        reference_mode: '',
-        character_image: '',
-        character_base64image: '',
+        reference_mode: "",
+        character_image: "",
+        character_base64image: "",
         style_aware: false,
-    }
-};
+    },
+}
 
 // 동적으로 계산되거나 복잡한 객체 생성이 필요한 기본값들은 별도 상수로 빼둠
 export const defaultFallbackModels = {
@@ -402,11 +412,11 @@ export const defaultFallbackModels = {
     emotion: [],
     translate: [],
     otherAx: [],
-    model: []
-};
+    model: [],
+}
 
 export const defaultHypaCustomSettings = {
     url: "",
     key: "",
-    model: ""
-};
+    model: "",
+}

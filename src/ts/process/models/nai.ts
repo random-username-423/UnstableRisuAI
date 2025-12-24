@@ -4,48 +4,43 @@ import { globalFetch } from "src/ts/utils/fetch"
 import { alertError, alertInput, alertNormal, alertWait } from "src/ts/utils/alert.svelte"
 import { getUserName, sleep } from "src/ts/utils/util"
 
-export function stringlizeNAIChat(formated:OpenAIChat[], char:string, continued: boolean){
+export function stringlizeNAIChat(formated: OpenAIChat[], char: string, continued: boolean) {
     const db = getDatabase()
-    const seperator = db.NAIsettings.seperator.replaceAll("\\n","\n") || '\n'
-    const starter = db.NAIsettings.starter.replaceAll("\\n","\n") || '⁂'
-    const resultString:string[] = []
+    const seperator = db.NAIsettings.seperator.replaceAll("\\n", "\n") || "\n"
+    const starter = db.NAIsettings.starter.replaceAll("\\n", "\n") || "⁂"
+    const resultString: string[] = []
 
-    for(const form of formated){
-        if(form.role === 'system'){
-            if(form.memo === 'NewChatExample' || form.memo === 'NewChat' || form.content === "[Start a new chat]"){
+    for (const form of formated) {
+        if (form.role === "system") {
+            if (form.memo === "NewChatExample" || form.memo === "NewChat" || form.content === "[Start a new chat]") {
                 resultString.push(starter)
-            }
-            else{
+            } else {
                 resultString.push(form.content)
             }
-        }
-        else if(form.name || form.role === 'assistant'){
-            if(!db.NAIappendName){
+        } else if (form.name || form.role === "assistant") {
+            if (!db.NAIappendName) {
                 resultString.push(form.content)
-            }
-            else{
+            } else {
                 resultString.push((form.name ?? char) + ": " + form.content)
             }
-        }
-        else if(form.role === 'user'){
-            let res = ''
-            if(db.NAIadventure){
-                res += '> '
+        } else if (form.role === "user") {
+            let res = ""
+            if (db.NAIadventure) {
+                res += "> "
             }
-            if(db.NAIappendName){
+            if (db.NAIappendName) {
                 res += getUserName() + ": "
             }
             res += form.content
             resultString.push(res)
-        }
-        else{
+        } else {
             resultString.push(form.content)
         }
     }
 
     let res = resultString.join(seperator)
 
-    if(!continued){
+    if (!continued) {
         res += `${seperator}${char}:`
     }
     console.log(res)
@@ -58,50 +53,48 @@ export const novelLogin = async () => {
 
         const password = await alertInput("NovelAI Password")
 
-
-        alertWait('Logging in to NovelAI')
+        alertWait("Logging in to NovelAI")
 
         let tries = 0
-        let errorMessage = ''
+        let errorMessage = ""
         while (tries < 3) {
             try {
-
-                const _sodium = await import('libsodium-wrappers-sumo')
+                const _sodium = await import("libsodium-wrappers-sumo")
                 await sleep(1000)
                 await _sodium.ready
-                const sodium = _sodium;
+                const sodium = _sodium
 
                 // I don't know why, but this is needed to make it work
                 console.log(sodium)
                 await sleep(1000)
 
                 const key = sodium
-                .crypto_pwhash(
-                    64,
-                    new Uint8Array(Buffer.from(password)),
-                    sodium.crypto_generichash(
-                    sodium.crypto_pwhash_SALTBYTES,
-                    password.slice(0, 6) + username + 'novelai_data_access_key'
-                    ),
-                    2,
-                    2e6,
-                    sodium.crypto_pwhash_ALG_ARGON2ID13,
-                    'base64'
-                )
-                .slice(0, 64)
+                    .crypto_pwhash(
+                        64,
+                        new Uint8Array(Buffer.from(password)),
+                        sodium.crypto_generichash(
+                            sodium.crypto_pwhash_SALTBYTES,
+                            password.slice(0, 6) + username + "novelai_data_access_key"
+                        ),
+                        2,
+                        2e6,
+                        sodium.crypto_pwhash_ALG_ARGON2ID13,
+                        "base64"
+                    )
+                    .slice(0, 64)
 
-                const r = await globalFetch('https://api.novelai.net/user/login', {
-                    method: 'POST',
+                const r = await globalFetch("https://api.novelai.net/user/login", {
+                    method: "POST",
                     headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json',
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
                     },
-                    body:{
-                        key: key
-                    }
+                    body: {
+                        key: key,
+                    },
                 })
 
-                if ((!r.ok) || (!r.data?.accessToken)) {
+                if (!r.ok || !r.data?.accessToken) {
                     alertError(`Failed to authenticate with NovelAI: ${r.data?.message ?? r.data}`)
                     return
                 }
@@ -111,11 +104,10 @@ export const novelLogin = async () => {
                 const db = getDatabase()
                 db.novelai.token = data
 
-                alertNormal('Logged in to NovelAI')
+                alertNormal("Logged in to NovelAI")
                 setDatabase(db)
                 return
-            }
-            catch (e) {
+            } catch (e) {
                 errorMessage = `Failed to authenticate with NovelAI: ${e}`
                 tries++
             }
@@ -126,7 +118,7 @@ export const novelLogin = async () => {
     }
 }
 
-export interface NAISettings{
+export interface NAISettings {
     topK: number
     topP: number
     topA: number
@@ -138,23 +130,14 @@ export interface NAISettings{
     seperator: string
     frequencyPenalty: number
     presencePenalty: number
-    typicalp:number
-    starter:string
-    mirostat_lr?:number
-    mirostat_tau?:number
-    cfg_scale?:number
+    typicalp: number
+    starter: string
+    mirostat_lr?: number
+    mirostat_tau?: number
+    cfg_scale?: number
 }
 
-export const NovelAIROrder = [
-    "",
-    "",
-    "",
-    "",
-    "",
-
-
-
-]
+export const NovelAIROrder = ["", "", "", "", ""]
 
 export const NovelAIBadWordIds = [
     [60],

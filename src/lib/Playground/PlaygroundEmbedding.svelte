@@ -1,35 +1,35 @@
 <script lang="ts">
-    import { language } from "src/lang";
-    import TextInput from "../UI/GUI/TextInput.svelte";
-    import OptionInput from "../UI/GUI/OptionInput.svelte";
-    import SelectInput from "../UI/GUI/SelectInput.svelte";
-    import Button from "../UI/GUI/Button.svelte";
-    import { HypaProcesser } from "src/ts/process/memory/hypamemory";
+    import { language } from "src/lang"
+    import TextInput from "../UI/GUI/TextInput.svelte"
+    import OptionInput from "../UI/GUI/OptionInput.svelte"
+    import SelectInput from "../UI/GUI/SelectInput.svelte"
+    import Button from "../UI/GUI/Button.svelte"
+    import { HypaProcesser } from "src/ts/process/memory/hypamemory"
     import { DBState } from "src/ts/stores.svelte"
 
-    let query = $state("");
-    let model = $state("MiniLM");
-    let customEmbeddingUrl = $state("");
-    let data:string[] = $state([]);
-    let dataresult:[string, number][] = $state([]);
-    let running = $state(false);
+    let query = $state("")
+    let model = $state("MiniLM")
+    let customEmbeddingUrl = $state("")
+    let data: string[] = $state([])
+    let dataresult: [string, number][] = $state([])
+    let running = $state(false)
 
     const run = async () => {
-        if(running) return;
-        running = true;
-        const processer = new HypaProcesser(model as any, customEmbeddingUrl);
-        await processer.addText(data);
+        if (running) return
+        running = true
+        const processer = new HypaProcesser(model as any, customEmbeddingUrl)
+        await processer.addText(data)
         console.log(processer.vectors)
-        dataresult = await processer.similaritySearchScored(query);
-        running = false;
+        dataresult = await processer.similaritySearchScored(query)
+        running = false
     }
 </script>
-  
-<h2 class="text-4xl text-textcolor my-6 font-black relative">{language.embedding}</h2>
 
-<span class="text-textcolor text-lg">Model</span>
+<h2 class="relative my-6 text-4xl font-black text-textcolor">{language.embedding}</h2>
+
+<span class="text-lg text-textcolor">Model</span>
 <SelectInput bind:value={model} className="mb-4">
-    {#if 'gpu' in navigator}
+    {#if "gpu" in navigator}
         <OptionInput value="MiniLMGPU">MiniLM L6 v2 (GPU)</OptionInput>
         <OptionInput value="nomicGPU">Nomic Embed Text v1.5 (GPU)</OptionInput>
         <OptionInput value="bgeSmallEnGPU">BGE Small English (GPU)</OptionInput>
@@ -49,37 +49,40 @@
     <OptionInput value="custom">Custom (OpenAI-compatible)</OptionInput>
 </SelectInput>
 
-{#if model === 'openai3small' || model === 'openai3large' || model === 'ada'}
-    <span class="text-textcolor text-lg">OpenAI API Key</span>
-    <TextInput size="sm" marginBottom bind:value={DBState.db.supaMemoryKey}/>
+{#if model === "openai3small" || model === "openai3large" || model === "ada"}
+    <span class="text-lg text-textcolor">OpenAI API Key</span>
+    <TextInput size="sm" marginBottom bind:value={DBState.db.supaMemoryKey} />
 {/if}
 
 {#if model === "custom"}
-    <span class="text-textcolor text-lg">URL</span>
-    <TextInput size="sm" marginBottom bind:value={DBState.db.hypaCustomSettings.url}/>
-    <span class="text-textcolor text-lg">Key/Password</span>
-    <TextInput size="sm" marginBottom bind:value={DBState.db.hypaCustomSettings.key}/>
-    <span class="text-textcolor text-lg">Request Model</span>
-    <TextInput size="sm" marginBottom bind:value={DBState.db.hypaCustomSettings.model}/>
+    <span class="text-lg text-textcolor">URL</span>
+    <TextInput size="sm" marginBottom bind:value={DBState.db.hypaCustomSettings.url} />
+    <span class="text-lg text-textcolor">Key/Password</span>
+    <TextInput size="sm" marginBottom bind:value={DBState.db.hypaCustomSettings.key} />
+    <span class="text-lg text-textcolor">Request Model</span>
+    <TextInput size="sm" marginBottom bind:value={DBState.db.hypaCustomSettings.model} />
 {/if}
 
 <div class="mb-4"></div>
 
-<span class="text-textcolor text-lg">Query</span>
+<span class="text-lg text-textcolor">Query</span>
 <TextInput bind:value={query} size="lg" fullwidth />
 
-<span class="text-textcolor text-lg mt-6">Data</span>
+<span class="mt-6 text-lg text-textcolor">Data</span>
 {#each data as item, i}
     <TextInput bind:value={data[i]} size="lg" fullwidth marginBottom />
 {/each}
-<Button styled="outlined" onclick={() => {
-    data.push("");
-    data = data
-}}>+</Button>
+<Button
+    styled="outlined"
+    onclick={() => {
+        data.push("")
+        data = data
+    }}>+</Button
+>
 
-<span class="text-textcolor text-lg mt-6">Result</span>
+<span class="mt-6 text-lg text-textcolor">Result</span>
 {#if dataresult.length === 0}
-    <span class="text-textcolor2 text-lg">No result</span>
+    <span class="text-lg text-textcolor2">No result</span>
 {/if}
 {#each dataresult as [item, score]}
     <div class="flex justify-between">
@@ -88,9 +91,13 @@
     </div>
 {/each}
 
-<Button className="mt-6 flex justify-center" size="lg" onclick={() => {
-    run()
-}}>
+<Button
+    className="mt-6 flex justify-center"
+    size="lg"
+    onclick={() => {
+        run()
+    }}
+>
     {#if running}
         <div class="loadmove"></div>
     {:else}

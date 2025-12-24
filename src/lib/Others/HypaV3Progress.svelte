@@ -1,55 +1,43 @@
 <script lang="ts">
-  import { ModalState } from "src/ts/stores.svelte";
+    import { ModalState } from "src/ts/stores.svelte"
 
-  let isExpanded = $state(false);
+    let isExpanded = $state(false)
 
-  const toggleExpand = () => {
-    isExpanded = !isExpanded;
-  };
+    const toggleExpand = () => {
+        isExpanded = !isExpanded
+    }
 </script>
 
 {#if isExpanded}
-  <div
-    class="absolute w-full h-full z-40 flex justify-center items-center pointer-events-none"
-  >
-    <button
-      class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-full overflow-y-auto transition-opacity duration-300 pointer-events-auto"
-      type="button"
-      onclick={toggleExpand}
-    >
-      <span class="mb-6 text-left text-gray-500 text-sm"
-        >{ModalState.hypaV3.progress.msg || ""}</span
-      >
-      <div
-        class="w-full min-w-64 md:min-w-138 h-2 bg-darkbg border border-darkborderc rounded-md"
-      >
-        <div
-          class="h-full bg-gradient-to-r from-blue-500 to-purple-800 saving-animation transition-[width]"
-        ></div>
-      </div>
-      <span class="w-full mt-6 text-center text-gray-500 text-sm"
-        >{ModalState.hypaV3.progress.subMsg || ""}</span
-      >
-    </button>
-  </div>
-{:else}
-  <button
-    class="fixed top-4 right-4 z-40 bg-darkbg p-2 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center"
-    type="button"
-    style="opacity: 0.8;"
-    onclick={toggleExpand}
-    onmouseenter={(e) => (e.currentTarget.style.opacity = "1")}
-    onmouseleave={(e) => (e.currentTarget.style.opacity = "0.8")}
-  >
-    <div class="w-8 h-8 relative">
-      <div
-        class="absolute inset-0 border-t-2 border-red-500 rounded-full animate-spin"
-      ></div>
-      <div
-        class="absolute inset-1 flex items-center justify-center text-xs text-gray-300"
-      >
-        {ModalState.hypaV3.progress.miniMsg || ""}
-      </div>
+    <div class="pointer-events-none absolute z-40 flex h-full w-full items-center justify-center">
+        <button
+            class="break-any pointer-events-auto flex max-h-full max-w-3xl flex-col overflow-y-auto rounded-md bg-darkbg p-4 transition-opacity duration-300"
+            type="button"
+            onclick={toggleExpand}
+        >
+            <span class="mb-6 text-left text-sm text-gray-500">{ModalState.hypaV3.progress.msg || ""}</span>
+            <div class="h-2 w-full min-w-64 rounded-md border border-darkborderc bg-darkbg md:min-w-138">
+                <div
+                    class="saving-animation h-full bg-gradient-to-r from-blue-500 to-purple-800 transition-[width]"
+                ></div>
+            </div>
+            <span class="mt-6 w-full text-center text-sm text-gray-500">{ModalState.hypaV3.progress.subMsg || ""}</span>
+        </button>
     </div>
-  </button>
+{:else}
+    <button
+        class="fixed right-4 top-4 z-40 flex items-center justify-center rounded-full bg-darkbg p-2 shadow-lg transition-all duration-300"
+        type="button"
+        style="opacity: 0.8;"
+        onclick={toggleExpand}
+        onmouseenter={(e) => (e.currentTarget.style.opacity = "1")}
+        onmouseleave={(e) => (e.currentTarget.style.opacity = "0.8")}
+    >
+        <div class="relative h-8 w-8">
+            <div class="absolute inset-0 animate-spin rounded-full border-t-2 border-red-500"></div>
+            <div class="absolute inset-1 flex items-center justify-center text-xs text-gray-300">
+                {ModalState.hypaV3.progress.miniMsg || ""}
+            </div>
+        </div>
+    </button>
 {/if}

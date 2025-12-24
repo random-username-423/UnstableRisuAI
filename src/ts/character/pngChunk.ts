@@ -1,20 +1,20 @@
-import { Buffer } from 'buffer';
-import crc32 from 'crc/crc32';
-import { AppendableBuffer } from '../utils/fetch';
-import { VirtualWriter, type LocalWriter } from 'src/ts/utils/writers'
-import { blobToUint8Array, getArrayBuffer } from '../utils/util';
+import { Buffer } from "buffer"
+import crc32 from "crc/crc32"
+import { AppendableBuffer } from "../utils/fetch"
+import { VirtualWriter, type LocalWriter } from "src/ts/utils/writers"
+import { blobToUint8Array, getArrayBuffer } from "../utils/util"
 
 class StreamChunkWriter {
-    constructor(private data: Uint8Array<ArrayBuffer>, private writer: LocalWriter | WritableStreamDefaultWriter<Uint8Array> | VirtualWriter) {
-
-    }
+    constructor(
+        private data: Uint8Array<ArrayBuffer>,
+        private writer: LocalWriter | WritableStreamDefaultWriter<Uint8Array> | VirtualWriter
+    ) {}
     async pushData(data: Uint8Array<ArrayBuffer>) {
         await this.writer.write(data)
     }
     async init() {
         let pos = 8
         const newData: Uint8Array[] = []
-
 
         const data = this.data
         await this.pushData(data.slice(0, 8))
@@ -23,13 +23,13 @@ class StreamChunkWriter {
             const len = data[pos] * 0x1000000 + data[pos + 1] * 0x10000 + data[pos + 2] * 0x100 + data[pos + 3]
             const type = data.slice(pos + 4, pos + 8)
             const typeString = new TextDecoder().decode(type)
-            if (typeString === 'IEND') {
+            if (typeString === "IEND") {
                 break
             }
-            if (typeString === 'tEXt') {
+            if (typeString === "tEXt") {
                 const endPos = 12 + len + pos
                 //get key
-                let key = ''
+                let key = ""
                 while (data[pos + 8] !== 0) {
                     key += String.fromCharCode(data[pos + 8])
                     pos++
@@ -38,55 +38,47 @@ class StreamChunkWriter {
                     }
                 }
 
-                if (key !== 'ccv3' && key !== 'chara') {
+                if (key !== "ccv3" && key !== "chara") {
                     await this.pushData(data.slice(pos, endPos))
                 }
                 pos = endPos
-            }
-            else {
+            } else {
                 await this.pushData(data.slice(pos, pos + 12 + len))
                 pos += 12 + len
             }
         }
     }
     async write(key: string, val: string | Uint8Array) {
-
         const keyData = new TextEncoder().encode(key)
         const value = Buffer.from(val)
         const lenNum = value.byteLength + keyData.byteLength + 1
         //idk, but uint32array is not working
         const length = new Uint8Array([
-            lenNum / 0x1000000 % 0x100,
-            lenNum / 0x10000 % 0x100,
-            lenNum / 0x100 % 0x100,
-            lenNum % 0x100
+            (lenNum / 0x1000000) % 0x100,
+            (lenNum / 0x10000) % 0x100,
+            (lenNum / 0x100) % 0x100,
+            lenNum % 0x100,
         ])
-        const type = new TextEncoder().encode('tEXt')
+        const type = new TextEncoder().encode("tEXt")
         await this.pushData(length)
         await this.pushData(type)
         await this.pushData(keyData)
         await this.pushData(new Uint8Array([0]))
         await this.pushData(value)
         const crc = crc32(Buffer.from(Buffer.concat([type, keyData, new Uint8Array([0]), value])))
-        await this.pushData(new Uint8Array([
-            crc / 0x1000000 % 0x100,
-            crc / 0x10000 % 0x100,
-            crc / 0x100 % 0x100,
-            crc % 0x100
-        ]))
+        await this.pushData(
+            new Uint8Array([(crc / 0x1000000) % 0x100, (crc / 0x10000) % 0x100, (crc / 0x100) % 0x100, crc % 0x100])
+        )
     }
     async end() {
-        const length = new Uint8Array(getArrayBuffer((new Uint32Array([0])).buffer))
-        const type = new TextEncoder().encode('IEND')
+        const length = new Uint8Array(getArrayBuffer(new Uint32Array([0]).buffer))
+        const type = new TextEncoder().encode("IEND")
         await this.pushData(length)
         await this.pushData(type)
         const crc = crc32(Buffer.from(type))
-        await this.pushData(new Uint8Array([
-            crc / 0x1000000 % 0x100,
-            crc / 0x10000 % 0x100,
-            crc / 0x100 % 0x100,
-            crc % 0x100
-        ]))
+        await this.pushData(
+            new Uint8Array([(crc / 0x1000000) % 0x100, (crc / 0x10000) % 0x100, (crc / 0x100) % 0x100, crc % 0x100])
+        )
         this.writer.close()
     }
 }
@@ -100,19 +92,23 @@ export const PngChunk = {
             const type = data.slice(pos + 4, pos + 8)
             const typeString = new TextDecoder().decode(type)
             if (arg.checkCrc) {
-                const crc = data[pos + 8 + len] * 0x1000000 + data[pos + 9 + len] * 0x10000 + data[pos + 10 + len] * 0x100 + data[pos + 11 + len]
+                const crc =
+                    data[pos + 8 + len] * 0x1000000 +
+                    data[pos + 9 + len] * 0x10000 +
+                    data[pos + 10 + len] * 0x100 +
+                    data[pos + 11 + len]
                 const crcCheck = crc32(Buffer.from(data.slice(pos + 4, pos + 8 + len)))
                 if (crc !== crcCheck) {
-                    throw new Error('crc check failed')
+                    throw new Error("crc check failed")
                 }
             }
-            if (typeString === 'IEND') {
+            if (typeString === "IEND") {
                 break
             }
-            if (typeString === 'tEXt') {
+            if (typeString === "tEXt") {
                 const chunkData = data.slice(pos + 8, pos + 8 + len)
-                let key = ''
-                let value = ''
+                let key = ""
+                let value = ""
                 for (let i = 0; i < 70; i++) {
                     if (chunkData[i] === 0) {
                         key = new TextDecoder().decode(chunkData.slice(0, i))
@@ -129,14 +125,15 @@ export const PngChunk = {
         return chunks
     },
 
-    readGenerator: async function* (data: File | Uint8Array | ReadableStream<Uint8Array>, arg: { checkCrc?: boolean, returnTrimed?: boolean } = {}): AsyncGenerator<
-        { key: string, value: string } | AppendableBuffer, null
-    > {
+    readGenerator: async function* (
+        data: File | Uint8Array | ReadableStream<Uint8Array>,
+        arg: { checkCrc?: boolean; returnTrimed?: boolean } = {}
+    ): AsyncGenerator<{ key: string; value: string } | AppendableBuffer, null> {
         if (data instanceof File) {
-            if (typeof data.stream === 'function') {
-                data = data.stream();
+            if (typeof data.stream === "function") {
+                data = data.stream()
             } else {
-                data = await blobToUint8Array(data);
+                data = await blobToUint8Array(data)
             }
         }
         const reader = data instanceof ReadableStream ? data.getReader() : null
@@ -152,8 +149,7 @@ export const PngChunk = {
         async function slice(start: number, end: number): Promise<Uint8Array> {
             if (data instanceof Uint8Array) {
                 return data.slice(start, end)
-            }
-            else {
+            } else {
                 while (end > readableStreamData.length()) {
                     const rs = await reader.read()
                     if (!rs.value && rs.done) {
@@ -174,8 +170,6 @@ export const PngChunk = {
             }
         }
 
-
-
         await appendTrimed(await slice(0, 8))
         let pos = 8
         const size = data instanceof Uint8Array ? data.length : Infinity
@@ -184,22 +178,22 @@ export const PngChunk = {
             const len = dataPart[0] * 0x1000000 + dataPart[1] * 0x10000 + dataPart[2] * 0x100 + dataPart[3]
             const type = await slice(pos + 4, pos + 8)
             const typeString = new TextDecoder().decode(type)
-            if (arg.checkCrc && !(data instanceof ReadableStream)) { //crc check is not supported for stream
+            if (arg.checkCrc && !(data instanceof ReadableStream)) {
+                //crc check is not supported for stream
                 const dataPart = await slice(pos + 8 + len, pos + 12 + len)
                 const crc = dataPart[0] * 0x1000000 + dataPart[1] * 0x10000 + dataPart[2] * 0x100 + dataPart[3]
                 const crcCheck = crc32(Buffer.from(await slice(pos + 4, pos + 8 + len)))
                 if (crc !== crcCheck) {
-                    throw new Error('crc check failed')
+                    throw new Error("crc check failed")
                 }
             }
-            if (typeString === 'IEND') {
+            if (typeString === "IEND") {
                 await appendTrimed(await slice(pos, pos + 12 + len))
                 break
-            }
-            else if (typeString === 'tEXt') {
+            } else if (typeString === "tEXt") {
                 const chunkData = await slice(pos + 8, pos + 8 + len)
-                let key = ''
-                let value = ''
+                let key = ""
+                let value = ""
                 for (let i = 0; i < 70; i++) {
                     if (chunkData[i] === 0) {
                         key = new TextDecoder().decode(chunkData.slice(0, i))
@@ -208,8 +202,7 @@ export const PngChunk = {
                     }
                 }
                 yield { key, value }
-            }
-            else {
+            } else {
                 await appendTrimed(await slice(pos, pos + 12 + len))
             }
             pos += 12 + len
@@ -227,14 +220,13 @@ export const PngChunk = {
             const len = data[pos] * 0x1000000 + data[pos + 1] * 0x10000 + data[pos + 2] * 0x100 + data[pos + 3]
             const type = data.slice(pos + 4, pos + 8)
             const typeString = new TextDecoder().decode(type)
-            if (typeString === 'IEND') {
+            if (typeString === "IEND") {
                 newData.push(data.slice(pos, pos + 12 + len))
                 break
             }
-            if (typeString === 'tEXt') {
+            if (typeString === "tEXt") {
                 pos += 12 + len
-            }
-            else {
+            } else {
                 newData.push(data.slice(pos, pos + 12 + len))
                 pos += 12 + len
             }
@@ -243,16 +235,18 @@ export const PngChunk = {
         return Buffer.concat(newData)
     },
 
-
-    write: async (data: Uint8Array, chunks: { [key: string]: string }, options: { writer?: LocalWriter } = {}): Promise<void | Buffer> => {
+    write: async (
+        data: Uint8Array,
+        chunks: { [key: string]: string },
+        options: { writer?: LocalWriter } = {}
+    ): Promise<void | Buffer> => {
         let pos = 8
         const newData: Uint8Array[] = []
 
         async function pushData(data: Uint8Array) {
             if (options.writer) {
                 await options.writer.write(data)
-            }
-            else {
+            } else {
                 newData.push(data)
             }
         }
@@ -263,13 +257,12 @@ export const PngChunk = {
             const len = data[pos] * 0x1000000 + data[pos + 1] * 0x10000 + data[pos + 2] * 0x100 + data[pos + 3]
             const type = data.slice(pos + 4, pos + 8)
             const typeString = new TextDecoder().decode(type)
-            if (typeString === 'IEND') {
+            if (typeString === "IEND") {
                 break
             }
-            if (typeString === 'tEXt') {
+            if (typeString === "tEXt") {
                 pos += 12 + len
-            }
-            else {
+            } else {
                 await pushData(data.slice(pos, pos + 12 + len))
                 pos += 12 + len
             }
@@ -280,46 +273,39 @@ export const PngChunk = {
             const lenNum = value.byteLength + keyData.byteLength + 1
             //idk, but uint32array is not working
             const length = new Uint8Array([
-                lenNum / 0x1000000 % 0x100,
-                lenNum / 0x10000 % 0x100,
-                lenNum / 0x100 % 0x100,
-                lenNum % 0x100
+                (lenNum / 0x1000000) % 0x100,
+                (lenNum / 0x10000) % 0x100,
+                (lenNum / 0x100) % 0x100,
+                lenNum % 0x100,
             ])
-            const type = new TextEncoder().encode('tEXt')
+            const type = new TextEncoder().encode("tEXt")
             await pushData(length)
             await pushData(type)
             await pushData(keyData)
             await pushData(new Uint8Array([0]))
             await pushData(value)
             const crc = crc32(Buffer.from(Buffer.concat([type, keyData, new Uint8Array([0]), value])))
-            await pushData(new Uint8Array([
-                crc / 0x1000000 % 0x100,
-                crc / 0x10000 % 0x100,
-                crc / 0x100 % 0x100,
-                crc % 0x100
-            ]))
+            await pushData(
+                new Uint8Array([(crc / 0x1000000) % 0x100, (crc / 0x10000) % 0x100, (crc / 0x100) % 0x100, crc % 0x100])
+            )
         }
         //create IEND chunk
         {
-            const length = new Uint8Array(getArrayBuffer((new Uint32Array([0])).buffer))
-            const type = new TextEncoder().encode('IEND')
+            const length = new Uint8Array(getArrayBuffer(new Uint32Array([0]).buffer))
+            const type = new TextEncoder().encode("IEND")
             await pushData(length)
             await pushData(type)
             const crc = crc32(Buffer.from(type))
-            await pushData(new Uint8Array([
-                crc / 0x1000000 % 0x100,
-                crc / 0x10000 % 0x100,
-                crc / 0x100 % 0x100,
-                crc % 0x100
-            ]))
+            await pushData(
+                new Uint8Array([(crc / 0x1000000) % 0x100, (crc / 0x10000) % 0x100, (crc / 0x100) % 0x100, crc % 0x100])
+            )
         }
 
         if (options.writer) {
             await options.writer.close()
-        }
-        else {
+        } else {
             return Buffer.concat(newData)
         }
     },
-    streamWriter: StreamChunkWriter
+    streamWriter: StreamChunkWriter,
 }

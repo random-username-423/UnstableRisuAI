@@ -1,16 +1,16 @@
-import type { character, Message, groupChat } from "src/ts/data/storage/types";
-import type { OpenAIChat, MultiModal } from "src/ts/process/chatTypes";
-import { DBState } from 'src/ts/stores.svelte';
-import { ChatTokenizer } from "src/ts/utils/tokenizer";
-import { processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts";
-import { getInlayAsset } from "src/ts/process/files/inlays";
-import { runImageEmbedding } from "src/ts/process/integrations/transformers";
-import { getModuleAssets } from "src/ts/process/scripting/modules";
-import { readImage } from "src/ts/utils/fileIO";
-import { findCharacterbyId, getUserName } from "src/ts/utils/util";
-import { getModelInfo } from "src/ts/model/modellist";
-import { LLMFlags } from "src/ts/model/types";
-import { v4 } from "uuid";
+import type { character, Message, groupChat } from "src/ts/data/storage/types"
+import type { OpenAIChat, MultiModal } from "src/ts/process/chatTypes"
+import { DBState } from "src/ts/stores.svelte"
+import { ChatTokenizer } from "src/ts/utils/tokenizer"
+import { processScriptFull, risuChatParser } from "src/ts/process/scripting/scripts"
+import { getInlayAsset } from "src/ts/process/files/inlays"
+import { runImageEmbedding } from "src/ts/process/integrations/transformers"
+import { getModuleAssets } from "src/ts/process/scripting/modules"
+import { readImage } from "src/ts/utils/fileIO"
+import { findCharacterbyId, getUserName } from "src/ts/utils/util"
+import { getModelInfo } from "src/ts/model/modellist"
+import { LLMFlags } from "src/ts/model/types"
+import { v4 } from "uuid"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types
@@ -23,8 +23,8 @@ export interface FormatMessageOptions {
     usingPromptTemplate: boolean
     sendName: boolean
     isGroupChat: boolean
-    pastThinkingSend: number  // 0 = None, 1 = Send (include in maxContext), 2 = Send (Extra Context)
-    maxThoughtDepth: number   // -1 = unlimited
+    pastThinkingSend: number // 0 = None, 1 = Send (include in maxContext), 2 = Send (Extra Context)
+    maxThoughtDepth: number // -1 = unlimited
     groupTemplate: string
     groupOtherBotRole: string
     findCharacterbyIdWithCache: (id: string) => character
@@ -54,7 +54,7 @@ export interface InlayExtractionResult {
  */
 export async function extractInlays(
     content: string,
-    role: 'user' | 'char',
+    role: "user" | "char",
     currentChar: character
 ): Promise<InlayExtractionResult> {
     const multimodals: MultiModal[] = []
@@ -64,17 +64,16 @@ export async function extractInlays(
     // Collect inlay references
     const inlays: string[] = []
 
-    if (role === 'char') {
-        cleanedContent = cleanedContent.replace(/{{(inlay|inlayed|inlayeddata)::(.+?)}}/g, (
-            match: string,
-            p1: string,
-            p2: string
-        ) => {
-            if (p2 && p1 === 'inlayeddata') {
-                inlays.push(p2)
+    if (role === "char") {
+        cleanedContent = cleanedContent.replace(
+            /{{(inlay|inlayed|inlayeddata)::(.+?)}}/g,
+            (match: string, p1: string, p2: string) => {
+                if (p2 && p1 === "inlayeddata") {
+                    inlays.push(p2)
+                }
+                return ""
             }
-            return ''
-        })
+        )
     } else {
         const inlayMatch = cleanedContent.match(/{{(inlay|inlayed|inlayeddata)::(.+?)}}/g)
         if (inlayMatch) {
@@ -87,20 +86,20 @@ export async function extractInlays(
     // Process each inlay
     for (const inlay of inlays) {
         const inlayName = inlay
-            .replace('{{inlayed::', '')
-            .replace('{{inlay::', '')
-            .replace('{{inlayeddata::', '')
-            .replace('}}', '')
+            .replace("{{inlayed::", "")
+            .replace("{{inlay::", "")
+            .replace("{{inlayeddata::", "")
+            .replace("}}", "")
 
         const inlayData = await getInlayAsset(inlayName)
 
-        if (inlayData?.type === 'image') {
+        if (inlayData?.type === "image") {
             if (modelInfo.flags.includes(LLMFlags.hasImageInput)) {
                 multimodals.push({
-                    type: 'image',
+                    type: "image",
                     base64: inlayData.data,
                     width: inlayData.width,
-                    height: inlayData.height
+                    height: inlayData.height,
                 })
             } else {
                 // Fallback to image caption for models without image input
@@ -109,16 +108,16 @@ export async function extractInlays(
             }
         }
 
-        if (inlayData?.type === 'video' || inlayData?.type === 'audio') {
+        if (inlayData?.type === "video" || inlayData?.type === "audio") {
             if (multimodals.length === 0) {
                 multimodals.push({
                     type: inlayData.type,
-                    base64: inlayData.data
+                    base64: inlayData.data,
                 })
             }
         }
 
-        cleanedContent = cleanedContent.replace(inlay, '')
+        cleanedContent = cleanedContent.replace(inlay, "")
     }
 
     return { cleanedContent, multimodals }
@@ -127,36 +126,37 @@ export async function extractInlays(
 /**
  * Process asset prompts ({{asset_prompt::name}}) in message content
  */
-export async function processAssetPrompts(
-    content: string,
-    currentChar: character
-): Promise<InlayExtractionResult> {
+export async function processAssetPrompts(content: string, currentChar: character): Promise<InlayExtractionResult> {
     const multimodals: MultiModal[] = []
     const assetPromises: Promise<void>[] = []
 
-    const cleanedContent = content.replace(/\{\{asset_?prompt::(.+?)\}\}/gmsiu, (match, p1) => {
+    const cleanedContent = content.replace(/\{\{asset_?prompt::(.+?)\}\}/gimsu, (match, p1) => {
         const moduleAssets = getModuleAssets()
         const assets = (currentChar.additionalAssets ?? []).concat(moduleAssets)
-        const asset = assets.find(v => v[0] === p1)
+        const asset = assets.find((v) => v[0] === p1)
 
         if (asset) {
-            assetPromises.push((async () => {
-                const assetDataBuf = await readImage(asset[1])
-                multimodals.push({
-                    type: "image",
-                    base64: `data:image/png;base64,${Buffer.from(assetDataBuf).toString('base64')}`
-                })
-            })())
-        } else if (p1 === 'icon') {
-            assetPromises.push((async () => {
-                const assetDataBuf = await readImage(currentChar.image ?? '')
-                multimodals.push({
-                    type: "image",
-                    base64: `data:image/png;base64,${Buffer.from(assetDataBuf).toString('base64')}`
-                })
-            })())
+            assetPromises.push(
+                (async () => {
+                    const assetDataBuf = await readImage(asset[1])
+                    multimodals.push({
+                        type: "image",
+                        base64: `data:image/png;base64,${Buffer.from(assetDataBuf).toString("base64")}`,
+                    })
+                })()
+            )
+        } else if (p1 === "icon") {
+            assetPromises.push(
+                (async () => {
+                    const assetDataBuf = await readImage(currentChar.image ?? "")
+                    multimodals.push({
+                        type: "image",
+                        base64: `data:image/png;base64,${Buffer.from(assetDataBuf).toString("base64")}`,
+                    })
+                })()
+            )
         }
-        return ''
+        return ""
     })
 
     await Promise.all(assetPromises)
@@ -172,14 +172,14 @@ export function extractThoughts(
     messageIndex: number,
     totalMessages: number,
     maxThoughtDepth: number
-): { cleanedContent: string, thoughts: string[] } {
+): { cleanedContent: string; thoughts: string[] } {
     const thoughts: string[] = []
 
     const cleanedContent = content.replace(/<Thoughts>(.+)<\/Thoughts>/gms, (match, p1) => {
-        if (maxThoughtDepth === -1 || (maxThoughtDepth - totalMessages) <= messageIndex) {
+        if (maxThoughtDepth === -1 || maxThoughtDepth - totalMessages <= messageIndex) {
             thoughts.push(p1)
         }
-        return ''
+        return ""
     })
 
     return { cleanedContent, thoughts }
@@ -197,15 +197,15 @@ export function getMessageSpeakerName(
     currentChar: character,
     findCharWithCache: (id: string) => character
 ): string {
-    if (msg.role === 'char') {
+    if (msg.role === "char") {
         if (msg.saying) {
             return findCharWithCache(msg.saying).name
         }
         return currentChar.name
-    } else if (msg.role === 'user') {
+    } else if (msg.role === "user") {
         return getUserName()
     }
-    return ''
+    return ""
 }
 
 /**
@@ -216,27 +216,28 @@ export function applyGroupFormatting(
     msg: Message,
     currentChar: character,
     options: FormatMessageOptions
-): { content: string, role: 'user' | 'assistant' | 'system' } {
-    let role: 'user' | 'assistant' | 'system' = msg.role === 'user' ? 'user' : 'assistant'
+): { content: string; role: "user" | "assistant" | "system" } {
+    let role: "user" | "assistant" | "system" = msg.role === "user" ? "user" : "assistant"
 
     const sayingChar = options.findCharacterbyIdWithCache(msg.saying)
     const isOtherCharInGroup = options.isGroupChat && sayingChar.chaId !== currentChar.chaId
-    const needsGroupTemplate = isOtherCharInGroup ||
-        (options.isGroupChat && options.groupOtherBotRole === 'assistant') ||
+    const needsGroupTemplate =
+        isOtherCharInGroup ||
+        (options.isGroupChat && options.groupOtherBotRole === "assistant") ||
         (options.usingPromptTemplate && options.sendName)
 
     if (needsGroupTemplate) {
         const form = options.groupTemplate || `<{{char}}'s Message>\n{{slot}}\n</{{char}}'s Message>`
-        content = risuChatParser(form, { chara: sayingChar.name }).replace('{{slot}}', content)
+        content = risuChatParser(form, { chara: sayingChar.name }).replace("{{slot}}", content)
 
         switch (options.groupOtherBotRole) {
-            case 'user':
-            case 'assistant':
-            case 'system':
-                role = options.groupOtherBotRole as 'user' | 'assistant' | 'system'
+            case "user":
+            case "assistant":
+            case "system":
+                role = options.groupOtherBotRole as "user" | "assistant" | "system"
                 break
             default:
-                role = 'assistant'
+                role = "assistant"
                 break
         }
     }
@@ -261,13 +262,15 @@ export async function formatSingleMessage(
     }
 
     // Process script and parse chat variables
-    let formatedChat = (await processScriptFull(
-        nowChatroom,
-        risuChatParser(msg.data, { chara: currentChar, role: msg.role }),
-        'editprocess',
-        index,
-        { chatRole: msg.role }
-    )).data
+    let formatedChat = (
+        await processScriptFull(
+            nowChatroom,
+            risuChatParser(msg.data, { chara: currentChar, role: msg.role }),
+            "editprocess",
+            index,
+            { chatRole: msg.role }
+        )
+    ).data
 
     // Extract thoughts (before extracting inlays)
     const thoughtResult = extractThoughts(formatedChat, index, totalMessages, maxThoughtDepth)
@@ -297,10 +300,12 @@ export async function formatSingleMessage(
         attr: [],
         multimodals: multimodals.length > 0 ? multimodals : undefined,
         thoughts: thoughts.length > 0 ? thoughts : undefined,
-        encryptedThinking: (pastThinkingSend !== 0 && msg.encryptedThinking)
-            ? msg.encryptedThinking.filter((et): et is { provider: string; data: any; tokens: number } =>
-                et.tokens != null && et.tokens > 0)
-            : undefined
+        encryptedThinking:
+            pastThinkingSend !== 0 && msg.encryptedThinking
+                ? msg.encryptedThinking.filter(
+                      (et): et is { provider: string; data: any; tokens: number } => et.tokens != null && et.tokens > 0
+                  )
+                : undefined,
     }
 
     // Clean up undefined/empty properties
@@ -385,11 +390,11 @@ export function createFormatOptions(
         tokenizer,
         usingPromptTemplate,
         sendName: usingPromptTemplate && DBState.db.promptSettings.sendName,
-        isGroupChat: nowChatroom.type === 'group',
+        isGroupChat: nowChatroom.type === "group",
         pastThinkingSend: DBState.db.pastThinkingSend ?? 1,
         maxThoughtDepth: DBState.db.promptSettings?.maxThoughtTagDepth ?? -1,
         groupTemplate: DBState.db.groupTemplate || `<{{char}}'s Message>\n{{slot}}\n</{{char}}'s Message>`,
         groupOtherBotRole: DBState.db.groupOtherBotRole,
-        findCharacterbyIdWithCache
+        findCharacterbyIdWithCache,
     }
 }

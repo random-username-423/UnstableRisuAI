@@ -1,28 +1,28 @@
-import { getDatabase, setDatabase } from '../database.svelte';
-import { presetTemplate } from './defaultDb';
-import { decryptBuffer, encryptBuffer, selectSingleFile } from '../../../utils/util';
-import { downloadFile } from '../../../utils/fileIO';
-import { alertNormal } from '../../../utils/alert.svelte';
-import { language } from '../../../../lang';
-import { prebuiltPresets } from '../../../process/templates/templates';
-import type { botPreset, Database } from '../types';
-import { encode as encodeMsgpack, decode as decodeMsgpack } from "msgpackr";
-import * as fflate from "fflate";
-import { decodeRPack, encodeRPack } from '../../../rpack/rpack_bg';
-import { LLMFormat } from '../../../model/types';
+import { getDatabase, setDatabase } from "../database.svelte"
+import { presetTemplate } from "./defaultDb"
+import { decryptBuffer, encryptBuffer, selectSingleFile } from "../../../utils/util"
+import { downloadFile } from "../../../utils/fileIO"
+import { alertNormal } from "../../../utils/alert.svelte"
+import { language } from "../../../../lang"
+import { prebuiltPresets } from "../../../process/templates/templates"
+import type { botPreset, Database } from "../types"
+import { encode as encodeMsgpack, decode as decodeMsgpack } from "msgpackr"
+import * as fflate from "fflate"
+import { decodeRPack, encodeRPack } from "../../../rpack/rpack_bg"
+import { LLMFormat } from "../../../model/types"
 
-export function saveCurrentPreset(){
+export function saveCurrentPreset() {
     const db = getDatabase()
     let pres = db.botPresets
     if (!pres || !pres[db.botPresetsId]) {
-        if(!Array.isArray(pres)){
-            pres = [structuredClone(presetTemplate)];
-            db.botPresetsId = 0;
+        if (!Array.isArray(pres)) {
+            pres = [structuredClone(presetTemplate)]
+            db.botPresetsId = 0
         } else if (db.botPresetsId >= pres.length) {
-            db.botPresetsId = pres.length - 1;
+            db.botPresetsId = pres.length - 1
         }
     }
-    
+
     const savedPreset: botPreset = {
         name: pres[db.botPresetsId]?.name ?? "New Preset",
         openAIKey: db.openAIKey,
@@ -69,13 +69,13 @@ export function saveCurrentPreset(){
         moduleIntergration: db.moduleIntergration ?? "",
         top_k: db.top_k,
         instructChatTemplate: db.instructChatTemplate,
-        JinjaTemplate: db.JinjaTemplate ?? '',
+        JinjaTemplate: db.JinjaTemplate ?? "",
         jsonSchemaEnabled: db.jsonSchemaEnabled ?? false,
-        jsonSchema: db.jsonSchema ?? '',
+        jsonSchema: db.jsonSchema ?? "",
         strictJsonSchema: db.strictJsonSchema ?? true,
-        extractJson: db.extractJson ?? '',
-        groupOtherBotRole: db.groupOtherBotRole ?? 'user',
-        groupTemplate: db.groupTemplate ?? '',
+        extractJson: db.extractJson ?? "",
+        groupOtherBotRole: db.groupOtherBotRole ?? "user",
+        groupTemplate: db.groupTemplate ?? "",
         seperateParametersEnabled: db.seperateParametersEnabled ?? false,
         seperateParameters: safeStructuredClone(db.seperateParameters),
         openAIPrediction: db.OAIPrediction,
@@ -85,36 +85,35 @@ export function saveCurrentPreset(){
         customFlags: safeStructuredClone(db.customFlags),
         enableCustomFlags: db.enableCustomFlags,
         regex: db.presetRegex,
-        image: pres?.[db.botPresetsId]?.image ?? '',
+        image: pres?.[db.botPresetsId]?.image ?? "",
         reasonEffort: db.reasoningEffort ?? 0,
         thinkingTokens: db.thinkingTokens ?? undefined,
         thinkingLevel: db.thinkingLevel ?? -1000,
         pastThinkingSend: db.pastThinkingSend ?? 1,
         pastThinkingExtraTokens: db.pastThinkingExtraTokens ?? 16000,
         outputImageModal: db.outputImageModal ?? false,
-        seperateModelsForAxModels: db.doNotChangeSeperateModels ? false : db.seperateModelsForAxModels ?? false,
+        seperateModelsForAxModels: db.doNotChangeSeperateModels ? false : (db.seperateModelsForAxModels ?? false),
         seperateModels: db.doNotChangeSeperateModels ? undefined : safeStructuredClone(db.seperateModels),
         modelTools: safeStructuredClone(db.modelTools),
         fallbackModels: safeStructuredClone(db.fallbackModels),
         fallbackWhenBlankResponse: db.fallbackWhenBlankResponse ?? false,
         verbosity: db.verbosity ?? 1,
-        dynamicOutput: db.dynamicOutput ?? undefined
+        dynamicOutput: db.dynamicOutput ?? undefined,
     }
-    
-    if(!Array.isArray(pres)){
+
+    if (!Array.isArray(pres)) {
         pres = []
     }
-    if(db.botPresetsId >= pres.length){
+    if (db.botPresetsId >= pres.length) {
         pres.push(savedPreset)
-    }
-    else{
+    } else {
         pres[db.botPresetsId] = savedPreset
     }
     db.botPresets = pres
     setDatabase(db)
 }
 
-export function copyPreset(id:number){
+export function copyPreset(id: number) {
     saveCurrentPreset()
     const db = getDatabase()
     const pres = db.botPresets
@@ -124,8 +123,8 @@ export function copyPreset(id:number){
     setDatabase(db)
 }
 
-export function changeToPreset(id = 0, savecurrent = true){
-    if(savecurrent){
+export function changeToPreset(id = 0, savecurrent = true) {
+    if (savecurrent) {
         saveCurrentPreset()
     }
     let db = getDatabase()
@@ -136,7 +135,7 @@ export function changeToPreset(id = 0, savecurrent = true){
     setDatabase(db)
 }
 
-export function setPreset(db:Database, newPres: botPreset): Database{
+export function setPreset(db: Database, newPres: botPreset): Database {
     db.mainPrompt = newPres.mainPrompt ?? db.mainPrompt
     db.jailbreak = newPres.jailbreak ?? db.jailbreak
     db.globalNote = newPres.globalNote ?? db.globalNote
@@ -171,15 +170,15 @@ export function setPreset(db:Database, newPres: botPreset): Database{
     db.NAIsettings.mirostat_tau ??= 0
     db.NAIsettings.mirostat_lr ??= 1
     db.localStopStrings = newPres.localStopStrings
-    db.customProxyRequestModel = newPres.customProxyRequestModel ?? ''
+    db.customProxyRequestModel = newPres.customProxyRequestModel ?? ""
     db.reverseProxyOobaArgs = safeStructuredClone(newPres.reverseProxyOobaArgs) ?? {
-        mode: 'instruct'
+        mode: "instruct",
     }
     db.top_p = newPres.top_p ?? 1
     //for legacy mistpings
     db.promptSettings = safeStructuredClone(newPres.promptSettings) ?? {
-        assistantPrefill: '',
-        postEndInnerFormat: '',
+        assistantPrefill: "",
+        postEndInnerFormat: "",
         sendChatAsSystem: false,
         sendName: false,
         utilOverride: false,
@@ -188,31 +187,33 @@ export function setPreset(db:Database, newPres: botPreset): Database{
     db.repetition_penalty = newPres.repetition_penalty ?? 1
     db.min_p = newPres.min_p ?? 0
     db.top_a = newPres.top_a ?? 0
-    db.openrouterProvider = newPres.openrouterProvider ?? ''
+    db.openrouterProvider = newPres.openrouterProvider ?? ""
     db.useInstructPrompt = newPres.useInstructPrompt ?? false
-    db.customPromptTemplateToggle = newPres.customPromptTemplateToggle ?? ''
-    db.templateDefaultVariables = newPres.templateDefaultVariables ?? ''
-    db.moduleIntergration = newPres.moduleIntergration ?? ''
+    db.customPromptTemplateToggle = newPres.customPromptTemplateToggle ?? ""
+    db.templateDefaultVariables = newPres.templateDefaultVariables ?? ""
+    db.moduleIntergration = newPres.moduleIntergration ?? ""
     db.top_k = newPres.top_k ?? db.top_k
     db.instructChatTemplate = newPres.instructChatTemplate ?? db.instructChatTemplate
     db.JinjaTemplate = newPres.JinjaTemplate ?? db.JinjaTemplate
     db.jsonSchemaEnabled = newPres.jsonSchemaEnabled ?? false
-    db.jsonSchema = newPres.jsonSchema ?? ''
+    db.jsonSchema = newPres.jsonSchema ?? ""
     db.strictJsonSchema = newPres.strictJsonSchema ?? true
-    db.extractJson = newPres.extractJson ?? ''
-    db.groupOtherBotRole = newPres.groupOtherBotRole ?? 'user'
-    db.groupTemplate = newPres.groupTemplate ?? ''
+    db.extractJson = newPres.extractJson ?? ""
+    db.groupOtherBotRole = newPres.groupOtherBotRole ?? "user"
+    db.groupTemplate = newPres.groupTemplate ?? ""
     db.seperateParametersEnabled = newPres.seperateParametersEnabled ?? false
-    db.seperateParameters = newPres.seperateParameters ? safeStructuredClone(newPres.seperateParameters) : {
-        memory: {},
-        emotion: {},
-        translate: {},
-        otherAx: {}
-    }
-    db.OAIPrediction = newPres.openAIPrediction ?? ''
+    db.seperateParameters = newPres.seperateParameters
+        ? safeStructuredClone(newPres.seperateParameters)
+        : {
+              memory: {},
+              emotion: {},
+              translate: {},
+              otherAx: {},
+          }
+    db.OAIPrediction = newPres.openAIPrediction ?? ""
     db.customAPIFormat = safeStructuredClone(newPres.customAPIFormat) ?? LLMFormat.OpenAICompatible
-    db.systemContentReplacement = newPres.systemContentReplacement ?? ''
-    db.systemRoleReplacement = newPres.systemRoleReplacement ?? 'user'
+    db.systemContentReplacement = newPres.systemContentReplacement ?? ""
+    db.systemRoleReplacement = newPres.systemRoleReplacement ?? "user"
     db.customFlags = safeStructuredClone(newPres.customFlags) ?? []
     db.enableCustomFlags = newPres.enableCustomFlags ?? false
     db.presetRegex = newPres.regex ?? []
@@ -222,22 +223,22 @@ export function setPreset(db:Database, newPres: botPreset): Database{
     db.pastThinkingSend = newPres.pastThinkingSend ?? 1
     db.pastThinkingExtraTokens = newPres.pastThinkingExtraTokens ?? 16000
     db.outputImageModal = newPres.outputImageModal ?? false
-    if(!db.doNotChangeSeperateModels){
+    if (!db.doNotChangeSeperateModels) {
         db.seperateModelsForAxModels = newPres.seperateModelsForAxModels ?? false
         db.seperateModels = safeStructuredClone(newPres.seperateModels) ?? {
-            memory: '',
-            emotion: '',
-            translate: '',
-            otherAx: ''
+            memory: "",
+            emotion: "",
+            translate: "",
+            otherAx: "",
         }
     }
-    if(!db.doNotChangeFallbackModels){
+    if (!db.doNotChangeFallbackModels) {
         db.fallbackModels = safeStructuredClone(newPres.fallbackModels) ?? {
             memory: [],
             emotion: [],
             translate: [],
             otherAx: [],
-            model: []
+            model: [],
         }
         db.fallbackWhenBlankResponse = newPres.fallbackWhenBlankResponse ?? false
     }
@@ -248,82 +249,80 @@ export function setPreset(db:Database, newPres: botPreset): Database{
     return db
 }
 
-export async function downloadPreset(id:number, type:'json'|'risupreset'|'return' = 'json'){
+export async function downloadPreset(id: number, type: "json" | "risupreset" | "return" = "json") {
     saveCurrentPreset()
     const db = getDatabase()
     const pres = safeStructuredClone(db.botPresets[id])
     console.log(pres)
-    pres.openAIKey = ''
-    pres.forceReplaceUrl = ''
-    pres.proxyKey = ''
-    pres.textgenWebUIStreamURL=  ''
-    pres.textgenWebUIBlockingURL=  ''
+    pres.openAIKey = ""
+    pres.forceReplaceUrl = ""
+    pres.proxyKey = ""
+    pres.textgenWebUIStreamURL = ""
+    pres.textgenWebUIBlockingURL = ""
 
-    if(type === 'json'){
+    if (type === "json") {
         downloadFile(pres.name + "_preset.json", Buffer.from(JSON.stringify(pres, null, 2)))
-    }
-    else if(type === 'risupreset' || type === 'return'){
-        const buf = fflate.compressSync(encodeMsgpack({
-            presetVersion: 2,
-            type: 'preset',
-            preset: await encryptBuffer(
-                encodeMsgpack(pres) as Uint8Array<ArrayBuffer>,
-                'risupreset'
-            )
-        }))
+    } else if (type === "risupreset" || type === "return") {
+        const buf = fflate.compressSync(
+            encodeMsgpack({
+                presetVersion: 2,
+                type: "preset",
+                preset: await encryptBuffer(encodeMsgpack(pres) as Uint8Array<ArrayBuffer>, "risupreset"),
+            })
+        )
 
         const buf2 = await encodeRPack(buf)
 
-        if(type === 'risupreset'){
+        if (type === "risupreset") {
             downloadFile(pres.name + "_preset.risup", buf2)
-        }
-        else{
+        } else {
             return {
                 data: pres,
-                buf: buf2
+                buf: buf2,
             }
         }
-
     }
 
     alertNormal(language.successExport)
 
-
     return {
         data: pres,
-        buf: null
+        buf: null,
     }
 }
 
-
-export async function importPreset(f:{
-    name:string
-    data:Uint8Array
-}|null = null){
-    if(!f){
+export async function importPreset(
+    f: {
+        name: string
+        data: Uint8Array
+    } | null = null
+) {
+    if (!f) {
         f = await selectSingleFile(["json", "preset", "risupreset", "risup"])
     }
-    if(!f){
+    if (!f) {
         return
     }
-    let pre:any
-    if(f.name.endsWith('.risupreset') || f.name.endsWith('.risup')){
+    let pre: any
+    if (f.name.endsWith(".risupreset") || f.name.endsWith(".risup")) {
         let data = f.data
-        if(f.name.endsWith('.risup')){
+        if (f.name.endsWith(".risup")) {
             data = await decodeRPack(data)
         }
         const decoded = await decodeMsgpack(fflate.decompressSync(data))
         console.log(decoded)
-        if((decoded.presetVersion === 0 || decoded.presetVersion === 2) && decoded.type === 'preset'){
-            pre = {...presetTemplate,...decodeMsgpack(Buffer.from(await decryptBuffer(decoded.preset ?? decoded.pres, 'risupreset')))}
+        if ((decoded.presetVersion === 0 || decoded.presetVersion === 2) && decoded.type === "preset") {
+            pre = {
+                ...presetTemplate,
+                ...decodeMsgpack(Buffer.from(await decryptBuffer(decoded.preset ?? decoded.pres, "risupreset"))),
+            }
         }
-    }
-    else{
-        pre = {...presetTemplate,...(JSON.parse(Buffer.from(f.data).toString('utf-8')))}
+    } else {
+        pre = { ...presetTemplate, ...JSON.parse(Buffer.from(f.data).toString("utf-8")) }
         console.log(pre)
     }
     const db = getDatabase()
-    if(pre.presetVersion && pre.presetVersion >= 3){
+    if (pre.presetVersion && pre.presetVersion >= 3) {
         const pr = safeStructuredClone(prebuiltPresets.NAI2)
         pr.temperature = pre.parameters.temperature * 100
         pr.maxResponse = pre.parameters.max_length
@@ -347,104 +346,102 @@ export async function importPreset(f:{
         return
     }
 
-    if(Array.isArray(pre?.prompt_order?.[0]?.order) && Array.isArray(pre?.prompts)){
+    if (Array.isArray(pre?.prompt_order?.[0]?.order) && Array.isArray(pre?.prompts)) {
         const pr = safeStructuredClone(presetTemplate)
         pr.promptTemplate = []
 
-        function findPrompt(identifier:number){
-            return pre.prompts.find((p:any) => p.identifier === identifier)
+        function findPrompt(identifier: number) {
+            return pre.prompts.find((p: any) => p.identifier === identifier)
         }
         pr.temperature = (pre.temperature ?? 0.8) * 100
         pr.frequencyPenalty = (pre.frequency_penalty ?? 0.7) * 100
-        pr.PresensePenalty = (pre.presence_penalty * 0.7) * 100
+        pr.PresensePenalty = pre.presence_penalty * 0.7 * 100
         pr.top_p = pre.top_p ?? 1
 
         // TODO: ST preset input validation - prompt_order structure may be malformed
-        for(const prompt of pre?.prompt_order?.[0]?.order ?? []){
-            if(!prompt?.enabled){
+        for (const prompt of pre?.prompt_order?.[0]?.order ?? []) {
+            if (!prompt?.enabled) {
                 continue
             }
-            const p = findPrompt(prompt?.identifier ?? '')
-            if(p){
-                switch(p.identifier){
-                    case 'main':{
+            const p = findPrompt(prompt?.identifier ?? "")
+            if (p) {
+                switch (p.identifier) {
+                    case "main": {
                         pr.promptTemplate.push({
-                            type: 'plain',
-                            type2: 'main',
+                            type: "plain",
+                            type2: "main",
                             text: p.content ?? "",
-                            role: p.role ?? "system"
+                            role: p.role ?? "system",
                         })
                         break
                     }
-                    case 'jailbreak':
-                    case 'nsfw':{
+                    case "jailbreak":
+                    case "nsfw": {
                         pr.promptTemplate.push({
-                            type: 'jailbreak',
-                            type2: 'normal',
+                            type: "jailbreak",
+                            type2: "normal",
                             text: p.content ?? "",
-                            role: p.role ?? "system"
+                            role: p.role ?? "system",
                         })
                         break
                     }
-                    case 'dialogueExamples':
-                    case 'charPersonality':
-                    case 'scenario':{
+                    case "dialogueExamples":
+                    case "charPersonality":
+                    case "scenario": {
                         break //ignore
                     }
-                    case 'chatHistory':{
+                    case "chatHistory": {
                         pr.promptTemplate.push({
-                            type: 'chat',
-                            rangeEnd: 'end',
-                            rangeStart: 0
+                            type: "chat",
+                            rangeEnd: "end",
+                            rangeStart: 0,
                         })
                         break
                     }
-                    case 'worldInfoBefore':{
+                    case "worldInfoBefore": {
                         pr.promptTemplate.push({
-                            type: 'lorebook'
+                            type: "lorebook",
                         })
                         break
                     }
-                    case 'worldInfoAfter':{
+                    case "worldInfoAfter": {
                         break
                     }
-                    case 'charDescription':{
+                    case "charDescription": {
                         pr.promptTemplate.push({
-                            type: 'description'
+                            type: "description",
                         })
                         break
                     }
-                    case 'personaDescription':{
+                    case "personaDescription": {
                         pr.promptTemplate.push({
-                            type: 'persona'
+                            type: "persona",
                         })
                         break
                     }
-                    default:{
+                    default: {
                         console.log(p)
                         pr.promptTemplate.push({
-                            type: 'plain',
-                            type2: 'normal',
+                            type: "plain",
+                            type2: "normal",
                             text: p.content ?? "",
-                            role: p.role ?? "system"
+                            role: p.role ?? "system",
                         })
                     }
                 }
-            }
-            else{
+            } else {
                 console.log("Prompt not found", prompt)
-
             }
         }
-        if(pre?.assistant_prefill){
+        if (pre?.assistant_prefill) {
             pr.promptTemplate.push({
-                type: 'postEverything'
+                type: "postEverything",
             })
             pr.promptTemplate.push({
-                type: 'plain',
-                type2: 'main',
+                type: "plain",
+                type2: "main",
                 text: `{{#if {{prefill_supported}}}}${pre?.assistant_prefill}{{/if}}`,
-                role: 'bot'
+                role: "bot",
             })
         }
         pr.name = "Imported ST Preset"
@@ -453,7 +450,7 @@ export async function importPreset(f:{
         return
     }
     pre.name ??= "Imported"
-    if(!Array.isArray(db.botPresets)){
+    if (!Array.isArray(db.botPresets)) {
         db.botPresets = []
     }
     db.botPresets.push(pre)

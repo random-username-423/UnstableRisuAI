@@ -12,5 +12,5 @@
  * 5. Copy Client ID and Client Secret to secrets.ts
  */
 
-export const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
-export const GOOGLE_CLIENT_SECRET = 'YOUR_CLIENT_SECRET';
+export const GOOGLE_CLIENT_ID = "YOUR_CLIENT_ID.apps.googleusercontent.com"
+export const GOOGLE_CLIENT_SECRET = "YOUR_CLIENT_SECRET"

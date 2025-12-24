@@ -1,10 +1,10 @@
 <script lang="ts">
-    import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
-    import { risuChatParser } from 'src/ts/utils/parser.svelte';
-    import { language } from 'src/lang';
-    import { sleep } from 'src/ts/utils/util';
-    let input = $state("");
-    let output = $state("");
+    import TextAreaInput from "../UI/GUI/TextAreaInput.svelte"
+    import { risuChatParser } from "src/ts/utils/parser.svelte"
+    import { language } from "src/lang"
+    import { sleep } from "src/ts/utils/util"
+    let input = $state("")
+    let output = $state("")
     const onInput = async () => {
         try {
             await sleep(1)
@@ -17,12 +17,12 @@
     }
 </script>
 
-<h2 class="text-4xl text-textcolor my-6 font-black relative">{language.syntax}</h2>
+<h2 class="relative my-6 text-4xl font-black text-textcolor">{language.syntax}</h2>
 
-<span class="text-textcolor text-lg">Input</span>
+<span class="text-lg text-textcolor">Input</span>
 
-<TextAreaInput highlight onInput={onInput} bind:value={input} optimaizedInput={false} />
+<TextAreaInput highlight {onInput} bind:value={input} optimaizedInput={false} />
 
-<span class="text-textcolor text-lg">Result</span>
+<span class="text-lg text-textcolor">Result</span>
 
 <TextAreaInput value={output} />

@@ -7,7 +7,7 @@ import { RisuSaveEncoder, type toSaveType } from "./risuSave"
 import { saveMainData } from "./dbStorage"
 import { forageStorage } from "./autoStorage"
 import { saveDbKei } from "../kei/backup"
-import { initOPFSWorker } from './opfsWorkerClient.svelte'
+import { initOPFSWorker } from "./opfsWorkerClient.svelte"
 import { tabSyncManager } from "./tabSyncManager"
 import { autoSaveErrorHandler } from "./autoSaveErrorHandler"
 
@@ -16,11 +16,11 @@ let isRunning = false
 
 export const saving = $state({
     state: false,
-    paused: false  // 백업 복원 중 저장 일시정지
+    paused: false, // 백업 복원 중 저장 일시정지
 })
 
 export const requiresFullEncoderReload = $state({
-    state: false
+    state: false,
 })
 
 /**
@@ -52,7 +52,7 @@ export async function startAutoSaveLoop() {
         character: [],
         chat: [],
         botPreset: false,
-        modules: false
+        modules: false,
     }
 
     // Stage 1-4: RisuSaveEncoder 초기화
@@ -64,7 +64,7 @@ export async function startAutoSaveLoop() {
     await encoder.init(getDatabase(), {
         compression: forageStorage.isAccount,
         excludeChats: shouldExcludeChats,
-        separateCharactersAndPresets: shouldSeparateCharactersAndPresets
+        separateCharactersAndPresets: shouldSeparateCharactersAndPresets,
     })
 
     // ============================================================
@@ -103,7 +103,7 @@ export async function startAutoSaveLoop() {
         $effect(() => {
             // DB의 characters, botPresets, modules 외 모든 필드 감지
             for (const key in DBState.db) {
-                if (key !== 'characters' && key !== 'botPresets' && key !== 'modules') {
+                if (key !== "characters" && key !== "botPresets" && key !== "modules") {
                     $state.snapshot(DBState.db[key])
                 }
             }
@@ -112,7 +112,7 @@ export async function startAutoSaveLoop() {
             if (DBState?.db?.characters?.[charIndex]) {
                 const currentChar = DBState.db.characters[charIndex]
                 for (const key in currentChar) {
-                    if (key !== 'chats') {
+                    if (key !== "chats") {
                         $state.snapshot(currentChar[key])
                     }
                 }
@@ -126,7 +126,7 @@ export async function startAutoSaveLoop() {
                     // - message changes are handled by saveChat()
                     // - modifiedAt is updated by saveChat() and would cause infinite loop
                     for (const key in currentChat) {
-                        if (key !== 'message' && key !== 'modifiedAt') {
+                        if (key !== "message" && key !== "modifiedAt") {
                             $state.snapshot(currentChat[key])
                         }
                     }
@@ -167,14 +167,14 @@ export async function startAutoSaveLoop() {
                 await encoder.init(getDatabase(), {
                     compression: forageStorage.isAccount,
                     excludeChats: shouldExcludeChats,
-                    separateCharactersAndPresets: shouldSeparateCharactersAndPresets
+                    separateCharactersAndPresets: shouldSeparateCharactersAndPresets,
                 })
                 requiresFullEncoderReload.state = false
             }
 
             // Stage 3-3: changeTracker 복사 후 리셋
             const toSave = safeStructuredClone(changeTracker)
-            
+
             // 다음 감지를 위해 현재 선택된 항목만 남기고 초기화
             // (사용자가 현재 보고 있는 항목은 계속 변경될 가능성이 높으므로 컨텍스트 유지)
             changeTracker.character = changeTracker.character.length === 0 ? [] : [changeTracker.character[0]]
@@ -208,7 +208,7 @@ export async function startAutoSaveLoop() {
             // Stage 3-7: 백업 여부 결정
             const now = Date.now()
             const intervalMs = (db.dbBackupIntervalMinutes ?? 10) * 60 * 1000
-            const shouldBackup = (now - lastBackupTime) >= intervalMs
+            const shouldBackup = now - lastBackupTime >= intervalMs
 
             // Stage 3-8: 실제 파일 저장 (dbStorage로 위임)
             const result = await saveMainData({
@@ -218,7 +218,7 @@ export async function startAutoSaveLoop() {
                 shouldExcludeChats,
                 shouldSeparateCharactersAndPresets,
                 shouldBackup,
-                now
+                now,
             })
 
             if (result.backedUp) {
@@ -238,7 +238,7 @@ export async function startAutoSaveLoop() {
         } catch (error) {
             // Stage 3-10: 에러 처리
             const action = await autoSaveErrorHandler.onError(error)
-            if (action === 'completeFail') {
+            if (action === "completeFail") {
                 // 완전 실패 시 더 긴 대기
                 await sleep(5000)
             }

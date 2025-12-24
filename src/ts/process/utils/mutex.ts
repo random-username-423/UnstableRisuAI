@@ -21,14 +21,14 @@ export class Mutex {
      */
     acquire() {
         return new Promise<ReleaseFunction>((resolve) => {
-            this._queue.push({resolve})
+            this._queue.push({ resolve })
             this._dispatch()
-        });
+        })
     }
 
     /**
      * Enqueue a function to be run serially.
-     * 
+     *
      * This ensures no other functions will start running
      * until `callback` finishes running.
      * @param callback Function to be run exclusively.

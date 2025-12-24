@@ -1,22 +1,28 @@
 import { language } from "src/lang"
 import { alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "src/ts/utils/alert.svelte"
-import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase } from "src/ts/data/storage/database.svelte"
+import {
+    getCurrentCharacter,
+    getCurrentChat,
+    getDatabase,
+    setCurrentCharacter,
+    setDatabase,
+} from "src/ts/data/storage/database.svelte"
 import { type customscript, type loreBook, type triggerscript } from "src/ts/data/storage/types"
 import { downloadFile, readImage, saveAsset } from "src/ts/utils/fileIO"
 import { AppendableBuffer } from "src/ts/utils/fetch"
-import { isTauri, isNodeServer } from "src/ts/utils/env";
-import { selectSingleFile, sleep } from 'src/ts/utils/util'
+import { isTauri, isNodeServer } from "src/ts/utils/env"
+import { selectSingleFile, sleep } from "src/ts/utils/util"
 import { v4 } from "uuid"
 import { convertExternalLorebook } from "src/ts/process/prompt/lorebook.svelte"
 import { decodeRPack, encodeRPack } from "src/ts/rpack/rpack_bg"
 import { convertImage } from "src/ts/utils/parser.svelte"
 import { RenderState } from "src/ts/stores.svelte"
 
-export interface MCPModule{
+export interface MCPModule {
     url: string
 }
 
-export interface RisuModule{
+export interface RisuModule {
     name: string
     description: string
     lorebook?: loreBook[]
@@ -26,26 +32,29 @@ export interface RisuModule{
     id: string
     lowLevelAccess?: boolean
     hideIcon?: boolean
-    backgroundEmbedding?:string
-    assets?:[string,string,string][]
-    namespace?:string
-    customModuleToggle?:string
-    mcp?:MCPModule
+    backgroundEmbedding?: string
+    assets?: [string, string, string][]
+    namespace?: string
+    customModuleToggle?: string
+    mcp?: MCPModule
 }
 
-export async function exportModule(module:RisuModule, arg:{
-    alertEnd?:boolean
-    saveData?:boolean
-} = {}){
+export async function exportModule(
+    module: RisuModule,
+    arg: {
+        alertEnd?: boolean
+        saveData?: boolean
+    } = {}
+) {
     const alertEnd = arg.alertEnd ?? true
     const saveData = arg.saveData ?? true
     const apb = new AppendableBuffer()
-    const writeLength = (len:number) => {
+    const writeLength = (len: number) => {
         const lenbuf = Buffer.alloc(4)
         lenbuf.writeUInt32LE(len, 0)
         apb.append(lenbuf)
     }
-    const writeByte = (byte:number) => {
+    const writeByte = (byte: number) => {
         //byte is 0-255
         const buf = Buffer.alloc(1)
         buf.writeUInt8(byte, 0)
@@ -56,28 +65,37 @@ export async function exportModule(module:RisuModule, arg:{
     module = safeStructuredClone(module)
     module.assets ??= []
     module.assets = module.assets.map((asset) => {
-        return [asset[0], '', asset[2]] as [string,string,string]
+        return [asset[0], "", asset[2]] as [string, string, string]
     })
 
-    const mainbuf = await encodeRPack(Buffer.from(JSON.stringify({
-        module: module,
-        type: 'risuModule'
-    }, null, 2), 'utf-8'))
+    const mainbuf = await encodeRPack(
+        Buffer.from(
+            JSON.stringify(
+                {
+                    module: module,
+                    type: "risuModule",
+                },
+                null,
+                2
+            ),
+            "utf-8"
+        )
+    )
 
     writeByte(111) //magic number
     writeByte(0) //version
     writeLength(mainbuf.length)
     apb.append(mainbuf)
 
-    for(let i=0;i<assets.length;i++){
+    for (let i = 0; i < assets.length; i++) {
         const asset = assets[i]
         writeByte(1) //mark as asset
         alertStore.set({
-            type: 'wait',
-            msg: `Loading... (Adding Assets ${i} / ${assets.length})`
+            type: "wait",
+            msg: `Loading... (Adding Assets ${i} / ${assets.length})`,
         })
         let rData = await readImage(asset[1])
-        if(!rData){
+        if (!rData) {
             rData = new Uint8Array(0) //blank buffer
         }
         const encoded = await encodeRPack(Buffer.from(await convertImage(rData)))
@@ -87,17 +105,17 @@ export async function exportModule(module:RisuModule, arg:{
 
     writeByte(0) //end of file
 
-    if(saveData){
-        await downloadFile(module.name + '.risum', apb.buffer)
+    if (saveData) {
+        await downloadFile(module.name + ".risum", apb.buffer)
     }
-    if(alertEnd){
+    if (alertEnd) {
         alertNormal(language.successExport)
     }
 
     return apb.buffer
 }
 
-export async function readModule(buf:Buffer):Promise<RisuModule> {
+export async function readModule(buf: Buffer): Promise<RisuModule> {
     let pos = 0
 
     const readLength = () => {
@@ -110,18 +128,19 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
         pos += 1
         return byte
     }
-    const readData = (len:number) => {
+    const readData = (len: number) => {
         const data = buf.subarray(pos, pos + len)
         pos += len
         return data
     }
 
-    if(readByte() !== 111){
+    if (readByte() !== 111) {
         console.error("Invalid magic number")
         alertError(language.errors.noData)
         return
     }
-    if(readByte() !== 0){ //Version check
+    if (readByte() !== 0) {
+        //Version check
         console.error("Invalid version")
         alertError(language.errors.noData)
         return
@@ -129,12 +148,12 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
 
     const mainLen = readLength()
     const mainData = readData(mainLen)
-    const main:{
-        type:'risuModule'
-        module:RisuModule
+    const main: {
+        type: "risuModule"
+        module: RisuModule
     } = JSON.parse(Buffer.from(await decodeRPack(mainData)).toString())
 
-    if(main.type !== 'risuModule'){
+    if (main.type !== "risuModule") {
         console.error("Invalid module type")
         alertError(language.errors.noData)
         return
@@ -143,12 +162,12 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
     const module = main.module
 
     let i = 0
-    while(true){
+    while (true) {
         const mark = readByte()
-        if(mark === 0){
+        if (mark === 0) {
             break
         }
-        if(mark !== 1){
+        if (mark !== 1) {
             alertError(language.errors.noData)
             return
         }
@@ -156,37 +175,37 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
         const data = readData(len)
         module.assets[i][1] = await saveAsset(Buffer.from(await decodeRPack(data)))
         alertStore.set({
-            type: 'wait',
-            msg: `Loading... (Adding Assets ${i} / ${module.assets.length})`
+            type: "wait",
+            msg: `Loading... (Adding Assets ${i} / ${module.assets.length})`,
         })
-        if(!isTauri && !isNodeServer){
+        if (!isTauri && !isNodeServer) {
             await sleep(100)
         }
         i++
     }
     alertStore.set({
-        type: 'none',
-        msg: ''
+        type: "none",
+        msg: "",
     })
 
     module.id = v4()
     return module
 }
 
-export async function importModule(){
-    const f = await selectSingleFile(['json', 'lorebook', 'risum'])
-    if(!f){
+export async function importModule() {
+    const f = await selectSingleFile(["json", "lorebook", "risum"])
+    if (!f) {
         return
     }
     const fileData = f.data
     const db = getDatabase()
-    if(f.name.endsWith('.risum')){
+    if (f.name.endsWith(".risum")) {
         try {
             const buf = Buffer.from(fileData)
             const module = await readModule(buf)
             db.modules.push(module)
             setDatabase(db)
-            return   
+            return
         } catch (error) {
             console.error(error)
             alertError(language.errors.noData)
@@ -194,19 +213,16 @@ export async function importModule(){
     }
     try {
         const importData = JSON.parse(Buffer.from(fileData).toString())
-        if(importData.type === 'risuModule'){
-            if(
-                (!importData.name)
-                || (!importData.id)
-            ){
+        if (importData.type === "risuModule") {
+            if (!importData.name || !importData.id) {
                 alertError(language.errors.noData)
                 return
             }
             importData.id = v4()
 
-            if(importData.lowLevelAccess){
+            if (importData.lowLevelAccess) {
                 const conf = await alertConfirm(language.lowLevelAccessConfirm)
-                if(!conf){
+                if (!conf) {
                     return false
                 }
             }
@@ -214,37 +230,37 @@ export async function importModule(){
             setDatabase(db)
             return
         }
-        if(importData.type === 'risu' && importData.data){
-            const lores:loreBook[] = importData.data
+        if (importData.type === "risu" && importData.data) {
+            const lores: loreBook[] = importData.data
             const importModule = {
-                name: importData.name || 'Imported Lorebook',
-                description: importData.description || 'Converted from risu lorebook',
+                name: importData.name || "Imported Lorebook",
+                description: importData.description || "Converted from risu lorebook",
                 lorebook: lores,
-                id: v4()
+                id: v4(),
             }
             db.modules.push(importModule)
             setDatabase(db)
             return
         }
-        if(importData.entries){
-            const lores:loreBook[] = convertExternalLorebook(importData.entries)
+        if (importData.entries) {
+            const lores: loreBook[] = convertExternalLorebook(importData.entries)
             const importModule = {
-                name: importData.name || 'Imported Lorebook',
-                description: importData.description || 'Converted from external lorebook',
+                name: importData.name || "Imported Lorebook",
+                description: importData.description || "Converted from external lorebook",
                 lorebook: lores,
-                id: v4()
+                id: v4(),
             }
             db.modules.push(importModule)
             setDatabase(db)
             return
         }
-        if(importData.type === 'regex'  && importData.data){
-            const regexs:customscript[] = importData.data
+        if (importData.type === "regex" && importData.data) {
+            const regexs: customscript[] = importData.data
             const importModule = {
-                name: importData.name || 'Imported Regex',
-                description: importData.description || 'Converted from risu regex',
+                name: importData.name || "Imported Regex",
+                description: importData.description || "Converted from risu regex",
                 regex: regexs,
-                id: v4()
+                id: v4(),
             }
             db.modules.push(importModule)
             setDatabase(db)
@@ -255,22 +271,22 @@ export async function importModule(){
     }
 }
 
-function getModuleById(id:string){
+function getModuleById(id: string) {
     const db = getDatabase()
-    for(let i=0;i<db.modules.length;i++){
-        if(db.modules[i].id === id){
+    for (let i = 0; i < db.modules.length; i++) {
+        if (db.modules[i].id === id) {
             return db.modules[i]
         }
     }
     return null
 }
 
-function getModuleByIds(ids:string[]){
-    let modules:RisuModule[] = []
+function getModuleByIds(ids: string[]) {
+    let modules: RisuModule[] = []
     const db = getDatabase()
-    for(let i=0;i<ids.length;i++){
+    for (let i = 0; i < ids.length; i++) {
         const module = db.modules.find((m) => m.id === ids[i] || (m.namespace === ids[i] && m.namespace))
-        if(module){
+        if (module) {
             modules.push(module)
         }
     }
@@ -278,11 +294,11 @@ function getModuleByIds(ids:string[]){
     return modules
 }
 
-function deduplicateModuleById(modules:RisuModule[]){
-    const ids:string[] = []
-    const newModules:RisuModule[] = []
-    for(let i=0;i<modules.length;i++){
-        if(ids.includes(modules[i].id)){
+function deduplicateModuleById(modules: RisuModule[]) {
+    const ids: string[] = []
+    const newModules: RisuModule[] = []
+    for (let i = 0; i < modules.length; i++) {
+        if (ids.includes(modules[i].id)) {
             continue
         }
         ids.push(modules[i].id)
@@ -291,41 +307,39 @@ function deduplicateModuleById(modules:RisuModule[]){
     return newModules
 }
 
-let lastModules = ''
-let lastModuleData:RisuModule[] = []
-export function getModules(){
+let lastModules = ""
+let lastModuleData: RisuModule[] = []
+export function getModules() {
     const currentChat = getCurrentChat()
     const character = getCurrentCharacter()
     const db = getDatabase()
     let ids = db.enabledModules ?? []
-    if (currentChat){
+    if (currentChat) {
         ids = ids.concat(currentChat.modules ?? [])
     }
-    if(character && character.modules){
+    if (character && character.modules) {
         ids = ids.concat(character.modules)
     }
-    if(db.moduleIntergration){
-        const intList = db.moduleIntergration.split(',').map((s) => s.trim())
+    if (db.moduleIntergration) {
+        const intList = db.moduleIntergration.split(",").map((s) => s.trim())
         ids = ids.concat(intList)
     }
-    const idsJoined = ids.join('-')
-    if(lastModules === idsJoined){
+    const idsJoined = ids.join("-")
+    if (lastModules === idsJoined) {
         return lastModuleData
     }
 
-    const modules:RisuModule[] = getModuleByIds(ids)
+    const modules: RisuModule[] = getModuleByIds(ids)
     lastModules = idsJoined
     lastModuleData = modules
     return modules
-
 }
-
 
 export function getModuleLorebooks() {
     const modules = getModules()
     let lorebooks: loreBook[] = []
     for (const module of modules) {
-        if(!module){
+        if (!module) {
             continue
         }
         if (module.lorebook) {
@@ -337,9 +351,9 @@ export function getModuleLorebooks() {
 
 export function getModuleAssets() {
     const modules = getModules()
-    let assets: [string,string,string][] = []
+    let assets: [string, string, string][] = []
     for (const module of modules) {
-        if(!module){
+        if (!module) {
             continue
         }
         if (module.assets) {
@@ -349,19 +363,20 @@ export function getModuleAssets() {
     return assets
 }
 
-
 export function getModuleTriggers() {
     const modules = getModules()
     let triggers: triggerscript[] = []
     for (const module of modules) {
-        if(!module){
+        if (!module) {
             continue
         }
         if (module.trigger) {
-            triggers = triggers.concat(module.trigger.map((t) => {
-                t.lowLevelAccess = module.lowLevelAccess
-                return t
-            }))
+            triggers = triggers.concat(
+                module.trigger.map((t) => {
+                    t.lowLevelAccess = module.lowLevelAccess
+                    return t
+                })
+            )
         }
     }
     return triggers
@@ -371,7 +386,7 @@ export function getModuleRegexScripts() {
     const modules = getModules()
     let customscripts: customscript[] = []
     for (const module of modules) {
-        if(!module){
+        if (!module) {
             continue
         }
         if (module.regex) {
@@ -383,13 +398,13 @@ export function getModuleRegexScripts() {
 
 export function getModuleToggles() {
     const modules = getModules()
-    let costomModuleToggles: string = ''
+    let costomModuleToggles: string = ""
     for (const module of modules) {
-        if(!module){
+        if (!module) {
             continue
         }
         if (module.customModuleToggle) {
-            costomModuleToggles += '\n' + module.customModuleToggle + '\n'
+            costomModuleToggles += "\n" + module.customModuleToggle + "\n"
         }
     }
     return costomModuleToggles
@@ -416,7 +431,7 @@ export async function applyModule() {
     if (!currentChar) {
         return
     }
-    if(currentChar.type === 'group'){
+    if (currentChar.type === "group") {
         return
     }
 
@@ -441,42 +456,40 @@ export async function applyModule() {
     alertNormal(language.successApplyModule)
 }
 
-let lastModuleIds:string = ''
+let lastModuleIds: string = ""
 
-export function moduleUpdate(){
-
-
+export function moduleUpdate() {
     const m = getModules()
 
-    const ids = m.map((m) => m.id).join('-')
-    
+    const ids = m.map((m) => m.id).join("-")
+
     let moduleHideIcon = false
-    let backgroundEmbedding = ''
+    let backgroundEmbedding = ""
     m.forEach((module) => {
-        if(!module){
+        if (!module) {
             return
         }
 
-        if(module.hideIcon){
+        if (module.hideIcon) {
             moduleHideIcon = true
         }
-        if(module.backgroundEmbedding){
-            backgroundEmbedding += '\n' + module.backgroundEmbedding + '\n'
+        if (module.backgroundEmbedding) {
+            backgroundEmbedding += "\n" + module.backgroundEmbedding + "\n"
         }
     })
 
-    if(backgroundEmbedding){
+    if (backgroundEmbedding) {
         RenderState.moduleBackground = backgroundEmbedding
     }
     RenderState.hideIcon = getCurrentCharacter()?.hideChatIcon || moduleHideIcon
 
-    if(lastModuleIds !== ids){
+    if (lastModuleIds !== ids) {
         RenderState.guiReloadPointer += 1
         lastModuleIds = ids
     }
 }
 
-export function refreshModules(){
-    lastModules = ''
+export function refreshModules() {
+    lastModules = ""
     lastModuleData = []
 }

@@ -1,7 +1,7 @@
-import { getDatabase } from "./database.svelte";
-import { alertNormal } from "../../utils/alert.svelte";
-import { language } from "src/lang";
-import { isTauri, isNodeServer, isFirefox } from "src/ts/utils/env";
+import { getDatabase } from "./database.svelte"
+import { alertNormal } from "../../utils/alert.svelte"
+import { language } from "src/lang"
+import { isTauri, isNodeServer, isFirefox } from "src/ts/utils/env"
 
 /**
  * Requests persistent storage permission from the browser.
@@ -9,31 +9,29 @@ import { isTauri, isNodeServer, isFirefox } from "src/ts/utils/env";
  * @returns true if persistent storage is granted, false otherwise.
  */
 async function requestPersistantStorageMain() {
-    
-    if(navigator.storage && navigator.storage.persist) {
-
-        if(await navigator.storage.persisted()) {
-            return true;
+    if (navigator.storage && navigator.storage.persist) {
+        if (await navigator.storage.persisted()) {
+            return true
         }
 
         //if is chromium
-        const isChromium = 'chrome' in window;
+        const isChromium = "chrome" in window
         if (isChromium) {
             //chromium requires notification to persist
             alertNormal("For chromium based browsers, you need to allow notifications to persist data")
             const status = await Notification.requestPermission()
-            
-            if(status === 'granted') {
-                return navigator.storage.persist();
+
+            if (status === "granted") {
+                return navigator.storage.persist()
             }
         }
 
-        if(isFirefox) {
+        if (isFirefox) {
             //firefox can just ask for persist
-            return navigator.storage.persist();
+            return navigator.storage.persist()
         }
 
-        return false;
+        return false
     }
     return false
 }
@@ -45,15 +43,15 @@ async function requestPersistantStorageMain() {
  */
 export async function persistantStorageRecommended() {
     const db = getDatabase()
-    if(navigator.storage && navigator.storage.persist && (!isTauri) && (!isNodeServer)) {
-        if(await navigator.storage.persisted()) {
-            return false;
+    if (navigator.storage && navigator.storage.persist && !isTauri && !isNodeServer) {
+        if (await navigator.storage.persisted()) {
+            return false
         }
-        if(db.characters.length > 5){
-            return true;
+        if (db.characters.length > 5) {
+            return true
         }
     }
-    return false;
+    return false
 }
 
 /**
@@ -61,11 +59,11 @@ export async function persistantStorageRecommended() {
  * @returns true if persistent storage is granted, false otherwise.
  */
 export async function requestPersistantStorage() {
-    const status = await requestPersistantStorageMain();
-    if(status) {
+    const status = await requestPersistantStorageMain()
+    if (status) {
         alertNormal(language.persistentStorageSuccess)
     } else {
         alertNormal(language.persistentStorageFail)
     }
-    return status;
+    return status
 }

@@ -1,22 +1,21 @@
-import { getDatabase, setDatabase } from "../data/storage/database.svelte";
-import { downloadFile } from "../utils/fileIO";
-import { BufferToText, selectSingleFile } from '../utils/util';
-import { alertError } from "../utils/alert.svelte";
-import { RenderState, AppState } from "../stores.svelte";
+import { getDatabase, setDatabase } from "../data/storage/database.svelte"
+import { downloadFile } from "../utils/fileIO"
+import { BufferToText, selectSingleFile } from "../utils/util"
+import { alertError } from "../utils/alert.svelte"
+import { RenderState, AppState } from "../stores.svelte"
 
-export interface ColorScheme{
-    bgcolor: string;
-    darkbg: string;
-    borderc: string;
-    selected: string;
-    draculared: string;
-    textcolor: string;
-    textcolor2: string;
-    darkBorderc: string;
-    darkbutton: string;
-    type:'light'|'dark';
+export interface ColorScheme {
+    bgcolor: string
+    darkbg: string
+    borderc: string
+    selected: string
+    draculared: string
+    textcolor: string
+    textcolor2: string
+    darkBorderc: string
+    darkbutton: string
+    type: "light" | "dark"
 }
-
 
 export const defaultColorScheme: ColorScheme = {
     bgcolor: "#282a36",
@@ -28,12 +27,12 @@ export const defaultColorScheme: ColorScheme = {
     textcolor2: "#64748b",
     darkBorderc: "#4b5563",
     darkbutton: "#374151",
-    type:'dark'
+    type: "dark",
 }
 
 const colorShemes = {
-    "default": defaultColorScheme,
-    "light": {
+    default: defaultColorScheme,
+    light: {
         bgcolor: "#ffffff",
         darkbg: "#f0f0f0",
         borderc: "#0f172a",
@@ -43,9 +42,9 @@ const colorShemes = {
         textcolor2: "#64748b",
         darkBorderc: "#d1d5db",
         darkbutton: "#e5e7eb",
-        type:'light'
+        type: "light",
     },
-    "cherry": {
+    cherry: {
         bgcolor: "#450a0a",
         darkbg: "#7f1d1d",
         borderc: "#ea580c",
@@ -55,9 +54,9 @@ const colorShemes = {
         textcolor2: "#fca5a5",
         darkBorderc: "#92400e",
         darkbutton: "#b45309",
-        type:'dark'
+        type: "dark",
     },
-    "galaxy": {
+    galaxy: {
         bgcolor: "#0f172a",
         darkbg: "#1f2a48",
         borderc: "#8be9fd",
@@ -67,9 +66,9 @@ const colorShemes = {
         textcolor2: "#8be9fd",
         darkBorderc: "#457b9d",
         darkbutton: "#1f2a48",
-        type:'dark'
+        type: "dark",
     },
-    "nature": {
+    nature: {
         bgcolor: "#1b4332",
         darkbg: "#2d6a4f",
         borderc: "#a8dadc",
@@ -79,9 +78,9 @@ const colorShemes = {
         textcolor2: "#4d908e",
         darkBorderc: "#457b9d",
         darkbutton: "#2d6a4f",
-        type:'dark'
+        type: "dark",
     },
-    "realblack": {
+    realblack: {
         bgcolor: "#000000",
         darkbg: "#000000",
         borderc: "#6272a4",
@@ -91,9 +90,9 @@ const colorShemes = {
         textcolor2: "#64748b",
         darkBorderc: "#4b5563",
         darkbutton: "#374151",
-        type:'dark'
+        type: "dark",
     },
-    "lite": {
+    lite: {
         bgcolor: "#1f2937",
         darkbg: "#1C2533",
         borderc: "#475569",
@@ -103,21 +102,20 @@ const colorShemes = {
         textcolor2: "#64748b",
         darkBorderc: "#030712",
         darkbutton: "#374151",
-        type:'dark'
-    }
-
+        type: "dark",
+    },
 } as const
 
 export const ColorSchemeTypeState = $state({
-    type: 'dark' as 'dark' | 'light'
+    type: "dark" as "dark" | "light",
 })
 
 export const colorSchemeList = Object.keys(colorShemes) as (keyof typeof colorShemes)[]
 
-export function changeColorScheme(colorScheme: string){
+export function changeColorScheme(colorScheme: string) {
     try {
         const db = getDatabase()
-        if(colorScheme !== 'custom'){
+        if (colorScheme !== "custom") {
             db.colorScheme = safeStructuredClone(colorShemes[colorScheme])
         }
         db.colorSchemeName = colorScheme
@@ -126,149 +124,145 @@ export function changeColorScheme(colorScheme: string){
     } catch (error) {}
 }
 
-export function updateColorScheme(){
+export function updateColorScheme() {
     try {
         const db = getDatabase()
 
         let colorScheme = db.colorScheme
 
-        if(colorScheme == null){
+        if (colorScheme == null) {
             colorScheme = safeStructuredClone(defaultColorScheme)
         }
 
         //set css variables
-        document.documentElement.style.setProperty("--risu-theme-bgcolor", colorScheme.bgcolor);
-        document.documentElement.style.setProperty("--risu-theme-darkbg", colorScheme.darkbg);
-        document.documentElement.style.setProperty("--risu-theme-borderc", colorScheme.borderc);
-        document.documentElement.style.setProperty("--risu-theme-selected", colorScheme.selected);
-        document.documentElement.style.setProperty("--risu-theme-draculared", colorScheme.draculared);
-        document.documentElement.style.setProperty("--risu-theme-textcolor", colorScheme.textcolor);
-        document.documentElement.style.setProperty("--risu-theme-textcolor2", colorScheme.textcolor2);
-        document.documentElement.style.setProperty("--risu-theme-darkborderc", colorScheme.darkBorderc);
-        document.documentElement.style.setProperty("--risu-theme-darkbutton", colorScheme.darkbutton);
+        document.documentElement.style.setProperty("--risu-theme-bgcolor", colorScheme.bgcolor)
+        document.documentElement.style.setProperty("--risu-theme-darkbg", colorScheme.darkbg)
+        document.documentElement.style.setProperty("--risu-theme-borderc", colorScheme.borderc)
+        document.documentElement.style.setProperty("--risu-theme-selected", colorScheme.selected)
+        document.documentElement.style.setProperty("--risu-theme-draculared", colorScheme.draculared)
+        document.documentElement.style.setProperty("--risu-theme-textcolor", colorScheme.textcolor)
+        document.documentElement.style.setProperty("--risu-theme-textcolor2", colorScheme.textcolor2)
+        document.documentElement.style.setProperty("--risu-theme-darkborderc", colorScheme.darkBorderc)
+        document.documentElement.style.setProperty("--risu-theme-darkbutton", colorScheme.darkbutton)
         ColorSchemeTypeState.type = colorScheme.type
     } catch (error) {}
 }
 
-export function exportColorScheme(){
+export function exportColorScheme() {
     const db = getDatabase()
     const json = JSON.stringify(db.colorScheme)
-    downloadFile('colorScheme.json', json)
+    downloadFile("colorScheme.json", json)
 }
 
-export async function importColorScheme(){
-    const uarray = await selectSingleFile(['json'])
-    if(uarray == null){
+export async function importColorScheme() {
+    const uarray = await selectSingleFile(["json"])
+    if (uarray == null) {
         return
     }
     const string = BufferToText(uarray.data)
     let colorScheme: ColorScheme
-    try{
+    try {
         colorScheme = JSON.parse(string)
-        if(
-            typeof colorScheme.bgcolor !== 'string' ||
-            typeof colorScheme.darkbg !== 'string' ||
-            typeof colorScheme.borderc !== 'string' ||
-            typeof colorScheme.selected !== 'string' ||
-            typeof colorScheme.draculared !== 'string' ||
-            typeof colorScheme.textcolor !== 'string' ||
-            typeof colorScheme.textcolor2 !== 'string' ||
-            typeof colorScheme.darkBorderc !== 'string' ||
-            typeof colorScheme.darkbutton !== 'string' ||
-            typeof colorScheme.type !== 'string'
-        ){
-            alertError('Invalid color scheme')
+        if (
+            typeof colorScheme.bgcolor !== "string" ||
+            typeof colorScheme.darkbg !== "string" ||
+            typeof colorScheme.borderc !== "string" ||
+            typeof colorScheme.selected !== "string" ||
+            typeof colorScheme.draculared !== "string" ||
+            typeof colorScheme.textcolor !== "string" ||
+            typeof colorScheme.textcolor2 !== "string" ||
+            typeof colorScheme.darkBorderc !== "string" ||
+            typeof colorScheme.darkbutton !== "string" ||
+            typeof colorScheme.type !== "string"
+        ) {
+            alertError("Invalid color scheme")
             return
         }
-        changeColorScheme('custom')
+        changeColorScheme("custom")
         const db = getDatabase()
         db.colorScheme = colorScheme
         setDatabase(db)
         updateColorScheme()
-    }
-    catch(e){
-        alertError('Invalid color scheme')
+    } catch (e) {
+        alertError("Invalid color scheme")
         return
-
     }
 }
 
-export function updateTextThemeAndCSS(){
+export function updateTextThemeAndCSS() {
     const db = getDatabase()
-    const root = document.querySelector(':root') as HTMLElement;
-    if(!root){
+    const root = document.querySelector(":root") as HTMLElement
+    if (!root) {
         return
     }
     const textTheme = db.textTheme
     const colorScheme = db.colorScheme.type
-    switch(textTheme){
-        case "standard":{
-            if(colorScheme === 'dark'){
-                root.style.setProperty('--FontColorStandard', '#fafafa');
-                root.style.setProperty('--FontColorItalic', '#8C8D93');
-                root.style.setProperty('--FontColorBold', '#fafafa');
-                root.style.setProperty('--FontColorItalicBold', '#8C8D93');
-                root.style.setProperty('--FontColorQuote1', '#8BE9FD');
-                root.style.setProperty('--FontColorQuote2', '#FFB86C');
-            }else{
-                root.style.setProperty('--FontColorStandard', '#0f172a');
-                root.style.setProperty('--FontColorItalic', '#8C8D93');
-                root.style.setProperty('--FontColorBold', '#0f172a');
-                root.style.setProperty('--FontColorItalicBold', '#8C8D93');
-                root.style.setProperty('--FontColorQuote1', '#8BE9FD');
-                root.style.setProperty('--FontColorQuote2', '#FFB86C');
+    switch (textTheme) {
+        case "standard": {
+            if (colorScheme === "dark") {
+                root.style.setProperty("--FontColorStandard", "#fafafa")
+                root.style.setProperty("--FontColorItalic", "#8C8D93")
+                root.style.setProperty("--FontColorBold", "#fafafa")
+                root.style.setProperty("--FontColorItalicBold", "#8C8D93")
+                root.style.setProperty("--FontColorQuote1", "#8BE9FD")
+                root.style.setProperty("--FontColorQuote2", "#FFB86C")
+            } else {
+                root.style.setProperty("--FontColorStandard", "#0f172a")
+                root.style.setProperty("--FontColorItalic", "#8C8D93")
+                root.style.setProperty("--FontColorBold", "#0f172a")
+                root.style.setProperty("--FontColorItalicBold", "#8C8D93")
+                root.style.setProperty("--FontColorQuote1", "#8BE9FD")
+                root.style.setProperty("--FontColorQuote2", "#FFB86C")
             }
             break
         }
-        case "highcontrast":{
-            if(colorScheme === 'dark'){
-                root.style.setProperty('--FontColorStandard', '#f8f8f2');
-                root.style.setProperty('--FontColorItalic', '#F1FA8C');
-                root.style.setProperty('--FontColorBold', '#8BE9FD');
-                root.style.setProperty('--FontColorItalicBold', '#FFB86C');
-                root.style.setProperty('--FontColorQuote1', '#8BE9FD');
-                root.style.setProperty('--FontColorQuote2', '#FFB86C');
-            }
-            else{
-                root.style.setProperty('--FontColorStandard', '#0f172a');
-                root.style.setProperty('--FontColorItalic', '#F1FA8C');
-                root.style.setProperty('--FontColorBold', '#8BE9FD');
-                root.style.setProperty('--FontColorItalicBold', '#FFB86C');
-                root.style.setProperty('--FontColorQuote1', '#8BE9FD');
-                root.style.setProperty('--FontColorQuote2', '#FFB86C');
+        case "highcontrast": {
+            if (colorScheme === "dark") {
+                root.style.setProperty("--FontColorStandard", "#f8f8f2")
+                root.style.setProperty("--FontColorItalic", "#F1FA8C")
+                root.style.setProperty("--FontColorBold", "#8BE9FD")
+                root.style.setProperty("--FontColorItalicBold", "#FFB86C")
+                root.style.setProperty("--FontColorQuote1", "#8BE9FD")
+                root.style.setProperty("--FontColorQuote2", "#FFB86C")
+            } else {
+                root.style.setProperty("--FontColorStandard", "#0f172a")
+                root.style.setProperty("--FontColorItalic", "#F1FA8C")
+                root.style.setProperty("--FontColorBold", "#8BE9FD")
+                root.style.setProperty("--FontColorItalicBold", "#FFB86C")
+                root.style.setProperty("--FontColorQuote1", "#8BE9FD")
+                root.style.setProperty("--FontColorQuote2", "#FFB86C")
             }
             break
         }
-        case "custom":{
-            root.style.setProperty('--FontColorStandard', db.customTextTheme.FontColorStandard);
-            root.style.setProperty('--FontColorItalic', db.customTextTheme.FontColorItalic);
-            root.style.setProperty('--FontColorBold', db.customTextTheme.FontColorBold);
-            root.style.setProperty('--FontColorItalicBold', db.customTextTheme.FontColorItalicBold);
-            root.style.setProperty('--FontColorQuote1', db.customTextTheme.FontColorQuote1 ?? '#8BE9FD');
-            root.style.setProperty('--FontColorQuote2', db.customTextTheme.FontColorQuote2 ?? '#FFB86C');
+        case "custom": {
+            root.style.setProperty("--FontColorStandard", db.customTextTheme.FontColorStandard)
+            root.style.setProperty("--FontColorItalic", db.customTextTheme.FontColorItalic)
+            root.style.setProperty("--FontColorBold", db.customTextTheme.FontColorBold)
+            root.style.setProperty("--FontColorItalicBold", db.customTextTheme.FontColorItalicBold)
+            root.style.setProperty("--FontColorQuote1", db.customTextTheme.FontColorQuote1 ?? "#8BE9FD")
+            root.style.setProperty("--FontColorQuote2", db.customTextTheme.FontColorQuote2 ?? "#FFB86C")
             break
         }
     }
 
-    switch(db.font){
-        case "default":{
-            root.style.setProperty('--risu-font-family', 'Arial, sans-serif');
+    switch (db.font) {
+        case "default": {
+            root.style.setProperty("--risu-font-family", "Arial, sans-serif")
             break
         }
-        case "timesnewroman":{
-            root.style.setProperty('--risu-font-family', 'Times New Roman, serif');
+        case "timesnewroman": {
+            root.style.setProperty("--risu-font-family", "Times New Roman, serif")
             break
         }
-        case "custom":{
-            root.style.setProperty('--risu-font-family', db.customFont);
+        case "custom": {
+            root.style.setProperty("--risu-font-family", db.customFont)
             break
         }
     }
 
-    if(!AppState.safeMode){
-        RenderState.customCSS = db.customCSS ?? ''
-    }
-    else{
-        RenderState.customCSS = ''
+    if (!AppState.safeMode) {
+        RenderState.customCSS = db.customCSS ?? ""
+    } else {
+        RenderState.customCSS = ""
     }
 }

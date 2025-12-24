@@ -9,69 +9,65 @@ import { extractJSON, getGeneralJSONSchema } from "../templates/jsonSchema"
 import { applyParameters } from "./utils"
 import type { Parameter, RequestDataArgumentExtended, requestDataResponse, StreamResponseChunk } from "./types"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { alertError } from "src/ts/utils/alert.svelte";
+import { alertError } from "src/ts/utils/alert.svelte"
 
 type GeminiFunctionCall = {
-    id?: string;
-    name: string;
+    id?: string
+    name: string
     args: any
 }
 
 type GeminiFunctionResponse = {
-    id?: string;
-    name: string;
+    id?: string
+    name: string
     response: any
 }
 
-interface GeminiPart{
-    text?:string
-    thought?:boolean
-    thoughtSignature?:string
-    "inlineData"?: {
-        "mimeType": string,
-        "data": string
-    },
+interface GeminiPart {
+    text?: string
+    thought?: boolean
+    thoughtSignature?: string
+    inlineData?: {
+        mimeType: string
+        data: string
+    }
     functionCall?: GeminiFunctionCall
     functionResponse?: GeminiFunctionResponse
 }
 
 interface GeminiChat {
-    role: "user"|"model"|"function"
-    parts:|GeminiPart[]
+    role: "user" | "model" | "function"
+    parts: GeminiPart[]
 }
 
-export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):Promise<requestDataResponse> {
-
+export async function requestGoogleCloudVertex(arg: RequestDataArgumentExtended): Promise<requestDataResponse> {
     const formated = arg.formated
     const db = getDatabase()
     const maxTokens = arg.maxTokens
 
-    const reformatedChat:GeminiChat[] = []
-    let systemPrompt = ''
+    const reformatedChat: GeminiChat[] = []
+    let systemPrompt = ""
 
     // Extract system prompt unless legacy merge mode is enabled
-    if(!db.geminiMergeSystemToUser && formated[0].role === 'system'){
+    if (!db.geminiMergeSystemToUser && formated[0].role === "system") {
         systemPrompt = formated[0].content
         formated.shift()
     }
 
-    for(let i=0;i<formated.length;i++){
+    for (let i = 0; i < formated.length; i++) {
         const chat = formated[i]
 
-        const prevChat = reformatedChat[reformatedChat.length-1]
-        const qRole =
-            chat.role === 'user' ? 'user' :
-            chat.role === 'assistant' ? 'model' :
-            chat.role
+        const prevChat = reformatedChat[reformatedChat.length - 1]
+        const qRole = chat.role === "user" ? "user" : chat.role === "assistant" ? "model" : chat.role
 
         if (chat.multimodals && chat.multimodals.length > 0) {
-            const geminiParts: GeminiPart[] = [];
+            const geminiParts: GeminiPart[] = []
 
             // Only add text part if content is not empty
-            if(chat.content && chat.content.trim()){
+            if (chat.content && chat.content.trim()) {
                 geminiParts.push({
                     text: chat.content,
-                });
+                })
             }
 
             for (const modal of chat.multimodals) {
@@ -80,88 +76,88 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
                     (modal.type === "audio" && arg.modelInfo.flags.includes(LLMFlags.hasAudioInput)) ||
                     (modal.type === "video" && arg.modelInfo.flags.includes(LLMFlags.hasVideoInput))
                 ) {
-                    const dataurl = modal.base64;
-                    const base64 = dataurl.split(",")[1];
-                    const mediaType = dataurl.split(";")[0].split(":")[1];
+                    const dataurl = modal.base64
+                    const base64 = dataurl.split(",")[1]
+                    const mediaType = dataurl.split(";")[0].split(":")[1]
 
                     geminiParts.push({
                         inlineData: {
                             mimeType: mediaType,
                             data: base64,
-                        }
-                    });
+                        },
+                    })
                 }
             }
 
             // Add thoughtSignature for assistant messages with multimodals
-            if(chat.role === 'assistant'){
-                const geminiThinking = (chat.encryptedThinking || []).find(et => et.provider === 'gemini')
-                if(geminiThinking?.data?.thoughtSignatures){
+            if (chat.role === "assistant") {
+                const geminiThinking = (chat.encryptedThinking || []).find((et) => et.provider === "gemini")
+                if (geminiThinking?.data?.thoughtSignatures) {
                     // Add thoughtSignature to the first part (could be text or image)
                     const firstPart = geminiParts[0]
-                    if(firstPart){
+                    if (firstPart) {
                         firstPart.thoughtSignature = geminiThinking.data.thoughtSignatures[0]
                     }
                 }
             }
 
             reformatedChat.push({
-                role: chat.role === 'user' ? 'user' : 'model',
+                role: chat.role === "user" ? "user" : "model",
                 parts: geminiParts,
-            });
-        }
-        else if(chat.role === 'system'){
-            if(prevChat?.role === 'user'){
-                reformatedChat[reformatedChat.length-1].parts[0].text += '\nsystem:' + chat.content
-            }
-            else{
+            })
+        } else if (chat.role === "system") {
+            if (prevChat?.role === "user") {
+                reformatedChat[reformatedChat.length - 1].parts[0].text += "\nsystem:" + chat.content
+            } else {
                 reformatedChat.push({
                     role: "user",
-                    parts: [{
-                        text: chat.role + ':' + chat.content
-                    }]
+                    parts: [
+                        {
+                            text: chat.role + ":" + chat.content,
+                        },
+                    ],
                 })
             }
-        }
-        else if(chat.role === 'assistant' || chat.role === 'user'){
-            const parts: GeminiPart[] = [{
-                text: chat.content
-            }]
+        } else if (chat.role === "assistant" || chat.role === "user") {
+            const parts: GeminiPart[] = [
+                {
+                    text: chat.content,
+                },
+            ]
 
             // Add thoughtSignature for assistant messages if available
-            if(chat.role === 'assistant'){
-                const geminiThinking = (chat.encryptedThinking || []).find(et => et.provider === 'gemini')
-                if(geminiThinking?.data?.thoughtSignatures){
+            if (chat.role === "assistant") {
+                const geminiThinking = (chat.encryptedThinking || []).find((et) => et.provider === "gemini")
+                if (geminiThinking?.data?.thoughtSignatures) {
                     // Add thoughtSignature to the first part (required by Gemini)
                     const firstPart = parts[0]
-                    if(firstPart){
+                    if (firstPart) {
                         firstPart.thoughtSignature = geminiThinking.data.thoughtSignatures[0]
                     }
                 }
             }
 
             reformatedChat.push({
-                role: chat.role === 'user' ? 'user' : 'model',
-                parts: parts
+                role: chat.role === "user" ? "user" : "model",
+                parts: parts,
             })
-        }
-        else{
+        } else {
             reformatedChat.push({
                 role: "user",
-                parts: [{
-                    text: chat.role + ':' + chat.content
-                }]
+                parts: [
+                    {
+                        text: chat.role + ":" + chat.content,
+                    },
+                ],
             })
         }
     }
 
-    for (let i=0;i<reformatedChat.length;i++){
-
+    for (let i = 0; i < reformatedChat.length; i++) {
         const chat = reformatedChat[i]
-        for (let j=0;j<chat.parts.length;j++){
-            
+        for (let j = 0; j < chat.parts.length; j++) {
             const part = chat.parts[j]
-            if (part.text && part.text.includes('<tool_call>')){
+            if (part.text && part.text.includes("<tool_call>")) {
                 // Analyze the entire text to sequentially process multiple tool_calls
                 const toolCallMatches = [...part.text.matchAll(/<tool_call>(.*?)<\/tool_call>/g)]
                 if (toolCallMatches.length > 0) {
@@ -174,9 +170,9 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
                         // Text before tool_call
                         if (match.index! > lastIndex) {
                             segments.push({
-                                type: 'text',
+                                type: "text",
                                 content: part.text.substring(lastIndex, match.index).trim(),
-                                role: chat.role
+                                role: chat.role,
                             })
                         }
 
@@ -186,9 +182,9 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
                             const tool = arg?.tools?.find((t) => t.name === call.call.name)
                             if (tool) {
                                 segments.push({
-                                    type: 'functionCall',
+                                    type: "functionCall",
                                     call: call,
-                                    tool: tool
+                                    tool: tool,
                                 })
                             }
                         }
@@ -198,17 +194,17 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
                     // Last text after the last tool_call
                     if (lastIndex < part.text.length) {
                         segments.push({
-                            type: 'text',
+                            type: "text",
                             content: part.text.substring(lastIndex).trim(),
-                            role: chat.role
+                            role: chat.role,
                         })
                     }
                     // Keep the first text in the current part
-                    if (segments.length > 0 && segments[0].type === 'text') {
-                        part.text = segments[0].content.trim() ? segments[0].content : ''
+                    if (segments.length > 0 && segments[0].type === "text") {
+                        part.text = segments[0].content.trim() ? segments[0].content : ""
                         segments.shift()
                     } else {
-                        part.text = ''
+                        part.text = ""
                     }
 
                     // Mark the current part for removal if its text is empty
@@ -217,45 +213,53 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
                     // Insert the remaining segments in order
                     let insertIndex = i + 1
                     for (const segment of segments) {
-                        if (segment.type === 'text') {
+                        if (segment.type === "text") {
                             // Insert only non-empty text
                             if (segment.content.trim()) {
                                 reformatedChat.splice(insertIndex, 0, {
                                     role: segment.role,
-                                    parts: [{
-                                        text: segment.content
-                                    }]
+                                    parts: [
+                                        {
+                                            text: segment.content,
+                                        },
+                                    ],
                                 })
                                 insertIndex++
                             }
-                        } else if (segment.type === 'functionCall') {
+                        } else if (segment.type === "functionCall") {
                             // Insert functionCall
                             reformatedChat.splice(insertIndex, 0, {
-                                role: 'model',
-                                parts: [{
-                                    functionCall: {
-                                        name: segment.call.call.name,
-                                        args: segment.call.call.arg
-                                    }
-                                }]
+                                role: "model",
+                                parts: [
+                                    {
+                                        functionCall: {
+                                            name: segment.call.call.name,
+                                            args: segment.call.call.arg,
+                                        },
+                                    },
+                                ],
                             })
                             insertIndex++
 
                             // Insert functionResponse
                             reformatedChat.splice(insertIndex, 0, {
-                                role: 'function',
-                                parts: [{
-                                    functionResponse: {
-                                        name: segment.call.call.name,
-                                        response: {
-                                            data: segment.call.response.filter((r) => {
-                                                return r.type === 'text'
-                                            }).map((r) => {
-                                                return r.text
-                                            })
-                                        }
-                                    }
-                                }]
+                                role: "function",
+                                parts: [
+                                    {
+                                        functionResponse: {
+                                            name: segment.call.call.name,
+                                            response: {
+                                                data: segment.call.response
+                                                    .filter((r) => {
+                                                        return r.type === "text"
+                                                    })
+                                                    .map((r) => {
+                                                        return r.text
+                                                    }),
+                                            },
+                                        },
+                                    },
+                                ],
                             })
                             insertIndex++
                         }
@@ -285,7 +289,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             const currentFirstPart = currentChat.parts[0]
 
             if (prevLastPart.text && currentFirstPart.text) {
-                prevLastPart.text += '\n\n' + currentFirstPart.text
+                prevLastPart.text += "\n\n" + currentFirstPart.text
                 // Add the rest of the current chat's parts except the first
                 prevChat.parts.push(...currentChat.parts.slice(1))
             } else {
@@ -300,55 +304,55 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
 
     const uncensoredCatagory = [
         {
-            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            "threshold": "BLOCK_NONE"
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_NONE",
         },
         {
-            "category": "HARM_CATEGORY_HATE_SPEECH",
-            "threshold": "BLOCK_NONE"
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_NONE",
         },
         {
-            "category": "HARM_CATEGORY_HARASSMENT",
-            "threshold": "BLOCK_NONE"
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_NONE",
         },
         {
-            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-            "threshold": "BLOCK_NONE"
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_NONE",
         },
         {
-            "category": "HARM_CATEGORY_CIVIC_INTEGRITY",
-            "threshold": "BLOCK_NONE"
-        }
+            category: "HARM_CATEGORY_CIVIC_INTEGRITY",
+            threshold: "BLOCK_NONE",
+        },
     ]
 
-    if(arg.modelInfo.flags.includes(LLMFlags.noCivilIntegrity)){
+    if (arg.modelInfo.flags.includes(LLMFlags.noCivilIntegrity)) {
         uncensoredCatagory.splice(4, 1)
     }
 
-    if(arg.modelInfo.flags.includes(LLMFlags.geminiBlockOff)){
-        for(let i=0;i<uncensoredCatagory.length;i++){
+    if (arg.modelInfo.flags.includes(LLMFlags.geminiBlockOff)) {
+        for (let i = 0; i < uncensoredCatagory.length; i++) {
             uncensoredCatagory[i].threshold = "OFF"
         }
     }
 
-    let para:Parameter[] = ['temperature', 'top_p', 'top_k', 'presence_penalty', 'frequency_penalty']
+    let para: Parameter[] = ["temperature", "top_p", "top_k", "presence_penalty", "frequency_penalty"]
 
     // Determine whether to use thinking_level or thinking_tokens
     // thinking_level takes priority if set (not -1000/unspecified)
     let useThinkingLevel = false
-    if(arg.modelInfo.flags.includes(LLMFlags.geminiThinking)){
-        if(arg.modelInfo.parameters.includes('thinking_level')){
+    if (arg.modelInfo.flags.includes(LLMFlags.geminiThinking)) {
+        if (arg.modelInfo.parameters.includes("thinking_level")) {
             // Check if thinking_level is set (not unspecified)
             const thinkingLevelValue = db.thinkingLevel ?? -1000
-            if(thinkingLevelValue !== -1000){
-                para.push('thinking_level')
+            if (thinkingLevelValue !== -1000) {
+                para.push("thinking_level")
                 useThinkingLevel = true
-            } else if(arg.modelInfo.parameters.includes('thinking_tokens')){
+            } else if (arg.modelInfo.parameters.includes("thinking_tokens")) {
                 // Fall back to thinking_tokens if thinking_level is unspecified
-                para.push('thinking_tokens')
+                para.push("thinking_tokens")
             }
-        } else if(arg.modelInfo.parameters.includes('thinking_tokens')){
-            para.push('thinking_tokens')
+        } else if (arg.modelInfo.parameters.includes("thinking_tokens")) {
+            para.push("thinking_tokens")
         }
     }
 
@@ -358,49 +362,56 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
 
     const body = {
         contents: reformatedChat,
-        generation_config: applyParameters({
-            "maxOutputTokens": maxTokens
-        }, para, {
-            'top_p': "topP",
-            'top_k': "topK",
-            'presence_penalty': "presencePenalty",
-            'frequency_penalty': "frequencyPenalty",
-            'thinking_tokens': "thinkingBudget",
-            'thinking_level': "thinkingLevel"
-        }, arg.mode, {
-            ignoreTopKIfZero: true
-        }),
+        generation_config: applyParameters(
+            {
+                maxOutputTokens: maxTokens,
+            },
+            para,
+            {
+                top_p: "topP",
+                top_k: "topK",
+                presence_penalty: "presencePenalty",
+                frequency_penalty: "frequencyPenalty",
+                thinking_tokens: "thinkingBudget",
+                thinking_level: "thinkingLevel",
+            },
+            arg.mode,
+            {
+                ignoreTopKIfZero: true,
+            }
+        ),
         safetySettings: uncensoredCatagory,
         systemInstruction: {
             parts: [
                 {
-                    "text": systemPrompt
-                }
-            ]
+                    text: systemPrompt,
+                },
+            ],
         },
         tools: {
-            functionDeclarations: arg?.tools?.map((tool, i) => {
-                console.log(tool.name, i)
-                return {
-                    name: tool.name,
-                    description: tool.description,
-                    parameters: simplifySchema(tool.inputSchema)
-                }
-            }) ?? []
-        }
+            functionDeclarations:
+                arg?.tools?.map((tool, i) => {
+                    console.log(tool.name, i)
+                    return {
+                        name: tool.name,
+                        description: tool.description,
+                        parameters: simplifySchema(tool.inputSchema),
+                    }
+                }) ?? [],
+        },
     }
 
-    if(arg.modelInfo.flags.includes(LLMFlags.geminiThinking)){
-        if(useThinkingLevel){
+    if (arg.modelInfo.flags.includes(LLMFlags.geminiThinking)) {
+        if (useThinkingLevel) {
             body.generation_config.thinkingConfig = {
-                "thinkingLevel": body.generation_config.thinkingLevel,
-                "includeThoughts": true,
+                thinkingLevel: body.generation_config.thinkingLevel,
+                includeThoughts: true,
             }
             delete body.generation_config.thinkingLevel
-        } else if(body.generation_config.thinkingBudget !== undefined && body.generation_config.thinkingBudget > 0){
+        } else if (body.generation_config.thinkingBudget !== undefined && body.generation_config.thinkingBudget > 0) {
             body.generation_config.thinkingConfig = {
-                "thinkingBudget": body.generation_config.thinkingBudget,
-                "includeThoughts": true,
+                thinkingBudget: body.generation_config.thinkingBudget,
+                includeThoughts: true,
             }
             delete body.generation_config.thinkingBudget
         } else {
@@ -409,73 +420,71 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
         }
     }
 
-    if(systemPrompt === ''){
+    if (systemPrompt === "") {
         delete body.systemInstruction
     }
 
-    if(arg.modelInfo.flags.includes(LLMFlags.hasAudioOutput)){
-        body.generation_config.responseModalities = [
-            'TEXT', 'AUDIO'
-        ]
+    if (arg.modelInfo.flags.includes(LLMFlags.hasAudioOutput)) {
+        body.generation_config.responseModalities = ["TEXT", "AUDIO"]
         arg.useStreaming = false
     }
-    if(arg.imageResponse || arg.modelInfo.flags.includes(LLMFlags.hasImageOutput)){ 
-        body.generation_config.responseModalities = [
-            'TEXT', 'IMAGE'
-        ]
+    if (arg.imageResponse || arg.modelInfo.flags.includes(LLMFlags.hasImageOutput)) {
+        body.generation_config.responseModalities = ["TEXT", "IMAGE"]
         arg.useStreaming = false
-    }    const headers:{[key:string]:string} = {}
+    }
+    const headers: { [key: string]: string } = {}
 
-    if(db.geminiVisionQuality && db.geminiVisionQuality !== 'unspecified'){
+    if (db.geminiVisionQuality && db.geminiVisionQuality !== "unspecified") {
         const resolutionMap: Record<string, string> = {
-            'low': 'MEDIA_RESOLUTION_LOW',
-            'medium': 'MEDIA_RESOLUTION_MEDIUM',
-            'high': 'MEDIA_RESOLUTION_HIGH'
+            low: "MEDIA_RESOLUTION_LOW",
+            medium: "MEDIA_RESOLUTION_MEDIUM",
+            high: "MEDIA_RESOLUTION_HIGH",
         }
-        body.generation_config.mediaResolution = resolutionMap[db.geminiVisionQuality] ?? 'MEDIA_RESOLUTION_UNSPECIFIED'
+        body.generation_config.mediaResolution = resolutionMap[db.geminiVisionQuality] ?? "MEDIA_RESOLUTION_UNSPECIFIED"
     }
 
     const PROJECT_ID = db.google.projectId
     const REGION = db.vertexRegion
-    console.log(arg.modelInfo);
+    console.log(arg.modelInfo)
 
-    async function generateToken(email:string,key:string){
+    async function generateToken(email: string, key: string) {
         if (!window.crypto || !window.crypto.subtle) {
-            throw new Error("Web Crypto API is not available in this environment. Please ensure you are using HTTPS.");
+            throw new Error("Web Crypto API is not available in this environment. Please ensure you are using HTTPS.")
         }
         // Input validation
         if (!email.includes("gserviceaccount.com")) {
-            throw new Error("Invalid Vertex project id. Must include gserviceaccount.com");
+            throw new Error("Invalid Vertex project id. Must include gserviceaccount.com")
         }
-        if (!key.includes("-----BEGIN PRIVATE KEY-----") ||
-            !key.includes("-----END PRIVATE KEY-----")) {
-            throw new Error("Invalid Vertex private key. Must include proper key markers.");
+        if (!key.includes("-----BEGIN PRIVATE KEY-----") || !key.includes("-----END PRIVATE KEY-----")) {
+            throw new Error("Invalid Vertex private key. Must include proper key markers.")
         }
 
-        function str2ab(privateKey:string):ArrayBuffer {
-            const binaryString = atob(privateKey.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\\n/g, ""));
-            const bytes = new Uint8Array(binaryString.length);
+        function str2ab(privateKey: string): ArrayBuffer {
+            const binaryString = atob(
+                privateKey.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\\n/g, "")
+            )
+            const bytes = new Uint8Array(binaryString.length)
             for (let i = 0; i < binaryString.length; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
+                bytes[i] = binaryString.charCodeAt(i)
             }
-            return bytes.buffer;
+            return bytes.buffer
         }
 
         function base64url(source: Uint8Array | ArrayBuffer): string {
-            const bytes = source instanceof ArrayBuffer ? new Uint8Array(source) : source;
+            const bytes = source instanceof ArrayBuffer ? new Uint8Array(source) : source
             const encodedSource = btoa(String.fromCharCode.apply(null, [...bytes]))
                 .replace(/=+$/, "")
                 .replace(/\+/g, "-")
-                .replace(/\//g, "_");
-            return encodedSource;
+                .replace(/\//g, "_")
+            return encodedSource
         }
 
-        const time = Math.floor(Date.now() / 1000);
-    
+        const time = Math.floor(Date.now() / 1000)
+
         const header = {
             alg: "RS256",
             typ: "JWT",
-        };
+        }
 
         const claimSet = {
             iss: email,
@@ -483,11 +492,11 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             exp: time + 3600,
             scope: "https://www.googleapis.com/auth/cloud-platform",
             aud: "https://oauth2.googleapis.com/token",
-        };
+        }
 
-        const encodedHeader = base64url(new TextEncoder().encode(JSON.stringify(header)));
-        const encodedClaimSet = base64url(new TextEncoder().encode(JSON.stringify(claimSet)));
-    
+        const encodedHeader = base64url(new TextEncoder().encode(JSON.stringify(header)))
+        const encodedClaimSet = base64url(new TextEncoder().encode(JSON.stringify(claimSet)))
+
         const cryptokey = await crypto.subtle.importKey(
             "pkcs8",
             str2ab(key),
@@ -497,15 +506,15 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             },
             false,
             ["sign"]
-        );
-    
+        )
+
         const signature = await crypto.subtle.sign(
             "RSASSA-PKCS1-v1_5",
             cryptokey,
             new TextEncoder().encode(`${encodedHeader}.${encodedClaimSet}`)
-        );
+        )
 
-        const jwt = `${encodedHeader}.${encodedClaimSet}.${base64url(new Uint8Array(signature))}`;
+        const jwt = `${encodedHeader}.${encodedClaimSet}.${base64url(new Uint8Array(signature))}`
 
         const response = await fetch("https://oauth2.googleapis.com/token", {
             method: "POST",
@@ -513,125 +522,124 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
-        });
+        })
 
         if (!response.ok) {
-            let errorText;
+            let errorText
             try {
-                errorText = JSON.stringify(await response.json());
+                errorText = JSON.stringify(await response.json())
             } catch {
-                errorText = response.status.toString();
+                errorText = response.status.toString()
             }
-            throw new Error(`Failed to refresh google access token: ${errorText}`);
+            throw new Error(`Failed to refresh google access token: ${errorText}`)
         }
 
-        const data = await response.json();
-        const token = data.access_token;
+        const data = await response.json()
+        const token = data.access_token
 
         if (!token) {
-            throw new Error("No google access token in the response");
+            throw new Error("No google access token in the response")
         }
 
         const db2 = getDatabase()
         db2.vertexAccessToken = token
         db2.vertexAccessTokenExpires = Date.now() + 3500 * 1000
         setDatabase(db2)
-        return token;
-    }    
-    
-    if(arg.modelInfo.format === LLMFormat.VertexAIGemini){
-        if(db.vertexAccessTokenExpires < Date.now()){
+        return token
+    }
+
+    if (arg.modelInfo.format === LLMFormat.VertexAIGemini) {
+        if (db.vertexAccessTokenExpires < Date.now()) {
             if (!db.vertexClientEmail || !db.vertexPrivateKey) {
-                alertError(language.vertexAuthError || "Vertex AI authentication details are missing.");
-                return { type: 'fail', result: 'Vertex AI authentication details are missing.' };
+                alertError(language.vertexAuthError || "Vertex AI authentication details are missing.")
+                return { type: "fail", result: "Vertex AI authentication details are missing." }
             }
-            headers['Authorization'] = "Bearer " + await generateToken(db.vertexClientEmail, db.vertexPrivateKey)
-        }
-        else{
-            headers['Authorization'] = "Bearer " + db.vertexAccessToken
+            headers["Authorization"] = "Bearer " + (await generateToken(db.vertexClientEmail, db.vertexPrivateKey))
+        } else {
+            headers["Authorization"] = "Bearer " + db.vertexAccessToken
         }
     }
 
-    
-    if(db.jsonSchemaEnabled || arg.schema){
+    if (db.jsonSchemaEnabled || arg.schema) {
         body.generation_config.response_mime_type = "application/json"
-        body.generation_config.response_schema = getGeneralJSONSchema(arg.schema, ['$schema','additionalProperties'])
+        body.generation_config.response_schema = getGeneralJSONSchema(arg.schema, ["$schema", "additionalProperties"])
         console.log(body.generation_config.response_schema)
-    }    
-    
-    let url = ''
+    }
+
+    let url = ""
     const apiKey = arg.key || db.google.accessToken
-    
-    if(arg.customURL){
+
+    if (arg.customURL) {
         let baseURL = arg.customURL
-        if (!baseURL.endsWith('/')) {
-            baseURL += '/'
+        if (!baseURL.endsWith("/")) {
+            baseURL += "/"
         }
-        const endpoint = arg.useStreaming ? 'streamGenerateContent' : 'generateContent'
+        const endpoint = arg.useStreaming ? "streamGenerateContent" : "generateContent"
         const u = new URL(`models/${arg.modelInfo.internalID}:${endpoint}`, baseURL)
-        u.searchParams.set('key', apiKey)
+        u.searchParams.set("key", apiKey)
         if (arg.useStreaming) {
-            u.searchParams.set('alt', 'sse')
+            u.searchParams.set("alt", "sse")
         }
         url = u.toString()
-    }
-    else if(arg.modelInfo.format === LLMFormat.VertexAIGemini){
-        const endpoint = arg.useStreaming ? 'streamGenerateContent?alt=sse' : 'generateContent'
-        url = REGION === 'global' ?
-            `https://aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${REGION}/publishers/google/models/${arg.modelInfo.internalID}:${endpoint}` :
-            `https://${REGION}-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${REGION}/publishers/google/models/${arg.modelInfo.internalID}:${endpoint}`
-        
-        }
-    else if(arg.modelInfo.format === LLMFormat.GeminiAPI && arg.useStreaming){
+    } else if (arg.modelInfo.format === LLMFormat.VertexAIGemini) {
+        const endpoint = arg.useStreaming ? "streamGenerateContent?alt=sse" : "generateContent"
+        url =
+            REGION === "global"
+                ? `https://aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${REGION}/publishers/google/models/${arg.modelInfo.internalID}:${endpoint}`
+                : `https://${REGION}-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${REGION}/publishers/google/models/${arg.modelInfo.internalID}:${endpoint}`
+    } else if (arg.modelInfo.format === LLMFormat.GeminiAPI && arg.useStreaming) {
         url = `https://generativelanguage.googleapis.com/v1beta/models/${arg.modelInfo.internalID}:streamGenerateContent?key=${apiKey}&alt=sse`
-    }
-    else{
+    } else {
         url = `https://generativelanguage.googleapis.com/v1beta/models/${arg.modelInfo.internalID}:generateContent?key=${apiKey}`
     }
     // will return error if functionDeclarations is empty
-    if(body.tools?.functionDeclarations?.length === 0){
+    if (body.tools?.functionDeclarations?.length === 0) {
         body.tools = undefined
     }
 
-    if(arg.previewBody){
+    if (arg.previewBody) {
         return {
-            type: 'success',
+            type: "success",
             result: JSON.stringify({
                 url: url,
                 body: body,
-                headers: headers
-            })      
+                headers: headers,
+            }),
         }
     }
 
     return requestGoogle(url, body, headers, arg)
 }
 
-async function requestGoogle(url:string, body:any, headers:{[key:string]:string}, arg:RequestDataArgumentExtended):Promise<requestDataResponse> {
-    
+async function requestGoogle(
+    url: string,
+    body: any,
+    headers: { [key: string]: string },
+    arg: RequestDataArgumentExtended
+): Promise<requestDataResponse> {
     const db = getDatabase()
 
-    const fallBackGemini = async (originalError:string):Promise<requestDataResponse> => {
-        if(!db.antiServerOverloads){
+    const fallBackGemini = async (originalError: string): Promise<requestDataResponse> => {
+        if (!db.antiServerOverloads) {
             return {
-                type: 'fail',
+                type: "fail",
                 result: originalError,
-                failByServerError: true
+                failByServerError: true,
             }
         }
 
-        if(arg?.abortSignal?.aborted){
+        if (arg?.abortSignal?.aborted) {
             return {
-                type: 'fail',
+                type: "fail",
                 result: originalError,
-                failByServerError: true
+                failByServerError: true,
             }
         }
-        if(arg.modelInfo.format === LLMFormat.VertexAIGemini){
+        if (arg.modelInfo.format === LLMFormat.VertexAIGemini) {
             return {
-                type: 'fail',
+                type: "fail",
                 result: originalError,
-                failByServerError: true
+                failByServerError: true,
             }
         }
 
@@ -639,57 +647,66 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
     }
 
     // process the text parts into a single text response
-    const processTextResponse = (rDatas: {text: string, thought?: boolean}[]) => {
-        if(arg.extractJson && (db.jsonSchemaEnabled || arg.schema)){
-            for(let i=0;i<rDatas.length;i++){
+    const processTextResponse = (rDatas: { text: string; thought?: boolean }[]) => {
+        if (arg.extractJson && (db.jsonSchemaEnabled || arg.schema)) {
+            for (let i = 0; i < rDatas.length; i++) {
                 const extracted = extractJSON(rDatas[i].text, arg.extractJson)
                 rDatas[i].text = extracted
             }
         }
-        const thoughts = rDatas.filter(d => d.thought).map(d => d.text).join('\n\n')
-        const content = rDatas.filter(d => !d.thought).map(d => d.text).join('\n\n')
-        return (thoughts ? `<Thoughts>\n\n${thoughts}\n\n</Thoughts>\n\n` : '') + content
+        const thoughts = rDatas
+            .filter((d) => d.thought)
+            .map((d) => d.text)
+            .join("\n\n")
+        const content = rDatas
+            .filter((d) => !d.thought)
+            .map((d) => d.text)
+            .join("\n\n")
+        return (thoughts ? `<Thoughts>\n\n${thoughts}\n\n</Thoughts>\n\n` : "") + content
     }
 
-    if((arg.modelInfo.format === LLMFormat.GeminiAPI || arg.modelInfo.format === LLMFormat.VertexAIGemini) && arg.useStreaming){
-        headers['Content-Type'] = 'application/json'
+    if (
+        (arg.modelInfo.format === LLMFormat.GeminiAPI || arg.modelInfo.format === LLMFormat.VertexAIGemini) &&
+        arg.useStreaming
+    ) {
+        headers["Content-Type"] = "application/json"
 
-        if(arg.previewBody){
+        if (arg.previewBody) {
             return {
-                type: 'success',
+                type: "success",
                 result: JSON.stringify({
                     url: url,
                     body: body,
-                    headers: headers
-                })      
+                    headers: headers,
+                }),
             }
         }
         const f = await fetchNative(url, {
             headers: headers,
             body: JSON.stringify(body),
-            method: 'POST',
+            method: "POST",
             chatId: arg.chatId,
             signal: arg.abortSignal,
         })
 
-        if(f.status !== 200){
+        if (f.status !== 200) {
             const text = await textifyReadableStream(f.body)
-            if(text.includes('RESOURCE_EXHAUSTED')){
+            if (text.includes("RESOURCE_EXHAUSTED")) {
                 return fallBackGemini(text)
             }
             return {
-                type: 'fail',
-                result: text
+                type: "fail",
+                result: text,
             }
         }
 
-        const transtream = getTranStream() 
+        const transtream = getTranStream()
 
         f.body.pipeTo(transtream.writable)
 
         return {
-            type: 'streaming',
-            result: wrapToolStream(transtream.readable, body, headers, url, arg)
+            type: "streaming",
+            result: wrapToolStream(transtream.readable, body, headers, url, arg),
         }
     }
 
@@ -699,87 +716,82 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
         chatId: arg.chatId,
         abortSignal: arg.abortSignal,
     })
-    
 
-    if(!res.ok){
+    if (!res.ok) {
         const text = JSON.stringify(res.data)
-        if(text.includes('RESOURCE_EXHAUSTED')){
+        if (text.includes("RESOURCE_EXHAUSTED")) {
             return fallBackGemini(text)
         }
         return {
-            type: 'fail',
-            result: `${JSON.stringify(res.data)}`
+            type: "fail",
+            result: `${JSON.stringify(res.data)}`,
         }
     }
 
-    const rDatas:{text: string, thought?: boolean}[] = []
+    const rDatas: { text: string; thought?: boolean }[] = []
     const collectedSignatures: string[] = []
     let thoughtsTokenCount: number = 0
-    const processDataItem = async (data:any):Promise<GeminiPart[]> => {
+    const processDataItem = async (data: any): Promise<GeminiPart[]> => {
         // Extract thoughtsTokenCount from usageMetadata
-        if(data?.usageMetadata?.thoughtsTokenCount){
+        if (data?.usageMetadata?.thoughtsTokenCount) {
             thoughtsTokenCount = data.usageMetadata.thoughtsTokenCount
         }
         const parts = data?.candidates?.[0]?.content?.parts as GeminiPart[]
 
-        if(parts){
-
-            for(let i=0;i<parts.length;i++){
+        if (parts) {
+            for (let i = 0; i < parts.length; i++) {
                 const part = parts[i]
 
-                if(part.thoughtSignature){
-                    console.log('Found thoughtSignature:', part.thoughtSignature.substring(0, 50) + '...')
+                if (part.thoughtSignature) {
+                    console.log("Found thoughtSignature:", part.thoughtSignature.substring(0, 50) + "...")
                     collectedSignatures.push(part.thoughtSignature)
                 }
 
-                if(part.text){
+                if (part.text) {
                     rDatas.push({
                         text: part.text,
-                        thought: part.thought
+                        thought: part.thought,
                     })
                 }
 
-                if(part.inlineData){
+                if (part.inlineData) {
                     const imgHTML = new Image()
                     const id = crypto.randomUUID()
 
-                    if(part.inlineData.mimeType.startsWith('image/')){
-
+                    if (part.inlineData.mimeType.startsWith("image/")) {
                         imgHTML.src = `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
                         await writeInlayImage(imgHTML, {
-                            id: id
+                            id: id,
                         })
                         rDatas.push({
                             text: `{{inlayeddata::${id}}}`,
-                            thought: part.thought
+                            thought: part.thought,
                         })
-                    }
-                    else{
+                    } else {
                         const id = v4()
                         await setInlayAsset(id, {
-                            name: 'gemini-audio',
-                            type: 'audio',
+                            name: "gemini-audio",
+                            type: "audio",
                             data: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,
                             height: 0,
                             width: 0,
-                            ext: part.inlineData.mimeType.split('/')[1],
+                            ext: part.inlineData.mimeType.split("/")[1],
                         })
                     }
                 }
-            }   
+            }
         }
         return parts
     }
 
     // traverse responded data if it contains multipart contents
-    let parts:GeminiPart[] = []
-    if(Array.isArray(res.data)){
-        for(const data of res.data){
+    let parts: GeminiPart[] = []
+    if (Array.isArray(res.data)) {
+        for (const data of res.data) {
             const p = await processDataItem(data)
             parts = parts.concat(p)
         }
-    }
-    else{
+    } else {
         const p = await processDataItem(res.data)
         parts = parts.concat(p)
     }
@@ -788,268 +800,272 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
     const calls = parts.filter((p) => !!p?.functionCall).map((p) => p?.functionCall as GeminiFunctionCall)
 
     // If there are function calls, handle calls and send next request
-    if(calls.length > 0){
+    if (calls.length > 0) {
         const chat = body.contents as GeminiChat[]
 
         // Add the model response part to the request content (only function calls if simplifiedToolUse is enabled)
-        if(db.simplifiedToolUse){
+        if (db.simplifiedToolUse) {
             chat.push({
-                role: 'model',
+                role: "model",
                 parts: calls.map((call) => {
                     return {
                         functionCall: {
                             name: call.name,
-                            args: call.args
-                        }
+                            args: call.args,
+                        },
                     } as GeminiPart
-                })
+                }),
             })
         }
         // Add the model response part to the request content (text response and function calls)
-        else{
+        else {
             chat.push({
-                role: 'model',
-                parts: parts.filter((p) => !p.thought)
+                role: "model",
+                parts: parts.filter((p) => !p.thought),
             })
         }
         // If the last part is a model response, merge it with the previous model response
-        if(chat[chat.length - 2]?.role === 'model') {
+        if (chat[chat.length - 2]?.role === "model") {
             chat[chat.length - 2].parts = chat[chat.length - 2].parts.concat(chat[chat.length - 1].parts)
-            chat.pop() 
+            chat.pop()
         }
-        
+
         const functionParts: GeminiPart[] = []
         const callCodes: string[] = []
         const tools = arg?.tools ?? []
-        
+
         // Handle tool calls
-        for(const call of calls){
+        for (const call of calls) {
             const functionName = call.name
             const functionArgs = call.args
-            
+
             const tool = tools.find((t) => t.name === functionName)
-            if(tool){
+            if (tool) {
                 const result = (await callTool(tool.name, functionArgs)).filter((r) => {
-                    return r.type === 'text'
+                    return r.type === "text"
                 })
-                if(result.length === 0){
+                if (result.length === 0) {
                     functionParts.push({
                         functionResponse: {
                             name: call.name,
-                            response: 'No response from tool.'
-                        }
+                            response: "No response from tool.",
+                        },
                     })
                 }
-                
+
                 // Store the encoded tool call history for later use
-                if(arg.rememberToolUsage){
-                    callCodes.push(await encodeToolCall({
-                        call: {
-                            id: call.id,
-                            name: call.name,
-                            arg: call.args
-                        },
-                        response: result
-                    }))
+                if (arg.rememberToolUsage) {
+                    callCodes.push(
+                        await encodeToolCall({
+                            call: {
+                                id: call.id,
+                                name: call.name,
+                                arg: call.args,
+                            },
+                            response: result,
+                        })
+                    )
                 }
-                
-                for(let i=0;i<result.length;i++){
-                    let response:any = result[i].text
+
+                for (let i = 0; i < result.length; i++) {
+                    let response: any = result[i].text
                     try {
                         //try json parse
                         response = {
-                            data: JSON.parse(response)
+                            data: JSON.parse(response),
                         }
                     } catch (error) {
                         response = {
-                            data: response
+                            data: response,
                         }
                     }
                     functionParts.push({
                         functionResponse: {
                             name: call.name,
-                            response
-                        }
+                            response,
+                        },
                     })
                 }
-            }
-            else{
+            } else {
                 functionParts.push({
                     functionResponse: {
                         name: call.name,
-                        response: `Tool ${call.name} not found.`
-                    }
+                        response: `Tool ${call.name} not found.`,
+                    },
                 })
             }
         }
-        
+
         // Add the user response part to the request content (function responses)
         chat.push({
-            role: 'function',
-            parts: functionParts
+            role: "function",
+            parts: functionParts,
         })
 
         body.contents = chat
 
-        // Send the next request recursively 
+        // Send the next request recursively
         let resRec
         let attempt = 0
         do {
             attempt++
             resRec = await requestGoogle(url, body, headers, arg)
-            
-            if (resRec.type != 'fail') {
+
+            if (resRec.type != "fail") {
                 break
             }
         } while (attempt <= db.requestRetrys) // Retry up to db.requestRetrys times
-        
+
         // Does not include the text response if simplifiedToolUse is enabled
-        const result = (db.simplifiedToolUse ? '' : processTextResponse(rDatas) + '\n\n') + callCodes.join('\n\n')
+        const result = (db.simplifiedToolUse ? "" : processTextResponse(rDatas) + "\n\n") + callCodes.join("\n\n")
 
         // If the next request fails, only the responses so far are returned
-        if(resRec.type === 'fail'){
+        if (resRec.type === "fail") {
             alertError(`Failed to fetch model response after tool execution`)
             return {
-                type: 'success',
-                result: result
+                type: "success",
+                result: result,
             }
-        } else if(resRec.type === 'success'){
+        } else if (resRec.type === "success") {
             return {
-                type: 'success',
-                result: result + '\n\n' + resRec.result
+                type: "success",
+                result: result + "\n\n" + resRec.result,
             }
         }
-        
+
         return resRec
     }
-    
+
     const result = processTextResponse(rDatas)
 
     // fail if the result is empty
-    if(!result) {
+    if (!result) {
         return {
-            type: 'fail',
-            result: `Got empty response: ${JSON.stringify(res.data)}`
+            type: "fail",
+            result: `Got empty response: ${JSON.stringify(res.data)}`,
         }
     }
 
     console.log(result)
-    console.log('collectedSignatures:', collectedSignatures.length, collectedSignatures.map(s => s.substring(0, 30) + '...'))
-    if(thoughtsTokenCount > 0 || collectedSignatures.length > 0){
-        console.log('[Gemini] Saving thinking tokens:', thoughtsTokenCount)
+    console.log(
+        "collectedSignatures:",
+        collectedSignatures.length,
+        collectedSignatures.map((s) => s.substring(0, 30) + "...")
+    )
+    if (thoughtsTokenCount > 0 || collectedSignatures.length > 0) {
+        console.log("[Gemini] Saving thinking tokens:", thoughtsTokenCount)
     }
     return {
-        type: 'success',
+        type: "success",
         result: result,
-        encryptedThinking: (collectedSignatures.length > 0 && thoughtsTokenCount > 0) ? {
-            provider: 'gemini',
-            data: { thoughtSignatures: collectedSignatures },
-            tokens: thoughtsTokenCount
-        } : undefined
+        encryptedThinking:
+            collectedSignatures.length > 0 && thoughtsTokenCount > 0
+                ? {
+                      provider: "gemini",
+                      data: { thoughtSignatures: collectedSignatures },
+                      tokens: thoughtsTokenCount,
+                  }
+                : undefined,
     }
 }
 
-function initStreamState(state?: {[key:string]:string}): {[key:string]:string} {
-    if(!state) {
+function initStreamState(state?: { [key: string]: string }): { [key: string]: string } {
+    if (!state) {
         return {
-            "__sign_text": "",
-            "__sign_function": "",
-            "__last_thought": "",
-            "__thoughts": "",
-            "__tool_calls": "[]",
-            "__thoughts_tokens": "0",
-            "0": ""
-        };
+            __sign_text: "",
+            __sign_function: "",
+            __last_thought: "",
+            __thoughts: "",
+            __tool_calls: "[]",
+            __thoughts_tokens: "0",
+            "0": "",
+        }
     }
-    state["__sign_text"] = state["__sign_text"] || "";
-    state["__sign_function"] = state["__sign_function"] || "";
-    state["__last_thought"] = state["__last_thought"] || "";
-    state["__thoughts"] = state["__thoughts"] || "";
-    state["__tool_calls"] = state["__tool_calls"] || "[]";
-    state["__thoughts_tokens"] = state["__thoughts_tokens"] || "0";
-    state["0"] = state["0"] || "";
-    return state;
+    state["__sign_text"] = state["__sign_text"] || ""
+    state["__sign_function"] = state["__sign_function"] || ""
+    state["__last_thought"] = state["__last_thought"] || ""
+    state["__thoughts"] = state["__thoughts"] || ""
+    state["__tool_calls"] = state["__tool_calls"] || "[]"
+    state["__thoughts_tokens"] = state["__thoughts_tokens"] || "0"
+    state["0"] = state["0"] || ""
+    return state
 }
 
-function getTranStream():TransformStream<Uint8Array, StreamResponseChunk> {
-    let buffer = '';
+function getTranStream(): TransformStream<Uint8Array, StreamResponseChunk> {
+    let buffer = ""
 
     return new TransformStream<Uint8Array, StreamResponseChunk>({
         async transform(chunk, control) {
-            buffer += new TextDecoder().decode(chunk);
-            const lines = buffer.split('\n');
-            
-            const readed = initStreamState();
+            buffer += new TextDecoder().decode(chunk)
+            const lines = buffer.split("\n")
+
+            const readed = initStreamState()
 
             try {
                 for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const dataStr = line.slice(6).trim();
-                        if (dataStr === '[DONE]') return;
-                    
-                        const jsonData = JSON.parse(dataStr);
-                        
+                    if (line.startsWith("data: ")) {
+                        const dataStr = line.slice(6).trim()
+                        if (dataStr === "[DONE]") return
+
+                        const jsonData = JSON.parse(dataStr)
+
                         if (jsonData.candidates?.[0]?.content?.parts) {
-                            const parts = jsonData.candidates[0].content.parts;
+                            const parts = jsonData.candidates[0].content.parts
                             for (const part of parts) {
                                 if (part.text) {
-                                    readed["__thoughts"] += readed["__last_thought"];
-                                    readed["__last_thought"] = "";
-                                    if (part.thought){
-                                        readed["__last_thought"] = part.text;
-                                    }
-                                    else {
-                                        readed["0"] += part.text;
+                                    readed["__thoughts"] += readed["__last_thought"]
+                                    readed["__last_thought"] = ""
+                                    if (part.thought) {
+                                        readed["__last_thought"] = part.text
+                                    } else {
+                                        readed["0"] += part.text
                                     }
                                     if (part.thoughtSignature) {
-                                        readed["__sign_text"] = part.thoughtSignature;
+                                        readed["__sign_text"] = part.thoughtSignature
                                     }
                                 }
                                 if (part.functionCall) {
-                                    const toolCallsData = JSON.parse(readed["__tool_calls"]);
-                                    toolCallsData.push(part.functionCall);
-                                    readed["__tool_calls"] = JSON.stringify(toolCallsData);
-                                    if(part.thoughtSignature){
-                                        readed["__sign_function"] = part.thoughtSignature;
+                                    const toolCallsData = JSON.parse(readed["__tool_calls"])
+                                    toolCallsData.push(part.functionCall)
+                                    readed["__tool_calls"] = JSON.stringify(toolCallsData)
+                                    if (part.thoughtSignature) {
+                                        readed["__sign_function"] = part.thoughtSignature
                                     }
                                 }
                             }
                         }
                         // Extract thoughtsTokenCount from usageMetadata
-                        if(jsonData.usageMetadata?.thoughtsTokenCount){
-                            readed["__thoughts_tokens"] = String(jsonData.usageMetadata.thoughtsTokenCount);
+                        if (jsonData.usageMetadata?.thoughtsTokenCount) {
+                            readed["__thoughts_tokens"] = String(jsonData.usageMetadata.thoughtsTokenCount)
                         }
                     }
                 }
                 control.enqueue(readed)
-            } catch (error) { 
-
-            }
-        }
-    });
+            } catch (error) {}
+        },
+    })
 }
 
 function wrapToolStream(
     stream: ReadableStream<StreamResponseChunk>,
-    body:any,
-    headers:Record<string,string>,
-    url:string,
-    arg:RequestDataArgumentExtended
-):ReadableStream<StreamResponseChunk> {
+    body: any,
+    headers: Record<string, string>,
+    url: string,
+    arg: RequestDataArgumentExtended
+): ReadableStream<StreamResponseChunk> {
     return new ReadableStream<StreamResponseChunk>({
         async start(controller) {
-
             const db = getDatabase()
             let reader = stream.getReader()
-            let prefix = ''
+            let prefix = ""
             let lastValue = initStreamState()
 
-            while(true){
-                let {done, value} = await reader.read()
+            while (true) {
+                let { done, value } = await reader.read()
 
                 value = initStreamState(value)
 
-                if(arg.extractJson && (db.jsonSchemaEnabled || arg.schema)){
+                if (arg.extractJson && (db.jsonSchemaEnabled || arg.schema)) {
                     value["0"] = extractJSON(value["0"], arg.extractJson)
                 }
 
@@ -1057,144 +1073,153 @@ function wrapToolStream(
                 let thoughts = value["__thoughts"]
                 let lastThought = value["__last_thought"]
 
-                if(done){
+                if (done) {
                     value = initStreamState(lastValue)
 
                     content = value["0"]
                     thoughts = value["__thoughts"]
                     lastThought = value["__last_thought"]
 
-                    // thoughtSignatures 
+                    // thoughtSignatures
                     const signText = value["__sign_text"]
                     const signFunction = value["__sign_function"]
 
                     const calls = JSON.parse(value["__tool_calls"]) as GeminiFunctionCall[]
-                    if(calls && calls.length > 0){
+                    if (calls && calls.length > 0) {
                         const chat = body.contents as GeminiChat[]
 
                         // Add the model response part to the request content (only function calls if simplifiedToolUse is enabled)
-                        if(db.simplifiedToolUse){
+                        if (db.simplifiedToolUse) {
                             chat.push({
-                                role: 'model',
+                                role: "model",
                                 parts: calls.map((call) => {
                                     return {
                                         functionCall: {
                                             name: call.name,
-                                            args: call.args
-                                        }
+                                            args: call.args,
+                                        },
                                     } as GeminiPart
-                                })
+                                }),
                             })
                         }
                         // Add the model response part to the request content (text response and function calls)
-                        else{
+                        else {
                             chat.push({
-                                role: 'model',
-                                parts: [{
-                                    text: content,
-                                    ...(signText ? { thoughtSignature: signText } : {})
-                                } as GeminiPart]
-                                .concat(
-                                    calls.map((call, index) => ({
-                                        functionCall: {
-                                            name: call.name,
-                                            args: call.args
-                                        },
-                                        ...(index === 0 && signFunction ? { thoughtSignature: signFunction } : {})
-                                    } as GeminiPart))
-                                )
+                                role: "model",
+                                parts: [
+                                    {
+                                        text: content,
+                                        ...(signText ? { thoughtSignature: signText } : {}),
+                                    } as GeminiPart,
+                                ].concat(
+                                    calls.map(
+                                        (call, index) =>
+                                            ({
+                                                functionCall: {
+                                                    name: call.name,
+                                                    args: call.args,
+                                                },
+                                                ...(index === 0 && signFunction
+                                                    ? { thoughtSignature: signFunction }
+                                                    : {}),
+                                            }) as GeminiPart
+                                    )
+                                ),
                             })
                         }
                         // If the last part is a model response, merge it with the previous model response
-                        if(chat[chat.length - 2]?.role === 'model') {
-                            chat[chat.length - 2].parts = chat[chat.length - 2].parts.concat(chat[chat.length - 1].parts)
-                            chat.pop() 
+                        if (chat[chat.length - 2]?.role === "model") {
+                            chat[chat.length - 2].parts = chat[chat.length - 2].parts.concat(
+                                chat[chat.length - 1].parts
+                            )
+                            chat.pop()
                         }
                         const parts: GeminiPart[] = []
                         const callCodes: string[] = []
                         const tools = arg?.tools ?? []
                         // Handle tool calls
-                        for(const call of calls){
+                        for (const call of calls) {
                             const functionName = call.name
                             const functionArgs = call.args
                             const tool = tools.find((t) => t.name === functionName)
-                            if(tool){
+                            if (tool) {
                                 const result = (await callTool(tool.name, functionArgs)).filter((r) => {
-                                    return r.type === 'text'
+                                    return r.type === "text"
                                 })
-                                if(result.length === 0){
+                                if (result.length === 0) {
                                     parts.push({
                                         functionResponse: {
                                             name: call.name,
-                                            response: 'No response from tool.'
-                                        }
+                                            response: "No response from tool.",
+                                        },
                                     })
                                 }
                                 // Store the encoded tool call history for later use
-                                if(arg.rememberToolUsage){
-                                    callCodes.push(await encodeToolCall({
-                                        call: {
-                                            id: call.id,
-                                            name: call.name,
-                                            arg: call.args
-                                        },
-                                        response: result
-                                    }))
+                                if (arg.rememberToolUsage) {
+                                    callCodes.push(
+                                        await encodeToolCall({
+                                            call: {
+                                                id: call.id,
+                                                name: call.name,
+                                                arg: call.args,
+                                            },
+                                            response: result,
+                                        })
+                                    )
                                 }
-                                for(let i=0;i<result.length;i++){
-                                    let response:any = result[i].text
+                                for (let i = 0; i < result.length; i++) {
+                                    let response: any = result[i].text
                                     try {
                                         //try json parse
                                         response = {
-                                            data: JSON.parse(response)
+                                            data: JSON.parse(response),
                                         }
                                     } catch (error) {
                                         response = {
-                                            data: response
+                                            data: response,
                                         }
                                     }
                                     parts.push({
                                         functionResponse: {
                                             name: call.name,
-                                            response
-                                        }
+                                            response,
+                                        },
                                     })
                                 }
-                            }
-                            else{
+                            } else {
                                 parts.push({
                                     functionResponse: {
                                         name: call.name,
-                                        response: `Tool ${call.name} not found.`
-                                    }
+                                        response: `Tool ${call.name} not found.`,
+                                    },
                                 })
                             }
                         }
                         // Add the user response part to the request content (function responses)
                         chat.push({
-                            role: 'function',
-                            parts: parts
+                            role: "function",
+                            parts: parts,
                         })
 
                         body.contents = chat
-                        
-                        headers['Content-Type'] = 'application/json'
+
+                        headers["Content-Type"] = "application/json"
 
                         let resRec
                         let attempt = 0
                         let errorFlag = true
-                        
+
                         do {
                             attempt++
                             resRec = await fetchNative(url, {
                                 headers: headers,
                                 body: JSON.stringify(body),
-                                method: 'POST',
+                                method: "POST",
                                 chatId: arg.chatId,
                                 signal: arg.abortSignal,
                             })
-                        
-                            if(resRec.status == 200){
+
+                            if (resRec.status == 200) {
                                 addFetchLog({
                                     body: body,
                                     response: "Streaming",
@@ -1207,7 +1232,7 @@ function wrapToolStream(
                             }
                         } while (attempt <= db.requestRetrys) // Retry up to db.requestRetrys times
 
-                        if(errorFlag){
+                        if (errorFlag) {
                             alertError(`Failed to fetch model response after tool execution`)
                             return controller.close()
                         }
@@ -1217,40 +1242,45 @@ function wrapToolStream(
 
                         reader = transtream.readable.getReader()
 
-                        if(db.simplifiedToolUse) {
-                            prefix += callCodes.join('\n\n')
-                        }
-                        else {
-                            prefix += (thoughts + lastThought ? `<Thoughts>\n\n${thoughts + lastThought}\n\n</Thoughts>\n\n` : '')
-                                + (content ? content + '\n\n' : '')
-                                + callCodes.join('\n\n')
+                        if (db.simplifiedToolUse) {
+                            prefix += callCodes.join("\n\n")
+                        } else {
+                            prefix +=
+                                (thoughts + lastThought
+                                    ? `<Thoughts>\n\n${thoughts + lastThought}\n\n</Thoughts>\n\n`
+                                    : "") +
+                                (content ? content + "\n\n" : "") +
+                                callCodes.join("\n\n")
                         }
 
-                        controller.enqueue({"0": prefix})
-                        
+                        controller.enqueue({ "0": prefix })
+
                         continue
                     }
                     return controller.close()
                 }
-                
+
                 lastValue = value
 
-                if(db.streamGeminiThoughts) {
+                if (db.streamGeminiThoughts) {
                     controller.enqueue({
-                        "0": (prefix ? prefix + '\n\n' : '')
-                            + (thoughts ? `<Thoughts>\n\n${thoughts}\n\n</Thoughts>\n\n` : '')
-                            + (lastThought ? lastThought + '\n\n' : '') 
-                            + content
+                        "0":
+                            (prefix ? prefix + "\n\n" : "") +
+                            (thoughts ? `<Thoughts>\n\n${thoughts}\n\n</Thoughts>\n\n` : "") +
+                            (lastThought ? lastThought + "\n\n" : "") +
+                            content,
                     })
-                }
-                else {
+                } else {
                     controller.enqueue({
-                        "0": (prefix ? prefix + '\n\n' : '')
-                            + (thoughts + lastThought ? `<Thoughts>\n\n${thoughts + lastThought}\n\n</Thoughts>\n\n` : '')
-                            + content
+                        "0":
+                            (prefix ? prefix + "\n\n" : "") +
+                            (thoughts + lastThought
+                                ? `<Thoughts>\n\n${thoughts + lastThought}\n\n</Thoughts>\n\n`
+                                : "") +
+                            content,
                     })
                 }
             }
-        }
+        },
     })
 }

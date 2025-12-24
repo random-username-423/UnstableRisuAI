@@ -1,18 +1,21 @@
 <script lang="ts">
-    import {
-        ChatState,
-        LayoutState,
-        SettingsState,
-        RealmState,
-        QuickSettings,
-        AppState,
-    } from "../../ts/stores.svelte"
+    import { ChatState, LayoutState, SettingsState, RealmState, QuickSettings, AppState } from "../../ts/stores.svelte"
     import { setDatabase } from "../../ts/data/storage/database.svelte"
     import type { folder } from "../../ts/data/storage/types"
     import { DBState } from "src/ts/stores.svelte"
     import BarIcon from "./BarIcon.svelte"
     import SidebarIndicator from "./SidebarIndicator.svelte"
-    import { ShellIcon, Settings, ListIcon, LayoutGridIcon, FolderIcon, FolderOpenIcon, HomeIcon, WrenchIcon, User2Icon } from "lucide-svelte"
+    import {
+        ShellIcon,
+        Settings,
+        ListIcon,
+        LayoutGridIcon,
+        FolderIcon,
+        FolderOpenIcon,
+        HomeIcon,
+        WrenchIcon,
+        User2Icon,
+    } from "lucide-svelte"
     import { addCharacter, changeChar, getCharImage } from "../../ts/character/characters.svelte"
     import CharConfig from "./CharConfig.svelte"
     import { language } from "../../lang"
@@ -43,7 +46,9 @@
     }
 
     type sortTypeNormal = { type: "normal"; img: string; index: number; name: string }
-    type sortType = sortTypeNormal | { type: "folder"; folder: sortTypeNormal[]; id: string; name: string; color: string; img?: string }
+    type sortType =
+        | sortTypeNormal
+        | { type: "folder"; folder: sortTypeNormal[]; id: string; name: string; color: string; img?: string }
     let charImages: sortType[] = $state([])
     let IconRounded = $state(false)
     let openFolders: string[] = $state([])
@@ -151,7 +156,8 @@
             }
             if (mainFolderIndex !== -1) {
                 const folder: folder = db.characterOrder[mainFolderIndex] as folder
-                const ind = mainIndex.index > targetIndex.index ? folder.data.lastIndexOf(mainId) : folder.data.indexOf(mainId)
+                const ind =
+                    mainIndex.index > targetIndex.index ? folder.data.lastIndexOf(mainId) : folder.data.indexOf(mainId)
                 if (ind !== -1) {
                     folder.data.splice(ind, 1)
                 }
@@ -169,7 +175,10 @@
                 db.characterOrder.splice(ind, 1)
             }
         } else {
-            const ind = mainIndex.index > targetIndex.index ? db.characterOrder.lastIndexOf(mainId) : db.characterOrder.indexOf(mainId)
+            const ind =
+                mainIndex.index > targetIndex.index
+                    ? db.characterOrder.lastIndexOf(mainId)
+                    : db.characterOrder.indexOf(mainId)
             if (ind !== -1) {
                 db.characterOrder.splice(ind, 1)
             }
@@ -269,7 +278,7 @@
 
 {#if DBState.db.menuSideBar}
     <div
-        class="h-full w-20 min-w-20 flex-col items-center bg-bgcolor text-textcolor shadow-lg relative rs-sidebar"
+        class="rs-sidebar relative h-full w-20 min-w-20 flex-col items-center bg-bgcolor text-textcolor shadow-lg"
         class:editMode
         class:risu-sub-sidebar={LayoutState.sidebar.isClosing}
         class:risu-sub-sidebar-close={LayoutState.sidebar.isClosing}
@@ -277,8 +286,12 @@
         class:flex={!hidden}
     >
         <button
-            class="flex items-center justify-center py-2 flex-col gap-1 w-full mt-4"
-            class:text-textcolor2={!(ChatState.selectedCharId < 0 && AppState.playground === 0 && !SettingsState.isOpen)}
+            class="mt-4 flex w-full flex-col items-center justify-center gap-1 py-2"
+            class:text-textcolor2={!(
+                ChatState.selectedCharId < 0 &&
+                AppState.playground === 0 &&
+                !SettingsState.isOpen
+            )}
             onclick={() => {
                 reseter()
                 ChatState.selectedCharId = -1
@@ -290,7 +303,7 @@
             <span class="text-xs">{language.home}</span>
         </button>
         <button
-            class="flex items-center justify-center py-2 flex-col gap-1 w-full"
+            class="flex w-full flex-col items-center justify-center gap-1 py-2"
             class:text-textcolor2={!SettingsState.isOpen}
             onclick={() => {
                 if (SettingsState.isOpen) {
@@ -306,7 +319,7 @@
             <span class="text-xs">{language.settings}</span>
         </button>
         <button
-            class="flex items-center justify-center py-2 flex-col gap-1 w-full"
+            class="flex w-full flex-col items-center justify-center gap-1 py-2"
             class:text-textcolor2={!(ChatState.selectedCharId >= 0)}
             onclick={() => {
                 reseter()
@@ -317,7 +330,7 @@
             <span class="text-xs">{language.character}</span>
         </button>
         <button
-            class="flex items-center justify-center py-2 flex-col gap-1 w-full"
+            class="flex w-full flex-col items-center justify-center gap-1 py-2"
             class:text-textcolor2={!(ChatState.selectedCharId < 0 && AppState.playground !== 0)}
             onclick={() => {
                 reseter()
@@ -331,7 +344,7 @@
     </div>
 {:else}
     <div
-        class="h-full w-20 min-w-20 flex-col items-center bg-bgcolor text-textcolor shadow-lg relative rs-sidebar"
+        class="rs-sidebar relative h-full w-20 min-w-20 flex-col items-center bg-bgcolor text-textcolor shadow-lg"
         class:editMode
         class:risu-sub-sidebar={LayoutState.sidebar.isClosing}
         class:risu-sub-sidebar-close={LayoutState.sidebar.isClosing}
@@ -339,15 +352,17 @@
         class:flex={!hidden}
     >
         <button
-            class="flex h-8 min-h-8 w-14 min-w-14 cursor-pointer text-white mt-2 items-center justify-center rounded-md bg-textcolor2 transition-colors hover:bg-green-500"
+            class="mt-2 flex h-8 min-h-8 w-14 min-w-14 cursor-pointer items-center justify-center rounded-md bg-textcolor2 text-white transition-colors hover:bg-green-500"
             onclick={() => {
                 menuMode = 1 - menuMode
             }}
             ><ListIcon />
         </button>
-        <div class="mt-2 border-b border-b-selected w-full relative text-white">
+        <div class="relative mt-2 w-full border-b border-b-selected text-white">
             {#if menuMode === 1}
-                <div class="absolute w-20 min-w-20 flex border-b-selected border-b bg-bgcolor flex-col items-center pt-2 rounded-b-md z-20 pb-2">
+                <div
+                    class="absolute z-20 flex w-20 min-w-20 flex-col items-center rounded-b-md border-b border-b-selected bg-bgcolor pb-2 pt-2"
+                >
                     <BarIcon
                         onClick={() => {
                             if (SettingsState.isOpen) {
@@ -390,7 +405,7 @@
                 </div>
             {/if}
         </div>
-        <div class="flex flex-grow w-full flex-col items-center overflow-x-hidden overflow-y-auto pr-0">
+        <div class="flex w-full flex-grow flex-col items-center overflow-y-auto overflow-x-hidden pr-0">
             <div
                 class="h-4 min-h-4 w-14"
                 role="listitem"
@@ -426,7 +441,11 @@
                     }}
                     ondragenter={preventAll}
                 >
-                    <SidebarIndicator isActive={char.type === "normal" && ChatState.selectedCharId === char.index && sideBarMode !== 1} />
+                    <SidebarIndicator
+                        isActive={char.type === "normal" &&
+                            ChatState.selectedCharId === char.index &&
+                            sideBarMode !== 1}
+                    />
                     <div
                         role="button"
                         tabindex="0"
@@ -469,7 +488,7 @@
                                                     language.changeFolderColor,
                                                     language.changeFolderImage,
                                                     language.cancel,
-                                                ]),
+                                                ])
                                             )
                                             if (sel === 0) {
                                                 const v = await alertInput(language.changeFolderName)
@@ -484,7 +503,16 @@
                                                     setDatabase(db)
                                                 }
                                             } else if (sel === 1) {
-                                                const colors = ["red", "green", "blue", "yellow", "indigo", "purple", "pink", "default"]
+                                                const colors = [
+                                                    "red",
+                                                    "green",
+                                                    "blue",
+                                                    "yellow",
+                                                    "indigo",
+                                                    "purple",
+                                                    "pink",
+                                                    "default",
+                                                ]
                                                 const sel = parseInt(await alertSelect(colors))
                                                 const db = DBState.db
                                                 const oder = db.characterOrder[ind]
@@ -495,7 +523,9 @@
                                                 db.characterOrder[ind] = oder
                                                 setDatabase(db)
                                             } else if (sel === 2) {
-                                                const sel = parseInt(await alertSelect(["Reset to Default Image", "Select Image File"]))
+                                                const sel = parseInt(
+                                                    await alertSelect(["Reset to Default Image", "Select Image File"])
+                                                )
                                                 const db = DBState.db
                                                 const oder = db.characterOrder[ind]
                                                 if (typeof oder === "string") {
@@ -509,13 +539,19 @@
                                                         break
 
                                                     case 1: {
-                                                        const folderImage = await selectSingleFile(["png", "jpg", "webp"])
+                                                        const folderImage = await selectSingleFile([
+                                                            "png",
+                                                            "jpg",
+                                                            "webp",
+                                                        ])
 
                                                         if (!folderImage) {
                                                             return
                                                         }
 
-                                                        const folderImageData = await saveAsset(folderImage.data as Uint8Array<ArrayBuffer>)
+                                                        const folderImageData = await saveAsset(
+                                                            folderImage.data as Uint8Array<ArrayBuffer>
+                                                        )
 
                                                         oder.imgFile = folderImageData
                                                         oder.img = await getFileSrc(folderImageData)
@@ -539,8 +575,8 @@
                                         }}
                                     >
                                         {#if DBState.db.showFolderName}
-                                            <div class="h-full w-full flex justify-center items-center">
-                                                <span class="hyphens-auto truncate font-bold">{char.name}</span>
+                                            <div class="flex h-full w-full items-center justify-center">
+                                                <span class="truncate hyphens-auto font-bold">{char.name}</span>
                                             </div>
                                         {:else if openFolders.includes(char.id)}
                                             <FolderOpenIcon />
@@ -555,9 +591,9 @@
                 </div>
                 {#if char.type === "folder" && openFolders.includes(char.id)}
                     {#key char.color}
-                        <div class="p-1 flex flex-col items-center py-1 mt-1 rounded-lg relative">
+                        <div class="relative mt-1 flex flex-col items-center rounded-lg p-1 py-1">
                             <div
-                                class="absolute top-0 left-1 border border-selected w-full h-full rounded-lg z-0 bg-opacity-20"
+                                class="absolute left-1 top-0 z-0 h-full w-full rounded-lg border border-selected bg-opacity-20"
                                 class:bg-darkbg={char.color === "default" || char.color === ""}
                                 class:bg-red-700={char.color === "red"}
                                 class:bg-yellow-700={char.color === "yellow"}
@@ -568,7 +604,7 @@
                                 class:bg-pink-700={char.color === "pink"}
                             ></div>
                             <div
-                                class="h-4 min-h-4 w-14 relative z-10"
+                                class="relative z-10 h-4 min-h-4 w-14"
                                 role="listitem"
                                 ondragover={(e) => {
                                     e.preventDefault()
@@ -590,7 +626,7 @@
                             ></div>
                             {#each char.folder as char2, ind}
                                 <div
-                                    class="group relative flex items-center px-2 z-10"
+                                    class="group relative z-10 flex items-center px-2"
                                     role="listitem"
                                     draggable="true"
                                     ondragstart={(e) => {
@@ -606,7 +642,9 @@
                                     }}
                                     ondragenter={preventAll}
                                 >
-                                    <SidebarIndicator isActive={ChatState.selectedCharId === char2.index && sideBarMode !== 1} />
+                                    <SidebarIndicator
+                                        isActive={ChatState.selectedCharId === char2.index && sideBarMode !== 1}
+                                    />
                                     <div
                                         role="button"
                                         tabindex="0"
@@ -632,7 +670,7 @@
                                     </div>
                                 </div>
                                 <div
-                                    class="h-4 min-h-4 w-14 relative z-20"
+                                    class="relative z-20 h-4 min-h-4 w-14"
                                     role="listitem"
                                     ondragover={(e) => {
                                         e.preventDefault()
@@ -699,7 +737,7 @@
     </div>
 {/if}
 <div
-    class="setting-area h-full flex-col overflow-x-hidden bg-darkbg py-6 text-textcolor max-h-full"
+    class="setting-area h-full max-h-full flex-col overflow-x-hidden bg-darkbg py-6 text-textcolor"
     class:risu-sidebar={!LayoutState.sidebar.isClosing}
     class:w-96={GuiSizeState.sideBarSize === 0}
     class:w-110={GuiSizeState.sideBarSize === 1}
@@ -733,7 +771,7 @@
     >
         <!-- <button class="border-none bg-transparent p-0 text-textcolor"><X /></button> -->
     </button>
-    <div class="flex flex-col flex-grow min-h-0" class:hidden={sideBarMode !== 0}>
+    <div class="flex min-h-0 flex-grow flex-col" class:hidden={sideBarMode !== 0}>
         <!-- Welcome message -->
         <div class:hidden={!(ChatState.selectedCharId < 0 || SettingsState.isOpen)}>
             <div>
@@ -743,8 +781,10 @@
         </div>
         <!-- Playground -->
         <div
-            class="flex flex-col flex-grow min-h-0"
-            class:hidden={ChatState.selectedCharId < 0 || SettingsState.isOpen || DBState.db.characters[ChatState.selectedCharId]?.chaId !== "§playground"}
+            class="flex min-h-0 flex-grow flex-col"
+            class:hidden={ChatState.selectedCharId < 0 ||
+                SettingsState.isOpen ||
+                DBState.db.characters[ChatState.selectedCharId]?.chaId !== "§playground"}
         >
             {#if ChatState.selectedCharId >= 0 && DBState.db.characters[ChatState.selectedCharId]?.chaId === "§playground"}
                 <SideChatList bind:chara={DBState.db.characters[ChatState.selectedCharId]} />
@@ -759,7 +799,7 @@
         >
             <div class="flex flex-col">
                 <h1 class="text-xl">{language.connectionOpen}</h1>
-                <span class="text-textcolor2 mb-4">{language.connectionOpenInfo}</span>
+                <span class="mb-4 text-textcolor2">{language.connectionOpenInfo}</span>
                 <div class="flex">
                     <span>ID: </span>
                     <span class="text-blue-600">{MultiuserState.roomId}</span>
@@ -775,19 +815,21 @@
         </div>
         <!-- Main chat/character panel -->
         <div
-            class="flex flex-col flex-grow min-h-0"
+            class="flex min-h-0 flex-grow flex-col"
             class:hidden={ChatState.selectedCharId < 0 ||
                 SettingsState.isOpen ||
                 DBState.db.characters[ChatState.selectedCharId]?.chaId === "§playground" ||
                 MultiuserState.isOpen}
         >
-            <div class="w-full h-8 min-h-8 border-l border-b border-r border-selected relative bottom-6 rounded-b-md flex">
+            <div
+                class="relative bottom-6 flex h-8 min-h-8 w-full rounded-b-md border-b border-l border-r border-selected"
+            >
                 <button
                     onclick={() => {
                         devTool = false
                         SettingsState.botMakerMode = false
                     }}
-                    class="flex-grow border-r border-r-selected rounded-bl-md"
+                    class="flex-grow rounded-bl-md border-r border-r-selected"
                     class:text-textcolor2={SettingsState.botMakerMode || devTool}>{language.Chat}</button
                 >
                 <button
@@ -803,7 +845,7 @@
                         onclick={() => {
                             devTool = true
                         }}
-                        class="border-l border-l-selected rounded-br-md px-1"
+                        class="rounded-br-md border-l border-l-selected px-1"
                         class:text-textcolor2={!devTool}
                     >
                         <WrenchIcon size={18} />
@@ -821,7 +863,10 @@
                     <CharConfig />
                 {/if}
             </div>
-            <div class="flex-grow min-h-0 flex flex-col" class:hidden={QuickSettings.open || devTool || SettingsState.botMakerMode}>
+            <div
+                class="flex min-h-0 flex-grow flex-col"
+                class:hidden={QuickSettings.open || devTool || SettingsState.botMakerMode}
+            >
                 {#if ChatState.selectedCharId >= 0 && DBState.db.characters[ChatState.selectedCharId]}
                     <SideChatList bind:chara={DBState.db.characters[ChatState.selectedCharId]} />
                 {/if}
@@ -834,7 +879,7 @@
     <div
         role="button"
         tabindex="0"
-        class="flex-grow h-full min-w-12"
+        class="h-full min-w-12 flex-grow"
         class:hidden
         onclick={() => {
             if (LayoutState.sidebar.isClosing) {

@@ -1,6 +1,6 @@
 import type { Parameter } from "../process/request/types"
 
-export enum LLMFlags{
+export enum LLMFlags {
     hasImageInput,
     hasImageOutput,
     hasAudioInput,
@@ -25,7 +25,7 @@ export enum LLMFlags{
     claudeThinking,
 }
 
-export enum LLMProvider{
+export enum LLMProvider {
     OpenAI,
     Anthropic,
     GeminiAPI,
@@ -40,10 +40,10 @@ export enum LLMProvider{
     AWS,
     AI21,
     DeepSeek,
-    DeepInfra
+    DeepInfra,
 }
 
-export enum LLMFormat{
+export enum LLMFormat {
     OpenAICompatible,
     OpenAILegacyInstruct,
     Anthropic,
@@ -62,10 +62,10 @@ export enum LLMFormat{
     Ollama,
     Horde,
     AWSBedrockClaude,
-    OpenAIResponseAPI
+    OpenAIResponseAPI,
 }
 
-export enum LLMTokenizer{
+export enum LLMTokenizer {
     Unknown,
     tiktokenCl100kBase,
     tiktokenO200Base,
@@ -79,10 +79,10 @@ export enum LLMTokenizer{
     GeminiAPI,
     Cohere,
     Local,
-    DeepSeek
+    DeepSeek,
 }
 
-export interface LLMModel{
+export interface LLMModel {
     id: string
     name: string
     shortName?: string
@@ -91,7 +91,7 @@ export interface LLMModel{
     provider: LLMProvider
     flags: LLMFlags[]
     format: LLMFormat
-    parameters: Parameter[],
+    parameters: Parameter[]
     tokenizer: LLMTokenizer
     recommended?: boolean
     keyIdentifier?: string
@@ -99,24 +99,24 @@ export interface LLMModel{
 }
 
 // Common parameter arrays
-export const OpenAIParameters: Parameter[] = ['temperature', 'top_p', 'frequency_penalty', 'presence_penalty']
-export const GPT5Parameters: Parameter[] = ['reasoning_effort', 'verbosity']
-export const ClaudeParameters: Parameter[] = ['temperature', 'top_k', 'top_p']
+export const OpenAIParameters: Parameter[] = ["temperature", "top_p", "frequency_penalty", "presence_penalty"]
+export const GPT5Parameters: Parameter[] = ["reasoning_effort", "verbosity"]
+export const ClaudeParameters: Parameter[] = ["temperature", "top_k", "top_p"]
 
 // Provider names map
 export const ProviderNames = new Map<LLMProvider, string>([
-    [LLMProvider.OpenAI, 'OpenAI'],
-    [LLMProvider.Anthropic, 'Anthropic'],
-    [LLMProvider.GeminiAPI, 'Gemini API'],
-    [LLMProvider.VertexAI, 'Vertex AI'],
-    [LLMProvider.AsIs, 'As Is'],
-    [LLMProvider.Mistral, 'MistralAI'],
-    [LLMProvider.NovelList, 'NovelList'],
-    [LLMProvider.Cohere, 'Cohere'],
-    [LLMProvider.NovelAI, 'NovelAI'],
-    [LLMProvider.WebLLM, 'WebLLM'],
-    [LLMProvider.Horde, 'Horde'],
-    [LLMProvider.AWS, 'Amazon Bedrock'],
-    [LLMProvider.DeepSeek, 'DeepSeek'],
-    [LLMProvider.DeepInfra, 'DeepInfra']
+    [LLMProvider.OpenAI, "OpenAI"],
+    [LLMProvider.Anthropic, "Anthropic"],
+    [LLMProvider.GeminiAPI, "Gemini API"],
+    [LLMProvider.VertexAI, "Vertex AI"],
+    [LLMProvider.AsIs, "As Is"],
+    [LLMProvider.Mistral, "MistralAI"],
+    [LLMProvider.NovelList, "NovelList"],
+    [LLMProvider.Cohere, "Cohere"],
+    [LLMProvider.NovelAI, "NovelAI"],
+    [LLMProvider.WebLLM, "WebLLM"],
+    [LLMProvider.Horde, "Horde"],
+    [LLMProvider.AWS, "Amazon Bedrock"],
+    [LLMProvider.DeepSeek, "DeepSeek"],
+    [LLMProvider.DeepInfra, "DeepInfra"],
 ])

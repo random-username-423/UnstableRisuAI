@@ -1,6 +1,6 @@
-import { v4 } from 'uuid'
-import { alertNormalWait } from '../../utils/alert.svelte'
-import { language } from 'src/lang'
+import { v4 } from "uuid"
+import { alertNormalWait } from "../../utils/alert.svelte"
+import { language } from "src/lang"
 
 /**
  * 탭 간 저장 동기화 관리자
@@ -24,7 +24,7 @@ class TabSyncManager {
             return
         }
 
-        this.channel = new BroadcastChannel('risu-db')
+        this.channel = new BroadcastChannel("risu-db")
         this.channel.onmessage = async (ev) => {
             // 자신의 메시지는 무시
             if (ev.data === this.sessionID) {

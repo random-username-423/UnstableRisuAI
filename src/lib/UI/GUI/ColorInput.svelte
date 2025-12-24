@@ -1,30 +1,27 @@
 <script lang="ts">
-    import ColorPicker from 'svelte-awesome-color-picker';
+    import ColorPicker from "svelte-awesome-color-picker"
     interface Props {
-        value?: string;
-        nullable?: boolean;
-        oninput?: () => void;
+        value?: string
+        nullable?: boolean
+        oninput?: () => void
     }
 
-    let { value = $bindable('#000000'), nullable = false, oninput }: Props = $props();
+    let { value = $bindable("#000000"), nullable = false, oninput }: Props = $props()
 
     $effect(() => {
         //this is for updating
         value
 
         oninput?.()
-    });
+    })
 </script>
 
 <div class="cl rounded-full bg-white">
-    <ColorPicker
-        label="" bind:hex={value}
-        nullable={nullable}
-    />
+    <ColorPicker label="" bind:hex={value} {nullable} />
 </div>
 
 <style>
-    .cl{
+    .cl {
         --cp-bg-color: var(--risu-theme-bgcolor);
         --cp-border-color: var(--risu-theme-darkborderc);
         --cp-text-color: var(--risu-theme-textcolor);

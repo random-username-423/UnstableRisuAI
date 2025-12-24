@@ -1,7 +1,15 @@
 <script lang="ts">
     import { language } from "src/lang"
     import { onMount } from "svelte"
-    import { DatabaseIcon, FolderIcon, FileIcon, ArrowLeftIcon, XIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-svelte"
+    import {
+        DatabaseIcon,
+        FolderIcon,
+        FileIcon,
+        ArrowLeftIcon,
+        XIcon,
+        ChevronLeftIcon,
+        ChevronRightIcon,
+    } from "lucide-svelte"
 
     interface Props {
         close: () => void
@@ -17,10 +25,10 @@
     let openedDb = $state<IDBDatabase | null>(null)
 
     // Data state
-    let databases = $state<{name: string, version: number}[]>([])
+    let databases = $state<{ name: string; version: number }[]>([])
     let stores = $state<string[]>([])
     let allKeys = $state<IDBValidKey[]>([])
-    let entries = $state<{key: string, valuePreview: string}[]>([])
+    let entries = $state<{ key: string; valuePreview: string }[]>([])
 
     // Pagination
     let currentPage = $state(0)
@@ -31,22 +39,22 @@
 
     // Format value for preview
     function formatValue(value: unknown): string {
-        if (value === null) return 'null'
-        if (value === undefined) return 'undefined'
+        if (value === null) return "null"
+        if (value === undefined) return "undefined"
 
         if (value instanceof Uint8Array || value instanceof ArrayBuffer) {
             const size = value instanceof Uint8Array ? value.byteLength : value.byteLength
             return `[Binary: ${formatBytes(size)}]`
         }
 
-        if (typeof value === 'string') {
+        if (typeof value === "string") {
             if (value.length > 100) {
-                return value.slice(0, 100) + '...'
+                return value.slice(0, 100) + "..."
             }
             return value
         }
 
-        if (typeof value === 'number' || typeof value === 'boolean') {
+        if (typeof value === "number" || typeof value === "boolean") {
             return String(value)
         }
 
@@ -54,15 +62,15 @@
             return `[Array: ${value.length} items]`
         }
 
-        if (typeof value === 'object') {
+        if (typeof value === "object") {
             try {
                 const json = JSON.stringify(value)
                 if (json.length > 100) {
-                    return json.slice(0, 100) + '...'
+                    return json.slice(0, 100) + "..."
                 }
                 return json
             } catch {
-                return '[Object]'
+                return "[Object]"
             }
         }
 
@@ -79,8 +87,8 @@
     }
 
     function formatKey(key: IDBValidKey): string {
-        if (typeof key === 'string') return key
-        if (typeof key === 'number') return String(key)
+        if (typeof key === "string") return key
+        if (typeof key === "number") return String(key)
         if (key instanceof Date) return key.toISOString()
         if (Array.isArray(key)) return JSON.stringify(key)
         if (key instanceof ArrayBuffer) return `[ArrayBuffer: ${key.byteLength} bytes]`
@@ -93,11 +101,11 @@
         try {
             const dbs = await indexedDB.databases()
             databases = dbs
-                .filter(db => db.name) // Filter out undefined names
-                .map(db => ({ name: db.name!, version: db.version ?? 1 }))
+                .filter((db) => db.name) // Filter out undefined names
+                .map((db) => ({ name: db.name!, version: db.version ?? 1 }))
                 .sort((a, b) => a.name.localeCompare(b.name))
         } catch (e) {
-            console.error('[IndexedDBExplorer] Error loading databases:', e)
+            console.error("[IndexedDBExplorer] Error loading databases:", e)
             databases = []
         }
         loading = false
@@ -124,7 +132,7 @@
             selectedDb = dbName
             level = 1
         } catch (e) {
-            console.error('[IndexedDBExplorer] Error loading stores:', e)
+            console.error("[IndexedDBExplorer] Error loading stores:", e)
             stores = []
         }
         loading = false
@@ -135,10 +143,10 @@
         loading = true
         try {
             if (!openedDb) {
-                throw new Error('No database open')
+                throw new Error("No database open")
             }
 
-            const tx = openedDb.transaction(storeName, 'readonly')
+            const tx = openedDb.transaction(storeName, "readonly")
             const store = tx.objectStore(storeName)
 
             // Get all keys first (for pagination)
@@ -158,10 +166,10 @@
             const pageKeys = keys.slice(startIdx, endIdx)
 
             // Get values for these keys
-            const tx2 = openedDb.transaction(storeName, 'readonly')
+            const tx2 = openedDb.transaction(storeName, "readonly")
             const store2 = tx2.objectStore(storeName)
 
-            const entriesData: {key: string, valuePreview: string}[] = []
+            const entriesData: { key: string; valuePreview: string }[] = []
             for (const key of pageKeys) {
                 const value = await new Promise<unknown>((resolve, reject) => {
                     const request = store2.get(key)
@@ -170,7 +178,7 @@
                 })
                 entriesData.push({
                     key: formatKey(key),
-                    valuePreview: formatValue(value)
+                    valuePreview: formatValue(value),
                 })
             }
 
@@ -178,7 +186,7 @@
             selectedStore = storeName
             level = 2
         } catch (e) {
-            console.error('[IndexedDBExplorer] Error loading entries:', e)
+            console.error("[IndexedDBExplorer] Error loading entries:", e)
             entries = []
         }
         loading = false
@@ -226,7 +234,7 @@
     // Get breadcrumb path
     function getBreadcrumb(): string {
         if (level === 0) {
-            return language.indexedDBAllDatabases || 'All Databases'
+            return language.indexedDBAllDatabases || "All Databases"
         } else if (level === 1) {
             return `${selectedDb}`
         } else {
@@ -249,34 +257,31 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-    class="fixed inset-0 z-50 bg-black bg-opacity-50 flex justify-center items-center"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
     onclick={(e) => {
         if (e.target === e.currentTarget) close()
     }}
 >
-    <div class="bg-darkbg p-4 rounded-md flex flex-col w-[700px] max-h-[80vh]">
+    <div class="flex max-h-[80vh] w-[700px] flex-col rounded-md bg-darkbg p-4">
         <!-- Header -->
-        <div class="flex items-center gap-2 mb-4">
+        <div class="mb-4 flex items-center gap-2">
             <button
                 onclick={goBack}
                 disabled={level === 0}
-                class="p-1 rounded hover:bg-selected disabled:opacity-30 disabled:cursor-not-allowed"
+                class="rounded p-1 hover:bg-selected disabled:cursor-not-allowed disabled:opacity-30"
             >
                 <ArrowLeftIcon size={20} />
             </button>
-            <div class="flex-grow text-sm text-textcolor2 truncate">
+            <div class="flex-grow truncate text-sm text-textcolor2">
                 {getBreadcrumb()}
             </div>
-            <button
-                onclick={close}
-                class="p-1 rounded hover:bg-selected"
-            >
+            <button onclick={close} class="rounded p-1 hover:bg-selected">
                 <XIcon size={20} />
             </button>
         </div>
 
         <!-- Content -->
-        <div class="overflow-y-auto flex-grow border border-selected rounded-md">
+        <div class="flex-grow overflow-y-auto rounded-md border border-selected">
             {#if loading}
                 <div class="p-4 text-center text-textcolor2">
                     {language.loading}...
@@ -285,7 +290,7 @@
                 <!-- Database list -->
                 {#if databases.length === 0}
                     <div class="p-4 text-center text-textcolor2">
-                        {language.opfsEmpty || 'No databases found'}
+                        {language.opfsEmpty || "No databases found"}
                     </div>
                 {:else}
                     {#each databases as db, i}
@@ -293,12 +298,12 @@
                             <div class="border-t border-selected"></div>
                         {/if}
                         <div
-                            class="flex items-center gap-2 p-2 hover:bg-selected cursor-pointer"
+                            class="flex cursor-pointer items-center gap-2 p-2 hover:bg-selected"
                             onclick={() => selectDatabase(db.name)}
                         >
-                            <DatabaseIcon size={18} class="text-blue-500 flex-shrink-0" />
+                            <DatabaseIcon size={18} class="flex-shrink-0 text-blue-500" />
                             <span class="flex-grow truncate">{db.name}</span>
-                            <span class="text-sm text-textcolor2 flex-shrink-0">v{db.version}</span>
+                            <span class="flex-shrink-0 text-sm text-textcolor2">v{db.version}</span>
                         </div>
                     {/each}
                 {/if}
@@ -306,7 +311,7 @@
                 <!-- Object Store list -->
                 {#if stores.length === 0}
                     <div class="p-4 text-center text-textcolor2">
-                        {language.opfsEmpty || 'No object stores found'}
+                        {language.opfsEmpty || "No object stores found"}
                     </div>
                 {:else}
                     {#each stores as store, i}
@@ -314,10 +319,10 @@
                             <div class="border-t border-selected"></div>
                         {/if}
                         <div
-                            class="flex items-center gap-2 p-2 hover:bg-selected cursor-pointer"
+                            class="flex cursor-pointer items-center gap-2 p-2 hover:bg-selected"
                             onclick={() => selectStore(store)}
                         >
-                            <FolderIcon size={18} class="text-yellow-500 flex-shrink-0" />
+                            <FolderIcon size={18} class="flex-shrink-0 text-yellow-500" />
                             <span class="flex-grow truncate">{store}</span>
                         </div>
                     {/each}
@@ -326,7 +331,7 @@
                 <!-- Key-Value list -->
                 {#if entries.length === 0}
                     <div class="p-4 text-center text-textcolor2">
-                        {language.opfsEmpty || 'No entries found'}
+                        {language.opfsEmpty || "No entries found"}
                     </div>
                 {:else}
                     {#each entries as entry, i}
@@ -335,10 +340,10 @@
                         {/if}
                         <div class="flex flex-col p-2 hover:bg-selected">
                             <div class="flex items-center gap-2">
-                                <FileIcon size={16} class="text-textcolor2 flex-shrink-0" />
-                                <span class="font-mono text-sm truncate">{entry.key}</span>
+                                <FileIcon size={16} class="flex-shrink-0 text-textcolor2" />
+                                <span class="truncate font-mono text-sm">{entry.key}</span>
                             </div>
-                            <div class="ml-6 text-xs text-textcolor2 truncate mt-1">
+                            <div class="ml-6 mt-1 truncate text-xs text-textcolor2">
                                 {entry.valuePreview}
                             </div>
                         </div>
@@ -354,30 +359,30 @@
                 <button
                     onclick={prevPage}
                     disabled={currentPage === 0}
-                    class="px-2 py-1 rounded border border-selected bg-darkbutton hover:bg-selected disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
+                    class="flex items-center gap-1 rounded border border-selected bg-darkbutton px-2 py-1 hover:bg-selected disabled:cursor-not-allowed disabled:opacity-30"
                 >
                     <ChevronLeftIcon size={16} />
-                    <span>{language.indexedDBPrevPage || 'Prev'}</span>
+                    <span>{language.indexedDBPrevPage || "Prev"}</span>
                 </button>
                 <span>
                     {currentPage * PAGE_SIZE + 1}-{Math.min((currentPage + 1) * PAGE_SIZE, totalKeys)}
-                    {language.indexedDBOf || 'of'}
+                    {language.indexedDBOf || "of"}
                     {totalKeys}
                 </span>
                 <button
                     onclick={nextPage}
                     disabled={(currentPage + 1) * PAGE_SIZE >= totalKeys}
-                    class="px-2 py-1 rounded border border-selected bg-darkbutton hover:bg-selected disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
+                    class="flex items-center gap-1 rounded border border-selected bg-darkbutton px-2 py-1 hover:bg-selected disabled:cursor-not-allowed disabled:opacity-30"
                 >
-                    <span>{language.indexedDBNextPage || 'Next'}</span>
+                    <span>{language.indexedDBNextPage || "Next"}</span>
                     <ChevronRightIcon size={16} />
                 </button>
             {:else if level === 0}
-                <span class="w-full text-center">{databases.length} {language.storageItems || 'databases'}</span>
+                <span class="w-full text-center">{databases.length} {language.storageItems || "databases"}</span>
             {:else if level === 1}
-                <span class="w-full text-center">{stores.length} {language.storageItems || 'stores'}</span>
+                <span class="w-full text-center">{stores.length} {language.storageItems || "stores"}</span>
             {:else}
-                <span class="w-full text-center">0 {language.storageItems || 'items'}</span>
+                <span class="w-full text-center">0 {language.storageItems || "items"}</span>
             {/if}
         </div>
     </div>

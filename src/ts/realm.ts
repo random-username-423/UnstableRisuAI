@@ -1,39 +1,39 @@
-import { exportCharacterCard } from "./character/characterCards.svelte";
-import { VirtualWriter } from "./utils/writers";
-import { getCurrentCharacter, getDatabase } from "./data/storage/database.svelte";
-import { type character } from "./data/storage/types";
-import { alertStore } from "./utils/alert.svelte";
+import { exportCharacterCard } from "./character/characterCards.svelte"
+import { VirtualWriter } from "./utils/writers"
+import { getCurrentCharacter, getDatabase } from "./data/storage/database.svelte"
+import { type character } from "./data/storage/types"
+import { alertStore } from "./utils/alert.svelte"
 
-let pong = false;
+let pong = false
 
 window.addEventListener("message", (event) => {
     if (event.origin === "https://realm.risuai.net") {
         if (event.data === "pong") {
-            pong = true;
+            pong = true
         }
     }
-});
+})
 
-export async function shareRealmCardData():Promise<{ name: ArrayBuffer; data: ArrayBuffer; }> {
-    const char = safeStructuredClone(getCurrentCharacter({snapshot:true})) as character
-    const trimedName = char.name.replace(/[^a-zA-Z0-9]/g, '') || 'character';
+export async function shareRealmCardData(): Promise<{ name: ArrayBuffer; data: ArrayBuffer }> {
+    const char = safeStructuredClone(getCurrentCharacter({ snapshot: true })) as character
+    const trimedName = char.name.replace(/[^a-zA-Z0-9]/g, "") || "character"
     const writer = new VirtualWriter()
-    const namebuf = new TextEncoder().encode(trimedName + '.png')
-    await exportCharacterCard(char, 'png', {writer: writer, spec: 'v3'})
+    const namebuf = new TextEncoder().encode(trimedName + ".png")
+    await exportCharacterCard(char, "png", { writer: writer, spec: "v3" })
     alertStore.set({
-        type: 'none',
-        msg: ''
+        type: "none",
+        msg: "",
     })
     return {
         name: namebuf.buffer as ArrayBuffer,
-        data: writer.buf.buffer.buffer as ArrayBuffer
+        data: writer.buf.buffer.buffer as ArrayBuffer,
     }
 }
 
-export async function openRealm(name:string,data:ArrayBuffer) {
-    const tk = getDatabase()?.account?.token;
+export async function openRealm(name: string, data: ArrayBuffer) {
+    const tk = getDatabase()?.account?.token
     const id = getDatabase()?.account?.id
-    const trimedName = name.replace(/[^a-zA-Z0-9]/g, '') || 'character';
-    const filedata = encodeURIComponent(Buffer.from(data).toString('base64')) + `&${trimedName}.png`;
+    const trimedName = name.replace(/[^a-zA-Z0-9]/g, "") || "character"
+    const filedata = encodeURIComponent(Buffer.from(data).toString("base64")) + `&${trimedName}.png`
     const url = `https://realm.risuai.net/upload?token=${tk}&token_id=${id}#filedata=${filedata}`
 }

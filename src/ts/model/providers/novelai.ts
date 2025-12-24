@@ -1,44 +1,40 @@
-import { LLMFlags, LLMFormat, LLMProvider, LLMTokenizer, type LLMModel } from '../types'
+import { LLMFlags, LLMFormat, LLMProvider, LLMTokenizer, type LLMModel } from "../types"
 
 export const NovelAIModels: LLMModel[] = [
     {
         name: "SuperTrin",
-        id: 'novellist',
+        id: "novellist",
         provider: LLMProvider.NovelList,
         format: LLMFormat.NovelList,
         flags: [],
         parameters: [],
-        tokenizer: LLMTokenizer.NovelList
+        tokenizer: LLMTokenizer.NovelList,
     },
     {
         name: "Damsel",
-        id: 'novellist_damsel',
+        id: "novellist_damsel",
         provider: LLMProvider.NovelList,
         format: LLMFormat.NovelList,
         flags: [],
         parameters: [],
-        tokenizer: LLMTokenizer.NovelList
+        tokenizer: LLMTokenizer.NovelList,
     },
     {
         name: "Clio",
-        id: 'novelai',
+        id: "novelai",
         provider: LLMProvider.NovelAI,
         format: LLMFormat.NovelAI,
         flags: [LLMFlags.hasFullSystemPrompt],
-        parameters: [
-            'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'
-        ],
-        tokenizer: LLMTokenizer.NovelAI
+        parameters: ["temperature", "top_k", "top_p", "presence_penalty", "frequency_penalty"],
+        tokenizer: LLMTokenizer.NovelAI,
     },
     {
         name: "Kayra",
-        id: 'novelai_kayra',
+        id: "novelai_kayra",
         provider: LLMProvider.NovelAI,
         format: LLMFormat.NovelAI,
         flags: [LLMFlags.hasFullSystemPrompt],
-        parameters: [
-            'temperature', 'top_k', 'top_p', 'presence_penalty', 'frequency_penalty'
-        ],
-        tokenizer: LLMTokenizer.NovelAI
+        parameters: ["temperature", "top_k", "top_p", "presence_penalty", "frequency_penalty"],
+        tokenizer: LLMTokenizer.NovelAI,
     },
 ]

@@ -1,128 +1,134 @@
 import { alertMd, alertSelect, alertToast, alertWait, doingAlert } from "../utils/alert.svelte"
 import { getDatabase } from "../data/storage/database.svelte"
 import { changeToPreset as changeToPreset2 } from "../data/storage/utils/presetManager"
-import { ModalState, MobileState, RealmState, QuickSettings, ChatState, SettingsState, AppState } from "../stores.svelte"
+import {
+    ModalState,
+    MobileState,
+    RealmState,
+    QuickSettings,
+    ChatState,
+    SettingsState,
+    AppState,
+} from "../stores.svelte"
 import { language } from "src/lang"
 import { updateTextThemeAndCSS } from "../gui/colorscheme.svelte"
 import { defaultHotkeys } from "./defaulthotkeys"
 import { DoingChatState, previewBody, sendChat } from "../process/index.svelte"
 import { getRequestLog } from "../utils/fetch"
 
-export function initHotkey(){
-    document.addEventListener('keydown', async (ev) => {
-        if(
+export function initHotkey() {
+    document.addEventListener("keydown", async (ev) => {
+        if (
             !ev.ctrlKey &&
             !ev.altKey &&
             !ev.shiftKey &&
-            (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName) ||
-            document.activeElement.getAttribute('contenteditable'))
-        ){
+            (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName) ||
+                document.activeElement.getAttribute("contenteditable"))
+        ) {
             return
         }
-
 
         const database = getDatabase()
 
         const hotKeys = database?.hotkeys ?? defaultHotkeys
 
         let hotkeyRan = false
-        for(const hotkey of hotKeys){
+        for (const hotkey of hotKeys) {
             let hotKeyRanThisTime = true
-            
-            
+
             hotkey.ctrl = hotkey.ctrl ?? false
             hotkey.alt = hotkey.alt ?? false
             hotkey.shift = hotkey.shift ?? false
 
-            if(hotkey.key === ev.key){
-             
+            if (hotkey.key === ev.key) {
                 console.log(`Hotkey: "${hotkey.key}" ${hotkey.ctrl} ${hotkey.alt} ${hotkey.shift}`)
                 console.log(`Event: "${ev.key}" ${ev.ctrlKey} ${ev.altKey} ${ev.shiftKey}`)
-                
             }
-            if(hotkey.ctrl !== ev.ctrlKey){
+            if (hotkey.ctrl !== ev.ctrlKey) {
                 continue
             }
-            if(hotkey.alt !== ev.altKey){
+            if (hotkey.alt !== ev.altKey) {
                 continue
             }
-            if(hotkey.shift !== ev.shiftKey){
+            if (hotkey.shift !== ev.shiftKey) {
                 continue
             }
-            if(hotkey.key !== ev.key){
+            if (hotkey.key !== ev.key) {
                 continue
             }
-            if(!hotkey.ctrl && !hotkey.alt && !hotkey.shift){
-                if(['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)){
+            if (!hotkey.ctrl && !hotkey.alt && !hotkey.shift) {
+                if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) {
                     continue
                 }
             }
-            switch(hotkey.action){
-                case 'reroll':{
-                    clickQuery('.button-icon-reroll')
+            switch (hotkey.action) {
+                case "reroll": {
+                    clickQuery(".button-icon-reroll")
                     break
                 }
-                case 'unreroll':{
-                    clickQuery('.button-icon-unreroll')
+                case "unreroll": {
+                    clickQuery(".button-icon-unreroll")
                     break
                 }
-                case 'translate':{
-                    clickQuery('.button-icon-translate')
+                case "translate": {
+                    clickQuery(".button-icon-translate")
                     break
                 }
-                case 'remove':{
-                    clickQuery('.button-icon-remove')
+                case "remove": {
+                    clickQuery(".button-icon-remove")
                     break
                 }
-                case 'edit':{
-                    clickQuery('.button-icon-edit')
+                case "edit": {
+                    clickQuery(".button-icon-edit")
                     setTimeout(() => {
-                        focusQuery('.message-edit-area')
+                        focusQuery(".message-edit-area")
                     }, 100)
                     break
                 }
-                case 'copy':{
-                    clickQuery('.button-icon-copy')
+                case "copy": {
+                    clickQuery(".button-icon-copy")
                     break
                 }
-                case 'focusInput':{
-                    focusQuery('.text-input-area')
+                case "focusInput": {
+                    focusQuery(".text-input-area")
                     break
                 }
-                case 'send':{
-                    clickQuery('.button-icon-send')
+                case "send": {
+                    clickQuery(".button-icon-send")
                     break
                 }
-                case 'settings':{
+                case "settings": {
                     SettingsState.isOpen = !SettingsState.isOpen
                     break
                 }
-                case 'home':{
+                case "home": {
                     ChatState.selectedCharId = -1
                     break
                 }
-                case 'presets':{
+                case "presets": {
                     ModalState.presetListOpen = !ModalState.presetListOpen
                     break
                 }
-                case 'persona':{
+                case "persona": {
                     ModalState.personaListOpen = !ModalState.personaListOpen
                     break
                 }
-                case 'toggleCSS':{
+                case "toggleCSS": {
                     AppState.safeMode = !AppState.safeMode
                     updateTextThemeAndCSS()
                     break
                 }
-                case 'prevChar':{
-                    const sorted = database.characters.map((v, i) => {
-                        return {name: v.name, i}
-                    }).sort((a, b) => a.name.localeCompare(b.name))
-                    const currentIndex = sorted.findIndex(v => v.i === ChatState.selectedCharId)
-                    if(currentIndex === 0){
+                case "prevChar": {
+                    const sorted = database.characters
+                        .map((v, i) => {
+                            return { name: v.name, i }
+                        })
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                    const currentIndex = sorted.findIndex((v) => v.i === ChatState.selectedCharId)
+                    if (currentIndex === 0) {
                         return
                     }
-                    if(currentIndex >= sorted.length - 1){
+                    if (currentIndex >= sorted.length - 1) {
                         return
                     }
                     ChatState.selectedCharId = sorted[currentIndex - 1].i
@@ -130,15 +136,17 @@ export function initHotkey(){
                     RealmState.isOpen = false
                     break
                 }
-                case 'nextChar':{
-                    const sorted = database.characters.map((v, i) => {
-                        return {name: v.name, i}
-                    }).sort((a, b) => a.name.localeCompare(b.name))
-                    const currentIndex = sorted.findIndex(v => v.i === ChatState.selectedCharId)
-                    if(currentIndex === 0){
+                case "nextChar": {
+                    const sorted = database.characters
+                        .map((v, i) => {
+                            return { name: v.name, i }
+                        })
+                        .sort((a, b) => a.name.localeCompare(b.name))
+                    const currentIndex = sorted.findIndex((v) => v.i === ChatState.selectedCharId)
+                    if (currentIndex === 0) {
                         return
                     }
-                    if(currentIndex >= sorted.length - 1){
+                    if (currentIndex >= sorted.length - 1) {
                         return
                     }
                     ChatState.selectedCharId = sorted[currentIndex + 1].i
@@ -146,106 +154,108 @@ export function initHotkey(){
                     RealmState.isOpen = false
                     break
                 }
-                case 'quickMenu':{
+                case "quickMenu": {
                     quickMenu()
                     break
                 }
-                case 'previewRequest':{
-                    if(DoingChatState.value && ChatState.selectedCharId !== -1){
+                case "previewRequest": {
+                    if (DoingChatState.value && ChatState.selectedCharId !== -1) {
                         return false
                     }
                     alertWait("Loading...")
                     ev.preventDefault()
                     ev.stopPropagation()
                     await sendChat(-1, {
-                        previewPrompt: true
+                        previewPrompt: true,
                     })
 
-                    let md = ''
-                    md += '### Prompt\n'
-                    md += '```json\n' + JSON.stringify(JSON.parse(previewBody), null, 2).replaceAll('```', '\\`\\`\\`') + '\n```\n'
+                    let md = ""
+                    md += "### Prompt\n"
+                    md +=
+                        "```json\n" +
+                        JSON.stringify(JSON.parse(previewBody), null, 2).replaceAll("```", "\\`\\`\\`") +
+                        "\n```\n"
                     DoingChatState.value = false
                     alertMd(md)
                     return
                 }
-                case 'toggleLog':{
+                case "toggleLog": {
                     alertMd(getRequestLog())
                     break
                 }
-                case 'quickSettings':{
+                case "quickSettings": {
                     QuickSettings.open = !QuickSettings.open
                     QuickSettings.index = 0
                     break
                 }
-                default:{
+                default: {
                     hotKeyRanThisTime = false
                 }
             }
 
-            if(hotKeyRanThisTime){
+            if (hotKeyRanThisTime) {
                 hotkeyRan = true
                 break
             }
         }
 
-        if(hotkeyRan){
+        if (hotkeyRan) {
             ev.preventDefault()
             ev.stopPropagation()
             return
         }
 
-
-        if(ev.ctrlKey){
-            switch (ev.key){
-                case "1":{
+        if (ev.ctrlKey) {
+            switch (ev.key) {
+                case "1": {
                     changeToPreset(0)
                     ev.preventDefault()
                     ev.stopPropagation()
                     break
                 }
-                case "2":{
+                case "2": {
                     changeToPreset(1)
                     ev.preventDefault()
                     ev.stopPropagation()
                     break
                 }
-                case "3":{
+                case "3": {
                     changeToPreset(2)
                     ev.preventDefault()
                     ev.stopPropagation()
                     break
                 }
-                case "4":{
+                case "4": {
                     changeToPreset(3)
                     ev.preventDefault()
                     ev.stopPropagation()
                     break
                 }
-                case "5":{
+                case "5": {
                     changeToPreset(4)
                     ev.preventDefault()
                     ev.stopPropagation()
                     break
                 }
-                case "6":{
+                case "6": {
                     changeToPreset(5)
                     ev.preventDefault()
                     ev.stopPropagation()
                     break
                 }
-                case "7":{
+                case "7": {
                     changeToPreset(6)
                     ev.preventDefault()
                     ev.stopPropagation()
                     break
                 }
-                case "8":{
+                case "8": {
                     changeToPreset(7)
                     ev.preventDefault()
                     ev.stopPropagation()
                     break
                 }
-                case "9":{
+                case "9": {
                     changeToPreset(8)
                     ev.preventDefault()
                     ev.stopPropagation()
@@ -253,140 +263,142 @@ export function initHotkey(){
                 }
             }
         }
-        if(ev.key === 'Escape'){
-            if(doingAlert()){
-                alertToast('Alert Closed')
+        if (ev.key === "Escape") {
+            if (doingAlert()) {
+                alertToast("Alert Closed")
             }
-            if(SettingsState.isOpen){
+            if (SettingsState.isOpen) {
                 SettingsState.isOpen = false
             }
             ev.preventDefault()
         }
-        if(ev.key === 'Enter'){
+        if (ev.key === "Enter") {
             const alertType = ModalState.alert.type
-            if(alertType === 'ask' || alertType === 'normal' || alertType === 'error'){
+            if (alertType === "ask" || alertType === "normal" || alertType === "error") {
                 ModalState.alert = {
-                    type: 'none',
-                    msg: 'yes'
+                    type: "none",
+                    msg: "yes",
                 }
             }
         }
     })
-
 
     let touchs = 0
     let touchStartTime = 0
     //check for triple touch
-    document.addEventListener('touchstart', async (ev) => {
+    document.addEventListener("touchstart", async (ev) => {
         touchs++
-        if(touchs > 2){
-            if(Date.now() - touchStartTime > 300){
+        if (touchs > 2) {
+            if (Date.now() - touchStartTime > 300) {
                 return
             }
             touchs = 0
-            if(doingAlert()){
+            if (doingAlert()) {
                 return
             }
             quickMenu()
         }
-        if(touchs === 1){
+        if (touchs === 1) {
             touchStartTime = Date.now()
         }
     })
-    document.addEventListener('touchend', (ev) => {
+    document.addEventListener("touchend", (ev) => {
         touchs = 0
     })
 }
 
-async function quickMenu(){
-    const selStr = await alertSelect([
-        language.presets,
-        language.persona,
-        language.cancel
-    ])
+async function quickMenu() {
+    const selStr = await alertSelect([language.presets, language.persona, language.cancel])
     const sel = parseInt(selStr)
-    if(sel === 0){
+    if (sel === 0) {
         ModalState.presetListOpen = !ModalState.presetListOpen
     }
-    if(sel === 1){
+    if (sel === 1) {
         ModalState.personaListOpen = !ModalState.personaListOpen
     }
 }
 
-function clickQuery(query:string){
+function clickQuery(query: string) {
     const ele = document.querySelector(query) as HTMLElement
     console.log(ele)
-    if(ele){
+    if (ele) {
         ele.click()
     }
 }
 
-function focusQuery(query:string){
+function focusQuery(query: string) {
     const ele = document.querySelector(query) as HTMLElement
-    if(ele){
+    if (ele) {
         ele.focus()
     }
 }
 
+export function initMobileGesture() {
+    const pressingPointers = new Map<number, { x: number; y: number }>()
 
-
-export function initMobileGesture(){
-
-    const pressingPointers = new Map<number, {x:number, y:number}>()
-
-    document.addEventListener('touchstart', (ev) => {
-        for(const touch of ev.changedTouches){
-            const ele = touch.target as HTMLElement
-            if(ele.tagName === 'BUTTON' || ele.tagName === 'INPUT' || ele.tagName === 'SELECT' || ele.tagName === 'TEXTAREA'){
-                return
+    document.addEventListener(
+        "touchstart",
+        (ev) => {
+            for (const touch of ev.changedTouches) {
+                const ele = touch.target as HTMLElement
+                if (
+                    ele.tagName === "BUTTON" ||
+                    ele.tagName === "INPUT" ||
+                    ele.tagName === "SELECT" ||
+                    ele.tagName === "TEXTAREA"
+                ) {
+                    return
+                }
+                pressingPointers.set(touch.identifier, { x: touch.clientX, y: touch.clientY })
             }
-            pressingPointers.set(touch.identifier, {x: touch.clientX, y: touch.clientY})
+        },
+        {
+            passive: true,
         }
-    }, {
-        passive: true
-    })
-    document.addEventListener('touchend', (ev) => {
-        for(const touch of ev.changedTouches){
-            const d = pressingPointers.get(touch.identifier)
-            const moveX = touch.clientX - d.x
-            const moveY = touch.clientY - d.y
-            pressingPointers.delete(touch.identifier)
+    )
+    document.addEventListener(
+        "touchend",
+        (ev) => {
+            for (const touch of ev.changedTouches) {
+                const d = pressingPointers.get(touch.identifier)
+                const moveX = touch.clientX - d.x
+                const moveY = touch.clientY - d.y
+                pressingPointers.delete(touch.identifier)
 
-            if(moveX > 50 && Math.abs(moveY) < Math.abs(moveX)){
-                if(ChatState.selectedCharId === -1){
-                    if(MobileState.currentStack > 0){
-                        MobileState.currentStack -= 1
+                if (moveX > 50 && Math.abs(moveY) < Math.abs(moveX)) {
+                    if (ChatState.selectedCharId === -1) {
+                        if (MobileState.currentStack > 0) {
+                            MobileState.currentStack -= 1
+                        }
+                    } else {
+                        if (MobileState.sideBarMenu > 0) {
+                            MobileState.sideBarMenu -= 1
+                        }
                     }
-                }
-                else{
-                    if(MobileState.sideBarMenu > 0){
-                        MobileState.sideBarMenu -= 1;
+                } else if (moveX < -50 && Math.abs(moveY) < Math.abs(moveX)) {
+                    if (ChatState.selectedCharId === -1) {
+                        if (MobileState.currentStack < 2) {
+                            MobileState.currentStack -= 1
+                        }
+                    } else {
+                        if (MobileState.sideBarMenu < 3) {
+                            MobileState.sideBarMenu += 1
+                        }
                     }
                 }
             }
-            else if(moveX < -50 && Math.abs(moveY) < Math.abs(moveX)){
-                if(ChatState.selectedCharId === -1){
-                    if(MobileState.currentStack < 2){
-                        MobileState.currentStack -= 1
-                    }
-                }
-                else{
-                    if(MobileState.sideBarMenu < 3){
-                        MobileState.sideBarMenu += 1
-                    }
-                }
-            }
+        },
+        {
+            passive: true,
         }
-    }, {
-        passive: true
-    })
+    )
 }
 
-function changeToPreset(num:number){
-    if(!doingAlert()){
+function changeToPreset(num: number) {
+    if (!doingAlert()) {
         const db = getDatabase()
         const pres = db.botPresets
-        if(pres.length > num){
+        if (pres.length > num) {
             alertToast(`Changed to Preset: ${pres[num].name}`)
             changeToPreset2(num)
         }

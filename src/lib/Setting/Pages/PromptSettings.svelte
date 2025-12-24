@@ -41,7 +41,7 @@
 </script>
 
 {#if mode === "independent"}
-    <h2 class="mb-2 text-2xl font-bold mt-2 items-center flex">
+    <h2 class="mb-2 mt-2 flex items-center text-2xl font-bold">
         <button class="mr-2 text-textcolor2 hover:text-textcolor" onclick={onGoBack}>
             <ArrowLeft />
         </button>
@@ -53,7 +53,7 @@
             onclick={() => {
                 subMenu = 0
             }}
-            class="p-2 flex-1"
+            class="flex-1 p-2"
             class:bg-selected={subMenu === 0}
         >
             <span>{language.template}</span>
@@ -62,7 +62,7 @@
             onclick={() => {
                 subMenu = 1
             }}
-            class="p-2 flex-1"
+            class="flex-1 p-2"
             class:bg-selected={subMenu === 1}
         >
             <span>{language.settings}</span>
@@ -70,9 +70,9 @@
     </div>
 {/if}
 {#if warns.length > 0 && subMenu === 0}
-    <div class="text-red-500 flex flex-col items-start p-2 rounded-md border-red-500 border mt-4">
+    <div class="mt-4 flex flex-col items-start rounded-md border border-red-500 p-2 text-red-500">
         <h2 class="text-xl font-bold">Warning</h2>
-        <div class="border-b border-b-red-500 mt-1 mb-2 w-full"></div>
+        <div class="mb-2 mt-1 w-full border-b border-b-red-500"></div>
         {#each warns as warn}
             <span class="ml-4">{warn}</span>
         {/each}
@@ -80,7 +80,7 @@
 {/if}
 
 {#if subMenu === 0}
-    <div class="contain w-full max-w-full mt-4 flex flex-col p-3 rounded-md">
+    <div class="contain mt-4 flex w-full max-w-full flex-col rounded-md p-3">
         {#if DBState.db.promptTemplate.length === 0}
             <div class="text-textcolor2">No Format</div>
         {/if}
@@ -119,7 +119,7 @@
     </div>
 
     <button
-        class="font-medium cursor-pointer hover:text-green-500"
+        class="cursor-pointer font-medium hover:text-green-500"
         onclick={() => {
             let value = DBState.db.promptTemplate ?? []
             value.push({
@@ -132,10 +132,10 @@
         }}><PlusIcon /></button
     >
 
-    <span class="text-textcolor2 text-sm mt-2">{tokens} {language.fixedTokens}</span>
-    <span class="text-textcolor2 mb-6 text-sm mt-2">{extokens} {language.exactTokens}</span>
+    <span class="mt-2 text-sm text-textcolor2">{tokens} {language.fixedTokens}</span>
+    <span class="mb-6 mt-2 text-sm text-textcolor2">{extokens} {language.exactTokens}</span>
 {:else}
-    <span class="text-textcolor mt-4">{language.postEndInnerFormat}</span>
+    <span class="mt-4 text-textcolor">{language.postEndInnerFormat}</span>
     <TextInput bind:value={DBState.db.promptSettings.postEndInnerFormat} />
 
     <Check bind:check={DBState.db.promptSettings.sendChatAsSystem} name={language.sendChatAsSystem} className="mt-4" />
@@ -147,58 +147,67 @@
     <Check bind:check={DBState.db.strictJsonSchema} name={language.strictJsonSchema} className="mt-4" />
 
     {#if DBState.db.showUnrecommended}
-        <Check bind:check={DBState.db.promptSettings.customChainOfThought} name={language.customChainOfThought} className="mt-4">
+        <Check
+            bind:check={DBState.db.promptSettings.customChainOfThought}
+            name={language.customChainOfThought}
+            className="mt-4"
+        >
             <Help unrecommended key="customChainOfThought" />
         </Check>
     {/if}
-    <span class="text-textcolor mt-4">{language.maxThoughtTagDepth}</span>
+    <span class="mt-4 text-textcolor">{language.maxThoughtTagDepth}</span>
     <NumberInput bind:value={DBState.db.promptSettings.maxThoughtTagDepth} />
-    <span class="text-textcolor mt-4">{language.groupOtherBotRole} <Help key="groupOtherBotRole" /></span>
+    <span class="mt-4 text-textcolor">{language.groupOtherBotRole} <Help key="groupOtherBotRole" /></span>
     <SelectInput bind:value={DBState.db.groupOtherBotRole}>
         <OptionInput value="user">User</OptionInput>
         <OptionInput value="system">System</OptionInput>
         <OptionInput value="assistant">assistant</OptionInput>
     </SelectInput>
-    <span class="text-textcolor mt-4">{language.customPromptTemplateToggle} <Help key="customPromptTemplateToggle" /></span>
+    <span class="mt-4 text-textcolor"
+        >{language.customPromptTemplateToggle} <Help key="customPromptTemplateToggle" /></span
+    >
     <TextAreaInput bind:value={DBState.db.customPromptTemplateToggle} />
-    <span class="text-textcolor mt-4">{language.defaultVariables} <Help key="defaultVariables" /></span>
+    <span class="mt-4 text-textcolor">{language.defaultVariables} <Help key="defaultVariables" /></span>
     <TextAreaInput bind:value={DBState.db.templateDefaultVariables} />
-    <span class="text-textcolor mt-4">{language.predictedOutput}</span>
+    <span class="mt-4 text-textcolor">{language.predictedOutput}</span>
     <TextAreaInput bind:value={DBState.db.OAIPrediction} />
-    <span class="text-textcolor mt-4">{language.groupInnerFormat} <Help key="groupInnerFormat" /></span>
-    <TextAreaInput placeholder={`<{{char}}'s Message>\n{{slot}}\n</{{char}}'s Message>`} bind:value={DBState.db.groupTemplate} />
-    <span class="text-textcolor mt-4">{language.systemContentReplacement} <Help key="systemContentReplacement" /></span>
+    <span class="mt-4 text-textcolor">{language.groupInnerFormat} <Help key="groupInnerFormat" /></span>
+    <TextAreaInput
+        placeholder={`<{{char}}'s Message>\n{{slot}}\n</{{char}}'s Message>`}
+        bind:value={DBState.db.groupTemplate}
+    />
+    <span class="mt-4 text-textcolor">{language.systemContentReplacement} <Help key="systemContentReplacement" /></span>
     <TextAreaInput bind:value={DBState.db.systemContentReplacement} />
-    <span class="text-textcolor mt-4">{language.systemRoleReplacement} <Help key="systemRoleReplacement" /></span>
+    <span class="mt-4 text-textcolor">{language.systemRoleReplacement} <Help key="systemRoleReplacement" /></span>
     <SelectInput bind:value={DBState.db.systemRoleReplacement}>
         <OptionInput value="user">User</OptionInput>
         <OptionInput value="assistant">assistant</OptionInput>
     </SelectInput>
     {#if DBState.db.jsonSchemaEnabled}
-        <span class="text-textcolor mt-4">{language.jsonSchema} <Help key="jsonSchema" /></span>
+        <span class="mt-4 text-textcolor">{language.jsonSchema} <Help key="jsonSchema" /></span>
         <TextAreaInput bind:value={DBState.db.jsonSchema} />
-        <span class="text-textcolor mt-4">{language.extractJson} <Help key="extractJson" /></span>
+        <span class="mt-4 text-textcolor">{language.extractJson} <Help key="extractJson" /></span>
         <TextInput bind:value={DBState.db.extractJson} />
     {/if}
 
-    <div class="flex items-center mt-4">
+    <div class="mt-4 flex items-center">
         <Check bind:check={DBState.db.seperateModelsForAxModels} name={language.seperateModelsForAxModels}></Check>
     </div>
 
     {#if DBState.db.seperateModelsForAxModels}
         <Check bind:check={DBState.db.doNotChangeSeperateModels} name={language.doNotChangeSeperateModels}></Check>
         <Arcodion name={language.axModelsDef} styled>
-            <span class="text-textcolor mt-4"> Memory </span>
+            <span class="mt-4 text-textcolor"> Memory </span>
             <ModelList bind:value={DBState.db.seperateModels.memory} blankable />
 
-            <span class="text-textcolor mt-4"> Translations </span>
+            <span class="mt-4 text-textcolor"> Translations </span>
             <ModelList bind:value={DBState.db.seperateModels.translate} blankable />
 
-            <span class="text-textcolor mt-4"> Emotion </span>
+            <span class="mt-4 text-textcolor"> Emotion </span>
 
             <ModelList bind:value={DBState.db.seperateModels.emotion} blankable />
 
-            <span class="text-textcolor mt-4"> OtherAx </span>
+            <span class="mt-4 text-textcolor"> OtherAx </span>
 
             <ModelList bind:value={DBState.db.seperateModels.otherAx} blankable />
         </Arcodion>
@@ -206,7 +215,7 @@
 
     {#snippet fallbackModelList(arg: "model" | "memory" | "translate" | "emotion" | "otherAx")}
         {#each DBState.db.fallbackModels[arg] as model, i}
-            <span class="text-textcolor mt-4">
+            <span class="mt-4 text-textcolor">
                 {language.model}
                 {i + 1}
             </span>
@@ -214,7 +223,7 @@
         {/each}
         <div class="flex gap-2">
             <button
-                class="bg-selected text-white p-2 rounded-md"
+                class="rounded-md bg-selected p-2 text-white"
                 onclick={() => {
                     let value = DBState.db.fallbackModels[arg] ?? []
                     value.push("")
@@ -222,7 +231,7 @@
                 }}><PlusIcon /></button
             >
             <button
-                class="bg-red-500 text-white p-2 rounded-md"
+                class="rounded-md bg-red-500 p-2 text-white"
                 onclick={() => {
                     let value = DBState.db.fallbackModels[arg] ?? []
                     value.pop()
@@ -233,8 +242,16 @@
     {/snippet}
 
     <Arcodion name={language.fallbackModel} styled>
-        <Check bind:check={DBState.db.fallbackWhenBlankResponse} name={language.fallbackWhenBlankResponse} className="mt-4" />
-        <Check bind:check={DBState.db.doNotChangeFallbackModels} name={language.doNotChangeFallbackModels} className="mt-4" />
+        <Check
+            bind:check={DBState.db.fallbackWhenBlankResponse}
+            name={language.fallbackWhenBlankResponse}
+            className="mt-4"
+        />
+        <Check
+            bind:check={DBState.db.doNotChangeFallbackModels}
+            name={language.doNotChangeFallbackModels}
+            className="mt-4"
+        />
 
         <Arcodion name={language.model} styled>
             {@render fallbackModelList("model")}

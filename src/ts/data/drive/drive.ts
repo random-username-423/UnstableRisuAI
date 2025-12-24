@@ -1,53 +1,48 @@
-import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../../utils/alert.svelte";
-import { getDatabase } from "../storage/database.svelte";
-import type { Database } from "../storage/types";
-import { saving } from "src/ts/data/storage/autoSaveManager.svelte";
-import { openURL } from "../../utils/util";
-import { forageStorage } from "src/ts/data/storage/autoStorage";
-import { saveToWorker, deleteFromWorker, deleteDirectoryFromWorker } from 'src/ts/data/storage/opfsWorkerClient.svelte'
-import { getUnpargeables } from 'src/ts/utils/dbUtils'
-import { isTauri } from "src/ts/utils/env";
-import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs";
-import { language } from "../../../lang";
-import { relaunch } from '@tauri-apps/plugin-process';
-import { platform } from '@tauri-apps/plugin-os';
-import { sleep, getBasename } from '../../utils/util';
-import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
-import { AppState } from "../../stores.svelte";
+import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertClear } from "../../utils/alert.svelte"
+import { getDatabase } from "../storage/database.svelte"
+import type { Database } from "../storage/types"
+import { saving } from "src/ts/data/storage/autoSaveManager.svelte"
+import { openURL } from "../../utils/util"
+import { forageStorage } from "src/ts/data/storage/autoStorage"
+import { saveToWorker, deleteFromWorker, deleteDirectoryFromWorker } from "src/ts/data/storage/opfsWorkerClient.svelte"
+import { getUnpargeables } from "src/ts/utils/dbUtils"
+import { isTauri } from "src/ts/utils/env"
+import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs"
+import { language } from "../../../lang"
+import { relaunch } from "@tauri-apps/plugin-process"
+import { platform } from "@tauri-apps/plugin-os"
+import { sleep, getBasename } from "../../utils/util"
+import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave"
+import { AppState } from "../../stores.svelte"
 
-export async function checkDriver(type: 'save' | 'load' | 'loadtauri' | 'savetauri' | 'reftoken') {
-    const CLIENT_ID = '580075990041-l26k2d3c0nemmqiu3d3aag01npfrkn76.apps.googleusercontent.com';
-    const REDIRECT_URI = type === 'reftoken' ? 'https://sv.risuai.xyz/drive' : "https://risuai.xyz/"
-    const SCOPE = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata';
-    const encodedRedirectUri = encodeURIComponent(REDIRECT_URI);
-    const authorizationUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodedRedirectUri}&scope=${SCOPE}&response_type=code&state=${type}`;
+export async function checkDriver(type: "save" | "load" | "loadtauri" | "savetauri" | "reftoken") {
+    const CLIENT_ID = "580075990041-l26k2d3c0nemmqiu3d3aag01npfrkn76.apps.googleusercontent.com"
+    const REDIRECT_URI = type === "reftoken" ? "https://sv.risuai.xyz/drive" : "https://risuai.xyz/"
+    const SCOPE = "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.appdata"
+    const encodedRedirectUri = encodeURIComponent(REDIRECT_URI)
+    const authorizationUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodedRedirectUri}&scope=${SCOPE}&response_type=code&state=${type}`
 
-
-    if (type === 'reftoken') {
-        const authorizationUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodedRedirectUri}&scope=${SCOPE}&response_type=code&state=${"accesstauri"}&access_type=offline&prompt=consent`;
+    if (type === "reftoken") {
+        const authorizationUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${CLIENT_ID}&redirect_uri=${encodedRedirectUri}&scope=${SCOPE}&response_type=code&state=${"accesstauri"}&access_type=offline&prompt=consent`
         return authorizationUrl
     }
 
-    if (type === 'save' || type === 'load') {
-        location.href = (authorizationUrl);
-    }
-    else {
-
+    if (type === "save" || type === "load") {
+        location.href = authorizationUrl
+    } else {
         try {
             if (isTauri) {
                 openURL(authorizationUrl)
-            }
-            else {
+            } else {
                 window.open(authorizationUrl)
             }
             let code = await alertInput(language.pasteAuthCode)
-            if (code.includes(' ')) {
-                code = code.substring(code.lastIndexOf(' ')).trim()
+            if (code.includes(" ")) {
+                code = code.substring(code.lastIndexOf(" ")).trim()
             }
-            if (type === 'loadtauri') {
-                await loadDrive(code, 'backup')
-            }
-            else {
+            if (type === "loadtauri") {
+                await loadDrive(code, "backup")
+            } else {
                 await backupDrive(code)
             }
         } catch (error) {
@@ -57,78 +52,70 @@ export async function checkDriver(type: 'save' | 'load' | 'loadtauri' | 'savetau
     }
 }
 
-
 export async function checkDriverInit() {
     try {
         const loc = new URLSearchParams(location.search)
-        const code = loc.get('code')
+        const code = loc.get("code")
 
         if (code) {
             const res = await fetch(`/drive?code=${encodeURIComponent(code)}`)
             if (res.status >= 200 && res.status < 300) {
                 const json: {
-                    access_token: string,
+                    access_token: string
                     expires_in: number
                 } = await res.json()
-                const da = loc.get('state')
-                if (da === 'save') {
+                const da = loc.get("state")
+                if (da === "save") {
                     await backupDrive(json.access_token)
-                }
-                else if (da === 'load') {
-                    await loadDrive(json.access_token, 'backup')
-                }
-                else if (da === 'savetauri' || da === 'loadtauri' || da === 'synctauri') {
-                    AppState.loaded = true  // Hide loading screen
+                } else if (da === "load") {
+                    await loadDrive(json.access_token, "backup")
+                } else if (da === "savetauri" || da === "loadtauri" || da === "synctauri") {
+                    AppState.loaded = true // Hide loading screen
                     alertStore.set({
-                        type: 'wait2',
-                        msg: `Copy and paste this Auth Code: ${json.access_token}`
+                        type: "wait2",
+                        msg: `Copy and paste this Auth Code: ${json.access_token}`,
+                    })
+                } else if (da === "accesstauri") {
+                    alertStore.set({
+                        type: "wait2",
+                        msg: JSON.stringify(json),
                     })
                 }
-                else if (da === 'accesstauri') {
-                    alertStore.set({
-                        type: 'wait2',
-                        msg: JSON.stringify(json)
-                    })
-                }
-            }
-            else {
+            } else {
                 alertError(await res.text())
-                location.search = ''
+                location.search = ""
             }
             return true
-        }
-        else {
+        } else {
             return false
         }
     } catch (error) {
         console.error(error)
         alertError(`Backup Error: ${error}`)
         const currentURL = new URL(location.href)
-        currentURL.search = ''
-        window.history.replaceState({}, "", currentURL.href);
+        currentURL.search = ""
+        window.history.replaceState({}, "", currentURL.href)
         await sleep(100000)
         return false
     }
 }
 
-let lastSaved: number = parseInt(localStorage.getItem('risu_lastsaved') ?? '-1')
+let lastSaved: number = parseInt(localStorage.getItem("risu_lastsaved") ?? "-1")
 let BackupDb: Database = null
-
 
 export async function syncDrive() {
     BackupDb = safeStructuredClone(getDatabase())
     return
 }
 
-
 async function backupDrive(ACCESS_TOKEN: string) {
     alertStore.set({
         type: "wait",
-        msg: "Uploading Backup... (Fetching file list)"
+        msg: "Uploading Backup... (Fetching file list)",
     })
-    await sleep(10)  // UI 업데이트 대기
+    await sleep(10) // UI 업데이트 대기
 
-    console.log('[GoogleDrive Backup] Starting backup...')
+    console.log("[GoogleDrive Backup] Starting backup...")
     const files: DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
     console.log(`[GoogleDrive Backup] Found ${files.length} existing files in Drive`)
 
@@ -140,23 +127,21 @@ async function backupDrive(ACCESS_TOKEN: string) {
 
     // 1. IndexedDB (forageStorage)에서 에셋 수집
     const keys = await forageStorage.keys()
-    const indexedDbAssetKeys = keys.filter(key => key && key.startsWith('assets/'))
+    const indexedDbAssetKeys = keys.filter((key) => key && key.startsWith("assets/"))
     console.log(`[GoogleDrive Backup] Found ${indexedDbAssetKeys.length} assets in IndexedDB`)
 
     // 2. Tauri fs (AppData/assets)에서 에셋 수집 (레거시 데이터 호환)
     let tauriFsAssetKeys: string[] = []
     if (isTauri) {
         try {
-            const assetsExist = await exists('assets', { baseDir: BaseDirectory.AppData })
+            const assetsExist = await exists("assets", { baseDir: BaseDirectory.AppData })
             if (assetsExist) {
-                const tauriFsAssets = await readDir('assets', { baseDir: BaseDirectory.AppData })
-                tauriFsAssetKeys = tauriFsAssets
-                    .filter(a => a.name && !a.isDirectory)
-                    .map(a => 'assets/' + a.name)
+                const tauriFsAssets = await readDir("assets", { baseDir: BaseDirectory.AppData })
+                tauriFsAssetKeys = tauriFsAssets.filter((a) => a.name && !a.isDirectory).map((a) => "assets/" + a.name)
                 console.log(`[GoogleDrive Backup] Found ${tauriFsAssetKeys.length} assets in Tauri fs`)
             }
         } catch (e) {
-            console.warn('[GoogleDrive Backup] Failed to read Tauri fs assets:', e)
+            console.warn("[GoogleDrive Backup] Failed to read Tauri fs assets:", e)
         }
     }
 
@@ -165,7 +150,7 @@ async function backupDrive(ACCESS_TOKEN: string) {
     console.log(`[GoogleDrive Backup] Total unique local assets: ${assetKeys.length}`)
 
     // 업로드할 파일 목록 수집
-    const toUpload: { key: string, formatedKey: string, fromTauriFs: boolean }[] = []
+    const toUpload: { key: string; formatedKey: string; fromTauriFs: boolean }[] = []
     let skippedCount = 0
     for (const key of assetKeys) {
         const formatedKey = newFormatKeys(key)
@@ -189,7 +174,7 @@ async function backupDrive(ACCESS_TOKEN: string) {
         const { key, formatedKey, fromTauriFs } = toUpload[currentIndex++]
 
         // 먼저 IndexedDB에서 시도
-        let data = await forageStorage.getItem(key) as unknown as Uint8Array
+        let data = (await forageStorage.getItem(key)) as unknown as Uint8Array
 
         // IndexedDB에 없으면 Tauri fs에서 시도
         if (!data && fromTauriFs) {
@@ -206,7 +191,7 @@ async function backupDrive(ACCESS_TOKEN: string) {
 
             alertStore.set({
                 type: "wait",
-                msg: `Uploading Backup... (${uploadedCount} / ${toUpload.length})`
+                msg: `Uploading Backup... (${uploadedCount} / ${toUpload.length})`,
             })
         }
 
@@ -214,25 +199,25 @@ async function backupDrive(ACCESS_TOKEN: string) {
     }
 
     // 동시에 PARALLEL_UPLOADS개 시작
-    await Promise.all(
-        Array.from({ length: Math.min(PARALLEL_UPLOADS, toUpload.length) }, () => uploadOne())
-    )
+    await Promise.all(Array.from({ length: Math.min(PARALLEL_UPLOADS, toUpload.length) }, () => uploadOne()))
 
     console.log(`[GoogleDrive Backup] Uploaded ${uploadedCount}`)
 
-    const dbData = encodeRisuSaveLegacy(getDatabase(), 'compression')
+    const dbData = encodeRisuSaveLegacy(getDatabase(), "compression")
 
     alertStore.set({
         type: "wait",
-        msg: `Uploading Backup... (Saving database)`
+        msg: `Uploading Backup... (Saving database)`,
     })
 
     const dbFileName = `${(Date.now() / 1000).toFixed(0)}-database.risudat`
     await createFileInFolder(ACCESS_TOKEN, dbFileName, dbData)
-    console.log(`[GoogleDrive Backup] Database saved as: ${dbFileName} (${(dbData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
-    console.log('[GoogleDrive Backup] Backup completed successfully!')
+    console.log(
+        `[GoogleDrive Backup] Database saved as: ${dbFileName} (${(dbData.byteLength / 1024 / 1024).toFixed(2)} MB)`
+    )
+    console.log("[GoogleDrive Backup] Backup completed successfully!")
 
-    alertNormal('Success')
+    alertNormal("Success")
 }
 
 type DriveFile = {
@@ -241,13 +226,13 @@ type DriveFile = {
     id: string
 }
 
-async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise<void | "noSync"> {
-    if (mode === 'backup') {
+async function loadDrive(ACCESS_TOKEN: string, mode: "backup" | "sync"): Promise<void | "noSync"> {
+    if (mode === "backup") {
         alertStore.set({
             type: "wait",
-            msg: "Loading Backup... (Fetching file list)"
+            msg: "Loading Backup... (Fetching file list)",
         })
-        await sleep(10)  // UI 업데이트 대기
+        await sleep(10) // UI 업데이트 대기
     }
     console.log(`[GoogleDrive Restore] Starting restore (mode: ${mode})...`)
     const files: DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
@@ -265,24 +250,22 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
             foragekeys = await forageStorage.keys()
             loadedForageKeys = true
         }
-        return foragekeys.includes('assets/' + images)
+        return foragekeys.includes("assets/" + images)
     }
     const fileNames = files.map((d) => {
         return d.name
     })
 
-
     const dbs: [DriveFile, number][] = []
     let noSyncData = true
 
-    if (mode === 'backup') {
+    if (mode === "backup") {
         for (const f of files) {
             if (f.name.endsWith("-database.risudat")) {
-                const tm = parseInt(f.name.split('-')[0])
+                const tm = parseInt(f.name.split("-")[0])
                 if (isNaN(tm)) {
                     continue
-                }
-                else {
+                } else {
                     dbs.push([f, tm])
                 }
             }
@@ -290,15 +273,13 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
         dbs.sort((a, b) => {
             return b[1] - a[1]
         })
-    }
-    else if (mode === 'sync') {
+    } else if (mode === "sync") {
         for (const f of files) {
             if (f.name.endsWith("-database.risudat2")) {
-                const tm = parseInt(f.name.split('-')[0])
+                const tm = parseInt(f.name.split("-")[0])
                 if (isNaN(tm)) {
                     continue
-                }
-                else {
+                } else {
                     if (tm > lastSaved) {
                         dbs.push([f, tm])
                     }
@@ -311,31 +292,34 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
         })
     }
 
-    if (noSyncData && mode === 'sync') {
-        return 'noSync'
+    if (noSyncData && mode === "sync") {
+        return "noSync"
     }
 
     if (dbs.length !== 0) {
-        if (mode === 'sync') {
+        if (mode === "sync") {
             alertStore.set({
                 type: "wait",
-                msg: "Sync Data..."
+                msg: "Sync Data...",
             })
         }
         async function getDbFromList() {
             const selectables: string[] = []
             for (let i = 0; i < dbs.length; i++) {
-                selectables.push(`Backup saved in ${(new Date(dbs[i][1] * 1000)).toLocaleString()}`)
+                selectables.push(`Backup saved in ${new Date(dbs[i][1] * 1000).toLocaleString()}`)
                 if (selectables.length > 7) {
                     break
                 }
             }
-            const selectedIndex = (await alertSelect([language.loadLatest, language.loadOthers]) === '0') ? 0 : parseInt(await alertSelect(selectables))
+            const selectedIndex =
+                (await alertSelect([language.loadLatest, language.loadOthers])) === "0"
+                    ? 0
+                    : parseInt(await alertSelect(selectables))
             const selectedDb = dbs[selectedIndex][0]
 
             alertStore.set({
                 type: "wait",
-                msg: "Loading Backup... (Downloading database)"
+                msg: "Loading Backup... (Downloading database)",
             })
             await sleep(10)
 
@@ -343,10 +327,13 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
             return decompressedDb
         }
 
-        const db: Database = mode === 'backup' ? await getDbFromList() : JSON.parse(Buffer.from(await getFileData(ACCESS_TOKEN, dbs[0][0].id)).toString('utf-8'))
+        const db: Database =
+            mode === "backup"
+                ? await getDbFromList()
+                : JSON.parse(Buffer.from(await getFileData(ACCESS_TOKEN, dbs[0][0].id)).toString("utf-8"))
         lastSaved = Date.now()
-        localStorage.setItem('risu_lastsaved', `${lastSaved}`)
-        const requiredImages = (getUnpargeables(db))
+        localStorage.setItem("risu_lastsaved", `${lastSaved}`)
+        const requiredImages = getUnpargeables(db)
         console.log(`[GoogleDrive Restore] Database loaded. Required assets: ${requiredImages.length}`)
 
         // Log sample of Drive files for debugging
@@ -361,7 +348,7 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
         let processedCount = 0
 
         // 다운로드할 파일 목록 수집 (로컬에 없는 것만)
-        const toDownload: { images: string, fileId: string | null }[] = []
+        const toDownload: { images: string; fileId: string | null }[] = []
         for (const images of requiredImages) {
             if (await checkImageExists(images)) {
                 skippedCount++
@@ -374,10 +361,10 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
             const oldFormat = formatKeys(images)
 
             if (fileNames.includes(newFormat)) {
-                const file = files.find(f => f.name === newFormat)
+                const file = files.find((f) => f.name === newFormat)
                 if (file) fileId = file.id
             } else if (fileNames.includes(oldFormat)) {
-                const file = files.find(f => f.name === oldFormat)
+                const file = files.find((f) => f.name === oldFormat)
                 if (file) fileId = file.id
             }
 
@@ -392,7 +379,9 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
             }
         }
 
-        console.log(`[GoogleDrive Restore] ${toDownload.length} to download, ${skippedCount} skipped, ${notFoundCount} not found`)
+        console.log(
+            `[GoogleDrive Restore] ${toDownload.length} to download, ${skippedCount} skipped, ${notFoundCount} not found`
+        )
 
         // 슬라이딩 윈도우 병렬 다운로드
         let currentIndex = 0
@@ -405,7 +394,7 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
             try {
                 const fData = await getFileData(ACCESS_TOKEN, fileId!)
                 // 에셋은 IndexedDB (forageStorage)에 저장 (Tauri와 웹 모두 동일)
-                await forageStorage.setItem('assets/' + images, fData)
+                await forageStorage.setItem("assets/" + images, fData)
                 downloadedCount++
             } catch (e) {
                 console.log(`[GoogleDrive Restore] Failed to download: ${images}`, e)
@@ -414,9 +403,10 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
             processedCount++
             alertStore.set({
                 type: "wait",
-                msg: mode === 'sync'
-                    ? `Sync Files... (${processedCount} / ${toDownload.length})`
-                    : `Loading Backup... (${processedCount} / ${toDownload.length})`
+                msg:
+                    mode === "sync"
+                        ? `Sync Files... (${processedCount} / ${toDownload.length})`
+                        : `Loading Backup... (${processedCount} / ${toDownload.length})`,
             })
 
             await downloadOne()
@@ -435,152 +425,148 @@ async function loadDrive(ACCESS_TOKEN: string, mode: 'backup' | 'sync'): Promise
         console.log(`  - Not found in Drive: ${notFoundCount}`)
         if (errorLogs.length > 0) {
             console.log(`[GoogleDrive Restore] Not found assets (first ${errorLogs.length}):`)
-            errorLogs.forEach(e => console.log(`  ${e}`))
+            errorLogs.forEach((e) => console.log(`  ${e}`))
         }
         db.didFirstSetup = true
 
         // Pause save loop to prevent overwriting restored backup
-        saving.paused = true;
+        saving.paused = true
 
-        const dbData = encodeRisuSaveLegacy(db, 'compression')
+        const dbData = encodeRisuSaveLegacy(db, "compression")
         console.log(`[GoogleDrive Restore] Saving database... (${(dbData.byteLength / 1024 / 1024).toFixed(2)} MB)`)
 
         // Clear existing separated files (backup has full DB with everything)
         // This prevents old data from overriding backup data on reload
         try {
-            await deleteFromWorker('database/characters.bin');
-            console.log('[GoogleDrive Restore] Cleared characters.bin');
+            await deleteFromWorker("database/characters.bin")
+            console.log("[GoogleDrive Restore] Cleared characters.bin")
         } catch (e) {
-            console.log('[GoogleDrive Restore] No characters.bin to clear');
+            console.log("[GoogleDrive Restore] No characters.bin to clear")
         }
         try {
-            await deleteFromWorker('database/botpresets.bin');
-            console.log('[GoogleDrive Restore] Cleared botpresets.bin');
+            await deleteFromWorker("database/botpresets.bin")
+            console.log("[GoogleDrive Restore] Cleared botpresets.bin")
         } catch (e) {
-            console.log('[GoogleDrive Restore] No botpresets.bin to clear');
+            console.log("[GoogleDrive Restore] No botpresets.bin to clear")
         }
         try {
             // Delete entire chats directory (nested structure: chaId/chatId.bin)
-            await deleteDirectoryFromWorker('database/chats');
-            console.log('[GoogleDrive Restore] Cleared chat files directory');
+            await deleteDirectoryFromWorker("database/chats")
+            console.log("[GoogleDrive Restore] Cleared chat files directory")
         } catch (e) {
-            console.log('[GoogleDrive Restore] No chat files to clear');
+            console.log("[GoogleDrive Restore] No chat files to clear")
         }
 
         if (isTauri) {
-            await saveToWorker('database/database.bin', dbData)
-            console.log('[GoogleDrive Restore] Restore completed! Relaunching app...')
+            await saveToWorker("database/database.bin", dbData)
+            console.log("[GoogleDrive Restore] Restore completed! Relaunching app...")
             const currentPlatform = await platform()
             alertClear()
             await sleep(50)
-            if (currentPlatform === 'android' || currentPlatform === 'ios') {
+            if (currentPlatform === "android" || currentPlatform === "ios") {
                 // Mobile: Ask user to manually restart (process plugin not supported)
-                alertNormal('Backup loaded successfully!\nPlease close and reopen the app.')
+                alertNormal("Backup loaded successfully!\nPlease close and reopen the app.")
                 return
             } else {
                 relaunch()
             }
-        }
-        else {
-            await saveToWorker('database/database.bin', dbData)
-            console.log('[GoogleDrive Restore] Restore completed! Refreshing page...')
+        } else {
+            await saveToWorker("database/database.bin", dbData)
+            console.log("[GoogleDrive Restore] Restore completed! Refreshing page...")
             alertClear()
             await sleep(50)
-            location.search = ''
+            location.search = ""
         }
-    }
-    else if (mode === 'backup') {
-        location.search = ''
+    } else if (mode === "backup") {
+        location.search = ""
     }
 }
 
-function checkImageExist(image: string) {
-
-}
-
+function checkImageExist(image: string) {}
 
 function formatKeys(name: string) {
-    return getBasename(name).replace(/_/g, '__').replace(/\./g, '_d').replace(/\//, '_s') + '.png'
+    return getBasename(name).replace(/_/g, "__").replace(/\./g, "_d").replace(/\//, "_s") + ".png"
 }
 
 function newFormatKeys(name: string) {
     const n = getBasename(name)
-    const bf = Buffer.from(n).toString('hex')
-    return n + '.bin'
+    const bf = Buffer.from(n).toString("hex")
+    return n + ".bin"
 }
 
-async function getFilesInFolder(ACCESS_TOKEN: string, nextPageToken = ''): Promise<DriveFile[]> {
-    const url = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&pageSize=300` + nextPageToken;
+async function getFilesInFolder(ACCESS_TOKEN: string, nextPageToken = ""): Promise<DriveFile[]> {
+    const url = `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&pageSize=300` + nextPageToken
 
     const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-            'Authorization': `Bearer ${ACCESS_TOKEN}`,
-            'Content-Type': 'application/json',
+            Authorization: `Bearer ${ACCESS_TOKEN}`,
+            "Content-Type": "application/json",
         },
-    });
+    })
 
     if (response.ok) {
-        const data = await response.json();
+        const data = await response.json()
         if (data.nextPageToken) {
-            return (data.files as DriveFile[]).concat(await getFilesInFolder(ACCESS_TOKEN, `&pageToken=${data.nextPageToken}`))
+            return (data.files as DriveFile[]).concat(
+                await getFilesInFolder(ACCESS_TOKEN, `&pageToken=${data.nextPageToken}`)
+            )
         }
-        return data.files as DriveFile[];
+        return data.files as DriveFile[]
     } else {
-        throw (`Error: ${response.status}`);
+        throw `Error: ${response.status}`
     }
 }
 
-async function createFileInFolder(accessToken: string, fileName: string, content: Uint8Array, mimeType = 'application/octet-stream') {
+async function createFileInFolder(
+    accessToken: string,
+    fileName: string,
+    content: Uint8Array,
+    mimeType = "application/octet-stream"
+) {
     const metadata = {
         name: fileName,
         mimeType: mimeType,
         parents: ["appDataFolder"],
-    };
+    }
 
-    const body = new FormData();
-    body.append(
-        "metadata",
-        new Blob([JSON.stringify(metadata)], { type: "application/json" })
-    );
-    body.append("file", new Blob([content as BlobPart], { type: mimeType }));
+    const body = new FormData()
+    body.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }))
+    body.append("file", new Blob([content as BlobPart], { type: mimeType }))
 
-    const response = await fetch(
-        "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart",
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-            },
-            body: body,
-        }
-    );
+    const response = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        },
+        body: body,
+    })
 
-    const result = await response.json();
+    const result = await response.json()
 
     if (response.ok) {
-        return result;
+        return result
     } else {
-        console.error("Error creating file:", result);
-        throw new Error(result.error.message);
+        console.error("Error creating file:", result)
+        throw new Error(result.error.message)
     }
 }
 
 async function getFileData(ACCESS_TOKEN: string, fileId: string) {
-    const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
+    const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`
 
     const request = {
-        method: 'GET',
+        method: "GET",
         headers: {
-            Authorization: `Bearer ${ACCESS_TOKEN}`
-        }
-    };
+            Authorization: `Bearer ${ACCESS_TOKEN}`,
+        },
+    }
 
-    const response = await fetch(url, request);
+    const response = await fetch(url, request)
 
     if (response.ok) {
-        const data = new Uint8Array(await response.arrayBuffer());
-        return data;
+        const data = new Uint8Array(await response.arrayBuffer())
+        return data
     } else {
         throw "Error in response when reading files in folder"
     }

@@ -1,149 +1,153 @@
-import { v4 } from 'uuid';
-import { alertError, alertInput, alertNormal, alertStore, alertWait } from '../../utils/alert.svelte';
-import { setDatabase, saveImage, getCurrentChat, setCurrentChat, getDatabase } from '../storage/database.svelte';
-import type { character, Chat } from '../storage/types';
-import { ChatState } from '../../stores.svelte';
-import { findCharacterIndexbyId, sleep } from '../../utils/util';
-import type { DataConnection, Peer } from 'peerjs';
-import { readImage } from '../../utils/fileIO';
-import { DoingChatState } from '../../process/index.svelte';
+import { v4 } from "uuid"
+import { alertError, alertInput, alertNormal, alertStore, alertWait } from "../../utils/alert.svelte"
+import { setDatabase, saveImage, getCurrentChat, setCurrentChat, getDatabase } from "../storage/database.svelte"
+import type { character, Chat } from "../storage/types"
+import { ChatState } from "../../stores.svelte"
+import { findCharacterIndexbyId, sleep } from "../../utils/util"
+import type { DataConnection, Peer } from "peerjs"
+import { readImage } from "../../utils/fileIO"
+import { DoingChatState } from "../../process/index.svelte"
 
-async function importPeerJS(){
-    return await import('peerjs');
+async function importPeerJS() {
+    return await import("peerjs")
 }
 
-interface ReciveFirst{
-    type: 'receive-char',
+interface ReciveFirst {
+    type: "receive-char"
     data: character
 }
-interface RequestFirst{
-    type: 'request-char'
+interface RequestFirst {
+    type: "request-char"
 }
-interface ReciveAsset{
-    type: 'receive-asset',
-    id: string,
+interface ReciveAsset {
+    type: "receive-asset"
+    id: string
     data: Uint8Array
 }
-interface RequestSync{
-    type: 'request-chat-sync',
-    id: string,
+interface RequestSync {
+    type: "request-chat-sync"
+    id: string
     data: Chat
 }
-interface ReciveSync{
-    type: 'receive-chat',
+interface ReciveSync {
+    type: "receive-chat"
     data: Chat
 }
-interface RequestChatSafe{
-    type: 'request-chat-safe',
+interface RequestChatSafe {
+    type: "request-chat-safe"
     id: string
 }
-interface ResponseChatSafe{
-    type: 'response-chat-safe'
-    data: boolean,
+interface ResponseChatSafe {
+    type: "response-chat-safe"
+    data: boolean
     id: string
 }
-interface RequestChat{
-    type: 'request-chat'
+interface RequestChat {
+    type: "request-chat"
 }
 
-type ReciveData = ReciveFirst|RequestFirst|ReciveAsset|RequestSync|ReciveSync|RequestChatSafe|ResponseChatSafe|RequestChat
+type ReciveData =
+    | ReciveFirst
+    | RequestFirst
+    | ReciveAsset
+    | RequestSync
+    | ReciveSync
+    | RequestChatSafe
+    | ResponseChatSafe
+    | RequestChat
 
-let conn:DataConnection
-let peer:Peer
-const connections:DataConnection[] = []
+let conn: DataConnection
+let peer: Peer
+const connections: DataConnection[] = []
 export let connectionOpen = false
-const requestChatSafeQueue = new Map<string, {remaining:number,safe:boolean,conn?:DataConnection}>()
+const requestChatSafeQueue = new Map<string, { remaining: number; safe: boolean; conn?: DataConnection }>()
 
 export const MultiuserState = $state({
     isOpen: false,
     isHost: false,
-    roomId: ''
+    roomId: "",
 })
 
-export async function createMultiuserRoom(){
+export async function createMultiuserRoom() {
     //create a room with webrtc
     MultiuserState.isHost = true
     alertWait("Loading...")
 
-    const peerJS = await importPeerJS();
-    let roomId = v4();
-    peer = new peerJS.Peer(
-        roomId + "-rmh"
-    )
+    const peerJS = await importPeerJS()
+    let roomId = v4()
+    peer = new peerJS.Peer(roomId + "-rmh")
 
     alertWait("Waiting for peerserver to connect...")
     let open = false
-    peer.on('open', function(id) {
+    peer.on("open", function (id) {
         open = true
         roomId = id
-    });
-    peer.on('connection', function(conn) {
+    })
+    peer.on("connection", function (conn) {
         connections.push(conn)
         console.log("new connection", conn)
 
-        async function requestChar(excludeAssets:string[]|null = null){
+        async function requestChar(excludeAssets: string[] | null = null) {
             const db = getDatabase({
-                snapshot: true
+                snapshot: true,
             })
             const selectedCharId = ChatState.selectedCharId
             const char = safeStructuredClone(db.characters[selectedCharId])
-            if(char.type === 'group'){
+            if (char.type === "group") {
                 return
             }
             char.chats = [char.chats[char.chatPage]]
             conn.send({
-                type: 'receive-char',
-                data: char
-            });
-            if(excludeAssets !== null){
-                if(char.additionalAssets){
+                type: "receive-char",
+                data: char,
+            })
+            if (excludeAssets !== null) {
+                if (char.additionalAssets) {
                     const ass = char.additionalAssets.filter((asset) => {
                         return !excludeAssets.includes(asset[1])
                     })
 
-                    for(const a of ass){
+                    for (const a of ass) {
                         conn.send({
-                            type: 'receive-asset',
+                            type: "receive-asset",
                             id: a[1],
-                            data: await readImage(a[1])
+                            data: await readImage(a[1]),
                         })
                     }
-                    
                 }
-                if(char.emotionImages){
+                if (char.emotionImages) {
                     const ass = char.emotionImages.filter((asset) => {
                         return !excludeAssets.includes(asset[1])
                     })
-                    
-                    for(const a of ass){
+
+                    for (const a of ass) {
                         conn.send({
-                            type: 'receive-asset',
+                            type: "receive-asset",
                             id: a[1],
-                            data: await readImage(a[1])
+                            data: await readImage(a[1]),
                         })
                     }
                 }
-
             }
         }
 
-        conn.on('data', function(data:ReciveData) {
-            if(data.type === 'request-char'){
+        conn.on("data", function (data: ReciveData) {
+            if (data.type === "request-char") {
                 requestChar()
             }
-            if(data.type === 'receive-char'){
+            if (data.type === "receive-char") {
                 const db = getDatabase({
-                    snapshot: true
+                    snapshot: true,
                 })
                 const selectedCharId = ChatState.selectedCharId
                 const char = safeStructuredClone(db.characters[selectedCharId])
                 const recivedChar = data.data
-                if(char.type === 'group'){
+                if (char.type === "group") {
                     return
                 }
                 char.chats[char.chatPage] = recivedChar.chats[0]
             }
-            if(data.type === 'request-chat-sync'){
+            if (data.type === "request-chat-sync") {
                 const db = getDatabase()
                 const selectedCharId = ChatState.selectedCharId
                 const char = db.characters[selectedCharId]
@@ -152,80 +156,78 @@ export async function createMultiuserRoom(){
                 latestSyncChat = data.data
                 setDatabase(db)
 
-                for(const connection of connections){
-                    if(connection.connectionId === conn.connectionId){
+                for (const connection of connections) {
+                    if (connection.connectionId === conn.connectionId) {
                         continue
                     }
-                    const rs:ReciveSync = {
-                        type: 'receive-chat',
-                        data: data.data
+                    const rs: ReciveSync = {
+                        type: "receive-chat",
+                        data: data.data,
                     }
                     connection.send(rs)
                 }
             }
-            if(data.type === 'request-chat'){
+            if (data.type === "request-chat") {
                 const db = getDatabase()
                 const selectedCharId = ChatState.selectedCharId
                 const char = db.characters[selectedCharId]
                 const chat = char.chats[char.chatPage]
-                const rs:ReciveSync = {
-                    type: 'receive-chat',
-                    data: chat
+                const rs: ReciveSync = {
+                    type: "receive-chat",
+                    data: chat,
                 }
                 conn.send(rs)
             }
-            if(data.type === 'request-chat-safe'){
+            if (data.type === "request-chat-safe") {
                 const queue = {
                     remaining: connections.length,
                     safe: true,
-                    conn: conn
+                    conn: conn,
                 }
                 requestChatSafeQueue.set(data.id, queue)
-                for(const connection of connections){
-                    if(connection.connectionId === conn.connectionId){
+                for (const connection of connections) {
+                    if (connection.connectionId === conn.connectionId) {
                         queue.remaining--
                         requestChatSafeQueue.set(data.id, queue)
                         continue
                     }
-                    const rs:RequestChatSafe = {
-                        type: 'request-chat-safe',
-                        id: data.id
+                    const rs: RequestChatSafe = {
+                        type: "request-chat-safe",
+                        id: data.id,
                     }
                     connection.send(rs)
                 }
-                if(queue.remaining === 0){
-                    if(waitingMultiuserId === data.id){
-                        waitingMultiuserId = ''
+                if (queue.remaining === 0) {
+                    if (waitingMultiuserId === data.id) {
+                        waitingMultiuserId = ""
                         waitingMultiuserSafe = queue.safe
-                    }
-                    else if(queue.conn){
-                        const rs:ResponseChatSafe = {
-                            type: 'response-chat-safe',
+                    } else if (queue.conn) {
+                        const rs: ResponseChatSafe = {
+                            type: "response-chat-safe",
                             data: queue.safe,
-                            id: data.id
+                            id: data.id,
                         }
                         queue.conn.send(rs)
                         requestChatSafeQueue.delete(data.id)
                     }
                 }
             }
-            if(data.type === 'response-chat-safe'){
+            if (data.type === "response-chat-safe") {
                 const queue = requestChatSafeQueue.get(data.id)
-                if(queue){
+                if (queue) {
                     queue.remaining--
-                    if(!data.data){
+                    if (!data.data) {
                         queue.safe = false
                     }
-                    if(queue.remaining === 0){
-                        if(waitingMultiuserId === data.id){
-                            waitingMultiuserId = ''
+                    if (queue.remaining === 0) {
+                        if (waitingMultiuserId === data.id) {
+                            waitingMultiuserId = ""
                             waitingMultiuserSafe = queue.safe
-                        }
-                        else if(queue.conn){
-                            const rs:ResponseChatSafe = {
-                                type: 'response-chat-safe',
+                        } else if (queue.conn) {
+                            const rs: ResponseChatSafe = {
+                                type: "response-chat-safe",
                                 data: queue.safe,
-                                id: data.id
+                                id: data.id,
                             }
                             queue.conn.send(rs)
                             requestChatSafeQueue.delete(data.id)
@@ -233,18 +235,18 @@ export async function createMultiuserRoom(){
                     }
                 }
             }
-        });
+        })
 
-        conn.on('close', function() {
-            for(let i = 0; i < connections.length; i++){
-                if(connections[i].connectionId === conn.connectionId){
+        conn.on("close", function () {
+            for (let i = 0; i < connections.length; i++) {
+                if (connections[i].connectionId === conn.connectionId) {
                     connections.splice(i, 1)
                     break
                 }
             }
         })
-    });
-    while(!open){
+    })
+    while (!open) {
         await sleep(100)
     }
 
@@ -252,72 +254,68 @@ export async function createMultiuserRoom(){
     MultiuserState.isOpen = true
     MultiuserState.roomId = roomId
     alertStore.set({
-        type: 'none',
-        msg: ''
+        type: "none",
+        msg: "",
     })
     return
 }
 
-let waitingMultiuserId = ''
+let waitingMultiuserId = ""
 let waitingMultiuserSafe = false
-let latestSyncChat:Chat|null = null
+let latestSyncChat: Chat | null = null
 
-export async function joinMultiuserRoom(){
-
+export async function joinMultiuserRoom() {
     //join a room with webrtc
     MultiuserState.isHost = false
     alertWait("Loading...")
-    const peerJS = await importPeerJS();
-    peer = new peerJS.Peer(
-        v4() + "-risuai-multiuser-join"
-    )
+    const peerJS = await importPeerJS()
+    peer = new peerJS.Peer(v4() + "-risuai-multiuser-join")
 
-    peer.on('open', async (id) => {
+    peer.on("open", async (id) => {
         const roomId = await alertInput("Enter room id")
         alertWait("Waiting for peerserver to connect...")
-    
+
         let open = false
-        conn = peer.connect(roomId);
+        conn = peer.connect(roomId)
         MultiuserState.roomId = roomId
 
-        conn.on('open', function() {
+        conn.on("open", function () {
             alertWait("Waiting for host to accept connection")
             open = true
             conn.send({
-                type: 'request-char'
+                type: "request-char",
             })
-        });
-        
-        conn.on('data', function(data:ReciveData) {
-            switch(data.type){
-                case 'receive-char':{
+        })
+
+        conn.on("data", function (data: ReciveData) {
+            switch (data.type) {
+                case "receive-char": {
                     //create temp character
                     const db = getDatabase()
                     const cha = data.data
-                    cha.chaId = '§temp'
+                    cha.chaId = "§temp"
                     cha.chatPage = 0
-                    const ind = findCharacterIndexbyId('§temp')
+                    const ind = findCharacterIndexbyId("§temp")
                     const selectedcharIndex = ChatState.selectedCharId
-                    if(ind === -1){
+                    if (ind === -1) {
                         db.characters.push(cha)
-                    }
-                    else{
+                    } else {
                         db.characters[ind] = cha
                     }
-                    const tempInd = findCharacterIndexbyId('§temp')
-                    if(selectedcharIndex !== tempInd){
+                    const tempInd = findCharacterIndexbyId("§temp")
+                    if (selectedcharIndex !== tempInd) {
                         ChatState.selectedCharId = tempInd
                     }
                     setDatabase(db)
                     break
                 }
-                case 'receive-asset':{
+                case "receive-asset": {
                     saveImage(data.data as Uint8Array<ArrayBuffer>, data.id)
                     break
                 }
-                case 'receive-chat':{
+                case "receive-chat": {
                     const db = getDatabase({
-                        snapshot: true
+                        snapshot: true,
                     })
                     const selectedCharId = ChatState.selectedCharId
                     const char = safeStructuredClone(db.characters[selectedCharId])
@@ -327,112 +325,107 @@ export async function joinMultiuserRoom(){
                     setDatabase(db)
                     break
                 }
-                case 'request-chat-safe':{
-                    const rs:ResponseChatSafe = {
-                        type: 'response-chat-safe',
+                case "request-chat-safe": {
+                    const rs: ResponseChatSafe = {
+                        type: "response-chat-safe",
                         data: !DoingChatState.value || data.id === waitingMultiuserId,
-                        id: data.id
+                        id: data.id,
                     }
                     conn.send(rs)
                     break
                 }
-                case 'response-chat-safe':{
-                    if(data.id === waitingMultiuserId){
-                        waitingMultiuserId = ''
+                case "response-chat-safe": {
+                    if (data.id === waitingMultiuserId) {
+                        waitingMultiuserId = ""
                         waitingMultiuserSafe = data.data
                     }
                 }
             }
-        });
+        })
 
-        conn.on('close', function() {
+        conn.on("close", function () {
             alertError("Connection closed")
             connectionOpen = false
             MultiuserState.isOpen = false
             ChatState.selectedCharId = -1
         })
-    
+
         let waitTime = 0
-        while(!open){
+        while (!open) {
             await sleep(100)
             waitTime += 100
-            if(waitTime > 10000){
+            if (waitTime > 10000) {
                 alertError("Connection timed out")
                 return
             }
-        }        
+        }
         connectionOpen = true
         MultiuserState.isOpen = true
         alertNormal("Connected")
-    });
-    
+    })
 }
 
-
-export async function peerSync(){
-    if(!connectionOpen){
+export async function peerSync() {
+    if (!connectionOpen) {
         return
     }
     await sleep(1)
     const chat = getCurrentChat()
     latestSyncChat = chat
-    if(!conn){
+    if (!conn) {
         // host user
-        for(const connection of connections){
+        for (const connection of connections) {
             connection.send({
-                type: 'receive-chat',
-                data: chat
-            });
+                type: "receive-chat",
+                data: chat,
+            })
         }
-    }
-    else{
+    } else {
         conn.send({
-            type: 'request-chat-sync',
-            data: chat
+            type: "request-chat-sync",
+            data: chat,
         } as RequestSync)
     }
 }
 
 export async function peerSafeCheck() {
-    if(!connectionOpen){
+    if (!connectionOpen) {
         return true
     }
     await sleep(500)
-    if(!conn){
+    if (!conn) {
         waitingMultiuserId = v4()
         requestChatSafeQueue.set(waitingMultiuserId, {
             remaining: connections.length,
             safe: true,
         })
-        for(const connection of connections){
-            const rs:RequestChatSafe = {
-                type: 'request-chat-safe',
-                id: waitingMultiuserId
+        for (const connection of connections) {
+            const rs: RequestChatSafe = {
+                type: "request-chat-safe",
+                id: waitingMultiuserId,
             }
             connection.send(rs)
         }
-        while(waitingMultiuserId !== ''){
+        while (waitingMultiuserId !== "") {
             await sleep(100)
         }
         return waitingMultiuserSafe
-    }
-    else{
+    } else {
         waitingMultiuserId = v4()
-        const rs:RequestChatSafe = {
-            type: 'request-chat-safe',
-            id: waitingMultiuserId
+        const rs: RequestChatSafe = {
+            type: "request-chat-safe",
+            id: waitingMultiuserId,
         }
         conn.send(rs)
-        while(waitingMultiuserId !== ''){
+        while (waitingMultiuserId !== "") {
             await sleep(100)
         }
         return waitingMultiuserSafe
-
     }
 }
 
 export function peerRevertChat() {
-    if(!connectionOpen || !latestSyncChat){
+    if (!connectionOpen || !latestSyncChat) {
         return
     }
     setCurrentChat(latestSyncChat)
