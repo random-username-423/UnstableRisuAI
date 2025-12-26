@@ -21,6 +21,7 @@
     import PlaygroundDocs from "./PlaygroundDocs.svelte"
     import Playground3DViewer from "./Playground3DViewer.svelte"
     import PlaygroundLucide from "./PlaygroundLucide.svelte"
+    import PlaygroundDeepRead from "./PlaygroundDeepRead.svelte"
 
     let easterEggTouch = $state(0)
 
@@ -184,6 +185,14 @@
             <button
                 class="flex flex-col rounded-md bg-darkbg p-6 transition-shadow hover:ring-1"
                 onclick={() => {
+                    AppState.playground = 16
+                }}
+            >
+                <h1 class="text-start text-2xl font-bold">Deep Read Perf Test</h1>
+            </button>
+            <button
+                class="flex flex-col rounded-md bg-darkbg p-6 transition-shadow hover:ring-1"
+                onclick={() => {
                     easterEggTouch += 1
                 }}
             >
@@ -250,6 +259,9 @@
             {/if}
             {#if AppState.playground === 15}
                 <PlaygroundLucide />
+            {/if}
+            {#if AppState.playground === 16}
+                <PlaygroundDeepRead />
             {/if}
             {#if AppState.playground === 101}
                 <ToolConvertion />
