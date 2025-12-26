@@ -12,12 +12,13 @@ import {
     loadFromWorker,
 } from "src/ts/data/storage/opfsWorkerClient.svelte"
 import { isTauri } from "src/ts/utils/env"
-import { decodeRisuSave, encodeRisuSaveLegacy } from "src/ts/data/storage/risuSave"
+import { decodeRisuSave, encodeRisuSaveLegacy, decodeChat } from "src/ts/data/storage/risuSave"
 import { getDatabase, setDatabaseLite, setDatabase } from "src/ts/data/storage/database.svelte"
 import { relaunch } from "@tauri-apps/plugin-process"
 import { platform } from "@tauri-apps/plugin-os"
 import { sleep } from "src/ts/utils/util"
 import { readDir, readFile, BaseDirectory, exists } from "@tauri-apps/plugin-fs"
+import type { Database, character, groupChat, Chat } from "src/ts/data/storage/types"
 
 export async function SaveLocalBackup() {
     alertWait("Saving local backup...")
@@ -124,7 +125,9 @@ export async function SaveLocalBackup() {
         }
 
         if (data && data.byteLength > 0) {
-            await writer.writeBackup(key, data)
+            // Remove "assets/" prefix for backward compatibility with older versions
+            const backupName = key.startsWith("assets/") ? key.slice(7) : key
+            await writer.writeBackup(backupName, data)
             writtenAssets.add(key)
         } else {
             missingAssets.push(key)
@@ -495,4 +498,213 @@ export async function loadInternalBackup() {
     setDatabase(await decodeRisuSave(Buffer.from(data) as unknown as Uint8Array))
 
     await alertNormal("Loaded backup")
+}
+
+/**
+ * Saves a local backup with all chat data embedded in the database.
+ * Unlike SaveLocalBackup, this function loads all chat files and includes them
+ * directly in the database, resulting in a single self-contained backup file.
+ */
+export async function SaveLocalBackupWithEmbeddedChats() {
+    alertWait("Saving local backup (with embedded chats)...")
+    const writer = new LocalWriter()
+    const r = await writer.init()
+    if (!r) {
+        alertError("Failed")
+        return
+    }
+
+    const db = getDatabase()
+
+    // Create a deep copy of the database to avoid modifying the original
+    const dbCopy: Database = JSON.parse(JSON.stringify(db))
+
+    // Load all chat data from OPFS and embed into the database copy
+    let totalChats = 0
+    let loadedChats = 0
+
+    // Count total chats first
+    for (const char of dbCopy.characters) {
+        if (char?.chats) {
+            totalChats += char.chats.length
+        }
+    }
+
+    console.log(`[LocalBackupEmbedded] Total chats to load: ${totalChats}`)
+
+    for (const char of dbCopy.characters) {
+        if (!char?.chats) continue
+
+        for (const chat of char.chats) {
+            loadedChats++
+            alertWait(`Saving local backup (with embedded chats)...\nLoading chats: ${loadedChats}/${totalChats}`)
+
+            // Skip if message is already loaded
+            if (chat.message !== undefined) {
+                continue
+            }
+
+            // Try to load the chat file from OPFS
+            try {
+                const filePath = `database/chats/${char.chaId}/${chat.id}.bin`
+                const data = await loadFromWorker(filePath)
+
+                if (data && data.byteLength > 0) {
+                    const fullChat = await decodeChat(data)
+                    if (fullChat) {
+                        // Embed chat data into the copy
+                        chat.message = fullChat.message || []
+                        if (fullChat.note !== undefined) chat.note = fullChat.note
+                        if (fullChat.localLore !== undefined) chat.localLore = fullChat.localLore
+                        if (fullChat.sdData !== undefined) chat.sdData = fullChat.sdData
+                        if (fullChat.supaMemoryData !== undefined) chat.supaMemoryData = fullChat.supaMemoryData
+                        if (fullChat.hypaV2Data !== undefined) chat.hypaV2Data = fullChat.hypaV2Data
+                        if (fullChat.hypaV3Data !== undefined) chat.hypaV3Data = fullChat.hypaV3Data
+                        if (fullChat.lastMemory !== undefined) chat.lastMemory = fullChat.lastMemory
+                        if (fullChat.suggestMessages !== undefined) chat.suggestMessages = fullChat.suggestMessages
+                        if (fullChat.scriptstate !== undefined) chat.scriptstate = fullChat.scriptstate
+                    } else {
+                        chat.message = []
+                    }
+                } else {
+                    chat.message = []
+                }
+            } catch (e) {
+                console.warn(`[LocalBackupEmbedded] Failed to load chat ${chat.id}:`, e)
+                chat.message = []
+            }
+        }
+    }
+
+    console.log(`[LocalBackupEmbedded] Loaded ${loadedChats} chats`)
+
+    // Now save assets (same as SaveLocalBackup)
+    const assetMap = new Map<string, { charName: string; assetName: string }>()
+    if (db.characters) {
+        for (const char of db.characters) {
+            if (!char) continue
+            const charName = char.name ?? "Unknown Character"
+
+            if (char.image) assetMap.set(char.image, { charName: charName, assetName: "Main Image" })
+
+            if (char.emotionImages) {
+                for (const em of char.emotionImages) {
+                    if (em && em[1]) assetMap.set(em[1], { charName: charName, assetName: em[0] })
+                }
+            }
+            if (char.type !== "group") {
+                if (char.additionalAssets) {
+                    for (const em of char.additionalAssets) {
+                        if (em && em[1]) assetMap.set(em[1], { charName: charName, assetName: em[0] })
+                    }
+                }
+                if (char.vits) {
+                    const keys = Object.keys(char.vits.files)
+                    for (const key of keys) {
+                        const vit = char.vits.files[key]
+                        if (vit) assetMap.set(vit, { charName: charName, assetName: key })
+                    }
+                }
+                if (char.ccAssets) {
+                    for (const asset of char.ccAssets) {
+                        if (asset && asset.uri) assetMap.set(asset.uri, { charName: charName, assetName: asset.name })
+                    }
+                }
+            }
+        }
+    }
+    if (db.userIcon) {
+        assetMap.set(db.userIcon, { charName: "User Settings", assetName: "User Icon" })
+    }
+    if (db.customBackground) {
+        assetMap.set(db.customBackground, { charName: "User Settings", assetName: "Custom Background" })
+    }
+    const missingAssets: string[] = []
+    const writtenAssets = new Set<string>()
+
+    // 1. IndexedDB (forageStorage)에서 에셋 수집
+    const keys = await forageStorage.keys()
+    const indexedDbAssetKeys = keys.filter((key) => key && key.startsWith("assets/"))
+    console.log(`[LocalBackupEmbedded] Found ${indexedDbAssetKeys.length} assets in IndexedDB`)
+
+    // 2. Tauri fs (AppData/assets)에서 에셋 수집 (레거시 데이터 호환)
+    let tauriFsAssetKeys: string[] = []
+    if (isTauri) {
+        try {
+            const assetsExist = await exists("assets", { baseDir: BaseDirectory.AppData })
+            if (assetsExist) {
+                const tauriFsAssets = await readDir("assets", { baseDir: BaseDirectory.AppData })
+                tauriFsAssetKeys = tauriFsAssets.filter((a) => a.name && !a.isDirectory).map((a) => "assets/" + a.name)
+                console.log(`[LocalBackupEmbedded] Found ${tauriFsAssetKeys.length} assets in Tauri fs`)
+            }
+        } catch (e) {
+            console.warn("[LocalBackupEmbedded] Failed to read Tauri fs assets:", e)
+        }
+    }
+
+    // 전체 에셋 목록 (중복 제거)
+    const allAssetKeys = [...new Set([...indexedDbAssetKeys, ...tauriFsAssetKeys])]
+    console.log(`[LocalBackupEmbedded] Total unique assets to backup: ${allAssetKeys.length}`)
+
+    for (let i = 0; i < allAssetKeys.length; i++) {
+        const key = allAssetKeys[i]
+        let message = `Saving local Backup (with embedded chats)... (${i + 1} / ${allAssetKeys.length})`
+        if (missingAssets.length > 0) {
+            const skippedItems = missingAssets
+                .map((k) => {
+                    const assetInfo = assetMap.get(k)
+                    return assetInfo ? `'${assetInfo.assetName}' from ${assetInfo.charName}` : `'${k}'`
+                })
+                .join(", ")
+            message += `\n(Skipping... ${skippedItems})`
+        }
+        alertWait(message)
+
+        // 먼저 IndexedDB에서 시도
+        let data = (await forageStorage.getItem(key)) as unknown as Uint8Array
+
+        // IndexedDB에 없으면 Tauri fs에서 시도
+        if (!data && isTauri && tauriFsAssetKeys.includes(key)) {
+            try {
+                data = await readFile(key, { baseDir: BaseDirectory.AppData })
+            } catch (e) {
+                // 무시
+            }
+        }
+
+        if (data && data.byteLength > 0) {
+            // Remove "assets/" prefix for backward compatibility with older versions
+            const backupName = key.startsWith("assets/") ? key.slice(7) : key
+            await writer.writeBackup(backupName, data)
+            writtenAssets.add(key)
+        } else {
+            missingAssets.push(key)
+        }
+        if (forageStorage.isAccount) {
+            await sleep(1000)
+        }
+    }
+
+    // Encode the database with embedded chats (no separate chat files)
+    const dbData = encodeRisuSaveLegacy(dbCopy, "compression")
+
+    alertWait(`Saving local Backup (with embedded chats)... (Saving database)`)
+
+    await writer.writeBackup("database.risudat", dbData)
+    await writer.close()
+
+    if (missingAssets.length > 0) {
+        let message = "Backup Successful, but the following assets were missing and skipped:\n\n"
+        for (const key of missingAssets) {
+            const assetInfo = assetMap.get(key)
+            if (assetInfo) {
+                message += `* **${assetInfo.assetName}** (from *${assetInfo.charName}*)  \n  *File: ${key}*\n`
+            } else {
+                message += `* **Unknown Asset**  \n  *File: ${key}*\n`
+            }
+        }
+        alertMd(message)
+    } else {
+        alertNormal("Success")
+    }
 }

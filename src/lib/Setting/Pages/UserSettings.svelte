@@ -12,7 +12,7 @@
     import { isTauri } from "src/ts/utils/env"
     import { unMigrationAccount } from "src/ts/data/storage/accountStorage.svelte"
     import { checkDriver } from "src/ts/data/drive/drive"
-    import { LoadLocalBackup, SaveLocalBackup } from "src/ts/data/drive/backuplocal"
+    import { LoadLocalBackup, SaveLocalBackupWithEmbeddedChats } from "src/ts/data/drive/backuplocal"
     import Button from "src/lib/UI/GUI/Button.svelte"
     import { exportAsDataset } from "src/ts/data/storage/exportAsDataset"
     import { syncManager } from "src/ts/data/drive/syncManager"
@@ -214,7 +214,7 @@
 <Button
     onclick={async () => {
         if (await alertConfirm(language.backupConfirm)) {
-            SaveLocalBackup()
+            SaveLocalBackupWithEmbeddedChats()
         }
     }}
     className="mt-2"
