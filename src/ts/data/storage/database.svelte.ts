@@ -24,7 +24,7 @@ export function setDatabase(data: Database) {
     const applyDefault = <K extends DefaultKey>(key: K) => {
         const defaultValue = baseDatabaseDefaults[key]
         if (checkNullish(data[key]) && defaultValue !== undefined) {
-            data[key] = structuredClone(defaultValue) as Database[K]
+            data[key] = safeStructuredClone(defaultValue) as Database[K]
         }
     }
 
@@ -37,7 +37,7 @@ export function setDatabase(data: Database) {
         data.characters = []
     }
     if (checkNullish(data.botPresets)) {
-        const defaultPreset = structuredClone(presetTemplate)
+        const defaultPreset = safeStructuredClone(presetTemplate)
         defaultPreset.name = "Default"
         data.botPresets = [defaultPreset]
     }

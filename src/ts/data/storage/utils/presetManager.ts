@@ -16,7 +16,7 @@ export function saveCurrentPreset() {
     let pres = db.botPresets
     if (!pres || !pres[db.botPresetsId]) {
         if (!Array.isArray(pres)) {
-            pres = [structuredClone(presetTemplate)]
+            pres = [safeStructuredClone(presetTemplate)]
             db.botPresetsId = 0
         } else if (db.botPresetsId >= pres.length) {
             db.botPresetsId = pres.length - 1

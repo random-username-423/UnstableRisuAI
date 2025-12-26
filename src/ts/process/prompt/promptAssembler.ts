@@ -548,14 +548,6 @@ function systemizeChat(chats: OpenAIChat[]): OpenAIChat[] {
     return chats
 }
 
-function safeStructuredClone<T>(obj: T): T {
-    try {
-        return structuredClone(obj)
-    } catch {
-        return JSON.parse(JSON.stringify(obj))
-    }
-}
-
 /**
  * Apply depth prompts to chats
  */

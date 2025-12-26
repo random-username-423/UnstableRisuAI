@@ -90,8 +90,8 @@ export const presetTemplate: botPreset = {
     ...commonPresetDefaults,
     name: "New Preset",
     openAIKey: "",
-    ooba: structuredClone(defaultOoba),
-    ainconfig: structuredClone(defaultAIN),
+    ooba: safeStructuredClone(defaultOoba),
+    ainconfig: safeStructuredClone(defaultAIN),
     verbosity: 1,
 }
 
@@ -106,7 +106,7 @@ export const defaultSdData: [string, string][] = [
 ]
 
 export const defaultSdDataFunc = () => {
-    return structuredClone(defaultSdData)
+    return safeStructuredClone(defaultSdData)
 }
 
 // 순수 기본값들만 모아놓은 객체입니다.
