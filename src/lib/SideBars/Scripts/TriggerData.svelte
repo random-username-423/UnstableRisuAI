@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { PlusIcon, XIcon } from "lucide-svelte"
+    import { PlusIcon, XIcon } from "@lucide/svelte"
     import { language } from "src/lang"
     import { alertConfirm } from "src/ts/utils/alert.svelte"
     import type { triggerscript } from "src/ts/data/storage/types"

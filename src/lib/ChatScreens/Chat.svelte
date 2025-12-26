@@ -11,7 +11,7 @@
         TrashIcon,
         UserIcon,
         Volume2Icon,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
     import { getFileSrc } from "src/ts/utils/fileIO"
     import { ColorSchemeTypeState } from "src/ts/gui/colorscheme.svelte"
     import { longpress } from "src/ts/gui/longtouch"

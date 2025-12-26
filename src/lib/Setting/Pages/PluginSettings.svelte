@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { PlusIcon, TrashIcon, LinkIcon } from "lucide-svelte"
+    import { PlusIcon, TrashIcon, LinkIcon } from "@lucide/svelte"
     import { language } from "src/lang"
     import { alertConfirm } from "src/ts/utils/alert.svelte"
 

@@ -13,7 +13,7 @@
     import OptionInput from "src/lib/UI/GUI/OptionInput.svelte"
     import Help from "src/lib/Others/Help.svelte"
     import Arcodion from "src/lib/UI/Arcodion.svelte"
-    import { PlusIcon, TrashIcon, ArrowUp, ArrowDown } from "lucide-svelte"
+    import { PlusIcon, TrashIcon, ArrowUp, ArrowDown } from "@lucide/svelte"
     import { v4 } from "uuid"
     import { getDatabase } from "src/ts/data/storage/database.svelte"
 
@@ -342,11 +342,7 @@
 />
 
 <span class="text-textcolor">{language.presetChain} <Help key="presetChain" /></span>
-<TextInput
-    marginBottom={true}
-    size="sm"
-    bind:value={DBState.db.presetChain}
-    placeholder="Leave it blank to not use"
+<TextInput marginBottom={true} size="sm" bind:value={DBState.db.presetChain} placeholder="Leave it blank to not use"
 ></TextInput>
 
 {#if DBState.db.showUnrecommended}

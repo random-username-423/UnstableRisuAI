@@ -9,7 +9,7 @@
         XIcon,
         ChevronLeftIcon,
         ChevronRightIcon,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
 
     interface Props {
         close: () => void

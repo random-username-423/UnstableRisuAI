@@ -1,7 +1,7 @@
 <script lang="ts">
     import { syncManager, type SyncProgress, type RateLimitInfo } from "src/ts/data/drive/syncManager"
     import { onMount, onDestroy } from "svelte"
-    import { RefreshCwIcon, ClockIcon } from "lucide-svelte"
+    import { RefreshCwIcon, ClockIcon } from "@lucide/svelte"
 
     type SyncStatus = "idle" | "syncing" | "error" | "conflict" | "rate_limited"
 

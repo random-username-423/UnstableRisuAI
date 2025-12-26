@@ -8,7 +8,7 @@
         BarChartIcon,
         Trash2Icon,
         XIcon,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
     import { language } from "src/lang"
     import { ModalState, SettingsState, DBState, ChatState } from "src/ts/stores.svelte"
     import type { SearchState } from "./types"

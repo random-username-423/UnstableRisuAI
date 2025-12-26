@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { CopyIcon, Share2Icon, TrashIcon } from "lucide-svelte"
+    import { CopyIcon, Share2Icon, TrashIcon } from "@lucide/svelte"
 
     let testType = $state<
         | "none"

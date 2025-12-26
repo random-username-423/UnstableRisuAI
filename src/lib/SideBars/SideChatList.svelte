@@ -10,7 +10,7 @@
         TrashIcon,
         SplitIcon,
         FolderPlusIcon,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
 
     import type { Chat, ChatFolder, character, groupChat } from "src/ts/data/storage/types"
     import { DBState, RenderState, ChatState } from "src/ts/stores.svelte"

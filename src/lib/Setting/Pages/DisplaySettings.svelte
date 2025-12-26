@@ -17,7 +17,7 @@
         updateColorScheme,
         updateTextThemeAndCSS,
     } from "src/ts/gui/colorscheme.svelte"
-    import { DownloadIcon, HardDriveUploadIcon } from "lucide-svelte"
+    import { DownloadIcon, HardDriveUploadIcon } from "@lucide/svelte"
     import { guiSizeText, updateGuisize } from "src/ts/gui/guisize.svelte"
     import TextInput from "src/lib/UI/GUI/TextInput.svelte"
     import ColorInput from "src/lib/UI/GUI/ColorInput.svelte"

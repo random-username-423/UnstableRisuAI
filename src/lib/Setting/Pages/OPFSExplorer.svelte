@@ -2,7 +2,7 @@
     import { language } from "src/lang"
     import { listEntriesFromWorker } from "src/ts/data/storage/opfsWorkerClient.svelte"
     import { onMount } from "svelte"
-    import { FolderIcon, FileIcon, ArrowLeftIcon, XIcon } from "lucide-svelte"
+    import { FolderIcon, FileIcon, ArrowLeftIcon, XIcon } from "@lucide/svelte"
 
     interface Props {
         close: () => void

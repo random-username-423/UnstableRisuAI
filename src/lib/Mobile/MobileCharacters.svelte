@@ -4,7 +4,7 @@
     import BarIcon from "../SideBars/BarIcon.svelte"
     import { addCharacter, changeChar, getCharImage } from "src/ts/character/characters.svelte"
     import { MobileState } from "src/ts/stores.svelte"
-    import { MessageSquareIcon, PlusIcon } from "lucide-svelte"
+    import { MessageSquareIcon, PlusIcon } from "@lucide/svelte"
 
     const agoFormatter = new Intl.RelativeTimeFormat(navigator.languages, { style: "short" })
 

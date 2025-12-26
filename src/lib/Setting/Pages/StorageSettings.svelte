@@ -15,7 +15,7 @@
         HardDriveIcon,
         UsersIcon,
         FolderOpenIcon,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
     import Button from "src/lib/UI/GUI/Button.svelte"
     import OPFSExplorer from "./OPFSExplorer.svelte"
     import IndexedDBExplorer from "./IndexedDBExplorer.svelte"

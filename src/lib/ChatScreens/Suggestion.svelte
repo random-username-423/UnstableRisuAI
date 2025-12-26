@@ -5,7 +5,7 @@
     import type { character, Message, groupChat, Database } from "../../ts/data/storage/types"
     import { DBState, ChatState } from "src/ts/stores.svelte"
     import { translate } from "src/ts/translator/translator"
-    import { CopyIcon, LanguagesIcon, RefreshCcwIcon } from "lucide-svelte"
+    import { CopyIcon, LanguagesIcon, RefreshCcwIcon } from "@lucide/svelte"
     import { alertConfirm } from "src/ts/utils/alert.svelte"
     import { language } from "src/lang"
     import { getUserName, replacePlaceholders } from "../../ts/utils/util"

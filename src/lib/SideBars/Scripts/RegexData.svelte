@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { XIcon } from "lucide-svelte"
+    import { XIcon } from "@lucide/svelte"
     import { language } from "src/lang"
     import { alertConfirm } from "src/ts/utils/alert.svelte"
     import type { customscript } from "src/ts/data/storage/types"

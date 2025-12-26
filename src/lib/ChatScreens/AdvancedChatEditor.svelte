@@ -1,6 +1,6 @@
 <script>
     import { onMount, createEventDispatcher, onDestroy } from "svelte"
-    import { EditIcon, LanguagesIcon } from "lucide-svelte"
+    import { EditIcon, LanguagesIcon } from "@lucide/svelte"
 
     import { DBState } from "src/ts/stores.svelte"
 

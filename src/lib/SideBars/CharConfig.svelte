@@ -23,7 +23,7 @@
         ImageOffIcon,
         ArrowUp,
         ArrowDown,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
     import Check from "../UI/GUI/CheckInput.svelte"
     import {
         addCharEmotion,

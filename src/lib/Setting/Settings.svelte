@@ -14,7 +14,7 @@
         XCircleIcon,
         KeyboardIcon,
         HardDriveIcon,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
     import { language } from "src/lang"
     import DisplaySettings from "./Pages/DisplaySettings.svelte"
     import UserSettings from "./Pages/UserSettings.svelte"

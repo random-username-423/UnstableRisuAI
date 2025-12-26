@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ArrowUpIcon, GlobeIcon, PlusIcon } from "lucide-svelte"
+    import { ArrowUpIcon, GlobeIcon, PlusIcon } from "@lucide/svelte"
 
     interface Props {
         onExit: () => void

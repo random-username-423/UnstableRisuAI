@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { ArrowLeft, MenuIcon } from "lucide-svelte"
+    import { ArrowLeft, MenuIcon } from "@lucide/svelte"
     import { language } from "src/lang"
 
     import { DBState, MobileState, ChatState, SettingsState } from "src/ts/stores.svelte"

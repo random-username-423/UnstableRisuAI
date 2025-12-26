@@ -1,6 +1,14 @@
 <script lang="ts">
     import { tick, untrack } from "svelte"
-    import { LanguagesIcon, StarIcon, RefreshCw, Trash2Icon, ScissorsLineDashed, XIcon, CheckIcon } from "lucide-svelte"
+    import {
+        LanguagesIcon,
+        StarIcon,
+        RefreshCw,
+        Trash2Icon,
+        ScissorsLineDashed,
+        XIcon,
+        CheckIcon,
+    } from "@lucide/svelte"
     import { language } from "src/lang"
     import { type SerializableHypaV3Data, type SerializableSummary } from "src/ts/process/memory/hypav3Types"
     import { summarize, getCurrentHypaV3Preset } from "src/ts/process/memory/hypav3"

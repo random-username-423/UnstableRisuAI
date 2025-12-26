@@ -15,7 +15,7 @@
         HomeIcon,
         WrenchIcon,
         User2Icon,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
     import { addCharacter, changeChar, getCharImage } from "../../ts/character/characters.svelte"
     import CharConfig from "./CharConfig.svelte"
     import { language } from "../../lang"

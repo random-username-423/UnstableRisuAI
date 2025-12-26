@@ -19,7 +19,7 @@
         StepForwardIcon,
         XIcon,
         BrainIcon,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
     import { createSimpleCharacter, ModalState, AppState, ChatState } from "../../ts/stores.svelte"
     import Chat from "./Chat.svelte"
     import { type Message } from "../../ts/data/storage/types"

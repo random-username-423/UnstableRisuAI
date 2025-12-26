@@ -9,7 +9,7 @@
         BookIcon,
         SmileIcon,
         UserIcon,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
     import { language } from "src/lang"
     import { ChatState, MobileState } from "src/ts/stores.svelte"
 </script>

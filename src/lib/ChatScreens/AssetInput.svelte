@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { FileAudioIcon, PlusIcon } from "lucide-svelte"
+    import { FileAudioIcon, PlusIcon } from "@lucide/svelte"
     import type { character, groupChat } from "src/ts/data/storage/types"
     import { getFileSrc, saveAsset } from "src/ts/utils/fileIO"
     import { selectMultipleFile } from "src/ts/utils/util"

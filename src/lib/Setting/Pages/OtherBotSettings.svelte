@@ -18,7 +18,7 @@
     import { untrack } from "svelte"
     import { tokenizePreset } from "src/ts/process/utils/prompt"
     import { getCharToken } from "src/ts/utils/tokenizer"
-    import { PlusIcon, PencilIcon, TrashIcon, DownloadIcon, HardDriveUploadIcon } from "lucide-svelte"
+    import { PlusIcon, PencilIcon, TrashIcon, DownloadIcon, HardDriveUploadIcon } from "@lucide/svelte"
     import { alertError, alertInput, alertConfirm, alertNormal } from "src/ts/utils/alert.svelte"
     import { createHypaV3Preset } from "src/ts/process/memory/hypav3Types"
 

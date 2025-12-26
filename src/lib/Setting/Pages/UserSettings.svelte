@@ -17,7 +17,7 @@
     import { exportAsDataset } from "src/ts/data/storage/exportAsDataset"
     import { syncManager } from "src/ts/data/drive/syncManager"
     import { onMount, onDestroy } from "svelte"
-    import { RefreshCwIcon, CloudIcon, UploadIcon, DownloadIcon } from "lucide-svelte"
+    import { RefreshCwIcon, CloudIcon, UploadIcon, DownloadIcon } from "@lucide/svelte"
     import Help from "src/lib/Others/Help.svelte"
     import { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } from "src/ts/config/secrets"
 

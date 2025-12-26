@@ -1,7 +1,7 @@
 <script lang="ts">
     import { DBState, RealmState } from "src/ts/stores.svelte"
     import Hub from "./Realm/RealmMain.svelte"
-    import { ArrowLeft } from "lucide-svelte"
+    import { ArrowLeft } from "@lucide/svelte"
     import { getVersionString } from "src/ts/utils/env"
     import { openURL } from "src/ts/utils/util"
     import { language } from "src/lang"

@@ -13,7 +13,7 @@
         TrashIcon,
         XIcon,
         GitCompare,
-    } from "lucide-svelte"
+    } from "@lucide/svelte"
     import TextInput from "../UI/GUI/TextInput.svelte"
     import { prebuiltPresets } from "src/ts/process/templates/templates"
     import type {

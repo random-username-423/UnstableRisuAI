@@ -1,6 +1,6 @@
 <script lang="ts">
     import { untrack } from "svelte"
-    import { ChevronUpIcon, ChevronDownIcon } from "lucide-svelte"
+    import { ChevronUpIcon, ChevronDownIcon } from "@lucide/svelte"
     import { type SerializableSummary } from "src/ts/process/memory/hypav3Types"
     import { alertNormalWait } from "src/ts/utils/alert.svelte"
     import { DBState, ChatState } from "src/ts/stores.svelte"
