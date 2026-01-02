@@ -5,7 +5,7 @@ import {
     readDir,
     remove
 } from "@tauri-apps/plugin-fs"
-import { sleep } from "./util"
+import { sleep, getBasename } from "./util"
 import { convertFileSrc } from "@tauri-apps/api/core"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { appDataDir, join } from "@tauri-apps/api/path";
@@ -510,25 +510,6 @@ export function setUsingSw(value: boolean) {
 }
 
 export const knownHostes = ["localhost", "127.0.0.1", "0.0.0.0"];
-
-/**
- * Regular expression to match backslashes.
- * 
- * @constant {RegExp}
- */
-const re = /\\/g;
-
-/**
- * Gets the basename of a given path.
- * 
- * @param {string} data - The path to get the basename from.
- * @returns {string} - The basename of the path.
- */
-export function getBasename(data: string) {
-    const splited = data.replace(re, '/').split('/');
-    const lasts = splited[splited.length - 1];
-    return lasts;
-}
 
 /**
  * Retrieves unpargeable resources from the database.
