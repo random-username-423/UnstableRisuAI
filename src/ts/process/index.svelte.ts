@@ -1,5 +1,6 @@
 import { get, writable } from "svelte/store";
-import { changeToPreset, setCurrentChat } from "../storage/database.svelte";
+import { setCurrentChat } from "../storage/database.svelte";
+import { changeToPreset } from '../storage/preset-manager';
 import { type Message, type MessagePresetInfo, type MessageGenerationInfo, type Chat } from '../storage/types/chat';
 import { type character } from '../storage/types/character';
 import { DBState } from '../stores.svelte';

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { alertMd } from "src/ts/alert";
     import { shareRealmCardData } from "src/ts/realm";
-    import { downloadPreset } from "src/ts/storage/database.svelte";
+    import { downloadPreset } from "src/ts/storage/preset-manager";
     import { DBState } from 'src/ts/stores.svelte';
     import { selectedCharID, ShowRealmFrameStore } from "src/ts/stores.svelte";
     import { asBuffer, sleep } from "src/ts/util";
