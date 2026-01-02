@@ -609,6 +609,8 @@ export const languageSpanish = {
     temperature: "Temperatura",
     frequencyPenalty: "Penalización por Frecuencia",
     presensePenalty: "Penalización por Presencia",
+    repetitionPenalty: "penalización por repetición",
+    verbosity: "verbosidad",
     advancedSettings: "Configuraciones Avanzadas",
     advancedSettingsWarn: "Advertencia: ¡Si no sabes lo que hace la opción, no la cambies!",
     formatingOrder: "Orden de Formateo",

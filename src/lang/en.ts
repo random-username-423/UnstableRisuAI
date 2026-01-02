@@ -639,6 +639,8 @@ export const languageEnglish = {
     temperature: "Temperature",
     frequencyPenalty: "Frequency Penalty",
     presensePenalty: "Presense Penalty",
+    repetitionPenalty: "Repetition Penalty",
+    verbosity: "Verbosity",
     advancedSettings: "Advanced Settings",
     advancedSettingsWarn: "Warn: If you don't know what the option does, don't change it!",
     formatingOrder: "Formating Order",
