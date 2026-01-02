@@ -769,17 +769,6 @@ export function simplifySchema(schema:any, args:{
 
 }
 
-export const prebuiltAssetCommand = `
-<Image Tag Instruction>Insert HTML image tags between paragraphs based on context.
-Set src as keywords from the list below that matches current character, outfit, situation sentiment and etc.
-print as many different images as possible. Use only available keywords.
-if there are no matching keywords, try to put clostest matching image src.
-try to put at least 1 image per output.
-<keywords>{{join::{{chardisplayasset}}::,}}</keywords>
-Example: <img src="{{ele::{{chardisplayasset}}::0}}">
-<Image Tag Instruction>
-`
-
 export const jsonOutputTrimmer = (data:string) => {
     
     data = data.replace(/<Thoughts>(.+?)<\/Thoughts>/gms, '').trim()
