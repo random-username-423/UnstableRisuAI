@@ -485,3 +485,18 @@ export function promptConvertion(files:{ name: string, content: string, type:str
 
     alertNormal('Preset converted successfully. You can find it in bot setting presets')
 }
+export function getAuthorNoteDefaultText() {
+    const db = getDatabase()
+    const template = db.promptTemplate
+    if (!template) {
+        return ''
+    }
+
+    for (const v of template) {
+        if (v.type === 'authornote') {
+            return v.defaultText ?? ''
+        }
+    }
+    return ''
+
+}

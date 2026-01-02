@@ -159,22 +159,6 @@ export async function changeFullscreen(){
     }
 }
 
-export function getAuthorNoteDefaultText(){
-    const db = getDatabase()
-    const template = db.promptTemplate
-    if(!template){
-        return ''
-    }
-
-    for(const v of template){
-        if(v.type === 'authornote'){
-            return v.defaultText ?? ''
-        }
-    }
-    return ''
-
-}
-
 export async function encryptBuffer(data:Uint8Array, keys:string){
     // hash the key to get a fixed length key value
     const keyArray = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(keys))
