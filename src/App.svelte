@@ -10,8 +10,8 @@
     import BookmarkList from './lib/Others/BookmarkList.svelte';
     import Settings from './lib/Setting/Settings.svelte';
     import { showRealmInfoStore, importCharacterProcess } from './ts/characterCards';
-    import { importPreset, getDatabase, setDatabase } from './ts/storage/database.svelte';
-    import { readModule } from './ts/process/modules';
+    import { importPreset } from './ts/storage/database.svelte';
+    import { importModuleFromData } from './ts/process/modules';
     import { alertNormal } from './ts/alert';
     import { language } from './lang';
     import RealmFrame from './lib/UI/Realm/RealmFrame.svelte';
@@ -49,37 +49,18 @@
         if (!file) return
 
         const name = file.name.toLowerCase()
+        const data = new Uint8Array(await file.arrayBuffer())
 
         if (name.endsWith('.risup')) {
-            await importPresetFile(file)
+            await importPreset({ name: file.name, data })
+            alertNormal(language.successImport)
         } else if (name.endsWith('.risum')) {
-            await importModuleFile(file)
+            await importModuleFromData(data)
+            alertNormal(language.successImport)
         } else {
-            await importCharacterFile(file)
+            await importCharacterProcess({ name: file.name, data })
+            checkCharOrder()
         }
-    }
-
-    async function importPresetFile(file: File) {
-        const data = new Uint8Array(await file.arrayBuffer())
-        await importPreset({ name: file.name, data })
-        alertNormal(language.successImport)
-    }
-
-    async function importModuleFile(file: File) {
-        const data = new Uint8Array(await file.arrayBuffer())
-        const module = await readModule(Buffer.from(data))
-        const db = getDatabase()
-        db.modules.push(module)
-        setDatabase(db)
-        alertNormal(language.successImport)
-    }
-
-    async function importCharacterFile(file: File) {
-        await importCharacterProcess({
-            name: file.name,
-            data: file
-        })
-        checkCharOrder()
     }
 </script>
 

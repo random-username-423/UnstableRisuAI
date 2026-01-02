@@ -172,6 +172,13 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
     return module
 }
 
+export async function importModuleFromData(data: Uint8Array) {
+    const module = await readModule(Buffer.from(data))
+    const db = getDatabase()
+    db.modules.push(module)
+    setDatabase(db)
+}
+
 export async function importModule(){
     const f = await selectSingleFile(['json', 'lorebook', 'risum'])
     if(!f){
