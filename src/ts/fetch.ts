@@ -1,5 +1,5 @@
 import { fetch as TauriHTTPFetch } from "@tauri-apps/plugin-http";
-import { AppendableBuffer, knownHostes } from "./globalApi.svelte";
+import { AppendableBuffer } from "./globalApi.svelte";
 import { CapacitorHttp, registerPlugin } from "@capacitor/core";
 import { hubURL } from "./characterCards";
 import { isTauri, isNodeServer, isCapacitor } from "./platform";
@@ -691,4 +691,5 @@ export function getRequestLog() {
     }
     return logString;
 }
+export const knownHostes = ["localhost", "127.0.0.1", "0.0.0.0"];
 

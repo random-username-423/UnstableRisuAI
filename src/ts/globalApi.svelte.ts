@@ -509,8 +509,6 @@ export function setUsingSw(value: boolean) {
     usingSw = value
 }
 
-export const knownHostes = ["localhost", "127.0.0.1", "0.0.0.0"];
-
 /**
  * Retrieves unpargeable resources from the database.
  * 
