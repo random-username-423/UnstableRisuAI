@@ -11,7 +11,6 @@ import { changeFullscreen, checkNullish, sleep } from "./util"
 import { v4 as uuidv4 } from 'uuid';
 import { get } from "svelte/store";
 import { setDatabase, defaultSdDataFunc, getDatabase } from "./storage/database.svelte";
-import { type Database } from './storage/types/database';
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { checkRisuUpdate } from "./update";
 import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
@@ -42,7 +41,7 @@ import {
     setUsingSw,
     checkCharOrder
 } from "./globalApi.svelte";
-import { isTauri, isNodeServer, isCapacitor, isInStandaloneMode } from "./platform";
+import { isTauri, isCapacitor, isInStandaloneMode } from "./platform";
 
 const appWindow = isTauri ? getCurrentWebviewWindow() : null
 

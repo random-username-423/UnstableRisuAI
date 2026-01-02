@@ -1,5 +1,4 @@
 import { fetchNative, globalFetch, textifyReadableStream } from "src/ts/globalApi.svelte"
-import { language } from "src/lang"
 import { LLMFlags, LLMFormat } from "src/ts/model/modellist"
 import { getDatabase, setDatabase } from "src/ts/storage/database.svelte"
 import { simplifySchema } from "src/ts/util"
@@ -8,7 +7,7 @@ import { setInlayAsset, writeInlayImage } from "../files/inlays"
 import { extractJSON, getGeneralJSONSchema } from "../templates/jsonSchema"
 import { applyParameters, type Parameter, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { alertError, alertNormal, alertWait, showHypaV2Alert } from "src/ts/alert";
+import { alertError } from "src/ts/alert";
 import { addFetchLog } from "src/ts/globalApi.svelte"
 
 type GeminiFunctionCall = {

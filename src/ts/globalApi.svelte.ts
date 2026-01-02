@@ -2,49 +2,33 @@ import {
     writeFile,
     BaseDirectory,
     readFile,
-    exists,
-    mkdir,
     readDir,
     remove
 } from "@tauri-apps/plugin-fs"
-import { changeFullscreen, checkNullish, sleep } from "./util"
+import { sleep } from "./util"
 import { convertFileSrc, invoke } from "@tauri-apps/api/core"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { appDataDir, join } from "@tauri-apps/api/path";
-import { get } from "svelte/store";
 import { open } from '@tauri-apps/plugin-shell'
-import { setDatabase, defaultSdDataFunc, getDatabase, appVer, getCurrentCharacter } from "./storage/database.svelte";
+import { setDatabase, getDatabase, appVer, getCurrentCharacter } from "./storage/database.svelte";
 import { type Database } from './storage/types/database';
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { checkRisuUpdate } from "./update";
-import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState, selIdState, ReloadGUIPointer } from "./stores.svelte";
-import { loadPlugins } from "./plugins/plugins";
-import { alertConfirm, alertError, alertMd, alertNormal, alertNormalWait, alertSelect, alertTOS, waitAlert } from "./alert";
-import { checkDriverInit, syncDrive } from "./drive/drive";
+import { selectedCharID, DBState, selIdState, ReloadGUIPointer } from "./stores.svelte";
+import { alertConfirm, alertNormal, alertNormalWait, alertSelect } from "./alert";
+import { syncDrive } from "./drive/drive";
 import { hasher } from "./parser.svelte";
-import { characterURLImport, hubURL } from "./characterCards";
-import { defaultJailbreak, defaultMainPrompt, oldJailbreak, oldMainPrompt } from "./storage/defaultPrompts";
-import { loadRisuAccountData } from "./drive/accounter";
-import { decodeRisuSave, encodeRisuSaveLegacy, RisuSaveEncoder, type toSaveType } from "./storage/risuSave";
+import { hubURL } from "./characterCards";
+import { decodeRisuSave, RisuSaveEncoder, type toSaveType } from "./storage/risuSave";
 import { AutoStorage } from "./storage/autoStorage";
-import { updateAnimationSpeed } from "./gui/animation";
-import { updateColorScheme, updateTextThemeAndCSS } from "./gui/colorscheme";
-import { autoServerBackup, saveDbKei } from "./kei/backup";
+import { saveDbKei } from "./kei/backup";
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import * as CapFS from '@capacitor/filesystem'
 import { save } from "@tauri-apps/plugin-dialog";
 import { listen } from '@tauri-apps/api/event'
 import { registerPlugin } from '@capacitor/core';
 import { language } from "src/lang";
-import { startObserveDom } from "./observer.svelte";
-import { updateGuisize } from "./gui/guisize";
 import { encodeCapKeySafe } from "./storage/mobileStorage";
-import { updateLorebooks } from "./characters";
-import { initMobileGesture } from "./hotkey";
 import { fetch as TauriHTTPFetch } from '@tauri-apps/plugin-http';
-import { moduleUpdate } from "./process/modules";
-import type { AccountStorage } from "./storage/accountStorage";
-import { makeColdData } from "./process/coldstorage.svelte";
 import { isTauri, isNodeServer, isCapacitor } from "./platform";
 
 export const forageStorage = new AutoStorage()
