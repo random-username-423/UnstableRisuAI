@@ -3,7 +3,7 @@ import { getDatabase } from "../storage/database.svelte"
 import { type customscript } from '../storage/types/character'
 import { type groupChat } from '../storage/types/character'
 import { type character } from '../storage/types/character'
-import { globalFetch } from "../globalApi.svelte"
+import { globalFetch } from "../fetch"
 import { isTauri, isNodeServer } from "src/ts/platform"
 import { alertError } from "../alert"
 import { requestChatData } from "../process/request/request"

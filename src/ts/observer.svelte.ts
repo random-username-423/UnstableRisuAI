@@ -1,5 +1,5 @@
 import { sleep } from "./util";
-import { globalFetch } from "./globalApi.svelte";
+import { globalFetch } from "./fetch";
 
 let bgmElement:HTMLAudioElement|null = null;
 

@@ -8,7 +8,8 @@
     import { ChevronRightIcon, User } from '@lucide/svelte';
     import { hubURL, isCharacterHasAssets } from 'src/ts/characterCards';
     import TextInput from '../UI/GUI/TextInput.svelte';
-    import { aiLawApplies, openURL, getFetchLogs } from 'src/ts/globalApi.svelte';
+    import { aiLawApplies, openURL } from 'src/ts/globalApi.svelte';
+    import { getFetchLogs } from 'src/ts/fetch';
     import Button from '../UI/GUI/Button.svelte';
     import { XIcon, ChevronDownIcon, ChevronUpIcon, CopyIcon, CheckIcon } from "@lucide/svelte";
     import hljs from 'highlight.js/lib/core';
@@ -16,7 +17,7 @@
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import { language } from 'src/lang';
-    import { getFetchData } from 'src/ts/globalApi.svelte';
+    import { getFetchData } from 'src/ts/fetch';
     import { alertStore, selectedCharID } from "src/ts/stores.svelte";
     import { tokenize } from "src/ts/tokenizer";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
