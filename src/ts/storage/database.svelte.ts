@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { checkNullish, decryptBuffer, encryptBuffer, selectSingleFile } from '../util';
+import { decryptBuffer, encryptBuffer, selectSingleFile } from '../util';
 import { changeLanguage, language } from '../../lang';
 import { downloadFile, saveAsset as saveImageGlobal } from '../globalApi.svelte';
 import { defaultAutoSuggestPrompt, defaultJailbreak, defaultMainPrompt } from './defaultPrompts';
@@ -26,290 +26,138 @@ export let webAppSubVer = ''
 
 
 export function setDatabase(data:Database){
-    if(checkNullish(data.characters)){
-        data.characters = []
-    }
-    if(checkNullish(data.apiType)){
-        data.apiType = 'gemini-3-flash-preview'
-    }
-    if(checkNullish(data.openAIKey)){
-        data.openAIKey = ''
-    }
-    if(checkNullish(data.mainPrompt)){
-        data.mainPrompt = defaultMainPrompt
-    }
-    if(checkNullish(data.jailbreak)){
-        data.jailbreak = defaultJailbreak
-    }
-    if(checkNullish(data.globalNote)){
-        data.globalNote = ``
-    }
-    if(checkNullish(data.temperature)){
-        data.temperature = 80
-    }
-    if(checkNullish(data.maxContext)){
-        data.maxContext = 4000
-    }
-    if(checkNullish(data.maxResponse)){
-        data.maxResponse = 500
-    }
-    if(checkNullish(data.frequencyPenalty)){
-        data.frequencyPenalty = 70
-    }
-    if(checkNullish(data.PresensePenalty)){
-        data.PresensePenalty = 70
-    }
-    if(checkNullish(data.aiModel)){
-        data.aiModel = 'gemini-3-flash-preview'
-    }
-    if(checkNullish(data.jailbreakToggle)){
-        data.jailbreakToggle = false
-    }
-    if(checkNullish(data.formatingOrder)){
-        data.formatingOrder = ['main','description', 'personaPrompt','chats','lastChat','jailbreak','lorebook', 'globalNote', 'authorNote']
-    }
-    if(checkNullish(data.loreBookDepth)){
-        data.loreBookDepth = 5
-    }
-    if(checkNullish(data.loreBookToken)){
-        data.loreBookToken = 800
-    }
-    if(checkNullish(data.username)){
-        data.username = 'User'
-    }
-    if(checkNullish(data.userIcon)){
-        data.userIcon = ''
-    }
-    if (checkNullish(data.userNote)){
-        data.userNote = ''
-    }
-    if(checkNullish(data.additionalPrompt)){
-        data.additionalPrompt = 'The assistant must act as {{char}}. user is {{user}}.'
-    }
-    if(checkNullish(data.descriptionPrefix)){
-        data.descriptionPrefix = 'description of {{char}}: '
-    }
-    if(checkNullish(data.forceReplaceUrl)){
-        data.forceReplaceUrl = ''
-    }
-    if(checkNullish(data.forceReplaceUrl2)){
-        data.forceReplaceUrl2 = ''
-    }
-    if(checkNullish(data.language)){
-        data.language = 'en'
-    }
-    if(checkNullish(data.swipe)){
-        data.swipe = true
-    }
-    if(checkNullish(data.translator)){
-        data.translator = ''
-    }
-    if(checkNullish(data.translatorMaxResponse)){
-        data.translatorMaxResponse = 1000
-    }
-    if(checkNullish(data.currentPluginProvider)){
-        data.currentPluginProvider = ''
-    }
-    if(checkNullish(data.plugins)){
-        data.plugins = []
-    }
-    if(checkNullish(data.zoomsize)){
-        data.zoomsize = 100
-    }
-    if(checkNullish(data.lastup)){
-        data.lastup = ''
-    }
-    if(checkNullish(data.customBackground)){
-        data.customBackground = ''
-    }
-    if(checkNullish(data.textgenWebUIStreamURL)){
-        data.textgenWebUIStreamURL = 'wss://localhost/api/'
-    }
-    if(checkNullish(data.textgenWebUIBlockingURL)){
-        data.textgenWebUIBlockingURL = 'https://localhost/api/'
-    }
-    if(checkNullish(data.autoTranslate)){
-        data.autoTranslate = false
-    }
-    if(checkNullish(data.fullScreen)){
-        data.fullScreen = false
-    }
-    if(checkNullish(data.playMessage)){
-        data.playMessage = false
-    }
-    if(checkNullish(data.iconsize)){
-        data.iconsize = 100
-    }
-    if(checkNullish(data.theme)){
-        data.theme = ''
-    }
-    if(checkNullish(data.subModel)){
-        data.subModel = 'gemini-3-flash-preview'
-    }
-    if(checkNullish(data.timeOut)){
-        data.timeOut = 120
-    }
-    if(checkNullish(data.waifuWidth)){
-        data.waifuWidth = 100
-    }
-    if(checkNullish(data.waifuWidth2)){
-        data.waifuWidth2 = 100
-    }
-    if(checkNullish(data.emotionPrompt)){
-        data.emotionPrompt = ""
-    }
-    if(checkNullish(data.requester)){
-        data.requester = "new"
-    }
-    if(checkNullish(data.proxyKey)){
-        data.proxyKey = ""
-    }
-    if(checkNullish(data.botPresets)){
+    data.characters ??= []
+    data.apiType ??= 'gemini-3-flash-preview'
+    data.openAIKey ??= ''
+    data.mainPrompt ??= defaultMainPrompt
+    data.jailbreak ??= defaultJailbreak
+    data.globalNote ??= ``
+    data.temperature ??= 80
+    data.maxContext ??= 4000
+    data.maxResponse ??= 500
+    data.frequencyPenalty ??= 70
+    data.PresensePenalty ??= 70
+    data.aiModel ??= 'gemini-3-flash-preview'
+    data.jailbreakToggle ??= false
+    data.formatingOrder ??= ['main','description', 'personaPrompt','chats','lastChat','jailbreak','lorebook', 'globalNote', 'authorNote']
+    data.loreBookDepth ??= 5
+    data.loreBookToken ??= 800
+    data.username ??= 'User'
+    data.userIcon ??= ''
+    data.userNote ??= ''
+    data.additionalPrompt ??= 'The assistant must act as {{char}}. user is {{user}}.'
+    data.descriptionPrefix ??= 'description of {{char}}: '
+    data.forceReplaceUrl ??= ''
+    data.forceReplaceUrl2 ??= ''
+    data.language ??= 'en'
+    data.swipe ??= true
+    data.translator ??= ''
+    data.translatorMaxResponse ??= 1000
+    data.currentPluginProvider ??= ''
+    data.plugins ??= []
+    data.zoomsize ??= 100
+    data.lastup ??= ''
+    data.customBackground ??= ''
+    data.textgenWebUIStreamURL ??= 'wss://localhost/api/'
+    data.textgenWebUIBlockingURL ??= 'https://localhost/api/'
+    data.autoTranslate ??= false
+    data.fullScreen ??= false
+    data.playMessage ??= false
+    data.iconsize ??= 100
+    data.theme ??= ''
+    data.subModel ??= 'gemini-3-flash-preview'
+    data.timeOut ??= 120
+    data.waifuWidth ??= 100
+    data.waifuWidth2 ??= 100
+    data.emotionPrompt ??= ""
+    data.requester ??= "new"
+    data.proxyKey ??= ""
+    if(data.botPresets == null){
         let defaultPreset = presetTemplate
         defaultPreset.name = "Default"
         data.botPresets = [defaultPreset]
     }
-    if(checkNullish(data.botPresetsId)){
-        data.botPresetsId = 0
+    data.botPresetsId ??= 0
+    data.sdProvider ??= ''
+    data.runpodKey ??= ''
+    data.webUiUrl ??= 'http://127.0.0.1:7860/'
+    data.sdSteps ??= 30
+    data.sdCFG ??= 7
+    data.NAIImgUrl ??= 'https://image.novelai.net/ai/generate-image'
+    data.NAIApiKey ??= ''
+    data.NAIImgModel ??= 'nai-diffusion-4-5-full'
+    data.NAII2I ??= false
+    data.NAIREF ??= false
+    data.textTheme ??= "standard"
+    data.emotionPrompt2 ??= ""
+    data.requestRetrys ??= 2
+    data.useSayNothing ??= true
+    data.bias ??= []
+    data.requestmet ??= 'normal'
+    data.requestproxy ??= ''
+    data.showUnrecommended ??= false
+    data.elevenLabKey ??= ''
+    data.voicevoxUrl ??= ''
+    data.supaMemoryPrompt ??= ''
+    data.showMemoryLimit ??= false
+    data.showFirstMessagePages ??= false
+    data.supaMemoryKey ??= ""
+    data.hypaMemoryKey ??= ""
+    data.supaModelType ??= "none"
+    data.askRemoval ??= true
+    data.sdConfig ??= {
+        width:512,
+        height:512,
+        sampler_name:"Euler a",
+        script_name:"",
+        denoising_strength:0.7,
+        enable_hr:false,
+        hr_scale:1.25,
+        hr_upscaler:"Latent"
     }
-    if(checkNullish(data.sdProvider)){
-        data.sdProvider = ''
-    }
-    if(checkNullish(data.runpodKey)){
-        data.runpodKey = ''
-    }
-    if(checkNullish(data.webUiUrl)){
-        data.webUiUrl = 'http://127.0.0.1:7860/'
-    }
-    if(checkNullish(data.sdSteps)){
-        data.sdSteps = 30
-    }
-    if(checkNullish(data.sdCFG)){
-        data.sdCFG = 7
-    }
-    if(checkNullish(data.NAIImgUrl)){
-        data.NAIImgUrl = 'https://image.novelai.net/ai/generate-image'
-    }
-    if(checkNullish(data.NAIApiKey)){
-        data.NAIApiKey = ''
-    }
-    if(checkNullish(data.NAIImgModel)){
-        data.NAIImgModel = 'nai-diffusion-4-5-full'
-    }
-    if(checkNullish(data.NAII2I)){
-        data.NAII2I = false
-    }
-    if(checkNullish(data.NAIREF)){
-        data.NAIREF = false
-    }
-    if(checkNullish(data.textTheme)){
-        data.textTheme = "standard"
-    }
-    if(checkNullish(data.emotionPrompt2)){
-        data.emotionPrompt2 = ""
-    }
-    if(checkNullish(data.requestRetrys)){
-        data.requestRetrys = 2
-    }
-    if(checkNullish(data.useSayNothing)){
-        data.useSayNothing = true
-    }
-    if(checkNullish(data.bias)){
-        data.bias = []
-    }
-    if(checkNullish(data.requestmet)){
-        data.requestmet = 'normal'
-    }
-    if(checkNullish(data.requestproxy)){
-        data.requestproxy = ''
-    }
-    if(checkNullish(data.showUnrecommended)){
-        data.showUnrecommended = false
-    }
-    if(checkNullish(data.elevenLabKey)){
-        data.elevenLabKey = ''
-    }
-    if(checkNullish(data.voicevoxUrl)){
-        data.voicevoxUrl = ''
-    }
-    if(checkNullish(data.supaMemoryPrompt)){
-        data.supaMemoryPrompt = ''
-    }
-    if(checkNullish(data.showMemoryLimit)){
-        data.showMemoryLimit = false
-    }
-    if(checkNullish(data.showFirstMessagePages)){
-        data.showFirstMessagePages = false
-    }
-    if(checkNullish(data.supaMemoryKey)){
-        data.supaMemoryKey = ""
-    }
-    if(checkNullish(data.hypaMemoryKey)){
-        data.hypaMemoryKey = ""
-    }
-    if(checkNullish(data.supaModelType)){
-        data.supaModelType = "none"
-    }
-    if(checkNullish(data.askRemoval)){
-        data.askRemoval = true
-    }
-    if(checkNullish(data.sdConfig)){
-        data.sdConfig = {
-            width:512,
-            height:512,
-            sampler_name:"Euler a",
-            script_name:"",
-            denoising_strength:0.7,
-            enable_hr:false,
-            hr_scale:1.25,
-            hr_upscaler:"Latent"
-        }
-    }
-    if(checkNullish(data.NAIImgConfig)){
-        data.NAIImgConfig = {
-            width:1024,
-            height:1024,
-            sampler:"k_euler_ancestral",
-            noise_schedule:"karras",
-            steps:28,
-            scale:5,
-            cfg_rescale: 0,
-            sm:true,
-            sm_dyn:false,
-            noise:0.0,
-            strength:0.6,
-            image:"",
-            base64image:"",
-            InfoExtracted:1,
-            //add 4
-            autoSmea:false,
-            legacy_uc:false,
+    data.NAIImgConfig ??= {
+        width:1024,
+        height:1024,
+        sampler:"k_euler_ancestral",
+        noise_schedule:"karras",
+        steps:28,
+        scale:5,
+        cfg_rescale: 0,
+        sm:true,
+        sm_dyn:false,
+        noise:0.0,
+        strength:0.6,
+        image:"",
+        base64image:"",
+        InfoExtracted:1,
+        //add 4
+        autoSmea:false,
+        legacy_uc:false,
+        use_coords:false,
+        v4_prompt:{
+            caption:{
+                base_caption:'',
+                char_captions:[]
+            },
             use_coords:false,
-            v4_prompt:{
-                caption:{
-                    base_caption:'',
-                    char_captions:[]
-                },
-                use_coords:false,
-                use_order:true
+            use_order:true
+        },
+        v4_negative_prompt:{
+            caption:{
+                base_caption:'',
+                char_captions:[]
             },
-            v4_negative_prompt:{
-                caption:{
-                    base_caption:'',
-                    char_captions:[]
-                },
-                legacy_uc:false,
-            },
-            variety_plus: false,
-            decrisp: false,
-            reference_mode: '',
-            character_image: '',
-            character_base64image: '',
-            style_aware: false,
-        }
+            legacy_uc:false,
+        },
+        variety_plus: false,
+        decrisp: false,
+        reference_mode: '',
+        character_image: '',
+        character_base64image: '',
+        style_aware: false,
     }
     //add NAI v4 (사용중인 사람용 추가 DB Init)
-    if(checkNullish(data.NAIImgConfig.v4_prompt)){
+    if(data.NAIImgConfig.v4_prompt == null){
         data.NAIImgConfig.autoSmea = false;
         data.NAIImgConfig.use_coords = false;
         data.NAIImgConfig.legacy_uc = false;
@@ -329,37 +177,31 @@ export function setDatabase(data:Database){
             legacy_uc:false,
         };
     }
-    if(checkNullish(data.customTextTheme)){
-        data.customTextTheme = {
-            FontColorStandard: "#f8f8f2",
-            FontColorBold: "#f8f8f2",
-            FontColorItalic: "#8C8D93",
-            FontColorItalicBold: "#8C8D93",
-            FontColorQuote1: '#8BE9FD',
-            FontColorQuote2: '#FFB86C'
-        }
+    data.customTextTheme ??= {
+        FontColorStandard: "#f8f8f2",
+        FontColorBold: "#f8f8f2",
+        FontColorItalic: "#8C8D93",
+        FontColorItalicBold: "#8C8D93",
+        FontColorQuote1: '#8BE9FD',
+        FontColorQuote2: '#FFB86C'
     }
-    if(checkNullish(data.hordeConfig)){
-        data.hordeConfig = {
-            apiKey: "",
-            model: "",
-            softPrompt: ""
-        }
+    data.hordeConfig ??= {
+        apiKey: "",
+        model: "",
+        softPrompt: ""
     }
-    if(checkNullish(data.novelai)){
-        data.novelai = {
-            token: "",
-            model: "clio-v1",
-        }
+    data.novelai ??= {
+        token: "",
+        model: "clio-v1",
     }
-    if(checkNullish(data.loreBook)){
+    if(data.loreBook == null){
         data.loreBookPage = 0
         data.loreBook = [{
             name: "My First LoreBook",
             data: []
         }]
     }
-    if(checkNullish(data.loreBookPage) || data.loreBook.length < data.loreBookPage){
+    if(data.loreBookPage == null || data.loreBook.length < data.loreBookPage){
         data.loreBookPage = 0
     }
     data.globalscript ??= []
