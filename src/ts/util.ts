@@ -358,10 +358,6 @@ export async function decryptBuffer(data:Uint8Array, keys:string){
     return result
 }
 
-export function toState<T>(t:T):Writable<T>{
-    return writable(t)
-}
-
 export function BufferToText(data:Uint8Array){
     if(!TextDecoder){
         return Buffer.from(data).toString('utf-8')
