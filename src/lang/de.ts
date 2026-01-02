@@ -617,6 +617,8 @@ export const languageGerman = {
     temperature: "Temperatur",
     frequencyPenalty: "Häufigkeitslimitierung",
     presensePenalty: "Auftrittslimitierung",
+    repetitionPenalty: "Wiederholungsstrafe",
+    verbosity: "mức độ chi tiết",
     advancedSettings: "Erweitert",
     advancedSettingsWarn: "Warnung: Bitte ändern Sie die folgenden Optionen nicht, wenn Sie nicht exakt wissen, was diese bewirken!",
     formatingOrder: "Formatreihenfolge",
