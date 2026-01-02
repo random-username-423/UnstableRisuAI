@@ -10,8 +10,8 @@
     import BookmarkList from './lib/Others/BookmarkList.svelte';
     import Settings from './lib/Setting/Settings.svelte';
     import { showRealmInfoStore, importCharacterProcess } from './ts/characterCards';
-    import { importPreset, getDatabase, setDatabase } from './ts/storage/database.svelte';
-    import { readModule } from './ts/process/modules';
+    import { importPreset } from './ts/storage/database.svelte';
+    import { importModuleFromData } from './ts/process/modules';
     import { alertNormal } from './ts/alert';
     import { language } from './lang';
     import RealmFrame from './lib/UI/Realm/RealmFrame.svelte';
@@ -30,45 +30,41 @@
     import PluginAlertModal from './lib/Others/PluginAlertModal.svelte';
     import PopupList from './lib/UI/PopupList.svelte';
 
-  
     let didFirstSetup: boolean  = $derived(DBState.db?.didFirstSetup)
     let gridOpen = $state(false)
     let aprilFools = $state(new Date().getMonth() === 3 && new Date().getDate() === 1)
     let aprilFoolsPage = $state(0)
-</script>
 
-<main class="flex bg-bg w-full h-full max-w-100vw text-textcolor" ondragover={(e) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'link'
-}} ondrop={async (e) => {
-    e.preventDefault()
-    if (e.dataTransfer.types.includes('application/x-risu-internal')) {
-        return
+    // Drag and drop handlers
+    function handleDragOver(e: DragEvent) {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'link'
     }
-    const file = e.dataTransfer.files[0]
-    if (file) {
+
+    async function handleFileDrop(e: DragEvent) {
+        e.preventDefault()
+        if (e.dataTransfer.types.includes('application/x-risu-internal')) return
+
+        const file = e.dataTransfer.files[0]
+        if (!file) return
+
         const name = file.name.toLowerCase()
+        const data = new Uint8Array(await file.arrayBuffer())
 
         if (name.endsWith('.risup')) {
-            const data = new Uint8Array(await file.arrayBuffer())
             await importPreset({ name: file.name, data })
             alertNormal(language.successImport)
         } else if (name.endsWith('.risum')) {
-            const data = new Uint8Array(await file.arrayBuffer())
-            const module = await readModule(Buffer.from(data))
-            const db = getDatabase()
-            db.modules.push(module)
-            setDatabase(db)
+            await importModuleFromData(data)
             alertNormal(language.successImport)
         } else {
-            await importCharacterProcess({
-                name: file.name,
-                data: file
-            })
+            await importCharacterProcess({ name: file.name, data })
             checkCharOrder()
         }
     }
-}}>
+</script>
+
+<main class="flex bg-bg w-full h-full max-w-100vw text-textcolor" ondragover={handleDragOver} ondrop={handleFileDrop}>
     {#if aprilFools}
 
         <div class="bg-[#212121] w-full h-screen min-h-screen text-black flex relative">
@@ -150,8 +146,6 @@
 
             <span class="text-sm mt-2 text-textcolor2">{LoadingStatusState.text}</span>
         </div>
-    {:else if $CustomGUISettingMenuStore}
-        <CustomGUISettingMenu />
     {:else if !didFirstSetup}
         <WelcomeRisu />
     {:else if $settingsOpen}
@@ -180,6 +174,8 @@
             <ChatScreen />
         {/if}
     {/if}
+
+    <!-- Overlay -->
     {#if $alertStore.type !== 'none'}
         <AlertComp />
     {/if}
