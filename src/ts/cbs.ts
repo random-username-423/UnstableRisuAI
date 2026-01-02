@@ -151,8 +151,8 @@ export function registerCBS(arg:CBSRegisterArg) {
                 return 'botname'
             }
             const db = getDatabase()
-            let selectedChar = getSelectedCharID()
-            let currentChar = db.characters[selectedChar]
+            const selectedChar = getSelectedCharID()
+            const currentChar = db.characters[selectedChar]
             if(currentChar && currentChar.type !== 'group'){
                 return currentChar.nickname || currentChar.name
             }
@@ -567,10 +567,10 @@ export function registerCBS(arg:CBSRegisterArg) {
                 return "[Cannot get time, previous message was sent in older version]"
             }
 
-            let duration = message.time - previous_message.time
+            const duration = message.time - previous_message.time
             let seconds = Math.floor(duration / 1000)
             let minutes = Math.floor(seconds / 60)
-            let hours = Math.floor(minutes / 60)
+            const hours = Math.floor(minutes / 60)
             seconds = seconds % 60
             minutes = minutes % 60
             return hours.toString() + ':' + minutes.toString().padStart(2,'0') + ':' + seconds.toString().padStart(2,'0')
@@ -601,11 +601,11 @@ export function registerCBS(arg:CBSRegisterArg) {
 
             const now = new Date()
 
-            let duration = now.getTime() - lastMessage.time
+            const duration = now.getTime() - lastMessage.time
 
             let seconds = Math.floor(duration / 1000)
             let minutes = Math.floor(seconds / 60)
-            let hours = Math.floor(minutes / 60)
+            const hours = Math.floor(minutes / 60)
 
             seconds = seconds % 60
             minutes = minutes % 60
@@ -1279,7 +1279,7 @@ export function registerCBS(arg:CBSRegisterArg) {
     registerFunction({
         name: 'makedict',
         callback: (str, matcherArg, args, vars) => {
-            let out = {}
+            const out = {}
             for(let i=0;i<args.length;i++){
                 const current = args[i]
                 const firstEqual = current.indexOf('=')
@@ -1524,7 +1524,7 @@ export function registerCBS(arg:CBSRegisterArg) {
             const start = arr.length > 1 ? Number(arr[0]) : 0
             const end = arr.length > 1 ? Number(arr[1]) : Number(arr[0])
             const step = arr.length > 2 ? Number(arr[2]) : 1
-            let out:string[] = []
+            const out:string[] = []
 
             for(let i=start;i<end;i+=step){
                 out.push(i.toString())
@@ -2160,7 +2160,7 @@ export function registerCBS(arg:CBSRegisterArg) {
     registerFunction({
         name: 'codeblock',
         callback: (str, matcherArg, args, vars) => {
-            let code = args[args.length - 1]
+            const code = args[args.length - 1]
                 .replace(/\"/g, '&quot;')
                 .replace(/\'/g, '&#39;')
                 .replace(/</g, '&lt;')

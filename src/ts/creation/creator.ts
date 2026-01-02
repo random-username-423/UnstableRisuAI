@@ -164,7 +164,7 @@ async function createBotFromWebMain(prompt:string):Promise<creationResult>{
     let tokns = await tokenize(val)
     if (tokns > 3200){
         const v = val.split('\n')
-        let chunks:[string,string,number][] = [["main","",0]]
+        const chunks:[string,string,number][] = [["main","",0]]
 
         for(const a of v){
             if(a.startsWith('==') && (a.endsWith('=='))){
@@ -256,7 +256,7 @@ async function createBotByAI(search:string):Promise<creationResult> {
     }
 
     const res = ch.result.trim().split("\n")
-    let charname = res[0].split(":").at(-1).trim()
+    const charname = res[0].split(":").at(-1).trim()
 
     const char = createBlankChar()
 
@@ -296,7 +296,7 @@ async function createBotFromWeb() {
         }
     }
 
-    let search = (await alertInput((sel === 0) ? language.createBotInternetAlert : language.inputBotGenerationPrompt))
+    const search = (await alertInput((sel === 0) ? language.createBotInternetAlert : language.inputBotGenerationPrompt))
     if(search.length < 3){
         return
     }
@@ -331,7 +331,7 @@ export const BotCreator = {
 }
 
 function surroundTextWithAsterisks(fulltext:string) {
-    let result:string[] = []
+    const result:string[] = []
 
     const splited = fulltext.split("\n")
     for(const text of splited){
@@ -340,11 +340,11 @@ function surroundTextWithAsterisks(fulltext:string) {
             continue
         }
         let output = '';
-        let parts = text.split('"');
+        const parts = text.split('"');
         for(let i = 0; i < parts.length; i++) {
-            let part = parts[i];
+            const part = parts[i];
             if(i % 2 === 0) {
-                let trimmed = part.trim();
+                const trimmed = part.trim();
                 output += trimmed ? '*' + trimmed + '*' : part;
             } else {
                 output += '"' + part + '"';

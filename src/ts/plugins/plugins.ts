@@ -133,9 +133,9 @@ export async function importPlugin(code:string|null = null, argu:{
 } = {}) {
     try {
         let jsFile = ''
-        let db = getDatabase()
-        let isUpdate = argu.isUpdate || false
-        let originalPluginName = argu.originalPluginName || ''
+        const db = getDatabase()
+        const isUpdate = argu.isUpdate || false
+        const originalPluginName = argu.originalPluginName || ''
         let isTypescript = argu.isTypescript || false
         
         if(!code){
@@ -172,10 +172,10 @@ export async function importPlugin(code:string|null = null, argu:{
         }
 
         let displayName: string = undefined
-        let arg: { [key: string]: 'int' | 'string' | string[] } = {}
-        let realArg: { [key: string]: number | string } = {}
-        let argMeta: { [key: string]: {[key:string]:string} } = {}
-        let customLink: ProviderPluginCustomLink[] = []
+        const arg: { [key: string]: 'int' | 'string' | string[] } = {}
+        const realArg: { [key: string]: number | string } = {}
+        const argMeta: { [key: string]: {[key:string]:string} } = {}
+        const customLink: ProviderPluginCustomLink[] = []
         let updateURL: string = ''
         let versionOfPlugin: string = '' //This is the version of the plugin itself, not the API version
         let apiVersion = '2.0'
@@ -258,7 +258,7 @@ export async function importPlugin(code:string|null = null, argu:{
                 if(provied.length > 3){
                     const meta: {[key:string]:string} = {}
                     //Compatibility layer for unofficial meta
-                    let metaStr = provied.slice(3).join(' ').replace(
+                    const metaStr = provied.slice(3).join(' ').replace(
                         /{{(.+?)(::?(.+?))?}}/g,
                         (a,g1:string,g2,g3:string) => {
                             console.log(g1,g3)
@@ -404,7 +404,7 @@ export async function importPlugin(code:string|null = null, argu:{
             return
         }
         
-        let pluginData: RisuPlugin = {
+        const pluginData: RisuPlugin = {
             name: name,
             script: jsFile,
             realArg: realArg,
@@ -456,11 +456,11 @@ export async function importPlugin(code:string|null = null, argu:{
     }
 }
 
-let pluginTranslator = false
+const pluginTranslator = false
 
 export async function loadPlugins() {
     console.log('Loading plugins...')
-    let db = getDatabase()
+    const db = getDatabase()
 
 
     const structuredCloned = safeStructuredClone(db.plugins)
@@ -554,7 +554,7 @@ export const getV2PluginAPIs = () => {
             setDatabaseLite(db)
         },
         addProvider: (name: string, func: (arg: PluginV2ProviderArgument, abortSignal?: AbortSignal) => Promise<{ success: boolean, content: string }>, options?: PluginV2ProviderOptions) => {
-            let provs = get(customProviderStore)
+            const provs = get(customProviderStore)
             provs.push(name)
             pluginV2.providers.set(name, func)
             pluginV2.providerOptions.set(name, options ?? {})

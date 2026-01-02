@@ -31,8 +31,8 @@ class DomSerializer {
 };
 
 async function runQuickJSPlugin(code:string){
-    let variant = await import(`@jitl/quickjs-ng-wasmfile-release-sync`)
-    let { loadQuickJs } = await import("@sebastianwessel/quickjs");
+    const variant = await import(`@jitl/quickjs-ng-wasmfile-release-sync`)
+    const { loadQuickJs } = await import("@sebastianwessel/quickjs");
 
     const options: SandboxOptions = {
         allowFetch: true, // inject fetch and allow the code to fetch data

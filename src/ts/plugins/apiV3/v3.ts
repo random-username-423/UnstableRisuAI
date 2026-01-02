@@ -441,7 +441,7 @@ const unloadV3Plugin = async (pluginName: string) => {
     }
     if(callbacks){
         pluginUnloadCallbacks.delete(pluginName); 
-        let promises: Promise<void>[] = [];
+        const promises: Promise<void>[] = [];
         for(const callback of callbacks){
             const result = callback();
             if(result instanceof Promise){

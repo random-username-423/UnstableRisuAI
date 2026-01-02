@@ -143,7 +143,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
     if(isTauri){
         const assets = await readDir('assets', {baseDir: BaseDirectory.AppData})
         let i = 0;
-        for(let asset of assets){
+        for(const asset of assets){
             i += 1;
             alertStore.set({
                 type: "wait",
@@ -207,7 +207,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
     const files:DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
     let foragekeys:string[] = []
     let loadedForageKeys = false
-    let db = getDatabase()
+    const db = getDatabase()
 
     async function checkImageExists(images:string) {
         if(db?.account?.useSync){
@@ -229,7 +229,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
     })
 
 
-    let dbs:[DriveFile,number][] = []
+    const dbs:[DriveFile,number][] = []
     let noSyncData = true
 
     if(mode === 'backup'){
@@ -280,7 +280,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
             })
         }
         async function getDbFromList(){
-            let selectables:string[] = []
+            const selectables:string[] = []
             for(let i=0;i<dbs.length;i++){
                 selectables.push(`Backup saved in ${(new Date(dbs[i][1] * 1000)).toLocaleString()}`)
                 if(selectables.length > 7){
@@ -298,7 +298,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         localStorage.setItem('risu_lastsaved', `${lastSaved}`)
         const requiredImages = (getUnpargeables(db))
         let ind = 0;
-        let errorLogs:string[] = []
+        const errorLogs:string[] = []
         for(const images of requiredImages){
             ind += 1
             for(let tries=0;tries<3;tries++){
@@ -381,7 +381,7 @@ function formatKeys(name:string) {
 }
 
 function newFormatKeys(name:string) {
-    let n = getBasename(name)
+    const n = getBasename(name)
     const bf = Buffer.from(n).toString('hex')
     return n + '.bin'
 }

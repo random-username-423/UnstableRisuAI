@@ -140,7 +140,7 @@ type InstData = {
 
 export function stChatConvert(pre:any){
     //ST preset
-    let promptTemplate = []
+    const promptTemplate = []
 
     function findPrompt(identifier:number){
         return pre.prompts.find((p:any) => p.identifier === identifier)
@@ -274,7 +274,7 @@ export const OobaParams = [
 ]
 
 export function promptConvertion(files:{ name: string, content: string, type:string }[]){
-    let preset = safeStructuredClone(presetTemplate)
+    const preset = safeStructuredClone(presetTemplate)
     let instData = {
         "system_prompt": "",
         "input_sequence": "",
@@ -319,7 +319,7 @@ export function promptConvertion(files:{ name: string, content: string, type:str
 
     let samplers:string[] = []
 
-    let oobaData:OobaChatCompletionRequestParams = {
+    const oobaData:OobaChatCompletionRequestParams = {
         mode: 'instruct',
     }
 
@@ -334,7 +334,7 @@ export function promptConvertion(files:{ name: string, content: string, type:str
             if(getname === ''){
                 getname = setname
             }
-            let multiplier = arg.multiplier ?? 1
+            const multiplier = arg.multiplier ?? 1
             if(samplers.includes(getname)){
                 //@ts-expect-error dynamic key access on preset with value from parsed JSON
                 preset[setname] = data[getname] * multiplier

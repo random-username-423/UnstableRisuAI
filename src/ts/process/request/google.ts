@@ -45,7 +45,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
     const db = getDatabase()
     const maxTokens = arg.maxTokens
 
-    let reformatedChat:GeminiChat[] = []
+    const reformatedChat:GeminiChat[] = []
     let systemPrompt = ''
 
     if(formated[0].role === 'system'){
@@ -63,7 +63,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             chat.role
 
         if (chat.multimodals && chat.multimodals.length > 0) {
-            let geminiParts: GeminiPart[] = [];
+            const geminiParts: GeminiPart[] = [];
             
             geminiParts.push({
                 text: chat.content,
@@ -125,7 +125,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
 
     for (let i=0;i<reformatedChat.length;i++){
 
-        let chat = reformatedChat[i]
+        const chat = reformatedChat[i]
         for (let j=0;j<chat.parts.length;j++){
             
             const part = chat.parts[j]
@@ -393,7 +393,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             'TEXT', 'IMAGE'
         ]
         arg.useStreaming = false
-    }    let headers:{[key:string]:string} = {}
+    }    const headers:{[key:string]:string} = {}
 
     if(db.gptVisionQuality === 'high'){
         body.generation_config.mediaResolution = "MEDIA_RESOLUTION_MEDIUM"
@@ -432,7 +432,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
 
         function base64url(source: Uint8Array | ArrayBuffer): string {
             const bytes = source instanceof ArrayBuffer ? new Uint8Array(source) : source;
-            let encodedSource = btoa(String.fromCharCode.apply(null, [...bytes]))
+            const encodedSource = btoa(String.fromCharCode.apply(null, [...bytes]))
                 .replace(/=+$/, "")
                 .replace(/\+/g, "-")
                 .replace(/\//g, "_");
@@ -529,7 +529,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
     }    
     
     let url = ''
-    let apiKey = arg.key || db.google.accessToken
+    const apiKey = arg.key || db.google.accessToken
     
     if(arg.customURL){
         let baseURL = arg.customURL
@@ -685,7 +685,7 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
         }
     }
 
-    let rDatas:{text: string, thought?: boolean}[] = [] 
+    const rDatas:{text: string, thought?: boolean}[] = [] 
     const processDataItem = async (data:any):Promise<GeminiPart[]> => {
         const parts = data?.candidates?.[0]?.content?.parts as GeminiPart[]
 
@@ -929,7 +929,7 @@ function getTranStream():TransformStream<Uint8Array, StreamResponseChunk> {
             buffer += new TextDecoder().decode(chunk);
             const lines = buffer.split('\n');
 
-            let readed = initStreamState();
+            const readed = initStreamState();
 
             try {
                 for (const line of lines) {

@@ -317,7 +317,7 @@ function updateHeightMode() {
  * Checks and updates the database format to the latest version.
  */
 async function checkNewFormat(): Promise<void> {
-    let db = getDatabase();
+    const db = getDatabase();
 
     // Check data integrity
     db.characters = db.characters.map((v) => {
@@ -401,7 +401,7 @@ async function checkNewFormat(): Promise<void> {
     }
     if (db.formatversion < 3) {
         for (let i = 0; i < db.characters.length; i++) {
-            let cha = db.characters[i];
+            const cha = db.characters[i];
             if (cha.type === 'character') {
                 if (checkNullish(cha.sdData)) {
                     cha.sdData = defaultSdDataFunc();

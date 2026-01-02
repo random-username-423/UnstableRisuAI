@@ -23,7 +23,7 @@ export async function sayTTS(character:character,text:string) {
             return
         }
     
-        let db = getDatabase()
+        const db = getDatabase()
         text = text.replace(/\*/g,'')
     
         if(character.ttsReadOnlyQuoted){
@@ -385,7 +385,7 @@ export function getWebSpeechTTSVoices() {
 }
 
 export async function getElevenTTSVoices() {
-    let db = getDatabase()
+    const db = getDatabase()
 
     const data = await fetch('https://api.elevenlabs.io/v1/voices', {
         headers: {

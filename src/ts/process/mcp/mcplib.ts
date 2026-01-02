@@ -154,11 +154,11 @@ export class MCPClient{
 
             buffer += decoder.decode(value, {stream: true})
 
-            let parts = buffer.split("\n\n")
+            const parts = buffer.split("\n\n")
             buffer = parts.pop() || ""
 
             for(const part of parts){
-                let lines = part.split("\n")
+                const lines = part.split("\n")
                 let data = ""
                 let eventName = ""
                 for(const line of lines){
@@ -232,7 +232,7 @@ export class MCPClient{
     } = {}):Promise<RPCRequestResult>{
         options ??= {}
         const initMethod = options.initMethod || 'none'
-        let httpStatus = 500
+        const httpStatus = 500
         const url = this.sseEndpoint ?? this.url
 
 
@@ -559,7 +559,7 @@ export class MCPClient{
 
             this.sseEndpoint = `${baseUrl}${endpoint}`
 
-            let r = await this.request('initialize', {
+            const r = await this.request('initialize', {
                 "protocolVersion": this.protocolVersion,
                 "capabilities": {},
                 "clientInfo": {
@@ -748,7 +748,7 @@ export class MCPClient{
         if(this.cached.prompts.length > 0){
             return this.cached.prompts
         }
-        let prompts:MCPPrompt[] = []
+        const prompts:MCPPrompt[] = []
         let cursor:string|null = null
         while(true){
             const args = {
@@ -787,7 +787,7 @@ export class MCPClient{
         if(this.cached.tools.length > 0){
             return this.cached.tools
         }
-        let tools:MCPTool[] = []
+        const tools:MCPTool[] = []
         let cursor:string|null = null
         while(true){
             const args = {

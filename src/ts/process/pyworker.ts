@@ -41,7 +41,7 @@ self.onmessage = async (event:MessageEvent<PyWorkerMessage>) => {
     switch(type) {
         case 'init':{
             const { id, moduleFunctions, code } = event.data as InitMessage;
-            let md: Record<string, any> = {};
+            const md: Record<string, any> = {};
             for(const func of moduleFunctions) {
                 md[func] = (...args: any[]) => {
 

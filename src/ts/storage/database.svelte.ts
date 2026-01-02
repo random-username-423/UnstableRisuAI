@@ -16,8 +16,8 @@ import type { Database } from './types/database';
 import type { AINsettings, OobaSettings } from './types/settings';
 
 //APP_VERSION_POINT is to locate the app version in the database file for version bumping
-export let appVer = "166.3.3" //<APP_VERSION_POINT>
-export let webAppSubVer = ''
+export const appVer = "166.3.3" //<APP_VERSION_POINT>
+export const webAppSubVer = ''
 
 
 export function setDatabase(data:Database){
@@ -68,7 +68,7 @@ export function setDatabase(data:Database){
     data.requester ??= "new"
     data.proxyKey ??= ""
     if(data.botPresets == null){
-        let defaultPreset = presetTemplate
+        const defaultPreset = presetTemplate
         defaultPreset.name = "Default"
         data.botPresets = [defaultPreset]
     }

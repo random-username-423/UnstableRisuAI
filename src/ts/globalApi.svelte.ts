@@ -47,7 +47,7 @@ interface fetchLog {
     status?: number
 }
 
-let fetchLog: fetchLog[] = []
+const fetchLog: fetchLog[] = []
 
 export async function downloadFile(name: string, dat: Uint8Array | ArrayBuffer | string) {
     if (typeof (dat) === 'string') {
@@ -81,15 +81,15 @@ export async function downloadFile(name: string, dat: Uint8Array | ArrayBuffer |
     }
 }
 
-let fileCache: {
+const fileCache: {
     origin: string[], res: (Uint8Array | 'loading' | 'done')[]
 } = {
     origin: [],
     res: []
 }
 
-let pathCache: { [key: string]: string } = {}
-let checkedPaths: string[] = []
+const pathCache: { [key: string]: string } = {}
+const checkedPaths: string[] = []
 
 /**
  * Checks if a file exists in the Capacitor filesystem.
@@ -269,7 +269,7 @@ export async function saveAsset(data: Uint8Array, customId: string = '', fileNam
         return `assets/${id}.${fileExtension}`
     }
     else {
-        let form = `assets/${id}.${fileExtension}`
+        const form = `assets/${id}.${fileExtension}`
         const replacer = await forageStorage.setItem(form, data)
         if (replacer) {
             return replacer
@@ -293,8 +293,8 @@ export async function loadAsset(id: string) {
     }
 }
 
-let lastSave = ''
-export let saving = $state({
+const lastSave = ''
+export const saving = $state({
     state: false
 })
 
@@ -303,7 +303,7 @@ export let saving = $state({
  * 
  * @returns {Promise<void>} - A promise that resolves when the database has been saved.
  */
-export let requiresFullEncoderReload = $state({
+export const requiresFullEncoderReload = $state({
     state: false
 })
 export async function saveDb() {
@@ -400,7 +400,7 @@ export async function saveDb() {
     })
 
     let savetrys = 0
-    let lastDbData = new Uint8Array(0)
+    const lastDbData = new Uint8Array(0)
     await sleep(1000)
     while (true) {
         if (!changed) {
@@ -420,7 +420,7 @@ export async function saveDb() {
                 requiresFullEncoderReload.state = false
             }
 
-            let toSave = safeStructuredClone(changeTracker)
+            const toSave = safeStructuredClone(changeTracker)
             changeTracker.character = changeTracker.character.length === 0 ? [] : [changeTracker.character[0]]
             changeTracker.chat = changeTracker.chat.length === 0 ? [] : [changeTracker.chat[0]]
             changeTracker.botPreset = false
@@ -433,7 +433,7 @@ export async function saveDb() {
             if (channel) {
                 channel.postMessage(sessionID)
             }
-            let db = getDatabase()
+            const db = getDatabase()
             if (!db.characters) {
                 await sleep(1000)
                 continue
@@ -486,13 +486,13 @@ export async function saveDb() {
  * @returns {Promise<number[]>} - A promise that resolves to an array of backup timestamps.
  */
 export async function getDbBackups() {
-    let db = getDatabase()
+    const db = getDatabase()
     if (db?.account?.useSync && !isTauri && !isNodeServer) {
         return []
     }
     if (isTauri) {
         const keys = await readDir('database', { baseDir: BaseDirectory.AppData })
-        let backups: number[] = []
+        const backups: number[] = []
         for (const key of keys) {
             if (key.name.startsWith("dbbackup-")) {
                 let da = key.name.substring(9)
@@ -949,7 +949,7 @@ export function getUnpargeables(db: Database, uptype: 'basename' | 'pure' = 'bas
  * @returns {Database} - The updated database object with replaced resources.
  */
 export function replaceDbResources(db: Database, replacer: { [key: string]: string }): Database {
-    let unpargeable: string[] = [];
+    const unpargeable: string[] = [];
 
     /**
      * Replaces a given data string with its corresponding value from the replacer object.
@@ -992,9 +992,9 @@ export function replaceDbResources(db: Database, replacer: { [key: string]: stri
  * Ensures that all characters are properly ordered and removes any invalid entries.
  */
 export function checkCharOrder() {
-    let db = getDatabase()
+    const db = getDatabase()
     db.characterOrder = db.characterOrder ?? []
-    let ordered = []
+    const ordered = []
     for (let i = 0; i < db.characterOrder.length; i++) {
         const folder = db.characterOrder[i]
         if (typeof (folder) !== 'string' && folder) {
@@ -1007,7 +1007,7 @@ export function checkCharOrder() {
         }
     }
 
-    let charIdList: string[] = []
+    const charIdList: string[] = []
 
     for (let i = 0; i < db.characters.length; i++) {
         const char = db.characters[i]
@@ -1305,7 +1305,7 @@ let fetchIndex = 0
  * Stores native fetch data.
  * @type {{ [key: string]: StreamedFetchChunk[] }}
  */
-let nativeFetchData: { [key: string]: StreamedFetchChunk[] } = {}
+const nativeFetchData: { [key: string]: StreamedFetchChunk[] } = {}
 
 /**
  * Interface representing a streamed fetch chunk data.
@@ -1490,7 +1490,7 @@ export class AppendableBuffer {
  * @returns {ReadableStream<Uint8Array>} - The new readable stream.
  */
 const pipeFetchLog = (fetchLogIndex: number, readableStream: ReadableStream<Uint8Array>) => {
-    let textDecoderBuffer = new AppendableBuffer()
+    const textDecoderBuffer = new AppendableBuffer()
     let textDecoderPointer = 0
     const textDecoder = TextDecoderStream ? (new TextDecoderStream()) : new TransformStream<Uint8Array, string>({
         transform(chunk, controller) {
@@ -1499,7 +1499,7 @@ const pipeFetchLog = (fetchLogIndex: number, readableStream: ReadableStream<Uint
                 const decoded = new TextDecoder('utf-8', {
                     fatal: true
                 }).decode(textDecoderBuffer.buffer)
-                let newString = decoded.slice(textDecoderPointer)
+                const newString = decoded.slice(textDecoderPointer)
                 textDecoderPointer = decoded.length
                 controller.enqueue(newString)
             } catch { }
@@ -1559,7 +1559,7 @@ export async function fetchNative(url: string, arg: {
 
     arg.method = arg.method ?? 'POST'
 
-    let headers = arg.headers ?? {}
+    const headers = arg.headers ?? {}
     let realBody: Uint8Array
 
     if (arg.method === 'GET' || arg.method === 'DELETE') {
@@ -1579,8 +1579,8 @@ export async function fetchNative(url: string, arg: {
     }
 
     const db = getDatabase()
-    let throughProxy = (!isTauri) && (!isNodeServer) && (!db.usePlainFetch)
-    let fetchLogIndex = addFetchLog({
+    const throughProxy = (!isTauri) && (!isNodeServer) && (!db.usePlainFetch)
+    const fetchLogIndex = addFetchLog({
         body: new TextDecoder().decode(realBody),
         headers: arg.headers,
         response: 'Streamed Fetch',
@@ -1605,7 +1605,7 @@ export async function fetchNative(url: string, arg: {
         if (fetchIndex >= 100000) {
             fetchIndex = 0
         }
-        let fetchId = fetchIndex.toString().padStart(5, '0')
+        const fetchId = fetchIndex.toString().padStart(5, '0')
         nativeFetchData[fetchId] = []
         let resolved = false
 
@@ -1650,7 +1650,7 @@ export async function fetchNative(url: string, arg: {
         let resHeaders: { [key: string]: string } = null
         let status = 400
 
-        let readableStream = pipeFetchLog(fetchLogIndex, new ReadableStream<Uint8Array>({
+        const readableStream = pipeFetchLog(fetchLogIndex, new ReadableStream<Uint8Array>({
             async start(controller) {
                 while (!resolved || nativeFetchData[fetchId].length > 0) {
                     if (nativeFetchData[fetchId].length > 0) {
@@ -1808,7 +1808,7 @@ export async function loadInternalBackup() {
     const keys = isTauri ? (await readDir('database', { baseDir: BaseDirectory.AppData })).map((v) => {
         return v.name
     }) : (await forageStorage.keys())
-    let internalBackups: string[] = []
+    const internalBackups: string[] = []
     for (const key of keys) {
         if (key.includes('dbbackup-')) {
             internalBackups.push(key)
@@ -1889,7 +1889,7 @@ export class PerformanceDebugger {
      * Logs the average time for each key to the console.
     */
     log() {
-        let table: { [key: string]: number } = {}
+        const table: { [key: string]: number } = {}
 
         for (const key in this.kv) {
             table[key] = this.kv[key].reduce((a, b) => a + b, 0) / this.kv[key].length
@@ -2111,7 +2111,7 @@ export const chatFoldedState = $state<{
 })
 
 //Since its exported, we cannot use $derived here
-export let chatFoldedStateMessageIndex = $state({
+export const chatFoldedStateMessageIndex = $state({
     index: -1
 })
 

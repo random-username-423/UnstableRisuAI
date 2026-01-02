@@ -7,9 +7,9 @@ import { getDatabase, setDatabase } from "../storage/database.svelte";
 import { selectedCharID } from "../stores.svelte";
 
 export async function addGroupChar(){
-    let db = getDatabase()
-    let selectedId = get(selectedCharID)
-    let group = db.characters[selectedId]
+    const db = getDatabase()
+    const selectedId = get(selectedCharID)
+    const group = db.characters[selectedId]
     if(group.type === 'group'){
         const res = await alertSelectChar()
         if(res){
@@ -36,9 +36,9 @@ export async function addGroupChar(){
 
 
 export function rmCharFromGroup(index:number){
-    let db = getDatabase()
-    let selectedId = get(selectedCharID)
-    let group = db.characters[selectedId]
+    const db = getDatabase()
+    const selectedId = get(selectedCharID)
+    const group = db.characters[selectedId]
     if(group.type === 'group'){
         group.characters.splice(index, 1)
         group.characterTalks.splice(index, 1)
@@ -55,13 +55,13 @@ export type GroupOrder = {
 }
 
 export function groupOrder(chars:GroupOrder[], input:string):GroupOrder[] {
-    let order:GroupOrder[] = [];
-    let ids:string[] = []
+    const order:GroupOrder[] = [];
+    const ids:string[] = []
     if (input) {
         const words = getWords(input)
 
         for (const word of words) {
-            for (let char of chars) {
+            for (const char of chars) {
                 const charNameChunks = getWords(findCharacterbyId(char.id).name)
 
                 if (charNameChunks.includes(word)) {
@@ -96,7 +96,7 @@ export function groupOrder(chars:GroupOrder[], input:string):GroupOrder[] {
 
 function getWords(data:string){
     const matches =  data.split(/\n| /g)
-    let words:string[] = []
+    const words:string[] = []
     if(!matches){
         return [data]
     }

@@ -379,7 +379,7 @@ export class CharacterHandler extends MCPToolHandler {
       ]
     }
 
-    let response: Record<string, any> = {}
+    const response: Record<string, any> = {}
 
     const fieldRemap = {
       name: 'name',
