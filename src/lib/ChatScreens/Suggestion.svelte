@@ -11,10 +11,9 @@
     import { CopyIcon, LanguagesIcon, RefreshCcwIcon } from "@lucide/svelte";
     import { alertConfirm } from "src/ts/alert";
     import { language } from "src/lang";
-    import { replacePlaceholders } from "../../ts/util";
     import { getUserName } from "src/ts/persona";
     import { onDestroy } from 'svelte';
-    import { ParseMarkdown } from "src/ts/parser.svelte";
+    import { ParseMarkdown, risuChatParser } from "src/ts/parser.svelte";
     import {defaultAutoSuggestPrompt} from "../../ts/storage/defaultPrompts.js";
 
     interface Props {
@@ -61,7 +60,7 @@
             let promptbody:OpenAIChat[] = [
             {
                 role:'system',
-                content: replacePlaceholders(prompt, currentChar.name)
+                content: risuChatParser(prompt, { chara: currentChar, rmVar: true })
             }
             ,{
                 role: 'user', 
@@ -73,7 +72,7 @@
                 promptbody = [
                     {
                         role: 'system',
-                        content: replacePlaceholders(DBState.db.autoSuggestPrompt, currentChar.name)
+                        content: risuChatParser(DBState.db.autoSuggestPrompt, { chara: currentChar, rmVar: true })
                     },
                     ...lastMessages.map(({ role, data }) => ({
                         role: role === "user" ? "user" as const : "assistant" as const,

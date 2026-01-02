@@ -9,7 +9,6 @@ import { basename } from "@tauri-apps/api/path"
 import { createBlankChar, getCharImage } from "./characters"
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { isIOS, isTauri } from "src/ts/platform"
-import { getUserName } from "./persona"
 const appWindow = isTauri ? getCurrentWebviewWindow() : null
 
 export interface Messagec extends Message{
@@ -95,15 +94,6 @@ export async function selectMultipleFile(ext:string[]){
     } else {
         return [{name: await basename(selected),data:await readFile(selected)}]
     }
-}
-
-export const replacePlaceholders = (msg:string, name:string) => {
-    const db = getDatabase()
-    const selectedChar = get(selectedCharID)
-    const currentChar = db.characters[selectedChar]
-    return msg  .replace(/({{char}})|({{Char}})|(<Char>)|(<char>)/gi, currentChar.name)
-                .replace(/({{user}})|({{User}})|(<User>)|(<user>)/gi, getUserName())
-                .replace(/(\{\{((set)|(get))var::.+?\}\})/gu,'')
 }
 
 export function selectFileByDom(allowedExtensions:string[], multiple:'multiple'|'single' = 'single') {
