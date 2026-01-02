@@ -612,6 +612,8 @@ export function setDatabase(data:Database){
     data.ImagenImageSize ??= '1K'
     data.ImagenAspectRatio ??= '1:1'
     data.ImagenPersonGeneration ??= 'allow_all'
+    data.echoMessage ??= "Echo Message"
+    data.echoDelay ??= 0
     if(!isNodeServer && !isTauri){
         //this is intended to forcely reduce the size of the database in web
         data.promptInfoInsideChat = false
@@ -1128,6 +1130,8 @@ export interface Database{
     settingsCloseButtonSize:number
     promptDiffPrefs:PromptDiffPrefs
     enableBookmark?: boolean
+    echoMessage?:string
+    echoDelay?:number
     pluginDevelopMode?: boolean
 }
 
