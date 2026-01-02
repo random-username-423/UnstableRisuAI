@@ -279,7 +279,6 @@
                         <td class="font-medium truncate">
                             {#if assetFilePath[i] && DBState.db.useAdditionalAssetsPreview}
                                 {#if assetFileExtensions[i] === 'mp4'}
-                                <!-- svelte-ignore a11y_media_has_caption -->
                                     <video controls class="mt-2 px-2 w-full m-1 rounded-md"><source src={assetFilePath[i]} type="video/mp4"></video>
                                 {:else if assetFileExtensions[i] === 'mp3'}
                                     <audio controls class="mt-2 px-2 w-full h-16 m-1 rounded-md" loop><source src={assetFilePath[i]} type="audio/mpeg"></audio>
