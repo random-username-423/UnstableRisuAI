@@ -12,7 +12,6 @@ import { appDataDir, join } from "@tauri-apps/api/path";
 import { open } from '@tauri-apps/plugin-shell'
 import { setDatabase, getDatabase, appVer, getCurrentCharacter } from "./storage/database.svelte";
 import { type Database } from './storage/types/database';
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { selectedCharID, DBState, selIdState, ReloadGUIPointer } from "./stores.svelte";
 import { alertConfirm, alertNormal, alertNormalWait, alertSelect } from "./alert";
 import { syncDrive } from "./drive/drive";
@@ -32,8 +31,6 @@ import { fetch as TauriHTTPFetch } from '@tauri-apps/plugin-http';
 import { isTauri, isNodeServer, isCapacitor } from "./platform";
 
 export const forageStorage = new AutoStorage()
-
-const appWindow = isTauri ? getCurrentWebviewWindow() : null
 
 interface fetchLog {
     body: string

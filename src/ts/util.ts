@@ -2,9 +2,7 @@ import { getDatabase } from "./storage/database.svelte"
 import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from "@tauri-apps/plugin-fs"
 import { basename } from "@tauri-apps/api/path"
-import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { isIOS, isTauri } from "src/ts/platform"
-const appWindow = isTauri ? getCurrentWebviewWindow() : null
 
 export function sleep(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
@@ -120,17 +118,6 @@ function readFileAsUint8Array(file: File) {
   
       reader.readAsArrayBuffer(file);
     });
-}
-
-export async function changeFullscreen(){
-    const db = getDatabase()
-    const isFull = await appWindow.isFullscreen()
-    if(db.fullScreen && (!isFull)){
-        await appWindow.setFullscreen(true)
-    }
-    if((!db.fullScreen) && (isFull)){
-        await appWindow.setFullscreen(false)
-    }
 }
 
 export async function encryptBuffer(data:Uint8Array, keys:string){
