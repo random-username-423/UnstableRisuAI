@@ -11,7 +11,8 @@
     import { CopyIcon, LanguagesIcon, RefreshCcwIcon } from "@lucide/svelte";
     import { alertConfirm } from "src/ts/alert";
     import { language } from "src/lang";
-    import { getUserName, replacePlaceholders } from "../../ts/util";
+    import { replacePlaceholders } from "../../ts/util";
+    import { getUserName } from "src/ts/persona";
     import { onDestroy } from 'svelte';
     import { ParseMarkdown } from "src/ts/parser.svelte";
     import {defaultAutoSuggestPrompt} from "../../ts/storage/defaultPrompts.js";

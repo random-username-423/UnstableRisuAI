@@ -14,7 +14,10 @@ import { get } from 'svelte/store';
 import css, { type CssAtRuleAST } from '@adobe/css-tools'
 import { selectedCharID } from './stores.svelte';
 import { calcString } from './process/infunctions';
-import { findCharacterbyId, getPersonaPrompt, getUserIcon, getUserName, parseKeyValue, pickHashRand, replaceAsync} from './util';
+import { findCharacterbyId, parseKeyValue, pickHashRand, replaceAsync} from './util';
+import { getPersonaPrompt } from "./persona";
+import { getUserIcon } from "./persona";
+import { getUserName } from "./persona";
 import { getInlayAssetBlob } from './process/files/inlays';
 import { getModuleAssets, getModuleLorebooks, getModules } from './process/modules';
 import type { OpenAIChat } from './process/index.svelte';

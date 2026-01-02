@@ -9,6 +9,7 @@ import { basename } from "@tauri-apps/api/path"
 import { createBlankChar, getCharImage } from "./characters"
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { isIOS, isTauri } from "src/ts/platform"
+import { getUserName } from "./persona"
 const appWindow = isTauri ? getCurrentWebviewWindow() : null
 
 export interface Messagec extends Message{
@@ -103,62 +104,6 @@ export const replacePlaceholders = (msg:string, name:string) => {
     return msg  .replace(/({{char}})|({{Char}})|(<Char>)|(<char>)/gi, currentChar.name)
                 .replace(/({{user}})|({{User}})|(<User>)|(<user>)/gi, getUserName())
                 .replace(/(\{\{((set)|(get))var::.+?\}\})/gu,'')
-}
-
-function checkPersonaBinded(){
-    try {
-        const db = getDatabase()
-        const selectedChar = get(selectedCharID)
-        const character = db.characters[selectedChar]
-        const chat = character.chats[character.chatPage]
-        if(!chat.bindedPersona){
-            return null
-        }
-        const persona = db.personas.find(v => v.id === chat.bindedPersona)
-        return persona 
-    } catch (error) {
-        return null
-    }
-}
-
-export function getUserName(){
-    const bindedPersona = checkPersonaBinded()
-    if(bindedPersona){
-        return bindedPersona.name
-    }
-    const db = getDatabase()
-    return db.username ?? 'User'
-}
-
-export function getUserIcon(){
-    const bindedPersona = checkPersonaBinded()
-    if(bindedPersona){
-        return bindedPersona.icon
-    }
-    const db = getDatabase()
-    return db.userIcon ?? ''
-}
-
-export function getPersonaPrompt(){
-    const bindedPersona = checkPersonaBinded()
-    if(bindedPersona){
-        return bindedPersona.personaPrompt
-    }
-    const db = getDatabase()
-    return db.personaPrompt ?? ''
-}
-
-export function getUserIconProtrait(){
-    try {
-        const bindedPersona = checkPersonaBinded()
-        if(bindedPersona){
-            return bindedPersona.largePortrait
-        }
-        const db = getDatabase()
-        return db.personas[db.selectedPersona].largePortrait       
-    } catch (error) {
-        return false
-    }
 }
 
 export function selectFileByDom(allowedExtensions:string[], multiple:'multiple'|'single' = 'single') {
