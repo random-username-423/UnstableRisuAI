@@ -1,6 +1,7 @@
 import { get } from "svelte/store";
 import {selectedCharID} from '../stores.svelte'
-import { type Message, type loreBook } from "../storage/database.svelte";
+import { type Message } from "../storage/database.svelte";
+import { type loreBook } from '../storage/types/character';
 import { DBState } from '../stores.svelte';
 import { tokenize } from "../tokenizer";
 import { findCharacterbyId, pickHashRand, selectSingleFile } from "../util";

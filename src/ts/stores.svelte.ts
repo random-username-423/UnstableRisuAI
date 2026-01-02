@@ -1,5 +1,7 @@
 import { writable } from "svelte/store";
-import type { character, Database, groupChat } from "./storage/database.svelte";
+import type { Database } from "./storage/database.svelte";
+import type { groupChat } from './storage/types/character';
+import type { character } from './storage/types/character';
 import type { simpleCharacterArgument } from "./parser.svelte";
 import type { alertData } from "./alert";
 import { moduleUpdate } from "./process/modules";

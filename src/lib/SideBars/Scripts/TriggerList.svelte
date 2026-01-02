@@ -1,6 +1,6 @@
 <script lang="ts">
 
-    import type { triggerscript } from "src/ts/storage/database.svelte";
+    import type { triggerscript } from "src/ts/storage/types/character";
     import TriggerData from "./TriggerData.svelte";
     import Sortable from "sortablejs";
     import { sleep, sortableOptions } from "src/ts/util";

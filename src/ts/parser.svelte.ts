@@ -1,6 +1,10 @@
 import DOMPurify from 'dompurify';
 import markdownit from 'markdown-it'
-import { appVer, getCurrentCharacter, getDatabase, type Database, type character, type customscript, type groupChat, type triggerscript } from './storage/database.svelte';
+import { appVer, getCurrentCharacter, getDatabase, type Database } from './storage/database.svelte';
+import { type triggerscript } from './storage/types/character';
+import { type customscript } from './storage/types/character';
+import { type groupChat } from './storage/types/character';
+import { type character } from './storage/types/character';
 import { DBState } from './stores.svelte';
 import { aiWatermarkingLawApplies, getFileSrc } from './globalApi.svelte';
 import { isTauri, isNodeServer } from "src/ts/platform"
