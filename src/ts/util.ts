@@ -1,36 +1,10 @@
-import { writable, type Writable } from "svelte/store"
-import type { Message } from "./storage/types/chat"
 import { getDatabase } from "./storage/database.svelte"
-import {open} from '@tauri-apps/plugin-dialog'
+import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from "@tauri-apps/plugin-fs"
 import { basename } from "@tauri-apps/api/path"
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { isIOS, isTauri } from "src/ts/platform"
 const appWindow = isTauri ? getCurrentWebviewWindow() : null
-
-export interface Messagec extends Message{
-    index: number
-}
-
-export function messageForm(arg:Message[], loadPages:number){
-    function reformatContent(data:string){
-        return data?.trim()
-    }
-
-    const a:Messagec[] = []
-    for(let i=0;i<arg.length;i++){
-        const m = arg[i]
-        a.unshift({
-            role: m.role,
-            data: reformatContent(m.data),
-            index: i,
-            saying: m.saying,
-            chatId: m.chatId ?? 'none',
-            generationInfo: m.generationInfo,
-        })
-    }
-    return a.slice(0, loadPages)
-}
 
 export function sleep(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
