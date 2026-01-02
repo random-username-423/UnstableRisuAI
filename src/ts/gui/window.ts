@@ -18,3 +18,19 @@ export async function changeFullscreen(){
 export function maximizeWindow(){
     appWindow?.maximize()
 }
+
+/**
+ * Toggles the fullscreen mode of the document.
+ * If the document is currently in fullscreen mode, it exits fullscreen.
+ * If the document is not in fullscreen mode, it requests fullscreen with navigation UI hidden.
+ */
+export function toggleFullscreen() {
+    const fullscreenElement = document.fullscreenElement
+    if (fullscreenElement) {
+        void document.exitFullscreen()
+    } else {
+        void document.documentElement.requestFullscreen({
+            navigationUI: "hide"
+        })
+    }
+}

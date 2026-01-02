@@ -1007,18 +1007,6 @@ export class AppendableBuffer {
 }
 
 /**
- * Toggles the fullscreen mode of the document.
- * If the document is currently in fullscreen mode, it exits fullscreen.
- * If the document is not in fullscreen mode, it requests fullscreen with navigation UI hidden.
- */
-export function toggleFullscreen() {
-    const fullscreenElement = document.fullscreenElement
-    fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen({
-        navigationUI: "hide"
-    })
-}
-
-/**
  * A class that provides a blank writer implementation.
  * 
  * This class is used to provide a no-op implementation of a writer, making it compatible with other writer interfaces.
