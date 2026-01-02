@@ -12,7 +12,7 @@ import {
 import { type Chat } from 'src/ts/storage/types/chat';
 import { type groupChat } from 'src/ts/storage/types/character';
 import { type character } from 'src/ts/storage/types/character';
-import { type OpenAIChat } from "../index.svelte";
+import { type OpenAIChat } from "../types";
 import { requestChatData } from "../request/request";
 import { chatCompletion, unloadEngine } from "../webllm";
 import { parseChatML } from "src/ts/parser.svelte";

@@ -39,25 +39,8 @@ import { getModelInfo, LLMFlags } from "../model/modellist";
 import { hypaMemoryV3 } from "./memory/hypav3";
 import { getModuleAssets, getModuleToggles } from "./modules";
 import { readImage } from "../globalApi.svelte";
-
-export interface OpenAIChat{
-    role: 'system'|'user'|'assistant'|'function'
-    content: string
-    memo?:string
-    name?:string
-    removable?:boolean
-    attr?:string[]
-    multimodals?: MultiModal[]
-    thoughts?: string[]
-    cachePoint?: boolean
-}
-
-export interface MultiModal{
-    type:'image'|'video'|'audio'
-    base64:string,
-    height?:number,
-    width?:number
-}
+import { type OpenAIChat, type MultiModal } from "./types";
+export type { OpenAIChat, MultiModal };
 
 export interface OpenAIChatFull extends OpenAIChat{
     function_call?: {
