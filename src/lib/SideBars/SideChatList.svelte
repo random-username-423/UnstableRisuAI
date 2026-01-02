@@ -15,7 +15,8 @@
 
     import { exportChat, importChat, exportAllChats } from "src/ts/characters";
     import { alertChatOptions, alertConfirm, alertError, alertNormal, alertSelect, alertStore } from "src/ts/alert";
-    import { findCharacterbyId, sleep, sortableOptions } from "src/ts/util";
+    import { sleep, sortableOptions } from "src/ts/util";
+    import { findCharacterbyId } from "src/ts/characters";
     import { createMultiuserRoom } from "src/ts/sync/multiuser";
     import { bookmarkListOpen } from "src/ts/stores.svelte";
     import { language } from "src/lang";

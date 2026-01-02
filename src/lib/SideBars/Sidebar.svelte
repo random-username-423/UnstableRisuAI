@@ -39,7 +39,8 @@
     import { isEqual } from "lodash";
     import SidebarAvatar from "./SidebarAvatar.svelte";
     import BaseRoundedButton from "../UI/BaseRoundedButton.svelte";
-    import { getCharacterIndexObject, selectSingleFile } from "src/ts/util";
+    import { selectSingleFile } from "src/ts/util";
+    import { getCharacterIndexObject } from "src/ts/characters";
     import { v4 } from "uuid";
     import { checkCharOrder, getFileSrc, saveAsset } from "src/ts/globalApi.svelte";
     import { alertInput, alertSelect } from "src/ts/alert";

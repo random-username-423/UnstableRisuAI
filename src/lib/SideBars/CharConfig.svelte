@@ -11,7 +11,8 @@
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
     import { alertTOS, showHypaV2Alert } from "../../ts/alert";
     import BarIcon from "./BarIcon.svelte";
-    import { findCharacterbyId, getAuthorNoteDefaultText, selectMultipleFile, selectSingleFile } from "../../ts/util";
+    import { getAuthorNoteDefaultText, selectMultipleFile, selectSingleFile } from "../../ts/util";
+    import { findCharacterbyId } from "../../ts/characters";
     import Help from "../Others/Help.svelte";
     import { exportChar } from "src/ts/characterCards";
     import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices } from "src/ts/process/tts";
