@@ -2,8 +2,8 @@
     import { onMount } from "svelte";
     import { XIcon, TrashIcon, PencilIcon, BookOpenCheckIcon, BookLockIcon, ArrowRightIcon } from "@lucide/svelte";
     import Chat from "../ChatScreens/Chat.svelte";
-    import { getCharImage } from "src/ts/characters";
-    import { findCharacterbyId, getUserName, getUserIcon } from "src/ts/util";
+    import { getCharImage, findCharacterbyId } from "src/ts/characters";
+    import { getUserName, getUserIcon } from "src/ts/persona"
     import { createSimpleCharacter, bookmarkListOpen, DBState, selectedCharID, ScrollToMessageStore } from "src/ts/stores.svelte";
     import { language } from "src/lang";
     import { alertInput } from "src/ts/alert";

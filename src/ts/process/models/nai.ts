@@ -2,7 +2,8 @@ import { getDatabase, setDatabase } from "src/ts/storage/database.svelte"
 import type { OpenAIChat } from "../index.svelte"
 import { globalFetch } from "src/ts/globalApi.svelte"
 import { alertError, alertInput, alertNormal, alertWait } from "src/ts/alert"
-import { getUserName, sleep } from "src/ts/util"
+import { sleep } from "src/ts/util"
+import { getUserName } from "src/ts/persona"
 
 export function stringlizeNAIChat(formated:OpenAIChat[], char:string, continued: boolean){
     const db = getDatabase()

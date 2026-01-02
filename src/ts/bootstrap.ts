@@ -7,11 +7,11 @@ import {
     readDir,
     remove
 } from "@tauri-apps/plugin-fs"
-import { changeFullscreen, checkNullish, sleep } from "./util"
+import { checkNullish, sleep } from "./util"
+import { changeFullscreen, maximizeWindow } from "./gui/window"
 import { v4 as uuidv4 } from 'uuid';
 import { get } from "svelte/store";
 import { setDatabase, defaultSdDataFunc, getDatabase } from "./storage/database.svelte";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { checkRisuUpdate } from "./update";
 import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
 import { loadPlugins } from "./plugins/plugins";
@@ -43,8 +43,6 @@ import {
 } from "./globalApi.svelte";
 import { isTauri, isCapacitor, isInStandaloneMode } from "./platform";
 
-const appWindow = isTauri ? getCurrentWebviewWindow() : null
-
 /**
  * Loads the application data.
  */
@@ -54,7 +52,7 @@ export async function loadData() {
         try {
             if (isTauri) {
                 LoadingStatusState.text = "Checking Files..."
-                appWindow.maximize()
+                maximizeWindow()
                 if (!await exists('', { baseDir: BaseDirectory.AppData })) {
                     await mkdir('', { baseDir: BaseDirectory.AppData })
                 }

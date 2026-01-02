@@ -20,7 +20,9 @@ import { Mutex } from "../mutex";
 import { tokenize } from "../tokenizer";
 import { fetchNative, readImage } from "../globalApi.svelte";
 import { loadLoreBookV3Prompt } from './lorebook.svelte';
-import { getPersonaPrompt, getUserName, getUserIcon } from '../util';
+import { getPersonaPrompt } from "../persona";
+import { getUserIcon } from "../persona";
+import { getUserName } from "../persona";
 let luaFactory:LuaFactory
 const ScriptingSafeIds = new Set<string>()
 const ScriptingEditDisplayIds = new Set<string>()

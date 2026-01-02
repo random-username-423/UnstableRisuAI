@@ -9,7 +9,11 @@ import { ChatTokenizer, tokenize, tokenizeNum } from "../tokenizer";
 import { language } from "../../lang";
 import { alertError, alertToast } from "../alert";
 import { loadLoreBookV3Prompt } from "./lorebook.svelte";
-import { findCharacterbyId, getAuthorNoteDefaultText, getPersonaPrompt, getUserName, isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax, prebuiltAssetCommand } from "../util";
+import { isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax } from "../util";
+import { getAuthorNoteDefaultText } from "./prompt";
+import { findCharacterbyId } from "../characters";
+import { getPersonaPrompt } from "../persona";
+import { getUserName } from "../persona";
 import { requestChatData } from "./request/request";
 import { stableDiff } from "./stableDiff";
 import { processScript, processScriptFull, risuChatParser } from "./scripts";
@@ -74,6 +78,17 @@ export interface requestTokenPart{
     name:string
     tokens:number
 }
+
+const defaultPrebuiltAssetCommand = `
+<Image Tag Instruction>Insert HTML image tags between paragraphs based on context.
+Set src as keywords from the list below that matches current character, outfit, situation sentiment and etc.
+print as many different images as possible. Use only available keywords.
+if there are no matching keywords, try to put clostest matching image src.
+try to put at least 1 image per output.
+<keywords>{{join::{{chardisplayasset}}::,}}</keywords>
+Example: <img src="{{ele::{{chardisplayasset}}::0}}">
+<Image Tag Instruction>
+`
 
 export const doingChat = writable(false)
 export const chatProcessStage = writable(0)
@@ -651,7 +666,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                         }
                         
                         if(currentChar.prebuiltAssetCommand && !card.text.includes('{{//@customimageinstruction}}')){
-                            content += prebuiltAssetCommand
+                            content += defaultPrebuiltAssetCommand
                         }
                         content = (risuChatParser(content, {chara: currentChar, role: card.role}))
                     }
@@ -1248,7 +1263,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
                             content = positionParser(currentChar.replaceGlobalNote, posType).replaceAll('{{original}}', content)
                         }
                         if(currentChar.prebuiltAssetCommand && !card.text.includes('{{//@customimageinstruction}}')){
-                            content += prebuiltAssetCommand
+                            content += defaultPrebuiltAssetCommand
                         }
                         content = (risuChatParser(content, {chara: currentChar, role: card.role}))
                     }
