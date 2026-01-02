@@ -11,6 +11,7 @@ export default defineConfig(
 	svelte.configs.recommended,
 	{
 		languageOptions: {
+			globals: globals.browser,
 			parserOptions: {
 				projectService: true,
 			},
@@ -21,6 +22,7 @@ export default defineConfig(
 			'unused-imports': unusedImports,
 		},
 		rules: {
+			'no-undef': 'off',
 			'@typescript-eslint/no-unused-vars': 'off',
 			'unused-imports/no-unused-imports': 'error',
 			'unused-imports/no-unused-vars': [
