@@ -748,22 +748,6 @@ export function openURL(url: string) {
 }
 
 /**
- * Converts FormData to a URL-encoded string.
- * 
- * @param {FormData} formData - The FormData to convert.
- * @returns {string} The URL-encoded string.
- */
-function formDataToString(formData: FormData): string {
-    const params: string[] = [];
-
-    for (const [name, value] of formData.entries()) {
-        params.push(`${encodeURIComponent(name)}=${encodeURIComponent(value.toString())}`);
-    }
-
-    return params.join('&');
-}
-
-/**
  * A writer class for Tauri environment.
  */
 export class TauriWriter {
@@ -1023,16 +1007,6 @@ export class AppendableBuffer {
 }
 
 /**
- * Converts a ReadableStream of Uint8Array to a text string.
- * 
- * @param {ReadableStream<Uint8Array>} stream - The readable stream to convert.
- * @returns {Promise<string>} A promise that resolves to the text content of the stream.
- */
-export function textifyReadableStream(stream: ReadableStream<Uint8Array>) {
-    return new Response(stream).text()
-}
-
-/**
  * Toggles the fullscreen mode of the document.
  * If the document is currently in fullscreen mode, it exits fullscreen.
  * If the document is not in fullscreen mode, it requests fullscreen with navigation UI hidden.
@@ -1042,18 +1016,6 @@ export function toggleFullscreen() {
     fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen({
         navigationUI: "hide"
     })
-}
-
-/**
- * Removes non-Latin characters from a string, replaces multiple spaces with a single space, and trims the string.
- * 
- * @param {string} data - The input string to be processed.
- * @returns {string} The processed string with non-Latin characters removed, multiple spaces replaced by a single space, and trimmed.
- */
-export function trimNonLatin(data: string) {
-    return data.replace(/[^\x00-\x7F]/g, "")
-        .replace(/ +/g, ' ')
-        .trim()
 }
 
 /**
@@ -1200,38 +1162,6 @@ export class PerformanceDebugger {
             this.kv[key].push(...other.kv[key])
         }
     }
-}
-
-export function getLanguageCodes() {
-    let languageCodes: {
-        code: string
-        name: string
-    }[] = []
-
-    for (let i = 0x41; i <= 0x5A; i++) {
-        for (let j = 0x41; j <= 0x5A; j++) {
-            languageCodes.push({
-                code: String.fromCharCode(i) + String.fromCharCode(j),
-                name: ''
-            })
-        }
-    }
-
-    languageCodes = languageCodes.map(v => {
-        return {
-            code: v.code.toLocaleLowerCase(),
-            name: new Intl.DisplayNames([
-                DBState.db.language === 'cn' ? 'zh' : DBState.db.language
-            ], {
-                type: 'language',
-                fallback: 'none'
-            }).of(v.code)
-        }
-    }).filter((a) => {
-        return a.name
-    }).sort((a, b) => a.name.localeCompare(b.name))
-
-    return languageCodes
 }
 
 export function getVersionString(): string {

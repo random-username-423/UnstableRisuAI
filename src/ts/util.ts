@@ -603,3 +603,55 @@ const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme
 export function toGraphemes(str: string): string[] {
     return [...graphemeSegmenter.segment(str)].map(s => s.segment)
 }
+/**
+ * Converts a ReadableStream of Uint8Array to a text string.
+ *
+ * @param {ReadableStream<Uint8Array>} stream - The readable stream to convert.
+ * @returns {Promise<string>} A promise that resolves to the text content of the stream.
+ */
+
+export function textifyReadableStream(stream: ReadableStream<Uint8Array>) {
+    return new Response(stream).text();
+}/**
+ * Generates a list of valid ISO 639-1 language codes with localized display names.
+ *
+ * This function iterates through all possible two-letter combinations (AA-ZZ),
+ * uses the browser's Intl.DisplayNames API to filter only valid language codes,
+ * and returns them with names displayed in the specified UI language.
+ *
+ * @param {string} uiLanguage - The UI language code to display language names in (e.g., 'en', 'ko', 'cn').
+ * @returns {Array<{code: string, name: string}>} An array of language objects sorted by localized name.
+ */
+
+export function getLanguageCodes(uiLanguage: string) {
+    let languageCodes: {
+        code: string;
+        name: string;
+    }[] = [];
+
+    for (let i = 0x41; i <= 0x5A; i++) {
+        for (let j = 0x41; j <= 0x5A; j++) {
+            languageCodes.push({
+                code: String.fromCharCode(i) + String.fromCharCode(j),
+                name: ''
+            });
+        }
+    }
+
+    languageCodes = languageCodes.map(v => {
+        return {
+            code: v.code.toLocaleLowerCase(),
+            name: new Intl.DisplayNames([
+                uiLanguage === 'cn' ? 'zh' : uiLanguage
+            ], {
+                type: 'language',
+                fallback: 'none'
+            }).of(v.code)
+        };
+    }).filter((a) => {
+        return a.name;
+    }).sort((a, b) => a.name.localeCompare(b.name));
+
+    return languageCodes;
+}
+

@@ -10,7 +10,8 @@
     import { asBuffer, selectFileByDom, selectSingleFile, sleep } from "src/ts/util";
     import { alertError, alertSelect } from "src/ts/alert";
     import { risuChatParser } from "src/ts/parser.svelte";
-    import { AppendableBuffer, downloadFile, getLanguageCodes } from "src/ts/globalApi.svelte";
+    import { AppendableBuffer, downloadFile } from "src/ts/globalApi.svelte";
+    import { getLanguageCodes } from "src/ts/util";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import sendSound from '../../etc/send.mp3'
@@ -433,7 +434,7 @@
     <span class="text-textcolor text-lg mt-4">{language.sourceLanguage}</span>
     <SelectInput value={sourceLang === null ? 'auto' : sourceLang}>
         <OptionInput value="auto">Auto</OptionInput>
-        {#each getLanguageCodes() as lang}
+        {#each getLanguageCodes(DBState.db.language) as lang}
             <OptionInput value={lang.code}>{lang.name}</OptionInput>
         {/each}
     </SelectInput>

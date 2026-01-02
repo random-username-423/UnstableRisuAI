@@ -1,7 +1,7 @@
 import { Sha256 } from "@aws-crypto/sha256-js"
 import { HttpRequest } from "@smithy/protocol-http"
 import { SignatureV4 } from "@smithy/signature-v4"
-import { textifyReadableStream } from "src/ts/globalApi.svelte"
+import { textifyReadableStream } from "src/ts/util"
 import { globalFetch, fetchNative } from "src/ts/fetch"
 import { LLMFormat } from "src/ts/model/modellist"
 import { registerClaudeObserver } from "src/ts/observer.svelte"
