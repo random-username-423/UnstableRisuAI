@@ -247,6 +247,7 @@ export const languageEnglish = {
             "- **Trigger Scripts**: Similarity conditions in trigger scripts\n" +
             "- **File Attachments**: Searching within PDF/TXT/XML attachments\n" +
             "- **Playground**: Embedding testing in Playground",
+        hideAllImagesDesc: "Hides bot icons, bot image assets, and RisuRealm cover images.",
     },
     setup: {
         chooseProvider: "Choose AI Provider",
@@ -926,6 +927,7 @@ export const languageEnglish = {
     ifRandom: "If random",
     ifValue: "If Value",
     hideRealm: "Hide RisuRealm",
+    hideAllImages: "Hide All Images",
     popularityLevel: "{} Popularity",
     colorScheme: "Color Scheme",
     rangeStart: "Range Start",

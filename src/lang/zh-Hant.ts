@@ -190,6 +190,7 @@ export const languageChineseTraditional = {
             "- **觸發腳本**: 觸發腳本中的相似度條件\n" +
             "- **檔案附件**: 在 PDF/TXT/XML 附件中搜尋\n" +
             "- **Playground**: Playground 中的嵌入測試",
+        hideAllImagesDesc: "隱藏機器人圖示、機器人圖片資源和RisuRealm封面圖片。",
     },
     setup: {
         chooseProvider: "選擇 AI 提供者",
@@ -868,6 +869,7 @@ export const languageChineseTraditional = {
     ifRandom: "如果隨機",
     ifValue: "如果值",
     hideRealm: "隱藏 RisuRealm",
+    hideAllImages: "隱藏所有圖片",
     popularityLevel: "{} 人氣",
     colorScheme: "配色方案",
     rangeStart: "範圍開始",

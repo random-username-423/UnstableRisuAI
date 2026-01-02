@@ -216,6 +216,7 @@ export const languageSpanish = {
             "- **Scripts de Activación**: Condiciones de similitud en scripts de activación\n" +
             "- **Archivos Adjuntos**: Búsqueda dentro de archivos adjuntos PDF/TXT/XML\n" +
             "- **Playground**: Pruebas de incrustación en Playground",
+        hideAllImagesDesc: "Oculta los iconos de bots, recursos de imágenes de bots y portadas de RisuRealm.",
     },
     setup: {
         chooseProvider: "Elige Proveedor de IA",
@@ -897,6 +898,7 @@ export const languageSpanish = {
     ifRandom: "Si aleatorio",
     ifValue: "Si valor",
     hideRealm: "Ocultar RisuRealm",
+    hideAllImages: "Ocultar todas las imágenes",
     popularityLevel: "{} Popularidad",
     colorScheme: "Esquema de Colores",
     rangeStart: "Inicio del Rango",

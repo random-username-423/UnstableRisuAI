@@ -200,6 +200,7 @@ export const languageKorean = {
             "- **트리거 스크립트**: 트리거 스크립트의 유사도 조건\n" +
             "- **파일 첨부**: PDF/TXT/XML 첨부 파일 내 검색\n" +
             "- **Playground**: Playground에서 임베딩 테스트",
+        hideAllImagesDesc: "봇 아이콘, 봇 이미지 에셋, RisuRealm 표지 사진을 가립니다.",
     },
     setup: {
         chooseProvider: "AI 제공자를 선택해 주세요",
@@ -877,6 +878,7 @@ export const languageKorean = {
     ifRandom: "만약 랜덤",
     ifValue: "값이 다음과 같다면",
     hideRealm: "RisuRealm 숨기기",
+    hideAllImages: "모든 이미지 숨기기",
     popularityLevel: "{} 인기도",
     colorScheme: "색상 팔레트",
     rangeStart: "범위 시작",

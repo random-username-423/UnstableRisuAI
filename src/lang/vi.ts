@@ -209,6 +209,7 @@ export const LanguageVietnamese = {
             "- **Tập lệnh kích hoạt**: Các điều kiện tương đồng trong tập lệnh kích hoạt\n" +
             "- **Tệp đính kèm**: Tìm kiếm trong các tệp đính kèm PDF/TXT/XML\n" +
             "- **Playground**: Thử nghiệm nhúng trong Playground",
+        hideAllImagesDesc: "Ẩn biểu tượng bot, tài nguyên hình ảnh bot và ảnh bìa RisuRealm.",
     },
     setup: {
         chooseProvider: "Chọn nhà cung cấp AI",
@@ -890,6 +891,7 @@ export const LanguageVietnamese = {
     ifRandom: "Nếu ngẫu nhiên",
     ifValue: "Nếu giá trị",
     hideRealm: "Ẩn RisuRealm",
+    hideAllImages: "Ẩn tất cả hình ảnh",
     popularityLevel: "{} Mức độ phổ biến",
     colorScheme: "Bảng màu",
     rangeStart: "Phạm vi bắt đầu",

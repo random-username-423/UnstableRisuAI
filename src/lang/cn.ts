@@ -189,6 +189,7 @@ export const languageChinese = {
             "- **触发脚本**: 触发脚本中的相似度条件\n" +
             "- **文件附件**: 在 PDF/TXT/XML 附件中搜索\n" +
             "- **Playground**: Playground 中的嵌入测试",
+        hideAllImagesDesc: "隐藏机器人图标、机器人图片资源和RisuRealm封面图片。",
     },
     setup: {
         chooseProvider: "选择 AI 提供者",
@@ -866,6 +867,7 @@ export const languageChinese = {
     ifRandom: "如果随机",
     ifValue: "如果值",
     hideRealm: "隐藏 RisuRealm",
+    hideAllImages: "隐藏所有图片",
     popularityLevel: "{} 人气",
     colorScheme: "配色方案",
     rangeStart: "范围开始",
