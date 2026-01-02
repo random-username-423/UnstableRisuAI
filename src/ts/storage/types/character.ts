@@ -1,5 +1,6 @@
 import type { OnnxModelFiles } from 'src/ts/process/transformers';
-import type { Chat, ChatFolder } from '../database.svelte';
+import type { ChatFolder } from './chat';
+import type { Chat } from './chat';
 import type { triggerscript as triggerscriptMain } from 'src/ts/process/triggers';
 
 

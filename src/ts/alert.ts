@@ -2,7 +2,8 @@ import { get, writable } from "svelte/store"
 import { sleep } from "./util"
 import { language } from "../lang"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
-import { getDatabase, type MessageGenerationInfo } from "./storage/database.svelte"
+import { getDatabase } from "./storage/database.svelte"
+import { type MessageGenerationInfo } from './storage/types/chat'
 import { alertStore as alertStoreImported } from "./stores.svelte"
 
 export interface alertData{

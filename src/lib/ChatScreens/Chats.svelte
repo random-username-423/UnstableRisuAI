@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Message } from 'src/ts/storage/database.svelte';
+    import type { Message } from 'src/ts/storage/types/chat';
     import type { character, groupChat } from 'src/ts/storage/types/character';
     import { mount, onDestroy, unmount } from 'svelte';
     import Chat from './Chat.svelte';

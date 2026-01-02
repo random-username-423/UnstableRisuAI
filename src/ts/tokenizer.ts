@@ -1,6 +1,7 @@
 import type { Tiktoken } from "@dqbd/tiktoken";
 import type { Tokenizer } from "@mlc-ai/web-tokenizers";
-import { type Chat, getCurrentCharacter, getDatabase } from "./storage/database.svelte";
+import { getCurrentCharacter, getDatabase } from "./storage/database.svelte";
+import { type Chat } from './storage/types/chat';
 import { type groupChat } from './storage/types/character';
 import { type character } from './storage/types/character';
 import type { MultiModal, OpenAIChat } from "./process/index.svelte";

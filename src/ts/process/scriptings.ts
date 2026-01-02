@@ -1,7 +1,8 @@
 import { asBuffer } from 'src/ts/util';
 import { getChatVar, hasher, setChatVar, getGlobalChatVar, type simpleCharacterArgument, risuChatParser } from "../parser.svelte";
 import { LuaEngine, LuaFactory } from "wasmoon";
-import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase, type Chat } from "../storage/database.svelte";
+import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase } from "../storage/database.svelte";
+import { type Chat } from '../storage/types/chat';
 import { type triggerscript } from '../storage/types/character';
 import { type groupChat } from '../storage/types/character';
 import { type character } from '../storage/types/character';

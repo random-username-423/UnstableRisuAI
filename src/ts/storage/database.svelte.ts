@@ -1382,70 +1382,6 @@ interface ComfyConfig{
 
 export type FormatingOrderItem = 'main'|'jailbreak'|'chats'|'lorebook'|'globalNote'|'authorNote'|'lastChat'|'description'|'postEverything'|'personaPrompt'
 
-export interface Chat{
-    message: Message[]
-    note:string
-    name:string
-    localLore: loreBook[]
-    sdData?:string
-    supaMemoryData?:string
-    hypaV2Data?:SerializableHypaV2Data
-    lastMemory?:string
-    suggestMessages?:string[]
-    isStreaming?:boolean
-    scriptstate?:{[key:string]:string|number|boolean}
-    modules?:string[]
-    id?:string
-    bindedPersona?:string
-    fmIndex?:number
-    hypaV3Data?:SerializableHypaV3Data
-    folderId?:string
-    lastDate?:number
-    bookmarks?: string[];
-    bookmarkNames?: { [chatId: string]: string };
-}
-
-export interface ChatFolder{
-    id:string
-    name?:string
-    color?:string
-    folded:boolean
-}
-
-export interface Message{
-    role: 'user'|'char'
-    data: string
-    saying?: string
-    chatId?:string
-    time?: number
-    generationInfo?: MessageGenerationInfo
-    promptInfo?: MessagePresetInfo
-    name?:string
-    otherUser?:boolean
-    disabled?:false|true|'allBefore'
-    isComment?:boolean
-}
-
-export interface MessageGenerationInfo{
-    model?: string
-    generationId?: string
-    inputTokens?: number
-    outputTokens?: number
-    maxContext?: number
-    stageTiming?: {
-        stage1?: number
-        stage2?: number
-        stage3?: number
-        stage4?: number
-    }
-}
-
-export interface MessagePresetInfo{
-    promptName?: string,
-    promptToggles?: {key: string, value: string}[],
-    promptText?: OpenAIChat[],
-}
-
 export interface PromptDiffPrefs {
     diffStyle: 'line' | 'intraline'
     formatStyle: 'raw' | 'card'
@@ -1827,15 +1763,13 @@ export function setPreset(db:Database, newPres: botPreset){
 import { encode as encodeMsgpack, decode as decodeMsgpack } from "msgpackr/index-no-eval";
 import * as fflate from "fflate";
 import type { RisuModule } from '../process/modules';
-import type { SerializableHypaV2Data } from '../process/memory/hypav2';
 import { decodeRPack, encodeRPack } from '../rpack/rpack_bg';
 import { DBState, selectedCharID } from '../stores.svelte';
 import { LLMFlags, LLMFormat, LLMTokenizer } from '../model/modellist';
 import type { HypaModel } from '../process/memory/hypamemory';
-import type { SerializableHypaV3Data } from '../process/memory/hypav3';
 import { defaultHotkeys, type Hotkey } from '../defaulthotkeys';
-import type { OpenAIChat } from '../process/index.svelte';
 import type { character, customscript, groupChat, loreBook } from './types/character';
+import type { Chat } from './types/chat';
 
 export async function downloadPreset(id:number, type:'json'|'risupreset'|'return' = 'json'){
     saveCurrentPreset()
