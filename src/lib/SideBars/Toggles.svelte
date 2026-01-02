@@ -5,7 +5,7 @@
     import { language } from "src/lang";
     import type { PromptItem } from "src/ts/process/prompt";
     import type { character, groupChat } from "src/ts/storage/database.svelte";
-    import Arcodion from '../UI/Arcodion.svelte'
+    import Accordion from '../UI/Accordion.svelte'
     import CheckInput from "../UI/GUI/CheckInput.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
@@ -74,9 +74,9 @@
     {#each items as toggle, index}
         {#if toggle.type === 'group' && toggle.children.length > 0}
             <div class="w-full">
-                <Arcodion styled name={toggle.value}>
+                <Accordion styled name={toggle.value}>
                     {@render toggles((toggle as sidebarToggleGroup).children, reverse)}
-                </Arcodion>
+                </Accordion>
             </div>
         {:else if toggle.type === 'select'}
             <div class="w-full flex gap-2 mt-2 items-center" class:justify-end={$MobileGUI} >
