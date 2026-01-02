@@ -6,7 +6,7 @@ import { isTauri } from "src/ts/platform"
 import { BaseDirectory, exists, readFile, readDir, writeFile } from "@tauri-apps/plugin-fs";
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
-import { sleep } from "../util";
+import { sleep, getBasename } from "../util";
 import { hubURL } from "../characterCards";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 
@@ -443,12 +443,6 @@ async function createFileInFolder(accessToken:string, fileName:string, content:U
     }
 }
   
-const baseNameRegex = /\\/g
-function getBasename(data:string){
-    const splited = data.replace(baseNameRegex, '/').split('/')
-    const lasts = splited[splited.length-1]
-    return lasts
-}
 
 async function getFileData(ACCESS_TOKEN:string,fileId:string) {
     const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;

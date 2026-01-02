@@ -8,13 +8,6 @@ import { relaunch } from "@tauri-apps/plugin-process";
 import { sleep } from "../util";
 import { hubURL } from "../characterCards";
 
-function getBasename(data:string){
-    const baseNameRegex = /\\/g
-    const splited = data.replace(baseNameRegex, '/').split('/')
-    const lasts = splited[splited.length-1]
-    return lasts
-}
-
 export async function SaveLocalBackup(){
     alertWait("Saving local backup...")
     const writer = new LocalWriter()

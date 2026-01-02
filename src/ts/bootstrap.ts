@@ -7,7 +7,7 @@ import {
     readDir,
     remove
 } from "@tauri-apps/plugin-fs"
-import { checkNullish, sleep } from "./util"
+import { checkNullish, sleep, getBasename } from "./util"
 import { changeFullscreen, maximizeWindow } from "./gui/window"
 import { v4 as uuidv4 } from 'uuid';
 import { get } from "svelte/store";
@@ -37,7 +37,6 @@ import {
     saveDb,
     getDbBackups,
     getUnpargeables,
-    getBasename,
     setUsingSw,
     checkCharOrder
 } from "./globalApi.svelte";

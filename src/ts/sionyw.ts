@@ -1,5 +1,5 @@
 import { hubURL } from "./characterCards";
-import { fetchNative } from "./globalApi.svelte";
+import { fetchNative } from "./fetch";
 import { DBState } from "./stores.svelte";
 import { readFile, BaseDirectory, writeFile } from "@tauri-apps/plugin-fs";
 import { isTauri } from "src/ts/platform"

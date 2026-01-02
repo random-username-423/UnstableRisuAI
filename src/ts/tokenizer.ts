@@ -8,7 +8,7 @@ import type { MultiModal, OpenAIChat } from "./process/index.svelte";
 import { supportsInlayImage } from "./process/files/inlays";
 import { risuChatParser } from "./parser.svelte";
 import { tokenizeGGUFModel } from "./process/models/local";
-import { globalFetch } from "./globalApi.svelte";
+import { globalFetch } from "./fetch";
 import { getModelInfo, LLMTokenizer, type LLMModel } from "./model/modellist";
 import { pluginV2 } from "./plugins/plugins";
 import type { GemmaTokenizer } from "@huggingface/transformers";

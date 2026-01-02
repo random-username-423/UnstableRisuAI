@@ -1,5 +1,6 @@
 import { v4 } from "uuid"
-import { fetchNative, openURL } from "../../globalApi.svelte"
+import { openURL } from "../../globalApi.svelte"
+import { fetchNative } from "../../fetch"
 import { alertInput } from "../../alert";
 
 export type MCPPrompt = {

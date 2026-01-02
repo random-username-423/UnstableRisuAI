@@ -1,6 +1,6 @@
 import { Ollama } from 'ollama/dist/browser.mjs';
 import { language } from "../../../lang";
-import { globalFetch } from "../../globalApi.svelte";
+import { globalFetch } from "src/ts/fetch";
 import { getModelInfo, LLMFlags, LLMFormat, type LLMModel } from "../../model/modellist";
 import { risuChatParser, risuEscape, risuUnescape } from "../../parser.svelte";
 import { pluginProcess, pluginV2 } from "../../plugins/plugins";
