@@ -8,7 +8,11 @@ import type { HypaV3Settings, HypaV3Preset } from 'src/ts/process/memory/hypav3'
 import type { NAISettings } from 'src/ts/process/models/nai';
 import type { RisuModule } from 'src/ts/process/modules';
 import type { PromptItem, PromptSettings } from 'src/ts/process/prompt';
-import type { sdConfig, NAIImgConfig, hordeConfig, OobaSettings, AINsettings, ComfyConfig } from '../database.svelte';
+import type { ComfyConfig } from './settings';
+import type { sdConfig } from './settings';
+import type { NAIImgConfig } from './settings';
+import type { AINsettings } from './settings';
+import type { OobaSettings } from './settings';
 import type { character, groupChat, loreBook, customscript } from './character';
 import type { FormatingOrderItem, botPreset } from './preset';
 
@@ -495,5 +499,10 @@ export interface folder {
     id: string;
     imgFile?: string;
     img?: string;
+}
+export interface hordeConfig {
+    apiKey: string;
+    model: string;
+    softPrompt: string;
 }
 
