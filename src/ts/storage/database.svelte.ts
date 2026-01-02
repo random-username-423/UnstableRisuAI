@@ -8,6 +8,17 @@ import { prebuiltNAIpresets, prebuiltPresets } from '../process/templates/templa
 import { defaultColorScheme } from '../gui/colorscheme';
 import { createHypaV3Preset } from '../process/memory/hypav3'
 import { isTauri, isNodeServer } from "src/ts/platform"
+import { encode as encodeMsgpack, decode as decodeMsgpack } from "msgpackr/index-no-eval";
+import * as fflate from "fflate";
+import { decodeRPack, encodeRPack } from '../rpack/rpack_bg';
+import { DBState, selectedCharID } from '../stores.svelte';
+import { LLMFormat } from '../model/modellist';
+import { defaultHotkeys } from '../defaulthotkeys';
+import type { character, groupChat } from './types/character';
+import type { Chat } from './types/chat';
+import type { botPreset } from './types/preset';
+import type { Database } from './types/database';
+import type { AINsettings, OobaSettings } from './types/settings';
 
 //APP_VERSION_POINT is to locate the app version in the database file for version bumping
 export let appVer = "166.3.3" //<APP_VERSION_POINT>
@@ -999,18 +1010,6 @@ export function setPreset(db:Database, newPres: botPreset){
 
     return db
 }
-
-import { encode as encodeMsgpack, decode as decodeMsgpack } from "msgpackr/index-no-eval";
-import * as fflate from "fflate";
-import { decodeRPack, encodeRPack } from '../rpack/rpack_bg';
-import { DBState, selectedCharID } from '../stores.svelte';
-import { LLMFormat } from '../model/modellist';
-import { defaultHotkeys } from '../defaulthotkeys';
-import type { character, groupChat } from './types/character';
-import type { Chat } from './types/chat';
-import type { botPreset } from './types/preset';
-import type { Database } from './types/database';
-import type { AINsettings, OobaSettings } from './types/settings';
 
 export async function downloadPreset(id:number, type:'json'|'risupreset'|'return' = 'json'){
     saveCurrentPreset()
