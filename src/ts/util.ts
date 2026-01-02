@@ -1,5 +1,5 @@
 import { get, writable, type Writable } from "svelte/store"
-import type { Database } from "./storage/database.svelte"
+import type { Database } from './storage/types/database'
 import type { Message } from "./storage/types/chat"
 import { getDatabase } from "./storage/database.svelte"
 import { selectedCharID } from "./stores.svelte"

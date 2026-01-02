@@ -1,4 +1,4 @@
-import type { Database } from './storage/database.svelte';
+import type { Database } from './storage/types/database';
 import type { loreBook } from './storage/types/character';
 import type { character } from './storage/types/character';
 import type { CbsConditions } from './parser.svelte';

@@ -2,7 +2,9 @@ import type { OobaChatCompletionRequestParams } from 'src/ts/model/ooba';
 import type { LLMFormat, LLMFlags } from 'src/ts/model/types';
 import type { NAISettings } from 'src/ts/process/models/nai';
 import type { PromptItem, PromptSettings } from 'src/ts/process/prompt';
-import type { OobaSettings, AINsettings, SeparateParameters, DynamicOutput } from '../database.svelte';
+import type { OobaSettings, AINsettings } from '../database.svelte';
+import type { SeparateParameters } from './database';
+import type { DynamicOutput } from './database';
 import type { customscript } from './character';
 
 

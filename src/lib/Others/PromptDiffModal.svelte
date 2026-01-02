@@ -1,6 +1,7 @@
 <script lang="ts">
     import { XIcon } from "@lucide/svelte"
-    import { getDatabase, type PromptDiffPrefs } from "../../ts/storage/database.svelte"
+    import { getDatabase } from "../../ts/storage/database.svelte"
+    import type { PromptDiffPrefs } from "../../ts/storage/types/database"
     import type { PromptItem, PromptItemPlain, PromptItemChatML, PromptItemTyped, PromptItemAuthorNote, PromptItemChat } from "src/ts/process/prompt.ts";
 
     interface Props {
