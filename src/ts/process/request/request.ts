@@ -503,7 +503,7 @@ export function reformater(formated:OpenAIChat[],modelInfo:LLMModel|LLMFlags[]){
     }
     
     if(flags.includes(LLMFlags.requiresAlternateRole)){
-        let newFormated:OpenAIChat[] = []
+        const newFormated:OpenAIChat[] = []
         for(let i=0;i<formated.length;i++){
             const m = formated[i]
             if(newFormated.length === 0){
@@ -659,7 +659,7 @@ async function requestNovelAI(arg:RequestDataArgumentExtended):Promise<requestDa
     const currentChar = getCurrentCharacter()
     const prompt = stringlizeNAIChat(formated, currentChar?.name ?? '', arg.continue)
     const abortSignal = arg.abortSignal
-    let logit_bias_exp:{
+    const logit_bias_exp:{
         sequence: number[], bias: number, ensure_sequence_finish: false, generate_once: true
     }[] = []
 
@@ -764,8 +764,8 @@ async function requestOobaLegacy(arg:RequestDataArgumentExtended):Promise<reques
     const currentChar = getCurrentCharacter()
     const useStreaming = arg.useStreaming
     const abortSignal = arg.abortSignal
-    let streamUrl = db.textgenWebUIStreamURL.replace(/\/api.*/, "/api/v1/stream")
-    let blockingUrl = db.textgenWebUIBlockingURL.replace(/\/api.*/, "/api/v1/generate")
+    const streamUrl = db.textgenWebUIStreamURL.replace(/\/api.*/, "/api/v1/stream")
+    const blockingUrl = db.textgenWebUIBlockingURL.replace(/\/api.*/, "/api/v1/generate")
     let bodyTemplate:{[key:string]:any} = {}
     const prompt = applyChatTemplate(formated)
     let stopStrings = getStopStrings(false)
@@ -872,7 +872,7 @@ async function requestOobaLegacy(arg:RequestDataArgumentExtended):Promise<reques
     const dat = res.data as any
     if(res.ok){
         try {
-            let result:string = dat.results[0].text
+            const result:string = dat.results[0].text
 
             return {
                 type: 'success',
@@ -906,7 +906,7 @@ async function requestOoba(arg:RequestDataArgumentExtended):Promise<requestDataR
             return risuChatParser(v.replace(/\\n/g, "\n"))
         })
     }
-    let bodyTemplate:Record<string, any> = {
+    const bodyTemplate:Record<string, any> = {
         'prompt': prompt,
         presence_penalty: arg.PresensePenalty || (db.PresensePenalty / 100),
         frequency_penalty: arg.frequencyPenalty || (db.frequencyPenalty / 100),
@@ -1284,7 +1284,7 @@ async function requestCohere(arg:RequestDataArgumentExtended):Promise<requestDat
 
     //reformat chat
 
-    let body = applyParameters({
+    const body = applyParameters({
         message: lastChatPrompt,
         chat_history: formated.map((v) => {
             if(v.role === 'assistant'){

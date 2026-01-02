@@ -108,7 +108,7 @@ async function summary(
             };
         }
     } else {
-        let parsedPrompt = parseChatML(
+        const parsedPrompt = parseChatML(
             supaPrompt.replaceAll("{{slot}}", stringlizedChat)
         );
 
@@ -220,7 +220,7 @@ function convertOldToNewHypaV2Data(oldData: OldHypaV2Data, chats: OpenAIChat[]):
         const previousMainChunk = i > 0 ? oldMainChunks[i - 1] : null;
         const previousMainChunkTarget = previousMainChunk ? previousMainChunk.targetId : null;
 
-        let chatMemos = new Set<string>();
+        const chatMemos = new Set<string>();
 
         if (previousMainChunkTarget && targetId) {
             const startIndex = chatMemoToIndex.get(previousMainChunkTarget) ?? -1;
@@ -369,8 +369,8 @@ export async function hypaMemoryV2(
     // Clean invalid HypaV2 data
     cleanInvalidChunks(chats, data);
 
-    let allocatedTokens = db.hypaAllocatedTokens;
-    let chunkSize = db.hypaChunkSize;
+    const allocatedTokens = db.hypaAllocatedTokens;
+    const chunkSize = db.hypaChunkSize;
     currentTokens += allocatedTokens; // WARNING: VIRTUAL VALUE. This token is NOT real. This is a placeholder appended to calculate the maximum amount of HypaV2 memory retrieved data.
     let mainPrompt = "";
     const lastTwoChats = chats.slice(-2);
@@ -586,7 +586,7 @@ export async function hypaMemoryV2(
             .map((v) => searchDocumentPrefix + v.text.trim()) // sometimes this should not be used at all. Risuai does not support embedding model that this is meaningful, isn't it?
     );
 
-    let scoredResults: { [key: string]: number } = {};
+    const scoredResults: { [key: string]: number } = {};
     for (let i = 0; i < 3; i++) { // Should parameterize this, fixed length 3 is a magic number without explanation
         const pop = chats[chats.length - i - 1];
         if (!pop) break;

@@ -6,9 +6,9 @@ import { getUserName, sleep } from "src/ts/util"
 
 export function stringlizeNAIChat(formated:OpenAIChat[], char:string, continued: boolean){
     const db = getDatabase()
-    let seperator = db.NAIsettings.seperator.replaceAll("\\n","\n") || '\n'
-    let starter = db.NAIsettings.starter.replaceAll("\\n","\n") || '⁂'
-    let resultString:string[] = []
+    const seperator = db.NAIsettings.seperator.replaceAll("\\n","\n") || '\n'
+    const starter = db.NAIsettings.starter.replaceAll("\\n","\n") || '⁂'
+    const resultString:string[] = []
 
     for(const form of formated){
         if(form.role === 'system'){

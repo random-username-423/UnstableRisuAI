@@ -838,8 +838,7 @@
                         </div>
                     {/if}
 
-                    
-                    <!-- svelte-ignore block_empty -->
+
                     {#if DBState.db.characters[$selectedCharID].ttsMode === 'webspeech' || DBState.db.characters[$selectedCharID].ttsMode === 'elevenlab'}
                         <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors" onclick={() => {
                             stopTTS()

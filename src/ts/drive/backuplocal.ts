@@ -83,7 +83,7 @@ export async function SaveLocalBackup(){
     if(isTauri){
         const assets = await readDir('assets', {baseDir: BaseDirectory.AppData})
         let i = 0;
-        for(let asset of assets){
+        for(const asset of assets){
             i += 1;
             let message = `Saving local Backup... (${i} / ${assets.length})`
             if (missingAssets.length > 0) {

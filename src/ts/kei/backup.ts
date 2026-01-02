@@ -82,7 +82,7 @@ export async function autoServerBackup(){
 let lastKeiSave = 0
 export function saveDbKei() {
     try{
-        let db = getDatabase()
+        const db = getDatabase()
         if(db.account.kei){
             if(Date.now() - lastKeiSave < 60000 * 5){
                 return

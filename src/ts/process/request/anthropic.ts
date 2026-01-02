@@ -73,7 +73,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
     const aiModel = arg.aiModel
     const useStreaming = arg.useStreaming
     let replacerURL = arg.customURL ?? ('https://api.anthropic.com/v1/messages')
-    let apiKey = arg.key || ((aiModel === 'reverse_proxy') ? db.proxyKey : db.claudeAPIKey)
+    const apiKey = arg.key || ((aiModel === 'reverse_proxy') ? db.proxyKey : db.claudeAPIKey)
     const maxTokens = arg.maxTokens
     if(aiModel === 'reverse_proxy' && db.autofillRequestUrl){
         if(replacerURL.endsWith('v1')){
@@ -92,7 +92,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
         }
     }
 
-    let claudeChat: Claude3Chat[] = []
+    const claudeChat: Claude3Chat[] = []
     let systemPrompt:string = ''
 
     const addClaudeChat = (chat:{
@@ -110,7 +110,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
             }
 
             if(Array.isArray(content)){
-                let lastContent = content[content.length-1]
+                const lastContent = content[content.length-1]
                 if( lastContent?.type === 'text'){
                     lastContent.text += "\n\n" + chat.content
                     content[content.length-1] = lastContent
@@ -158,7 +158,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
             claudeChat[claudeChat.length-1].content = content
         }
         else{
-            let formatedChat:Claude3Chat = {
+            const formatedChat:Claude3Chat = {
                 role: chat.role,
                 content: [{
                     type: 'text',
@@ -271,7 +271,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
     for(let j=0;j<claudeChat.length;j++){
         let chat = claudeChat[j]
         for(let i=0;i<chat.content.length;i++){
-            let content = chat.content[i]
+            const content = chat.content[i]
             if(content.type === 'text'){
                 content.text = await replaceAsync(content.text,/<tool_call>(.*?)<\/tool_call>/g, async (match:string, p1:string) => {
                     try {
@@ -346,7 +346,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
     }
 
     console.log(arg.modelInfo.parameters)
-    let body = applyParameters({
+    const body = applyParameters({
         model: arg.modelInfo.internalID,
         messages: finalChat,
         system: systemPrompt.trim(),
@@ -393,7 +393,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
         const awsModel = datePart && datePart >= 20250929 ? "global." + arg.modelInfo.internalID : "us." + arg.modelInfo.internalID;
         const url = `https://${host}/model/${awsModel}/invoke${stream ? "-with-response-stream" : ""}`
 
-        let params = {...body}
+        const params = {...body}
         params.anthropic_version = "bedrock-2023-05-31"
         delete params.model
         delete params.stream
@@ -504,7 +504,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
     }
 
 
-    let headers:{
+    const headers:{
         [key:string]:string
     } = {
         "Content-Type": "application/json",
@@ -513,7 +513,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
         "accept": "application/json",
     }
 
-    let betas:string[] = []
+    const betas:string[] = []
 
     if(body.max_tokens > 8192){
         betas.push('output-128k-2025-02-19')
@@ -590,7 +590,7 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
         const resultsUrl = replacerURL + `/batches/${r.id}/results`
         const statusUrl = replacerURL + `/batches/${r.id}`
 
-        let received = false
+        const received = false
         while(!received){
             try {
                 await sleep(3000)
@@ -698,7 +698,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                 result: await textifyReadableStream(res.body)
             }
         }
-        let breakError = ''
+        const breakError = ''
         let thinking = false
 
         const stream = new ReadableStream<StreamResponseChunk>({
@@ -771,7 +771,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                             break
                         }
                         parserData += (decoder.decode(value))
-                        let parts = parserData.split('\n')
+                        const parts = parserData.split('\n')
                         for(;i<parts.length-1;i++){
                             prevText = text
                             if(parts?.[i]?.startsWith('data: ')){

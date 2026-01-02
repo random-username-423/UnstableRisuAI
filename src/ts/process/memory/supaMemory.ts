@@ -47,7 +47,7 @@ export async function supaMemory(
 
         if(room.supaMemoryData && room.supaMemoryData.length > 4){
             const splited = room.supaMemoryData.split('\n')
-            let id = splited.splice(0,1)[0]
+            const id = splited.splice(0,1)[0]
             const data = splited.join('\n')
 
             if(arg.asHyper && (!id.startsWith("hypa:"))){
@@ -77,7 +77,7 @@ export async function supaMemory(
                     for(let j=0;j<HypaData.length;j++){
                         let i =0;
                         let countTokens  = currentTokens
-                        let countChats = safeStructuredClone(chats)
+                        const countChats = safeStructuredClone(chats)
                         while(true){
                             if(countChats.length === 0){
                                 break
@@ -256,7 +256,7 @@ export async function supaMemory(
                 }
             }
             else {
-                let parsedPrompt = parseChatML(supaPrompt.replaceAll('{{slot}}', stringlizedChat))
+                const parsedPrompt = parseChatML(supaPrompt.replaceAll('{{slot}}', stringlizedChat))
                 const promptbody:OpenAIChat[] = parsedPrompt ?? [
                     {
                         role: "user",

@@ -76,7 +76,7 @@ export class HypaProcesser{
     async getEmbeds(input:string[]|string):Promise<VectorArray[]> {
         if(Object.keys(localModels.models).includes(this.model)){
             const inputs:string[] = Array.isArray(input) ? input : [input]
-            let results:Float32Array[] = await runEmbedding(inputs, localModels.models[this.model], localModels.gpuModels.includes(this.model) ? 'webgpu' : 'wasm')
+            const results:Float32Array[] = await runEmbedding(inputs, localModels.models[this.model], localModels.gpuModels.includes(this.model) ? 'webgpu' : 'wasm')
             return results
         }
         let gf = null;

@@ -44,7 +44,7 @@ export async function fetchProtectedResource(url: string, options: RequestInit =
     //for production, DBState.db.account.token should be removed entirely
     if(localStorage.getItem('ignoreRisuAuth') !== 'true'){
         risuAuth = DBState.db?.account?.token
-        let fallBackRisuToken = localStorage.getItem("fallbackRisuToken")
+        const fallBackRisuToken = localStorage.getItem("fallbackRisuToken")
         if(!risuAuth && fallBackRisuToken){
             try {
                 const tokenObj = JSON.parse(fallBackRisuToken)
@@ -113,7 +113,7 @@ async function fetchProtectedResourceSPA(url: string, options: RequestInit = {},
                     return badLoginResponse("DPoP keys are extractable")
                 }
 
-                let refreshedTokens: client.TokenEndpointResponse = await client.refreshTokenGrant(
+                const refreshedTokens: client.TokenEndpointResponse = await client.refreshTokenGrant(
                     config,
                     oauthData.refresh_token,
                     undefined,
@@ -300,8 +300,8 @@ async function loginToSionywSPAVersion(){
         registration.client_secret
     )
 
-    let code_verifier: string = client.randomPKCECodeVerifier()
-    let code_challenge: string =  await client.calculatePKCECodeChallenge(code_verifier)
+    const code_verifier: string = client.randomPKCECodeVerifier()
+    const code_challenge: string =  await client.calculatePKCECodeChallenge(code_verifier)
 
     const authUrl = client.buildAuthorizationUrl(config, {
         redirect_uri: 'risuai://sionyw/callback',
@@ -315,7 +315,7 @@ async function loginToSionywSPAVersion(){
     xWind?.focus()
     const msgEventCallback = async (event:MessageEvent) => {
         if(event.origin.startsWith('https://account.sionyw.com')){
-            let response:{
+            const response:{
                 code:string,
             } = event.data
 

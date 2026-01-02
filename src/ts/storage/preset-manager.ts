@@ -13,7 +13,7 @@ import { prebuiltPresets } from '../process/templates/templates';
 
 
 export function saveCurrentPreset() {
-    let db = getDatabase();
+    const db = getDatabase();
     let pres = db.botPresets;
     const savedPreset: botPreset = {
         name: pres[db.botPresetsId].name,
@@ -106,8 +106,8 @@ export function saveCurrentPreset() {
     setDatabase(db);
 }export function copyPreset(id: number) {
     saveCurrentPreset();
-    let db = getDatabase();
-    let pres = db.botPresets;
+    const db = getDatabase();
+    const pres = db.botPresets;
     const newPres = safeStructuredClone(pres[id]);
     newPres.name += " Copy";
     db.botPresets.push(newPres);
@@ -118,7 +118,7 @@ export function changeToPreset(id = 0, savecurrent = true) {
         saveCurrentPreset();
     }
     let db = getDatabase();
-    let pres = db.botPresets;
+    const pres = db.botPresets;
     const newPres = pres[id];
     db.botPresetsId = id;
     db = setPreset(db, newPres);
@@ -235,8 +235,8 @@ export function setPreset(db: Database, newPres: botPreset) {
 }
 export async function downloadPreset(id: number, type: 'json' | 'risupreset' | 'return' = 'json') {
     saveCurrentPreset();
-    let db = getDatabase();
-    let pres = safeStructuredClone(db.botPresets[id]);
+    const db = getDatabase();
+    const pres = safeStructuredClone(db.botPresets[id]);
     console.log(pres);
     pres.openAIKey = '';
     pres.forceReplaceUrl = '';
@@ -306,7 +306,7 @@ export async function importPreset(f: {
         pre = { ...presetTemplate, ...(JSON.parse(Buffer.from(f.data).toString('utf-8'))) };
         console.log(pre);
     }
-    let db = getDatabase();
+    const db = getDatabase();
     if (pre.presetVersion && pre.presetVersion >= 3) {
         //NAI preset
         const pr = safeStructuredClone(prebuiltPresets.NAI2);

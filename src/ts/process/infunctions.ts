@@ -2,8 +2,8 @@ import { getChatVar, getGlobalChatVar } from "../parser.svelte";
 
 function toRPN(expression:string) {
     let outputQueue = '';
-    let operatorStack = [];
-    let operators = {
+    const operatorStack = [];
+    const operators = {
         '+': {precedence: 2, associativity: 'Left'},
         '-': {precedence: 2, associativity: 'Left'},
         '*': {precedence: 3, associativity: 'Left'},
@@ -23,7 +23,7 @@ function toRPN(expression:string) {
     const operatorsKeys = Object.keys(operators);
 
     expression = expression.replace(/\s+/g, '');
-    let expression2 = []
+    const expression2 = []
 
     let lastToken = ''
 
@@ -78,13 +78,13 @@ function toRPN(expression:string) {
 }
 
 function calculateRPN(expression:string) {
-    let stack:number[] = [];
+    const stack:number[] = [];
 
     expression.split(' ').forEach(token => {
         if (parseFloat(token) || token === '0') {
             stack.push(parseFloat(token));
         } else {
-            let [b, a] = [stack.pop(), stack.pop()];
+            const [b, a] = [stack.pop(), stack.pop()];
             switch (token) {
                 case '+': stack.push(a + b); break;
                 case '-': stack.push(a - b); break;
@@ -141,14 +141,14 @@ function executeRPNCalculation(text:string) {
 }
 
 export function calcString(text:string) {
-    let depthText:string[] = ['']
+    const depthText:string[] = ['']
 
     for(let i = 0; i < text.length; i++) {
         if(text[i] === '(') {
             depthText.push('')
         }
         else if(text[i] === ')' && depthText.length > 1) {
-            let result = executeRPNCalculation(depthText.pop())
+            const result = executeRPNCalculation(depthText.pop())
             depthText[depthText.length - 1] += result
         }
         else {

@@ -9,7 +9,7 @@ import { preLoadCheck } from "./preload";
 import { mount } from "svelte";
 
 preLoadCheck()
-let app = mount(App, {
+const app = mount(App, {
     target: document.getElementById("app"),
 });
 loadData()

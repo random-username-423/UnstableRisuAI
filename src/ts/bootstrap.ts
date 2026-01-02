@@ -11,7 +11,6 @@ import { changeFullscreen, checkNullish, sleep } from "./util"
 import { v4 as uuidv4 } from 'uuid';
 import { get } from "svelte/store";
 import { setDatabase, defaultSdDataFunc, getDatabase } from "./storage/database.svelte";
-import { type Database } from './storage/types/database';
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { checkRisuUpdate } from "./update";
 import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
@@ -42,7 +41,7 @@ import {
     setUsingSw,
     checkCharOrder
 } from "./globalApi.svelte";
-import { isTauri, isNodeServer, isCapacitor, isInStandaloneMode } from "./platform";
+import { isTauri, isCapacitor, isInStandaloneMode } from "./platform";
 
 const appWindow = isTauri ? getCurrentWebviewWindow() : null
 
@@ -318,7 +317,7 @@ function updateHeightMode() {
  * Checks and updates the database format to the latest version.
  */
 async function checkNewFormat(): Promise<void> {
-    let db = getDatabase();
+    const db = getDatabase();
 
     // Check data integrity
     db.characters = db.characters.map((v) => {
@@ -402,7 +401,7 @@ async function checkNewFormat(): Promise<void> {
     }
     if (db.formatversion < 3) {
         for (let i = 0; i < db.characters.length; i++) {
-            let cha = db.characters[i];
+            const cha = db.characters[i];
             if (cha.type === 'character') {
                 if (checkNullish(cha.sdData)) {
                     cha.sdData = defaultSdDataFunc();

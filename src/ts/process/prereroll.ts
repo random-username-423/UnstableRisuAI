@@ -1,5 +1,5 @@
-let rerolls:{[key:string]:string[]} = {};
-let rerollIndex:{[key:string]:number} = {};
+const rerolls:{[key:string]:string[]} = {};
+const rerollIndex:{[key:string]:number} = {};
 
 export function Prereroll(genId:string){
     if(rerolls[genId]){

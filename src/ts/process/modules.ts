@@ -82,7 +82,7 @@ export async function exportModule(module:RisuModule, arg:{
         if(!rData){
             rData = new Uint8Array(0) //blank buffer
         }
-        let encoded = await encodeRPack(Buffer.from(await convertImage(rData)))
+        const encoded = await encodeRPack(Buffer.from(await convertImage(rData)))
         writeLength(encoded.length)
         apb.append(encoded)
     }
@@ -142,7 +142,7 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
         return
     }
 
-    let module = main.module
+    const module = main.module
 
     let i = 0
     while(true){
@@ -187,7 +187,7 @@ export async function importModule(){
     if(!f){
         return
     }
-    let fileData = f.data
+    const fileData = f.data
     const db = getDatabase()
     if(f.name.endsWith('.risum')){
         try {
@@ -284,8 +284,8 @@ function getModuleByIds(ids:string[]){
 }
 
 function deduplicateModuleById(modules:RisuModule[]){
-    let ids:string[] = []
-    let newModules:RisuModule[] = []
+    const ids:string[] = []
+    const newModules:RisuModule[] = []
     for(let i=0;i<modules.length;i++){
         if(ids.includes(modules[i].id)){
             continue
@@ -318,7 +318,7 @@ export function getModules(){
         return lastModuleData
     }
 
-    let modules:RisuModule[] = getModuleByIds(ids)
+    const modules:RisuModule[] = getModuleByIds(ids)
     lastModules = idsJoined
     lastModuleData = modules
     return modules

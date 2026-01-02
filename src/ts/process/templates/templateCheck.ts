@@ -9,8 +9,8 @@ export function templateCheck(db:Database){
 
     let mainPrompts = 0
     let notePrompts = 0
-    let endRanges:number[] = []
-    let startRanges:number[] = []
+    const endRanges:number[] = []
+    const startRanges:number[] = []
     let hasDescription = false
     let hasLorebook = false
     let reachEnd = false
@@ -46,9 +46,9 @@ export function templateCheck(db:Database){
         }
     }
 
-    let warnings:string[] = []
+    const warnings:string[] = []
 
-    let unresolvedRanges = startRanges.filter(x => !endRanges.includes(x)).concat(endRanges.filter(x => !startRanges.includes(x)))
+    const unresolvedRanges = startRanges.filter(x => !endRanges.includes(x)).concat(endRanges.filter(x => !startRanges.includes(x)))
 
     if(mainPrompts === 0){
         warnings.push('No main prompt entry found')

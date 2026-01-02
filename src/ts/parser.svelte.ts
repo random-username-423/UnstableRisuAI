@@ -423,7 +423,7 @@ function getEmoSrc(emoArr: string[][], emoPaths: AssetPaths) {
 
 const fileSrcCache = new Map<string, string>()
 async function getFileSrcCached(path:string){
-    let cached = fileSrcCache.get(path)
+    const cached = fileSrcCache.get(path)
     if(cached){
         return cached
     }
@@ -440,8 +440,8 @@ type AssetPaths = {[key:string]:{
 async function parseAdditionalAssets(data:string, char:simpleCharacterArgument|character, mode:'normal'|'back', arg:{ch:number}){
     const assetWidthString = (DBState.db.assetWidth && DBState.db.assetWidth !== -1 || DBState.db.assetWidth === 0) ? `max-width:${DBState.db.assetWidth}rem;` : ''
 
-    let assetPaths:AssetPaths = {}
-    let emoPaths:AssetPaths = {}
+    const assetPaths:AssetPaths = {}
+    const emoPaths:AssetPaths = {}
 
     if (char.emotionImages) getEmoSrc(char.emotionImages, emoPaths)
 
@@ -598,7 +598,7 @@ function getClosestMatch(char: simpleCharacterArgument|character, name:string, a
 export function getDistance(a:string, b:string) {
     const h = a.length + 1
     const w = b.length + 1
-    let d = new Int16Array(h * w)
+    const d = new Int16Array(h * w)
     for(let i=0;i<h;i++){
         d[i * w] = i
     }
@@ -635,8 +635,8 @@ async function parseInlayAssets(data:string){
         for(const inlay of inlayMatch){
             const inlayType = inlay.startsWith('{{inlayed') ? 'inlayed' : 'inlay'
             const id = inlay.substring(inlay.indexOf('::') + 2, inlay.length - 2)
-            let prefix = inlayType !== 'inlay' ? `<div class="risu-inlay-image">` : ''
-            let postfix = inlayType !== 'inlay' ? `</div>\n\n` : ''
+            const prefix = inlayType !== 'inlay' ? `<div class="risu-inlay-image">` : ''
+            const postfix = inlayType !== 'inlay' ? `</div>\n\n` : ''
 
             const asset = await getInlayAssetBlob(id)
             let url = blobUrlCache.get(id)
@@ -708,7 +708,7 @@ export async function ParseMarkdown(
 ) {
     let firstParsed = ''
     const additionalAssetMode = (mode === 'back') ? 'back' : 'normal'
-    let char = (typeof(charArg) === 'string') ? (findCharacterbyId(charArg)) : (charArg)
+    const char = (typeof(charArg) === 'string') ? (findCharacterbyId(charArg)) : (charArg)
 
     if(char && char.type !== 'group'){
         data = await parseAdditionalAssets(data, char, additionalAssetMode, {
@@ -767,7 +767,7 @@ export function addMetadataToElement(data:string, modelShortName:string){
         return data
     }
 
-    let metadata = '{' + [
+    const metadata = '{' + [
         'aigen',
         'risuai',
         modelShortName.toLocaleLowerCase().replace(/[^a-z]/g, ''),
@@ -775,7 +775,7 @@ export function addMetadataToElement(data:string, modelShortName:string){
     let encodedMetaCode = ''
 
     for(let i=0;i<metadata.length;i++){
-        let byte = (metadata.charCodeAt(i) - 97).toString(6).padStart(2,'0')
+        const byte = (metadata.charCodeAt(i) - 97).toString(6).padStart(2,'0')
         for(let j=0;j<byte.length;j++){
             switch(byte.charAt(j)){
                 case '0':{
@@ -809,7 +809,7 @@ export function addMetadataToElement(data:string, modelShortName:string){
     console.log('Encoded metadata:', encodedMetaCode.length, 'characters')
     console.log('This requires at least', Math.ceil(encodedMetaCode.length / 32), '<p> tags to store')
 
-    let d =  data.replace(/\<p\>/g, (v) => {
+    const d =  data.replace(/\<p\>/g, (v) => {
         return '<p>' + encodedMetaCode
     })
 
@@ -817,7 +817,7 @@ export function addMetadataToElement(data:string, modelShortName:string){
 }
 
 export async function postTranslationParse(data:string){
-    let lines = data.split('\n')
+    const lines = data.split('\n')
 
     for(let i=0;i<lines.length;i++){
         const trimed = lines[i].trim()
@@ -852,9 +852,9 @@ function decodeStyleRule(rule:CssAtRuleAST){
     if(rule.type === 'rule'){
         if(rule.selectors){
             for(let i=0;i<rule.selectors.length;i++){
-                let slt:string = rule.selectors[i]
+                const slt:string = rule.selectors[i]
                 if(slt){
-                    let selectors = (slt.split(' ') ?? []).map((v) => {
+                    const selectors = (slt.split(' ') ?? []).map((v) => {
                         if(v.startsWith('.') && !v.startsWith('.x-risu-')){
                             return ".x-risu-" + v.substring(1)
                         }
@@ -990,7 +990,7 @@ export function checkImageType(arr:Uint8Array):ImageType {
 
 function wppParser(data:string){
     const lines = data.split('\n');
-    let characterDetails:{[key:string]:string[]} = {};
+    const characterDetails:{[key:string]:string[]} = {};
 
     lines.forEach(line => {
 
@@ -999,13 +999,13 @@ function wppParser(data:string){
         if(line.includes('}')) return;
 
         // Extract key and value within brackets
-        let keyBracketStartIndex = line.indexOf('(');
-        let keyBracketEndIndex = line.indexOf(')');
+        const keyBracketStartIndex = line.indexOf('(');
+        const keyBracketEndIndex = line.indexOf(')');
     
        if(keyBracketStartIndex === -1 || keyBracketEndIndex === -1) 
             throw new Error(`Invalid syntax ${line}`);
         
-       let key = line.substring(0, keyBracketStartIndex).trim();
+       const key = line.substring(0, keyBracketStartIndex).trim();
 
          // Validate Key    
          if(!key) throw new Error(`Missing Key in ${line}`);
@@ -1165,8 +1165,8 @@ const smMatcher = (p1:string,matcherArg:matcherArg) => {
             if(matcherArg.consistantChar){
                 return 'botname'
             }
-            let selectedChar = get(selectedCharID)
-            let currentChar = db.characters[selectedChar]
+            const selectedChar = get(selectedCharID)
+            const currentChar = db.characters[selectedChar]
             if(currentChar && currentChar.type !== 'group'){
                 return currentChar.nickname || currentChar.name
             }
@@ -1667,19 +1667,19 @@ export function risuChatParser(da:string, arg:{
     let pointer = 0;
     let nested:string[] = [""]
     let stackType = new Uint8Array(512)
-    let pureModeNest:Map<number,boolean> = new Map()
-    let pureModeNestType:Map<number,string> = new Map()
-    let blockNestType:Map<number,{
+    const pureModeNest:Map<number,boolean> = new Map()
+    const pureModeNestType:Map<number,string> = new Map()
+    const blockNestType:Map<number,{
         type:blockMatch,
         type2?:string
         funcArg?:string[]
     }> = new Map()
     let commentMode = false
-    let commentLatest:string[] = [""]
-    let commentV = new Uint8Array(512)
-    let thinkingMode = false
+    const commentLatest:string[] = [""]
+    const commentV = new Uint8Array(512)
+    const thinkingMode = false
     let tempVar:{[key:string]:string} = {}
-    let functions:Map<string,{
+    const functions:Map<string,{
         data:string,
         arg:string[]
     }> = arg.functions ?? (new Map())
@@ -1992,7 +1992,7 @@ export function applyMarkdownToNode(node: Node) {
     if (node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent;
         if (text) {
-            let markdown = renderMarkdown(md, text);
+            const markdown = renderMarkdown(md, text);
             if (markdown !== text) {
                 const span = document.createElement('span');
                 span.innerHTML = markdown;
@@ -2061,7 +2061,7 @@ export function parseChatML(data:string):OpenAIChat[]|null{
         }
 
 
-        let thoughts:string[] = []
+        const thoughts:string[] = []
         v = v.replace(/<Thoughts>(.+)<\/Thoughts>/gms, (match, p1) => {
             thoughts.push(p1)
             return ''

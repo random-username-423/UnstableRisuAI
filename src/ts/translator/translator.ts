@@ -16,7 +16,7 @@ import { processScriptFull } from "../process/scripts"
 import localforage from "localforage"
 import sendSound from '../../etc/send.mp3'
 
-let cache={
+const cache={
     origin: [''],
     trans: ['']
 }
@@ -30,7 +30,7 @@ export const LLMCacheStorage = localforage.createInstance({
 let waitTrans = 0
 
 export async function translate(text:string, reverse:boolean) {
-    let db = getDatabase()
+    const db = getDatabase()
     if(!reverse){
         const ind = cache.origin.indexOf(text)
         if(ind !== -1){
@@ -59,7 +59,7 @@ export async function runTranslator(text:string, reverse:boolean, from:string,ta
         translatorNote: exarg?.translatorNote
     }
     const texts = text.split('\n')
-    let chunks:[string,boolean][] = [['', true]]
+    const chunks:[string,boolean][] = [['', true]]
 
     for(let i = 0; i < texts.length; i++){
         if( texts[i].startsWith('{{img')
@@ -76,7 +76,7 @@ export async function runTranslator(text:string, reverse:boolean, from:string,ta
         }
     }
 
-    let fullResult:string[] = []
+    const fullResult:string[] = []
 
     for(const chunk of chunks){
         if(chunk[1]){
@@ -112,7 +112,7 @@ export async function runTranslator(text:string, reverse:boolean, from:string,ta
 }
 
 async function translateMain(text:string, arg:{from:string, to:string, host:string, translatorNote?:string}){
-    let db = getDatabase()
+    const db = getDatabase()
     if(db.translatorType === 'llm'){
         const tr = arg.to || 'en'
         return translateLLM(text, {to: tr, from: arg.from, translatorNote: arg.translatorNote})
@@ -122,7 +122,7 @@ async function translateMain(text:string, arg:{from:string, to:string, host:stri
             text: [text],
             target_lang: arg.to.toLocaleUpperCase(),
         }
-        let url = db.deeplOptions.freeApi ? "https://api-free.deepl.com/v2/translate" : "https://api.deepl.com/v2/translate"
+        const url = db.deeplOptions.freeApi ? "https://api-free.deepl.com/v2/translate" : "https://api.deepl.com/v2/translate"
         const f = await globalFetch(url, {
             headers: {
                 "Authorization": "DeepL-Auth-Key " + db.deeplOptions.key,
@@ -156,7 +156,7 @@ async function translateMain(text:string, arg:{from:string, to:string, host:stri
             url += '/translate'
         }
 
-        let headers = { "Content-Type": "application/json" }
+        const headers = { "Content-Type": "application/json" }
 
         const body = {text: text, target_lang: arg.to.toLocaleUpperCase(), source_lang: arg.from.toLocaleUpperCase()}
 
@@ -267,8 +267,8 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
             chaId: 'simple'
         }
     }
-    let db = getDatabase()
-    let DoingChat = get(doingChat)
+    const db = getDatabase()
+    const DoingChat = get(doingChat)
     if(DoingChat){
         if(isExpTranslator()){
             if(!(db.translatorType === 'llm' && await getLLMCache(html) !== null)){
@@ -302,7 +302,7 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
     console.log(html)
 
     let promises: Promise<void>[] = [];
-    let translationChunks: {
+    const translationChunks: {
         chunks: string[],
         resolvers: ((text:string) => void)[]
     }[] = [{
@@ -369,14 +369,14 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
             }
 
             const translateChunks = (node.textContent || '').split(/\n\n+/g);
-            let translatedChunksPromises: Promise<string>[] = [];
+            const translatedChunksPromises: Promise<string>[] = [];
             for (const chunk of translateChunks) {
                 const translatedPromise = translate(chunk, reverse);
                 translatedChunksPromises.push(translatedPromise);
             }
 
             const translatedChunks = await Promise.all(translatedChunksPromises);
-            let translated = translatedChunks.join("\n\n");
+            const translated = translatedChunks.join("\n\n");
             if (!reprocessDisplayScript) {
                 node.textContent = translated;
                 return;
@@ -502,7 +502,7 @@ async function translateLLM(text:string, arg:{to:string, from:string, regenerate
         }
     }
     const styleDecodeRegex = /\<risu-style\>(.+?)\<\/risu-style\>/gms
-    let styleDecodes:string[] = []
+    const styleDecodes:string[] = []
     text = text.replace(styleDecodeRegex, (match, p1) => {
         styleDecodes.push(p1)
         return `<style-data style-index="${styleDecodes.length-1}"></style-data>`
@@ -525,7 +525,7 @@ async function translateLLM(text:string, arg:{to:string, from:string, regenerate
 
     let formated:OpenAIChat[] = []
     let prompt = db.translatorPrompt || `You are a translator. translate the following html or text into {{slot}}. do not output anything other than the translation.`
-    let parsedPrompt = parseChatML(prompt.replaceAll('{{slot::from}}', arg.from).replaceAll('{{slot}}', arg.to).replaceAll('{{solt::content}}', text).replaceAll('{{slot::content}}', text).replaceAll('{{slot::tnote}}', translatorNote))
+    const parsedPrompt = parseChatML(prompt.replaceAll('{{slot::from}}', arg.from).replaceAll('{{slot}}', arg.to).replaceAll('{{solt::content}}', text).replaceAll('{{slot::content}}', text).replaceAll('{{slot::tnote}}', translatorNote))
     if(parsedPrompt){
         formated = parsedPrompt
     }
@@ -583,7 +583,7 @@ function applyEdittransRegex(
       for (const script of scripts) {
           if (script.type === 'edittrans') {
               const reg = new RegExp(script.in, script.ableFlag ? script.flag : 'g')
-              let outScript = script.out.replaceAll("$n", "\n")
+              const outScript = script.out.replaceAll("$n", "\n")
               text = text.replace(reg, outScript)
           }
       }

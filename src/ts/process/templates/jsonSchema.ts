@@ -17,7 +17,7 @@ export function convertInterfaceToSchema(int:string){
     }
 
     const lines = int.split('\n')
-    let schema = {
+    const schema = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "type": "object",
         "additionalProperties": false,
@@ -36,7 +36,7 @@ export function convertInterfaceToSchema(int:string){
             continue
         }
 
-        let placeHolders:string[] = []
+        const placeHolders:string[] = []
 
         content = content
             .replace(/\\"/gu, '\uE9b4a')
@@ -58,13 +58,13 @@ export function convertInterfaceToSchema(int:string){
             content = content.slice(0, -1)
         }
 
-        let spData = content.replace(/ /g, '').split(':')
+        const spData = content.replace(/ /g, '').split(':')
 
         if(spData.length !== 2){
             throw "SyntaxError Found"
         }
 
-        let [property,typeData] = spData
+        const [property,typeData] = spData
 
         switch(typeData){
             case 'string':

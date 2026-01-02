@@ -315,7 +315,7 @@ async function quickMenu(){
 }
 
 function clickQuery(query:string){
-    let ele = document.querySelector(query) as HTMLElement
+    const ele = document.querySelector(query) as HTMLElement
     console.log(ele)
     if(ele){
         ele.click()
@@ -323,7 +323,7 @@ function clickQuery(query:string){
 }
 
 function focusQuery(query:string){
-    let ele = document.querySelector(query) as HTMLElement
+    const ele = document.querySelector(query) as HTMLElement
     if(ele){
         ele.focus()
     }
@@ -333,7 +333,7 @@ function focusQuery(query:string){
 
 export function initMobileGesture(){
 
-    let pressingPointers = new Map<number, {x:number, y:number}>()
+    const pressingPointers = new Map<number, {x:number, y:number}>()
 
     document.addEventListener('touchstart', (ev) => {
         for(const touch of ev.changedTouches){
@@ -385,8 +385,8 @@ export function initMobileGesture(){
 
 function changeToPreset(num:number){
     if(!doingAlert()){
-        let db = getDatabase()
-        let pres = db.botPresets
+        const db = getDatabase()
+        const pres = db.botPresets
         if(pres.length > num){
             alertToast(`Changed to Preset: ${pres[num].name}`)
             changeToPreset2(num)

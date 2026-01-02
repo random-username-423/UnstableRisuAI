@@ -60,7 +60,7 @@ export function encodeRisuSaveLegacy(data:any, compression:'noCompression'|'comp
 
 export async function encodeRisuSaveCompressionStream(data:any) {
     await checkCompressionStreams()
-    let encoded:Uint8Array = packr.encode(data)
+    const encoded:Uint8Array = packr.encode(data)
     const cs = new CompressionStream('gzip');
     const writer = cs.writable.getWriter();
     writer.write(encoded as any);
@@ -111,8 +111,8 @@ export class RisuSaveEncoder {
     } = {}){
         const { compression = false } = arg;
         this.compression = compression;
-        let obj:Record<any,any> = {}
-        let keys = Object.keys(data)
+        const obj:Record<any,any> = {}
+        const keys = Object.keys(data)
         for(const key of keys){
             if(key !== 'characters' && key !== 'botPresets' && key !== 'modules'){
                 obj[key] = data[key]
@@ -155,8 +155,8 @@ export class RisuSaveEncoder {
     }
 
     async set(data:Database, toSave:toSaveType){
-        let obj:Record<any,any> = {}
-        let keys = Object.keys(data)
+        const obj:Record<any,any> = {}
+        const keys = Object.keys(data)
         for(const key of keys){
             if(key !== 'characters' && key !== 'botPresets'){
                 obj[key] = data[key]
@@ -315,7 +315,7 @@ export class RisuSaveDecoder {
         console.log('Decoding RisuSave data');
         let offset = magicRisuSaveHeader.length;
         //@ts-expect-error Database has required fields, but we initialize empty and populate incrementally during decode
-        let db:Database = {}
+        const db:Database = {}
         const loadedBlocks = new Set<string>();
         while (offset < data.length) {
             try {

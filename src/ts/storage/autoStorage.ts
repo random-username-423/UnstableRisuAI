@@ -40,7 +40,7 @@ export class AutoStorage{
     }
 
     async checkAccountSync(){
-        let db = getDatabase()
+        const db = getDatabase()
         if(this.isAccount){
             return true
         }
@@ -74,7 +74,7 @@ export class AutoStorage{
                 return false
             }
 
-            let replaced:{[key:string]:string} = {}
+            const replaced:{[key:string]:string} = {}
             
             for(const key of keys){
                 alertStore.set({
