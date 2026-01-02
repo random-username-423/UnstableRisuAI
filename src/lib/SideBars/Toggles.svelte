@@ -4,7 +4,7 @@
     import { parseToggleSyntax, type sidebarToggle, type sidebarToggleGroup } from "src/ts/util";
     import { language } from "src/lang";
     import type { PromptItem } from "src/ts/process/prompt";
-    import type { character, groupChat } from "src/ts/storage/database.svelte";
+    import type { character, groupChat } from "src/ts/storage/types/character";
     import Accordion from '../UI/Accordion.svelte'
     import CheckInput from "../UI/GUI/CheckInput.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";

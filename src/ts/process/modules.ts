@@ -1,6 +1,9 @@
 import { language } from "src/lang"
 import { alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "../alert"
-import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase, type customscript, type loreBook, type triggerscript } from "../storage/database.svelte"
+import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase } from "../storage/database.svelte"
+import { type triggerscript } from '../storage/types/character'
+import { type customscript } from '../storage/types/character'
+import { type loreBook } from '../storage/types/character'
 import { AppendableBuffer, downloadFile, readImage, saveAsset } from "../globalApi.svelte"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
 import { selectSingleFile, sleep } from "../util"

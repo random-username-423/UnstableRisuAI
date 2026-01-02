@@ -7,11 +7,11 @@ import {
 } from "./hypamemoryv2";
 import { type DisplayMode as ModalDisplayMode } from "src/lib/Others/HypaV3Modal/types";
 import {
-  type Chat,
-  type character,
-  type groupChat,
   getDatabase,
 } from "src/ts/storage/database.svelte";
+import { type Chat } from 'src/ts/storage/types/chat';
+import { type groupChat } from 'src/ts/storage/types/character';
+import { type character } from 'src/ts/storage/types/character';
 import { type OpenAIChat } from "../index.svelte";
 import { requestChatData } from "../request/request";
 import { chatCompletion, unloadEngine } from "../webllm";

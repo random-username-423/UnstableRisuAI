@@ -1,7 +1,8 @@
 <script lang="ts">
     import { language } from "../../lang";
     import { tokenizeAccurate } from "../../ts/tokenizer";
-    import { saveImage as saveAsset, type character, type groupChat } from "../../ts/storage/database.svelte";
+    import { saveImage as saveAsset } from "../../ts/storage/database.svelte";
+    import type { character, groupChat } from "../../ts/storage/types/character";
     import { DBState } from 'src/ts/stores.svelte';
     import { CharConfigSubMenu, MobileGUI, ShowRealmFrameStore, selectedCharID, hypaV3ModalOpen } from "../../ts/stores.svelte";
     import { PlusIcon, SmileIcon, TrashIcon, UserIcon, ActivityIcon, BookIcon, User, Braces, Volume2Icon, DownloadIcon, HardDriveUploadIcon, Share2Icon, ImageIcon, ImageOffIcon, ArrowUp, ArrowDown } from '@lucide/svelte'

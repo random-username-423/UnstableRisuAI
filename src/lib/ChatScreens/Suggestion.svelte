@@ -1,7 +1,10 @@
 <script lang="ts">
 	import { requestChatData } from "src/ts/process/request/request";
     import { doingChat, type OpenAIChat } from "../../ts/process/index.svelte";
-    import { setDatabase, type character, type Message, type groupChat, type Database } from "../../ts/storage/database.svelte";
+    import { setDatabase } from "../../ts/storage/database.svelte";
+    import type { Database } from "../../ts/storage/types/database";
+    import type { Message } from "../../ts/storage/types/chat";
+    import type { character, groupChat } from "../../ts/storage/types/character";
 	import { DBState } from 'src/ts/stores.svelte';
     import { selectedCharID } from "../../ts/stores.svelte";
     import { translate } from "src/ts/translator/translator";

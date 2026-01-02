@@ -4,7 +4,8 @@ import { isCapacitor, isNodeServer } from "src/ts/platform"
 import { NodeStorage } from "./nodeStorage"
 import { OpfsStorage } from "./opfsStorage"
 import { alertInput, alertSelect, alertStore } from "../alert"
-import { getDatabase, type Database } from "./database.svelte"
+import { getDatabase } from "./database.svelte"
+import { type Database } from './types/database'
 import { AccountStorage } from "./accountStorage"
 import { decodeRisuSave, encodeRisuSaveLegacy } from "./risuSave";
 import { language } from "src/lang"

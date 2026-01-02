@@ -1,7 +1,9 @@
 import { v4 } from 'uuid';
 import { alertError, alertInput, alertNormal, alertStore, alertWait } from '../alert';
 import { get, writable } from 'svelte/store';
-import { setDatabase, type character, saveImage, type Chat, getCurrentChat, setCurrentChat, getDatabase } from '../storage/database.svelte';
+import { setDatabase, saveImage, getCurrentChat, setCurrentChat, getDatabase } from '../storage/database.svelte';
+import { type Chat } from '../storage/types/chat';
+import { type character } from '../storage/types/character';
 import { selectedCharID } from '../stores.svelte';
 import { findCharacterIndexbyId, sleep } from '../util';
 import type { DataConnection, Peer } from 'peerjs';

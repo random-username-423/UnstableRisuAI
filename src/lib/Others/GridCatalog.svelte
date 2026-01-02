@@ -1,6 +1,6 @@
 <script lang="ts">
     import { characterFormatUpdate, getCharImage, removeChar } from "../../ts/characters";
-    import { type Database } from "../../ts/storage/database.svelte";
+    import type { Database } from "../../ts/storage/types/database";
     import { DBState } from 'src/ts/stores.svelte';
     import BarIcon from "../SideBars/BarIcon.svelte";
     import { ArrowLeft, User, Users, SquareMousePointer, TrashIcon, Undo2Icon } from "@lucide/svelte";

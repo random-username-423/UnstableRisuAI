@@ -5,7 +5,7 @@
  * Settings are defined as data and rendered automatically by SettingRenderer.
  */
 
-import type { Database } from '../storage/database.svelte';
+import type { Database } from '../storage/types/database';
 import type { CustomComponentId, CustomComponentProps } from './customComponents';
 import type { LLMModel } from '../model/types';
 

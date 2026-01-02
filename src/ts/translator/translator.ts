@@ -1,5 +1,8 @@
 import { get } from "svelte/store"
-import { getDatabase, type character, type customscript, type groupChat } from "../storage/database.svelte"
+import { getDatabase } from "../storage/database.svelte"
+import { type customscript } from '../storage/types/character'
+import { type groupChat } from '../storage/types/character'
+import { type character } from '../storage/types/character'
 import { globalFetch } from "../globalApi.svelte"
 import { isTauri, isNodeServer } from "src/ts/platform"
 import { alertError } from "../alert"

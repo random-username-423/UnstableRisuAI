@@ -1,6 +1,7 @@
 import { exportCharacterCard } from "./characterCards";
 import { VirtualWriter } from "./globalApi.svelte";
-import { getCurrentCharacter, getDatabase, type character } from "./storage/database.svelte";
+import { getCurrentCharacter, getDatabase } from "./storage/database.svelte";
+import { type character } from './storage/types/character';
 import { alertStore } from "./alert";
 import { asBuffer } from "./util";
 

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Send } from "@lucide/svelte";
     import { changeLanguage, language } from "src/lang";
-    import { setPreset } from "src/ts/storage/database.svelte";
+    import { setPreset } from "src/ts/storage/preset-manager";
     import { DBState } from 'src/ts/stores.svelte';
     import Chat from "../ChatScreens/Chat.svelte";
     import { prebuiltPresets } from "src/ts/process/templates/templates";
