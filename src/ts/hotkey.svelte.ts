@@ -2,7 +2,7 @@ import { get } from "svelte/store"
 import { alertMd, alertSelect, alertToast, alertWait, doingAlert, alertRequestLogs } from "./alert"
 import { getDatabase  } from "./storage/database.svelte"
 import { changeToPreset as changeToPreset2 } from './storage/preset-manager'
-import { alertStore, MobileGUIStack, MobileSideBar, openPersonaList, openPresetList, OpenRealmStore, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
+import { alertStore, MobileGUIStack, MobileSideBar, modalState, OpenRealmStore, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
 import { language } from "src/lang"
 import { updateTextThemeAndCSS } from "./gui/colorscheme"
 import { defaultHotkeys } from "./defaulthotkeys"
@@ -103,11 +103,11 @@ export function initHotkey(){
                     break
                 }
                 case 'presets':{
-                    openPresetList.set(!get(openPresetList))
+                    modalState.preset = !modalState.preset
                     break
                 }
                 case 'persona':{
-                    openPersonaList.set(!get(openPersonaList))
+                    modalState.persona = !modalState.persona
                     break
                 }
                 case 'toggleCSS':{
@@ -307,10 +307,10 @@ async function quickMenu(){
     ])
     const sel = parseInt(selStr)
     if(sel === 0){
-        openPresetList.set(!get(openPresetList))
+        modalState.preset = !modalState.preset
     }
     if(sel === 1){
-        openPersonaList.set(!get(openPersonaList))
+        modalState.persona = !modalState.persona
     }
 }
 

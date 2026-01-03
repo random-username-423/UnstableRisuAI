@@ -4,7 +4,7 @@ import "./ts/storage/database.svelte"
 import {declareTest} from "./test/runTest"
 import App from "./App.svelte";
 import { loadData } from "./ts/bootstrap";
-import { initHotkey } from "./ts/hotkey";
+import { initHotkey } from "./ts/hotkey.svelte";
 import { preLoadCheck } from "./preload";
 import { mount } from "svelte";
 
