@@ -157,6 +157,7 @@ openId: 0,
 })
 
 //Set might be more ideal, however since Svelte doesn't support reactive Sets, using array for now
+// TODO: Actually svelte has SvelteSet
 export const hotReloading = $state<string[]>([])
 
 ReloadGUIPointer.subscribe(() => {
