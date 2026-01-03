@@ -460,8 +460,13 @@ export interface Database {
     echoMessage?: string;
     echoDelay?: number;
     hideAllImages?: boolean;
+    autoScrollToNewMessage?: boolean
+    alwaysScrollToNewMessage?: boolean
+    newMessageButtonStyle?: string
     pluginDevelopMode?: boolean;
-}export interface DynamicOutput {
+}
+
+export interface DynamicOutput {
     autoAdjustSchema: boolean;
     dynamicMessages: boolean;
     dynamicMemory: boolean;
@@ -470,6 +475,7 @@ export interface Database {
     showTypingEffect: boolean;
     dynamicRequest: boolean;
 }
+
 export interface SeparateParameters {
     temperature?: number;
     top_k?: number;

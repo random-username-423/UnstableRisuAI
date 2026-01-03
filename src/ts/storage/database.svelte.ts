@@ -458,6 +458,9 @@ export function setDatabase(data:Database){
     data.ImagenPersonGeneration ??= 'allow_all'
     data.echoMessage ??= "Echo Message"
     data.echoDelay ??= 0
+    data.autoScrollToNewMessage ??= true
+    data.alwaysScrollToNewMessage ??= false
+    data.newMessageButtonStyle ??= 'bottom-center'
     if(!isNodeServer && !isTauri){
         //this is intended to forcely reduce the size of the database in web
         data.promptInfoInsideChat = false
