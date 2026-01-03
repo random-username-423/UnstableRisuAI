@@ -16,7 +16,7 @@ import { selectedCharID, DBState, selIdState, ReloadGUIPointer } from "./stores.
 import { alertConfirm, alertNormal, alertNormalWait, alertSelect } from "./alert";
 import { syncDrive } from "./drive/drive";
 import { hasher } from "./parser.svelte";
-import { hubURL } from "./characterCards";
+import { hubURL } from "./characterCards.svelte";
 import { decodeRisuSave, RisuSaveEncoder, type toSaveType } from "./storage/risuSave";
 import { AutoStorage } from "./storage/autoStorage";
 import { saveDbKei } from "./kei/backup";

@@ -1,7 +1,7 @@
 import { fetch as TauriHTTPFetch } from "@tauri-apps/plugin-http";
 import { AppendableBuffer } from "./globalApi.svelte";
 import { CapacitorHttp, registerPlugin } from "@capacitor/core";
-import { hubURL } from "./characterCards";
+import { hubURL } from "./characterCards.svelte";
 import { isTauri, isNodeServer, isCapacitor } from "./platform";
 import { DBState } from "./stores.svelte";
 import { listen } from '@tauri-apps/api/event'

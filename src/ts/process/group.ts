@@ -1,5 +1,5 @@
 import { shuffle } from "lodash";
-import { findCharacterbyId } from "../characters";
+import { findCharacterbyId } from "../characters.svelte";
 import { alertConfirm, alertError, alertSelectChar } from "../alert";
 import { language } from "src/lang";
 import { get } from "svelte/store";

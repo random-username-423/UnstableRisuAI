@@ -2,13 +2,13 @@
     import { onMount } from "svelte";
     import { XIcon, TrashIcon, PencilIcon, BookOpenCheckIcon, BookLockIcon, ArrowRightIcon } from "@lucide/svelte";
     import Chat from "../ChatScreens/Chat.svelte";
-    import { getCharImage, findCharacterbyId } from "src/ts/characters";
+    import { getCharImage, findCharacterbyId } from "src/ts/characters.svelte";
     import { getUserName, getUserIcon } from "src/ts/persona"
-    import { createSimpleCharacter, bookmarkListOpen, DBState, selectedCharID, ScrollToMessageStore } from "src/ts/stores.svelte";
+    import { createSimpleCharacter, modalState, DBState, selectedCharID, ScrollToMessageStore } from "src/ts/stores.svelte";
     import { language } from "src/lang";
     import { alertInput } from "src/ts/alert";
 
-    const close = () => $bookmarkListOpen = false;
+    const close = () => modalState.bookmark = false;
     let chara = $derived(DBState.db.characters[$selectedCharID]);
     const simpleChar = $derived(createSimpleCharacter(chara));
 

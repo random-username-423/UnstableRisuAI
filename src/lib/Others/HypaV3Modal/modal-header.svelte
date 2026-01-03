@@ -13,7 +13,7 @@
   } from "@lucide/svelte";
   import { language } from "src/lang";
   import {
-    hypaV3ModalOpen,
+    hypaV3State,
     settingsOpen,
     SettingsMenuIndex,
   } from "src/ts/stores.svelte";
@@ -77,7 +77,7 @@
   }
 
   function openGlobalSettings() {
-    $hypaV3ModalOpen = false;
+    hypaV3State.open = false;
     $settingsOpen = true;
     $SettingsMenuIndex = 2; // Other bot settings
   }
@@ -98,7 +98,7 @@
   }
 
   function closeModal() {
-    $hypaV3ModalOpen = false;
+    hypaV3State.open = false;
   }
 
   function toggleBulkEditMode() {

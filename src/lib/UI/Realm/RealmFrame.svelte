@@ -3,12 +3,12 @@
     import { shareRealmCardData } from "src/ts/realm";
     import { downloadPreset } from "src/ts/storage/preset-manager";
     import { DBState } from 'src/ts/stores.svelte';
-    import { selectedCharID, ShowRealmFrameStore } from "src/ts/stores.svelte";
+    import { selectedCharID, realmState } from "src/ts/stores.svelte";
     import { asBuffer, sleep } from "src/ts/util";
     import { onDestroy, onMount } from "svelte";
 
     const close =  () => {
-        $ShowRealmFrameStore = ''
+        realmState.uploadTarget = ''
     }
     let iframe: HTMLIFrameElement = $state(null)
     const tk = DBState.db?.account?.token;
@@ -28,7 +28,7 @@
         }
         if(e.data.type === 'success'){
             alertMd(`## Upload Success\n\nYour character has been uploaded to Realm successfully.\n\n${"```\nhttps://realm.risuai.net/character/" +  e.data.id + "\n```"}`)
-            if($ShowRealmFrameStore.startsWith('preset') || $ShowRealmFrameStore.startsWith('module')){
+            if(realmState.uploadTarget.startsWith('preset') || realmState.uploadTarget.startsWith('module')){
                 //TODO, add preset edit
             }
             else if(DBState.db.characters[$selectedCharID].type === 'character'){
@@ -58,8 +58,8 @@
             name: ArrayBuffer
         }
         
-        if($ShowRealmFrameStore.startsWith('preset')){
-            const predata = await downloadPreset(Number($ShowRealmFrameStore.split(':')[1]), 'return')
+        if(realmState.uploadTarget.startsWith('preset')){
+            const predata = await downloadPreset(Number(realmState.uploadTarget.split(':')[1]), 'return')
             const encodedPredata = predata.buf
             const encodedPredataName = new TextEncoder().encode(predata.data.name + '.risup')
             data = {
@@ -67,8 +67,8 @@
                 name: asBuffer(encodedPredataName.buffer)
             }
         }
-        else if($ShowRealmFrameStore.startsWith('module')){
-            const predata = DBState.db.modules[Number($ShowRealmFrameStore.split(':')[1])]
+        else if(realmState.uploadTarget.startsWith('module')){
+            const predata = DBState.db.modules[Number(realmState.uploadTarget.split(':')[1])]
             //@ts-expect-error adding type field for Realm export, not defined in module type
             predata.type = 'risuModule'
             const encodedPredata = new TextEncoder().encode(JSON.stringify(predata))
@@ -94,7 +94,7 @@
 
     const getUrl = () => {
         let url = tk ? `https://realm.risuai.net/upload?token=${tk}&token_id=${id}` : 'https://realm.risuai.net/upload'
-        if($ShowRealmFrameStore.startsWith('preset') || $ShowRealmFrameStore.startsWith('module')){
+        if(realmState.uploadTarget.startsWith('preset') || realmState.uploadTarget.startsWith('module')){
             //TODO, add preset edit
         }
         else if(DBState.db.characters[$selectedCharID].type === 'character' && DBState.db.characters[$selectedCharID].realmId){

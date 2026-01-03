@@ -6,7 +6,7 @@ import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { sleep } from "../util";
-import { hubURL } from "../characterCards";
+import { hubURL } from "../characterCards.svelte";
 
 export async function SaveLocalBackup(){
     alertWait("Saving local backup...")

@@ -11,7 +11,7 @@
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
     import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
     import SliderInput from "src/lib/UI/GUI/SliderInput.svelte";
-    import { getCharImage } from "src/ts/characters";
+    import { getCharImage } from "src/ts/characters.svelte";
     import Accordion from "src/lib/UI/Accordion.svelte";
     import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
@@ -20,7 +20,7 @@
     import { getCharToken } from "src/ts/tokenizer";
     import { PlusIcon, PencilIcon, TrashIcon, DownloadIcon, HardDriveUploadIcon } from "@lucide/svelte";
     import { alertError, alertInput, alertConfirm, alertNormal } from "src/ts/alert";
-    import { createHypaV3Preset } from "src/ts/process/memory/hypav3";
+    import { createHypaV3Preset } from "src/ts/process/memory/hypav3.svelte";
 
     let submenu = $state(DBState.db.useLegacyGUI ? -1 : 0);
 

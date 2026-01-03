@@ -1,8 +1,8 @@
 <script lang="ts">
-    import { getCustomBackground, getEmotion } from "../../ts/characters";
+    import { getCustomBackground, getEmotion } from "../../ts/characters.svelte";
     
     import { DBState } from 'src/ts/stores.svelte';
-    import { CharEmotion, ShowVN, selectedCharID } from "../../ts/stores.svelte";
+    import { CharEmotion, layoutState, selectedCharID } from "../../ts/stores.svelte";
     import ResizeBox from './ResizeBox.svelte'
     import DefaultChatScreen from "./DefaultChatScreen.svelte";
     import defaultWallpaper from '../../etc/bg.jpg'
@@ -33,7 +33,7 @@
     });
 </script>
 
-{#if $ShowVN}
+{#if layoutState.ShowVN}
     <VisualNovelMain />
 {:else if DBState.db.theme === 'waifu'}
     <div class="grow h-full flex justify-center relative" style="{bgImg.length < 4 ? wallPaper : bgImg}">

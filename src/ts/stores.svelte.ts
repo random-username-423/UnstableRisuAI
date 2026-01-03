@@ -6,27 +6,42 @@ import type { simpleCharacterArgument } from "./parser.svelte";
 import type { alertData } from "./alert";
 import { moduleUpdate } from "./process/modules";
 import { resetScriptCache } from "./process/scripts";
-import type { hubType } from "./characterCards";
+import type { hubType } from "./characterCards.svelte";
 import type { PluginSafetyErrors } from "./plugins/pluginSafety";
 
 function updateSize(){
-    SizeStore.set({
-        w: window.innerWidth,
-        h: window.innerHeight
-    })
-    DynamicGUI.set(window.innerWidth <= 1024)
+    layoutState.width = window.innerWidth
+    layoutState.height = window.innerHeight
+    layoutState.compactMode = window.innerWidth <= 1024
 }
 
-export const SizeStore = writable({
-    w: 0,
-    h: 0
+export const layoutState = $state({
+    width: 0,
+    height: 0,
+    compactMode: false,
+    ShowVN: false,
+    betaMobile: {
+        enabled: false,
+        stack: 0,
+        sideBar: 0,
+    },
 })
 
-const t = 'https://raw.githubusercontent.com/ProjectAliceDev/ProjectAliceDev.github.io/master/'
-export const loadedStore = writable(false)
-export const DynamicGUI = writable(false)
-export const sideBarClosing = writable(false)
-export const sideBarStore = writable(window.innerWidth > 1024)
+export const appState = $state({
+    loaded: false,
+})
+
+export const sideBarState = $state({
+    open: window.innerWidth > 1024,
+    closing: false
+})
+
+export const modalState = $state({
+    preset: false,
+    persona: false,
+    bookmark: false
+})
+
 export const selectedCharID = writable(-1)
 export const CurrentTriggerIdStore = writable<string | null>(null)
 export const CharEmotion = writable({} as {[key:string]: [string, string, number][]})
@@ -34,38 +49,39 @@ export const ViewBoxsize = writable({ width: 12 * 16, height: 12 * 16 }); // Def
 export const settingsOpen = writable(false)
 export const botMakerMode = writable(false)
 export const moduleBackgroundEmbedding = writable('')
-export const openPresetList = writable(false)
-export const openPersonaList = writable(false)
-export const bookmarkListOpen = writable(false)
-export const MobileGUI = writable(false)
-export const MobileGUIStack = writable(0)
-export const MobileSideBar = writable(0)
-export const ShowVN = writable(false)
+
 export const SettingsMenuIndex = writable(-1)
 export const ReloadGUIPointer = writable(0)
 export const ReloadChatPointer = writable({} as Record<number, number>)
 export const ScrollToMessageStore = $state({ value: -1 })
-export const OpenRealmStore = writable(false)
-export const RealmInitialOpenChar = writable<null | hubType>(null)
-export const ShowRealmFrameStore = writable('')
+
+export const realmState = $state({
+    expanded: false, 
+    autoOpenChar: null as  hubType | null,
+    uploadTarget: ''
+})
+
 export const PlaygroundStore = writable(0)
 export const HideIconStore = writable(false)
 export const CustomCSSStore = writable('')
 export const SafeModeStore = writable(false)
-export const MobileSearch = writable('')
 export const CharConfigSubMenu = writable(0)
 export const CustomGUISettingMenuStore = writable(false)
 export const alertStore = writable({
     type: 'none',
     msg: 'n',
 } as alertData)
-export const hypaV3ModalOpen = writable(false)
-export const hypaV3ProgressStore = writable({
+
+export const hypaV3State = $state({
     open: false,
-    miniMsg: '',
-    msg: '',
-    subMsg: '',
+    progress: {
+        open: false,
+        miniMsg: '',
+        msg: '',
+        subMsg: '',
+    }
 })
+
 export const selIdState = $state({
     selId: -1
 })
@@ -146,6 +162,7 @@ openId: 0,
 })
 
 //Set might be more ideal, however since Svelte doesn't support reactive Sets, using array for now
+// TODO: Actually svelte has SvelteSet
 export const hotReloading = $state<string[]>([])
 
 ReloadGUIPointer.subscribe(() => {

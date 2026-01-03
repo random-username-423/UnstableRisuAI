@@ -1,13 +1,12 @@
 <script lang="ts">
     import {
     CharEmotion,
-    DynamicGUI,
+    layoutState,
     botMakerMode,
     selectedCharID,
     settingsOpen,
-    sideBarClosing,
-    sideBarStore,
-    OpenRealmStore,
+    sideBarState,
+    realmState,
     PlaygroundStore,
 
     QuickSettings
@@ -33,14 +32,14 @@
   addCharacter,
     changeChar,
     getCharImage,
-  } from "../../ts/characters";
+  } from "../../ts/characters.svelte";
     import CharConfig from "./CharConfig.svelte";
     import { language } from "../../lang";
     import { isEqual } from "lodash";
     import SidebarAvatar from "./SidebarAvatar.svelte";
     import BaseRoundedButton from "../UI/BaseRoundedButton.svelte";
     import { selectSingleFile } from "src/ts/util";
-    import { getCharacterIndexObject } from "src/ts/characters";
+    import { getCharacterIndexObject } from "src/ts/characters.svelte";
     import { v4 } from "uuid";
     import { checkCharOrder, getFileSrc, saveAsset } from "src/ts/globalApi.svelte";
     import { alertInput, alertSelect } from "src/ts/alert";
@@ -75,7 +74,7 @@
 
   let { openGrid = () => {}, hidden = false }: Props = $props();
 
-  sideBarClosing.set(false)
+  sideBarState.closing = false
 
   $effect(() => {
     let newCharImages: sortType[] = [];
@@ -303,8 +302,8 @@
 <div
   class="h-full w-20 min-w-20 flex-col items-center bg-bgcolor text-textcolor shadow-lg relative rs-sidebar"
   class:editMode
-  class:risu-sub-sidebar={$sideBarClosing}
-  class:risu-sub-sidebar-close={$sideBarClosing}
+  class:risu-sub-sidebar={sideBarState.closing}
+  class:risu-sub-sidebar-close={sideBarState.closing}
   class:hidden={hidden}
   class:flex={!hidden}
 >
@@ -319,7 +318,7 @@
     reseter();
     selectedCharID.set(-1)
     PlaygroundStore.set(0)
-    OpenRealmStore.set(false)
+    realmState.expanded = false
   }}
 >
   <HomeIcon />
@@ -375,8 +374,8 @@
 <div
   class="h-full w-20 min-w-20 flex-col items-center bg-bgcolor text-textcolor shadow-lg relative rs-sidebar"
   class:editMode
-  class:risu-sub-sidebar={$sideBarClosing}
-  class:risu-sub-sidebar-close={$sideBarClosing}
+  class:risu-sub-sidebar={sideBarState.closing}
+  class:risu-sub-sidebar-close={sideBarState.closing}
   class:hidden={hidden}
   class:flex={!hidden}
 >
@@ -406,7 +405,7 @@
           reseter();
           selectedCharID.set(-1)
           PlaygroundStore.set(0)
-          OpenRealmStore.set(false)
+          realmState.expanded = false
         }}><HomeIcon /></BarIcon>
       <div class="mt-2"></div>
       <BarIcon
@@ -680,35 +679,35 @@
 {/if}
 <div
   class="setting-area h-full flex-col overflow-y-auto overflow-x-hidden bg-darkbg py-6 text-textcolor max-h-full"
-  class:risu-sidebar={!$sideBarClosing}
+  class:risu-sidebar={!sideBarState.closing}
   class:w-96={$sideBarSize === 0}
   class:w-110={$sideBarSize === 1}
   class:w-124={$sideBarSize === 2}
   class:w-138={$sideBarSize === 3}
-  class:risu-sidebar-close={$sideBarClosing}
-  class:min-w-96={!$DynamicGUI && $sideBarSize === 0}
-  class:min-w-110={!$DynamicGUI && $sideBarSize === 1}
-  class:min-w-124={!$DynamicGUI && $sideBarSize === 2}
-  class:min-w-138={!$DynamicGUI && $sideBarSize === 3}
-  class:px-2={$DynamicGUI}
-  class:px-4={!$DynamicGUI}
-  class:dynamic-sidebar={$DynamicGUI}
+  class:risu-sidebar-close={sideBarState.closing}
+  class:min-w-96={!layoutState.compactMode && $sideBarSize === 0}
+  class:min-w-110={!layoutState.compactMode && $sideBarSize === 1}
+  class:min-w-124={!layoutState.compactMode && $sideBarSize === 2}
+  class:min-w-138={!layoutState.compactMode && $sideBarSize === 3}
+  class:px-2={layoutState.compactMode}
+  class:px-4={!layoutState.compactMode}
+  class:dynamic-sidebar={layoutState.compactMode}
   class:hidden={hidden}
   class:flex={!hidden}
   onanimationend={() => {
-    if($sideBarClosing){
-      $sideBarClosing = false
-      sideBarStore.set(false)
+    if(sideBarState.closing){
+      sideBarState.closing = false
+      sideBarState.open = false;
     }
   }}
 >
   <button
     class="flex w-full justify-end text-textcolor"
     onclick={async () => {
-      if($sideBarClosing){
+      if(sideBarState.closing){
         return
       }
-      $sideBarClosing = true;
+      sideBarState.closing = true;
     }}
   >
     <!-- <button class="border-none bg-transparent p-0 text-textcolor"><X /></button> -->
@@ -768,20 +767,20 @@
   {/if}
 </div>
 
-{#if $DynamicGUI}
+{#if layoutState.compactMode}
     <div role="button" tabindex="0" class="grow h-full min-w-12" class:hidden={hidden} onclick={() => {
-      if($sideBarClosing){
+      if(sideBarState.closing){
         return
       }
-      $sideBarClosing = true;
+      sideBarState.closing = true;
     }}
       onkeydown={(e)=>{
         if(e.key === 'Enter'){
             e.currentTarget.click()
         }
       }}
-      class:sidebar-dark-animation={!$sideBarClosing}
-      class:sidebar-dark-close-animation={$sideBarClosing}>
+      class:sidebar-dark-animation={!sideBarState.closing}
+      class:sidebar-dark-close-animation={sideBarState.closing}>
 
     </div>
 

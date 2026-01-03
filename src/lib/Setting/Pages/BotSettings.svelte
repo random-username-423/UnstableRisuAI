@@ -25,7 +25,7 @@
     import OpenrouterSettings from "./OpenrouterSettings.svelte";
     import ChatFormatSettings from "./ChatFormatSettings.svelte";
     import PromptSettings from "./PromptSettings.svelte";
-    import { openPresetList } from "src/ts/stores.svelte";
+    import { modalState } from "src/ts/stores.svelte";
     import { selectSingleFile } from "src/ts/util";
   import { getModelInfo, LLMFlags, LLMFormat, LLMProvider } from "src/ts/model/modellist";
   import RegexList from "src/lib/SideBars/Scripts/RegexList.svelte";
@@ -676,7 +676,7 @@ let tokens = $state({
         </button>
     </Accordion>
     {#if submenu !== -1}
-        <Button onclick={() => {$openPresetList = true}} className="mt-4">{language.presets}</Button>
+        <Button onclick={() => {modalState.preset = true}} className="mt-4">{language.presets}</Button>
     {/if}
 {/if}
 
@@ -708,5 +708,5 @@ let tokens = $state({
     </div>
 {/if}
 {#if submenu === -1}
-    <Button onclick={() => {$openPresetList = true}} className="mt-4">{language.presets}</Button>
+    <Button onclick={() => {modalState.preset = true}} className="mt-4">{language.presets}</Button>
 {/if}

@@ -4,7 +4,7 @@ import type { OobaChatCompletionRequestParams } from 'src/ts/model/ooba';
 import type { LLMFormat, LLMFlags, LLMTokenizer } from 'src/ts/model/types';
 import type { RisuPlugin } from 'src/ts/plugins/plugins';
 import type { HypaModel } from 'src/ts/process/memory/hypamemory';
-import type { HypaV3Settings, HypaV3Preset } from 'src/ts/process/memory/hypav3';
+import type { HypaV3Settings, HypaV3Preset } from 'src/ts/process/memory/hypav3.svelte';
 import type { NAISettings } from 'src/ts/process/models/nai';
 import type { RisuModule } from 'src/ts/process/modules';
 import type { PromptItem, PromptSettings } from 'src/ts/process/prompt';

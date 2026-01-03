@@ -3,12 +3,12 @@
     import Suggestion from './Suggestion.svelte';
     import AdvancedChatEditor from './AdvancedChatEditor.svelte';
     import { CameraIcon, DatabaseIcon, DicesIcon, GlobeIcon, ImagePlusIcon, LanguagesIcon, Laugh, MenuIcon, MicOffIcon, PackageIcon, Plus, RefreshCcwIcon, ReplyIcon, Send, StepForwardIcon, XIcon, BrainIcon } from "@lucide/svelte";
-    import { selectedCharID, PlaygroundStore, createSimpleCharacter, hypaV3ModalOpen, ScrollToMessageStore } from "../../ts/stores.svelte";
+    import { selectedCharID, PlaygroundStore, createSimpleCharacter, hypaV3State, ScrollToMessageStore } from "../../ts/stores.svelte";
     import { tick } from 'svelte';
     import Chat from "./Chat.svelte";
     import { type Message } from "../../ts/storage/types/chat";
     import { DBState } from 'src/ts/stores.svelte';
-    import { getCharImage } from "../../ts/characters";
+    import { getCharImage } from "../../ts/characters.svelte";
     import { chatProcessStage, doingChat, sendChat } from "../../ts/process/index.svelte";
     import { sleep } from "../../ts/util";
     import { language } from "../../lang";
@@ -883,7 +883,7 @@
                                     }
                                     showHypaV2Alert();
                                 } else if (DBState.db.hypaV3) {
-                                    $hypaV3ModalOpen = true
+                                    hypaV3State.open = true
                                 }
 
                                 openMenu = false

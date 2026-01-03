@@ -2,18 +2,18 @@
     import type { character, groupChat } from "src/ts/storage/types/character";
     import { DBState } from 'src/ts/stores.svelte';
     import BarIcon from "../SideBars/BarIcon.svelte";
-    import { addCharacter, changeChar, getCharImage } from "src/ts/characters";
-    import { MobileSearch } from "src/ts/stores.svelte";
+    import { addCharacter, changeChar, getCharImage } from "src/ts/characters.svelte";
     import { MessageSquareIcon, PlusIcon } from "@lucide/svelte";
 
     interface Props {
         gridMode?: boolean;
         endGrid?: () => void;
+        search?: string;
     }
 
     const agoFormatter = new Intl.RelativeTimeFormat(navigator.languages, { style: 'short' });
 
-    let {gridMode = false, endGrid = () => {}}: Props = $props();
+    let {gridMode = false, endGrid = () => {}, search: searchProp}: Props = $props();
 
     function makeAgoText(time:number){
         if(time === 0){
@@ -64,7 +64,7 @@
 </script>
 <div class="flex flex-col items-center w-full overflow-y-auto h-full">
     {#each sortChar(DBState.db.characters) as char, i}
-        {#if char.name.toLocaleLowerCase().includes($MobileSearch.toLocaleLowerCase())}
+        {#if char.name.toLocaleLowerCase().includes(searchProp.toLocaleLowerCase())}
             <button class="flex p-2 border-t-darkborderc gap-2 w-full" class:border-t={i !== 0} onclick={() => {
                 changeChar(char.i)
                 endGrid()

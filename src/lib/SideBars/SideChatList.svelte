@@ -13,12 +13,12 @@
     import Button from "../UI/GUI/Button.svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
 
-    import { exportChat, importChat, exportAllChats } from "src/ts/characters";
+    import { exportChat, importChat, exportAllChats } from "src/ts/characters.svelte";
     import { alertChatOptions, alertConfirm, alertError, alertNormal, alertSelect, alertStore } from "src/ts/alert";
     import { sleep, sortableOptions } from "src/ts/util";
-    import { findCharacterbyId } from "src/ts/characters";
+    import { findCharacterbyId } from "src/ts/characters.svelte";
     import { createMultiuserRoom } from "src/ts/sync/multiuser";
-    import { bookmarkListOpen } from "src/ts/stores.svelte";
+    import { modalState } from "src/ts/stores.svelte";
     import { language } from "src/lang";
     import Toggles from "./Toggles.svelte";
     import { changeChatTo } from "src/ts/globalApi.svelte";
@@ -489,7 +489,7 @@
                 <SplitIcon size={18}/>
             </button>
             <button class="text-textcolor2 hover:text-green-500 mr-2 cursor-pointer" onclick={() => {
-                $bookmarkListOpen = true;
+                modalState.bookmark = true;
             }}>
                 <BookmarkCheckIcon size={18}/>
             </button>

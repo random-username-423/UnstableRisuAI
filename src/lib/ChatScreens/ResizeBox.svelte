@@ -2,7 +2,7 @@
     import { CharEmotion, ViewBoxsize } from '../../ts/stores.svelte';
     import { onMount } from 'svelte';
     import TransitionImage from './TransitionImage.svelte';
-    import { getEmotion } from 'src/ts/characters';
+    import { getEmotion } from 'src/ts/characters.svelte';
     
     import { DBState } from 'src/ts/stores.svelte';
 

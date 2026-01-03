@@ -1,12 +1,12 @@
 <script lang="ts">
     import { ArrowLeft } from "@lucide/svelte";
     import { language } from "src/lang";
-    import { PlaygroundStore, SizeStore, selectedCharID } from "src/ts/stores.svelte";
+    import { PlaygroundStore, layoutState, selectedCharID } from "src/ts/stores.svelte";
     import PlaygroundEmbedding from "./PlaygroundEmbedding.svelte";
     import PlaygroundTokenizer from "./PlaygroundTokenizer.svelte";
     import PlaygroundJinja from "./PlaygroundJinja.svelte";
     import PlaygroundSyntax from "./PlaygroundSyntax.svelte";
-    import { characterFormatUpdate, createBlankChar, findCharacterIndexbyId } from "src/ts/characters";
+    import { characterFormatUpdate, createBlankChar, findCharacterIndexbyId } from "src/ts/characters.svelte";
     import type { character } from "src/ts/storage/types/character";
     import { DBState } from 'src/ts/stores.svelte';
     import PlaygroundImageGen from "./PlaygroundImageGen.svelte";
@@ -137,7 +137,7 @@
             </button>
         </div>
     {:else}
-        {#if $SizeStore.w < 1024}
+        {#if layoutState.compactMode}
             <div class="mt-14"></div>
         {/if}
         <div class="w-full max-w-4xl flex flex-col p-2">

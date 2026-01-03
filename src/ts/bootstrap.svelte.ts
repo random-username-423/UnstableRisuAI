@@ -10,14 +10,13 @@ import {
 import { checkNullish, sleep, getBasename } from "./util"
 import { changeFullscreen, maximizeWindow } from "./gui/window"
 import { v4 as uuidv4 } from 'uuid';
-import { get } from "svelte/store";
 import { setDatabase, defaultSdDataFunc, getDatabase } from "./storage/database.svelte";
 import { checkRisuUpdate } from "./update";
-import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
+import { layoutState, botMakerMode, selectedCharID, appState, DBState, LoadingStatusState } from "./stores.svelte";
 import { loadPlugins } from "./plugins/plugins";
 import { alertError, alertMd, alertTOS, waitAlert } from "./alert";
 import { checkDriverInit } from "./drive/drive";
-import { characterURLImport } from "./characterCards";
+import { characterURLImport } from "./characterCards.svelte";
 import { defaultJailbreak, defaultMainPrompt, oldJailbreak, oldMainPrompt } from "./storage/defaultPrompts";
 import { loadRisuAccountData } from "./drive/accounter";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "./storage/risuSave";
@@ -27,8 +26,8 @@ import { autoServerBackup } from "./kei/backup";
 import { language } from "src/lang";
 import { startObserveDom } from "./observer.svelte";
 import { updateGuisize } from "./gui/guisize";
-import { updateLorebooks } from "./characters";
-import { initMobileGesture } from "./hotkey";
+import { updateLorebooks } from "./characters.svelte";
+import { initMobileGesture } from "./hotkey.svelte";
 import { moduleUpdate } from "./process/modules";
 import type { AccountStorage } from "./storage/accountStorage";
 import { makeColdData } from "./process/coldstorage.svelte";
@@ -46,7 +45,7 @@ import { isTauri, isCapacitor, isInStandaloneMode } from "./platform";
  * Loads the application data.
  */
 export async function loadData() {
-    const loaded = get(loadedStore)
+    const loaded = appState.loaded
     if (!loaded) {
         try {
             if (isTauri) {
@@ -229,9 +228,9 @@ export async function loadData() {
             }
             if ((db.betaMobileGUI && window.innerWidth <= 800) || import.meta.env.VITE_RISU_LITE === 'TRUE') {
                 initMobileGesture()
-                MobileGUI.set(true)
+                layoutState.betaMobile.enabled = true
             }
-            loadedStore.set(true)
+            appState.loaded = true
             selectedCharID.set(-1)
             startObserveDom()
             assignIds()

@@ -5,7 +5,7 @@ import { type loreBook } from '../storage/types/character';
 import { DBState } from '../stores.svelte';
 import { tokenize } from "../tokenizer";
 import { pickHashRand, selectSingleFile } from "../util";
-import { findCharacterbyId } from "../characters";
+import { findCharacterbyId } from "../characters.svelte";
 import { alertError, alertNormal } from "../alert";
 import { language } from "../../lang";
 import { downloadFile } from "../globalApi.svelte";

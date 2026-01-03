@@ -2,7 +2,7 @@ import { get } from "svelte/store"
 import { alertMd, alertSelect, alertToast, alertWait, doingAlert, alertRequestLogs } from "./alert"
 import { getDatabase  } from "./storage/database.svelte"
 import { changeToPreset as changeToPreset2 } from './storage/preset-manager'
-import { alertStore, MobileGUIStack, MobileSideBar, openPersonaList, openPresetList, OpenRealmStore, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
+import { alertStore, layoutState, modalState, realmState, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
 import { language } from "src/lang"
 import { updateTextThemeAndCSS } from "./gui/colorscheme"
 import { defaultHotkeys } from "./defaulthotkeys"
@@ -103,11 +103,11 @@ export function initHotkey(){
                     break
                 }
                 case 'presets':{
-                    openPresetList.set(!get(openPresetList))
+                    modalState.preset = !modalState.preset
                     break
                 }
                 case 'persona':{
-                    openPersonaList.set(!get(openPersonaList))
+                    modalState.persona = !modalState.persona
                     break
                 }
                 case 'toggleCSS':{
@@ -128,7 +128,7 @@ export function initHotkey(){
                     }
                     selectedCharID.set(sorted[currentIndex - 1].i)
                     PlaygroundStore.set(0)
-                    OpenRealmStore.set(false)
+                    realmState.expanded = false
                     break
                 }
                 case 'nextChar':{
@@ -144,7 +144,7 @@ export function initHotkey(){
                     }
                     selectedCharID.set(sorted[currentIndex + 1].i)
                     PlaygroundStore.set(0)
-                    OpenRealmStore.set(false)
+                    realmState.expanded = false
                     break
                 }
                 case 'quickMenu':{
@@ -307,10 +307,10 @@ async function quickMenu(){
     ])
     const sel = parseInt(selStr)
     if(sel === 0){
-        openPresetList.set(!get(openPresetList))
+        modalState.preset = !modalState.preset
     }
     if(sel === 1){
-        openPersonaList.set(!get(openPersonaList))
+        modalState.persona = !modalState.persona
     }
 }
 
@@ -355,25 +355,25 @@ export function initMobileGesture(){
 
             if(moveX > 50 && Math.abs(moveY) < Math.abs(moveX)){
                 if(get(selectedCharID) === -1){
-                    if(get(MobileGUIStack) > 0){
-                        MobileGUIStack.update(v => v - 1)
+                    if(layoutState.betaMobile.stack > 0){
+                        layoutState.betaMobile.stack -= 1
                     }
                 }
                 else{
-                    if(get(MobileSideBar) > 0){
-                        MobileSideBar.update(v => v - 1)
+                    if(layoutState.betaMobile.sideBar > 0){
+                        layoutState.betaMobile.sideBar -= 1
                     }
                 }
             }
             else if(moveX < -50 && Math.abs(moveY) < Math.abs(moveX)){
                 if(get(selectedCharID) === -1){
-                    if(get(MobileGUIStack) < 2){
-                        MobileGUIStack.update(v => v + 1)
+                    if(layoutState.betaMobile.stack < 2){
+                        layoutState.betaMobile.stack += 1;
                     }
                 }
                 else{
-                    if(get(MobileSideBar) < 3){
-                        MobileSideBar.update(v => v + 1)
+                    if(layoutState.betaMobile.sideBar < 3){
+                        layoutState.betaMobile.sideBar += 1
                     }
                 }
             }

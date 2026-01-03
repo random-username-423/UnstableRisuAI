@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { downloadRisuHub, getRisuHub, hubAdditionalHTML, type hubType } from "src/ts/characterCards";
+    import { downloadRisuHub, getRisuHub, hubAdditionalHTML, type hubType } from "src/ts/characterCards.svelte";
     import { ArrowLeft, ArrowRight, MenuIcon, SearchIcon, XIcon } from "@lucide/svelte";
     import { alertInput } from "src/ts/alert";
     import { language } from "src/lang";
     import RisuHubIcon from "./RealmHubIcon.svelte";
-    import { MobileGUI, RealmInitialOpenChar } from "src/ts/stores.svelte";
+    import { layoutState, realmState } from "src/ts/stores.svelte";
     import RealmPopUp from "./RealmPopUp.svelte";
 
     let openedData:null|hubType = $state(null)
@@ -42,9 +42,9 @@
 
 
     $effect(() => {
-        if($RealmInitialOpenChar){
-            openedData = $RealmInitialOpenChar
-            $RealmInitialOpenChar = null
+        if(realmState.autoOpenChar){
+            openedData = realmState.autoOpenChar
+            realmState.autoOpenChar = null
         }
     })
 </script>
@@ -73,7 +73,7 @@
         </button>
     </div>
 </div>
-{#if $MobileGUI}
+{#if layoutState.betaMobile.enabled}
 <div class="ml-4 flex items-start ">
     <div class="p-2 flex mb-3 overflow-x-auto rounded-lg border-darkborderc border gap-2">
         <button onclick={() => {

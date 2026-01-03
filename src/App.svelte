@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { DynamicGUI, settingsOpen, sideBarStore, ShowRealmFrameStore, openPresetList, openPersonaList, MobileGUI, loadedStore, alertStore, LoadingStatusState, bookmarkListOpen, popupStore } from './ts/stores.svelte';
+    import { layoutState, settingsOpen, sideBarState, realmState, modalState, appState, alertStore, LoadingStatusState, popupStore } from './ts/stores.svelte';
     import Sidebar from './lib/SideBars/Sidebar.svelte';
     import { DBState } from './ts/stores.svelte';
     import ChatScreen from './lib/ChatScreens/ChatScreen.svelte';
@@ -9,7 +9,7 @@
     import WelcomeRisu from './lib/Others/WelcomeRisu.svelte';
     import BookmarkList from './lib/Others/BookmarkList.svelte';
     import Settings from './lib/Setting/Settings.svelte';
-    import { showRealmInfoStore, importCharacterProcess } from './ts/characterCards';
+    import { showRealmInfoStore, importCharacterProcess } from './ts/characterCards.svelte';
     import { importPreset } from './ts/storage/preset-manager';
     import { importModuleFromData } from './ts/process/modules';
     import { alertNormal } from './ts/alert';
@@ -23,7 +23,7 @@
     import MobileFooter from './lib/Mobile/MobileFooter.svelte';
     import { checkCharOrder } from './ts/globalApi.svelte';
     import { ArrowUpIcon, GlobeIcon, PlusIcon } from '@lucide/svelte';
-    import { hypaV3ModalOpen, hypaV3ProgressStore } from "./ts/stores.svelte";
+    import { hypaV3State } from "./ts/stores.svelte";
     import HypaV3Modal from './lib/Others/HypaV3Modal.svelte';
     import HypaV3Progress from './lib/Others/HypaV3Progress.svelte';
     import PluginAlertModal from './lib/Others/PluginAlertModal.svelte';
@@ -33,6 +33,8 @@
     let gridOpen = $state(false)
     let aprilFools = $state(new Date().getMonth() === 3 && new Date().getDate() === 1)
     let aprilFoolsPage = $state(0)
+
+    let betaMobileSearch = $state('');
 
     // Drag and drop handlers
     function handleDragOver(e: DragEvent) {
@@ -133,7 +135,7 @@
             </div>
             <span class="absolute top-4 left-4 font-bold text-[#bbbbbb] text-md md:text-lg">RisyGTP-9</span>
         </div>
-    {:else if !$loadedStore}
+    {:else if !appState.loaded}
         <div class="w-full h-full flex justify-center items-center text-textcolor text-xl bg-gray-900 flex-col">
             <div class="flex flex-row items-center">
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-textcolor" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -149,20 +151,20 @@
         <WelcomeRisu />
     {:else if $settingsOpen}
         <Settings />
-    {:else if $MobileGUI}
+    {:else if layoutState.betaMobile.enabled}
         <div class="w-full h-full flex flex-col">
-            <MobileHeader />
-            <MobileBody />
+            <MobileHeader bind:search={betaMobileSearch}/>
+            <MobileBody search={betaMobileSearch}/>
             <MobileFooter />
         </div>
     {:else}
         {#if gridOpen}
             <GridChars endGrid={() => {gridOpen = false}} />
         {:else}
-            {#if (!$DynamicGUI)}
-                <Sidebar openGrid={() => {gridOpen = true}} hidden={!$sideBarStore} />
+            {#if (!layoutState.compactMode)}
+                <Sidebar openGrid={() => {gridOpen = true}} hidden={!sideBarState.open} />
             {:else}
-                <div class="top-0 w-full h-full left-0 z-30 flex flex-row items-center" class:fixed={$sideBarStore} class:hidden={!$sideBarStore} >
+                <div class="top-0 w-full h-full left-0 z-30 flex flex-row items-center" class:fixed={sideBarState.open} class:hidden={!sideBarState.open} >
                     <Sidebar openGrid={() => {gridOpen = true}}  hidden={false} />
 
 
@@ -180,23 +182,23 @@
     {#if $showRealmInfoStore}
         <RealmPopUp bind:openedData={$showRealmInfoStore} />
     {/if}
-    {#if $ShowRealmFrameStore}
+    {#if realmState.uploadTarget}
         <RealmFrame />
     {/if}
-    {#if $openPresetList}
-        <Botpreset close={() => {$openPresetList = false}} />
+    {#if modalState.preset}
+        <Botpreset close={() => {modalState.preset = false}} />
     {/if}
-    {#if $openPersonaList}
-        <ListedPersona close={() => {$openPersonaList = false}} />
+    {#if modalState.persona}
+        <ListedPersona close={() => {modalState.persona = false}} />
     {/if}
-    {#if $bookmarkListOpen}
+    {#if modalState.bookmark}
         <BookmarkList />
     {/if}
-    {#if $hypaV3ModalOpen}
+    {#if hypaV3State.open}
         <HypaV3Modal />
     {/if}
     <SavePopupIconComp />
-    {#if $hypaV3ProgressStore.open}
+    {#if hypaV3State.progress.open}
         <HypaV3Progress />
     {/if}
     <PluginAlertModal />
