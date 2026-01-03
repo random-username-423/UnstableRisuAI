@@ -4,7 +4,7 @@ import { saveAsset as saveImageGlobal } from '../globalApi.svelte';
 import { defaultAutoSuggestPrompt, defaultJailbreak, defaultMainPrompt } from './defaultPrompts';
 import { prebuiltNAIpresets } from '../process/templates/templates';
 import { defaultColorScheme } from '../gui/colorscheme';
-import { createHypaV3Preset } from '../process/memory/hypav3'
+import { createHypaV3Preset } from '../process/memory/hypav3Preset'
 import { isTauri, isNodeServer } from "src/ts/platform"
 import { DBState, selectedCharID } from '../stores.svelte';
 import { LLMFormat } from '../model/modellist';
