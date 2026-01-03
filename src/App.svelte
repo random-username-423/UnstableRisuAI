@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { DynamicGUI, settingsOpen, sideBarState, realmState, modalState, MobileGUI, loadedStore, alertStore, LoadingStatusState, popupStore } from './ts/stores.svelte';
+    import { DynamicGUI, settingsOpen, sideBarState, realmState, modalState, MobileGUI, appState, alertStore, LoadingStatusState, popupStore } from './ts/stores.svelte';
     import Sidebar from './lib/SideBars/Sidebar.svelte';
     import { DBState } from './ts/stores.svelte';
     import ChatScreen from './lib/ChatScreens/ChatScreen.svelte';
@@ -133,7 +133,7 @@
             </div>
             <span class="absolute top-4 left-4 font-bold text-[#bbbbbb] text-md md:text-lg">RisyGTP-9</span>
         </div>
-    {:else if !$loadedStore}
+    {:else if !appState.loaded}
         <div class="w-full h-full flex justify-center items-center text-textcolor text-xl bg-gray-900 flex-col">
             <div class="flex flex-row items-center">
                 <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-textcolor" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

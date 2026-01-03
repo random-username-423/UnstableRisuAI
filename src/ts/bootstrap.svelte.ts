@@ -10,10 +10,9 @@ import {
 import { checkNullish, sleep, getBasename } from "./util"
 import { changeFullscreen, maximizeWindow } from "./gui/window"
 import { v4 as uuidv4 } from 'uuid';
-import { get } from "svelte/store";
 import { setDatabase, defaultSdDataFunc, getDatabase } from "./storage/database.svelte";
 import { checkRisuUpdate } from "./update";
-import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
+import { MobileGUI, botMakerMode, selectedCharID, appState, DBState, LoadingStatusState } from "./stores.svelte";
 import { loadPlugins } from "./plugins/plugins";
 import { alertError, alertMd, alertTOS, waitAlert } from "./alert";
 import { checkDriverInit } from "./drive/drive";
@@ -46,7 +45,7 @@ import { isTauri, isCapacitor, isInStandaloneMode } from "./platform";
  * Loads the application data.
  */
 export async function loadData() {
-    const loaded = get(loadedStore)
+    const loaded = appState.loaded
     if (!loaded) {
         try {
             if (isTauri) {
@@ -231,7 +230,7 @@ export async function loadData() {
                 initMobileGesture()
                 MobileGUI.set(true)
             }
-            loadedStore.set(true)
+            appState.loaded = true
             selectedCharID.set(-1)
             startObserveDom()
             assignIds()

@@ -21,8 +21,10 @@ export const SizeState = $state({
     h: 0
 })
 
-const t = 'https://raw.githubusercontent.com/ProjectAliceDev/ProjectAliceDev.github.io/master/'
-export const loadedStore = writable(false)
+export const appState = $state({
+    loaded: false
+})
+
 export const DynamicGUI = writable(false)
 
 export const sideBarState = $state({
