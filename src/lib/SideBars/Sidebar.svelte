@@ -5,8 +5,7 @@
     botMakerMode,
     selectedCharID,
     settingsOpen,
-    sideBarClosing,
-    sideBarStore,
+    sideBarState,
     OpenRealmStore,
     PlaygroundStore,
 
@@ -75,7 +74,7 @@
 
   let { openGrid = () => {}, hidden = false }: Props = $props();
 
-  sideBarClosing.set(false)
+  sideBarState.closing = false
 
   $effect(() => {
     let newCharImages: sortType[] = [];
@@ -303,8 +302,8 @@
 <div
   class="h-full w-20 min-w-20 flex-col items-center bg-bgcolor text-textcolor shadow-lg relative rs-sidebar"
   class:editMode
-  class:risu-sub-sidebar={$sideBarClosing}
-  class:risu-sub-sidebar-close={$sideBarClosing}
+  class:risu-sub-sidebar={sideBarState.closing}
+  class:risu-sub-sidebar-close={sideBarState.closing}
   class:hidden={hidden}
   class:flex={!hidden}
 >
@@ -375,8 +374,8 @@
 <div
   class="h-full w-20 min-w-20 flex-col items-center bg-bgcolor text-textcolor shadow-lg relative rs-sidebar"
   class:editMode
-  class:risu-sub-sidebar={$sideBarClosing}
-  class:risu-sub-sidebar-close={$sideBarClosing}
+  class:risu-sub-sidebar={sideBarState.closing}
+  class:risu-sub-sidebar-close={sideBarState.closing}
   class:hidden={hidden}
   class:flex={!hidden}
 >
@@ -680,12 +679,12 @@
 {/if}
 <div
   class="setting-area h-full flex-col overflow-y-auto overflow-x-hidden bg-darkbg py-6 text-textcolor max-h-full"
-  class:risu-sidebar={!$sideBarClosing}
+  class:risu-sidebar={!sideBarState.closing}
   class:w-96={$sideBarSize === 0}
   class:w-110={$sideBarSize === 1}
   class:w-124={$sideBarSize === 2}
   class:w-138={$sideBarSize === 3}
-  class:risu-sidebar-close={$sideBarClosing}
+  class:risu-sidebar-close={sideBarState.closing}
   class:min-w-96={!$DynamicGUI && $sideBarSize === 0}
   class:min-w-110={!$DynamicGUI && $sideBarSize === 1}
   class:min-w-124={!$DynamicGUI && $sideBarSize === 2}
@@ -696,19 +695,19 @@
   class:hidden={hidden}
   class:flex={!hidden}
   onanimationend={() => {
-    if($sideBarClosing){
-      $sideBarClosing = false
-      sideBarStore.set(false)
+    if(sideBarState.closing){
+      sideBarState.closing = false
+      sideBarState.open = false;
     }
   }}
 >
   <button
     class="flex w-full justify-end text-textcolor"
     onclick={async () => {
-      if($sideBarClosing){
+      if(sideBarState.closing){
         return
       }
-      $sideBarClosing = true;
+      sideBarState.closing = true;
     }}
   >
     <!-- <button class="border-none bg-transparent p-0 text-textcolor"><X /></button> -->
@@ -770,18 +769,18 @@
 
 {#if $DynamicGUI}
     <div role="button" tabindex="0" class="grow h-full min-w-12" class:hidden={hidden} onclick={() => {
-      if($sideBarClosing){
+      if(sideBarState.closing){
         return
       }
-      $sideBarClosing = true;
+      sideBarState.closing = true;
     }}
       onkeydown={(e)=>{
         if(e.key === 'Enter'){
             e.currentTarget.click()
         }
       }}
-      class:sidebar-dark-animation={!$sideBarClosing}
-      class:sidebar-dark-close-animation={$sideBarClosing}>
+      class:sidebar-dark-animation={!sideBarState.closing}
+      class:sidebar-dark-close-animation={sideBarState.closing}>
 
     </div>
 

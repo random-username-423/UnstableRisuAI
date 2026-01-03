@@ -25,8 +25,12 @@ export const SizeStore = writable({
 const t = 'https://raw.githubusercontent.com/ProjectAliceDev/ProjectAliceDev.github.io/master/'
 export const loadedStore = writable(false)
 export const DynamicGUI = writable(false)
-export const sideBarClosing = writable(false)
-export const sideBarStore = writable(window.innerWidth > 1024)
+
+export const sideBarState = $state({
+    open: window.innerWidth > 1024,
+    closing: false
+})
+
 export const selectedCharID = writable(-1)
 export const CurrentTriggerIdStore = writable<string | null>(null)
 export const CharEmotion = writable({} as {[key:string]: [string, string, number][]})

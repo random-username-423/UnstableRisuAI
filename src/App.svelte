@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { DynamicGUI, settingsOpen, sideBarStore, ShowRealmFrameStore, openPresetList, openPersonaList, MobileGUI, loadedStore, alertStore, LoadingStatusState, bookmarkListOpen, popupStore } from './ts/stores.svelte';
+    import { DynamicGUI, settingsOpen, sideBarState, ShowRealmFrameStore, openPresetList, openPersonaList, MobileGUI, loadedStore, alertStore, LoadingStatusState, bookmarkListOpen, popupStore } from './ts/stores.svelte';
     import Sidebar from './lib/SideBars/Sidebar.svelte';
     import { DBState } from './ts/stores.svelte';
     import ChatScreen from './lib/ChatScreens/ChatScreen.svelte';
@@ -160,9 +160,9 @@
             <GridChars endGrid={() => {gridOpen = false}} />
         {:else}
             {#if (!$DynamicGUI)}
-                <Sidebar openGrid={() => {gridOpen = true}} hidden={!$sideBarStore} />
+                <Sidebar openGrid={() => {gridOpen = true}} hidden={!sideBarState.open} />
             {:else}
-                <div class="top-0 w-full h-full left-0 z-30 flex flex-row items-center" class:fixed={$sideBarStore} class:hidden={!$sideBarStore} >
+                <div class="top-0 w-full h-full left-0 z-30 flex flex-row items-center" class:fixed={sideBarState.open} class:hidden={!sideBarState.open} >
                     <Sidebar openGrid={() => {gridOpen = true}}  hidden={false} />
 
 
