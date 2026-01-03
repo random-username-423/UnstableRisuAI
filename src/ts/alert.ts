@@ -6,11 +6,11 @@ import { getDatabase } from "./storage/database.svelte"
 import { type MessageGenerationInfo } from './storage/types/chat'
 import { alertStore as alertStoreImported } from "./stores.svelte"
 
-export interface alertData{
-    type: 'error'|'normal'|'none'|'ask'|'wait'|'selectChar'
-            |'input'|'toast'|'wait2'|'markdown'|'select'|'login'
-            |'tos'|'cardexport'|'requestdata'|'addchar'|'hypaV2'|'selectModule'
-            |'chatOptions'|'pukmakkurit'|'branches'|'progress'|'pluginconfirm'|'requestlogs',
+export interface alertData {
+    type: 'error' | 'normal' | 'none' | 'ask' | 'wait' | 'selectChar'
+    | 'input' | 'toast' | 'wait2' | 'markdown' | 'select' | 'login'
+    | 'tos' | 'cardexport' | 'requestdata' | 'addchar' | 'hypaV2' | 'selectModule'
+    | 'chatOptions' | 'pukmakkurit' | 'branches' | 'progress' | 'pluginconfirm' | 'requestlogs',
     msg: string,
     submsg?: string
     datalist?: [string, string][],
@@ -23,7 +23,7 @@ type AlertGenerationInfoStoreData = {
 }
 export const alertGenerationInfoStore = writable<AlertGenerationInfoStoreData>(null)
 export const alertStore = {
-    set: (d:alertData) => {
+    set: (d: alertData) => {
         alertStoreImported.set(d)
     }
 }
@@ -32,10 +32,10 @@ export function alertError(msg: string | Error) {
     console.error(msg)
     const db = getDatabase()
 
-    let stackTrace: string | undefined = undefined; 
+    let stackTrace: string | undefined = undefined;
 
-    if (typeof(msg) !== 'string') {
-        try{
+    if (typeof (msg) !== 'string') {
+        try {
             if (msg instanceof Error) {
                 stackTrace = msg.stack
                 msg = msg.message
@@ -53,16 +53,16 @@ export function alertError(msg: string | Error) {
         '{}'
     ]
 
-    if(ignoredErrors.includes(msg)){
+    if (ignoredErrors.includes(msg)) {
         return
     }
 
     let submsg = ''
 
     //check if it's a known error
-    if(msg.includes('Failed to fetch') || msg.includes("NetworkError when attempting to fetch resource.")){
-        submsg =    db.usePlainFetch ? language.errors.networkFetchPlain :
-                    (!isTauri && !isNodeServer && !isCapacitor) ? language.errors.networkFetchWeb : language.errors.networkFetch
+    if (msg.includes('Failed to fetch') || msg.includes("NetworkError when attempting to fetch resource.")) {
+        submsg = db.usePlainFetch ? language.errors.networkFetchPlain :
+            (!isTauri && !isNodeServer && !isCapacitor) ? language.errors.networkFetchWeb : language.errors.networkFetch
     }
 
     alertStoreImported.set({
@@ -73,23 +73,23 @@ export function alertError(msg: string | Error) {
     })
 }
 
-export async function waitAlert(){
-    while(true){
-        if (get(alertStoreImported).type === 'none'){
+export async function waitAlert() {
+    while (true) {
+        if (get(alertStoreImported).type === 'none') {
             break
         }
         await sleep(10)
     }
 }
 
-export function alertNormal(msg:string){
+export function alertNormal(msg: string) {
     alertStoreImported.set({
         'type': 'normal',
         'msg': msg
     })
 }
 
-export async function alertNormalWait(msg:string){
+export async function alertNormalWait(msg: string) {
     alertStoreImported.set({
         'type': 'normal',
         'msg': msg
@@ -117,7 +117,7 @@ export async function alertChatOptions() {
     return parseInt(get(alertStoreImported).msg)
 }
 
-export async function alertLogin(){
+export async function alertLogin() {
     alertStoreImported.set({
         'type': 'login',
         'msg': 'login'
@@ -127,7 +127,7 @@ export async function alertLogin(){
     return get(alertStoreImported).msg
 }
 
-export async function alertSelect(msg:string[], display?:string){
+export async function alertSelect(msg: string[], display?: string) {
     const message = display !== undefined ? `__DISPLAY__${display}||${msg.join('||')}` : msg.join('||')
     alertStoreImported.set({
         'type': 'select',
@@ -139,7 +139,7 @@ export async function alertSelect(msg:string[], display?:string){
     return get(alertStoreImported).msg
 }
 
-export async function alertErrorWait(msg:string){
+export async function alertErrorWait(msg: string) {
     alertStoreImported.set({
         'type': 'wait2',
         'msg': msg
@@ -147,25 +147,25 @@ export async function alertErrorWait(msg:string){
     await waitAlert()
 }
 
-export function alertMd(msg:string){
+export function alertMd(msg: string) {
     alertStoreImported.set({
         'type': 'markdown',
         'msg': msg
     })
 }
 
-export function doingAlert(){
+export function doingAlert() {
     return get(alertStoreImported).type !== 'none' && get(alertStoreImported).type !== 'toast' && get(alertStoreImported).type !== 'wait'
 }
 
-export function alertToast(msg:string){
+export function alertToast(msg: string) {
     alertStoreImported.set({
         'type': 'toast',
         'msg': msg
     })
 }
 
-export function alertWait(msg:string){
+export function alertWait(msg: string) {
     alertStoreImported.set({
         'type': 'wait',
         'msg': msg
@@ -174,14 +174,18 @@ export function alertWait(msg:string){
 }
 
 
-export function alertClear(){
+export function alertClear() {
     alertStoreImported.set({
         'type': 'none',
         'msg': ''
     })
 }
 
-export async function alertSelectChar(){
+export function alertFinish(msg: string = "") {
+    alertStore.set({ type: "none", msg })
+}
+
+export async function alertSelectChar() {
     alertStoreImported.set({
         'type': 'selectChar',
         'msg': ''
@@ -192,7 +196,7 @@ export async function alertSelectChar(){
     return get(alertStoreImported).msg
 }
 
-export async function alertConfirm(msg:string){
+export async function alertConfirm(msg: string) {
 
     alertStoreImported.set({
         'type': 'ask',
@@ -204,7 +208,7 @@ export async function alertConfirm(msg:string){
     return get(alertStoreImported).msg === 'yes'
 }
 
-export async function alertPluginConfirm(msg:string){
+export async function alertPluginConfirm(msg: string) {
 
     alertStoreImported.set({
         'type': 'pluginconfirm',
@@ -216,7 +220,7 @@ export async function alertPluginConfirm(msg:string){
     return get(alertStoreImported).msg === 'yes'
 }
 
-export async function alertCardExport(type:string = ''){
+export async function alertCardExport(type: string = '') {
 
     alertStoreImported.set({
         'type': 'cardexport',
@@ -232,9 +236,9 @@ export async function alertCardExport(type:string = ''){
     }
 }
 
-export async function alertTOS(){
+export async function alertTOS() {
 
-    if(localStorage.getItem('tos2') === 'true'){
+    if (localStorage.getItem('tos2') === 'true') {
         return true
     }
 
@@ -245,7 +249,7 @@ export async function alertTOS(){
 
     await waitAlert()
 
-    if(get(alertStoreImported).msg === 'yes'){
+    if (get(alertStoreImported).msg === 'yes') {
         localStorage.setItem('tos2', 'true')
         return true
     }
@@ -253,7 +257,7 @@ export async function alertTOS(){
     return false
 }
 
-export async function alertInput(msg:string, datalist?:[string, string][]) {
+export async function alertInput(msg: string, datalist?: [string, string][]) {
 
     alertStoreImported.set({
         'type': 'input',
@@ -266,15 +270,15 @@ export async function alertInput(msg:string, datalist?:[string, string][]) {
     return get(alertStoreImported).msg
 }
 
-export async function alertModuleSelect(){
+export async function alertModuleSelect() {
 
     alertStoreImported.set({
         'type': 'selectModule',
         'msg': ''
     })
 
-    while(true){
-        if (get(alertStoreImported).type === 'none'){
+    while (true) {
+        if (get(alertStoreImported).type === 'none') {
             break
         }
         await sleep(20)
@@ -283,7 +287,7 @@ export async function alertModuleSelect(){
     return get(alertStoreImported).msg
 }
 
-export function alertRequestData(info:AlertGenerationInfoStoreData){
+export function alertRequestData(info: AlertGenerationInfoStoreData) {
     alertGenerationInfoStore.set(info)
     alertStoreImported.set({
         'type': 'requestdata',
@@ -291,14 +295,14 @@ export function alertRequestData(info:AlertGenerationInfoStoreData){
     })
 }
 
-export function showHypaV2Alert(){
+export function showHypaV2Alert() {
     alertStoreImported.set({
         'type': 'hypaV2',
         'msg': ""
     })
 }
 
-export function alertRequestLogs(){
+export function alertRequestLogs() {
     alertStoreImported.set({
         'type': 'requestlogs',
         'msg': ''
