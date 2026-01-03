@@ -16,7 +16,7 @@ import { type OpenAIChat } from "../types";
 import { requestChatData } from "../request/request";
 import { chatCompletion, unloadEngine } from "../webllm";
 import { parseChatML } from "src/ts/parser.svelte";
-import { hypaV3ProgressStore } from "src/ts/stores.svelte";
+import { hypaV3State } from "src/ts/stores.svelte";
 import { type ChatTokenizer } from "src/ts/tokenizer";
 import { type HypaV3Preset, type HypaV3Settings, createHypaV3Preset } from "./hypav3Preset";
 
@@ -354,12 +354,12 @@ async function hypaMemoryV3MainExp(
     });
 
     rateLimiter.taskQueueChangeCallback = (queuedCount) => {
-      hypaV3ProgressStore.set({
+      hypaV3State.progress = {
         open: true,
         miniMsg: `${rateLimiter.queuedTaskCount}`,
         msg: `${logPrefix} Summarizing...`,
         subMsg: `${rateLimiter.queuedTaskCount} queued`,
-      });
+      }
     };
 
     const summarizationTasks = toSummarizeArray.map(
@@ -385,12 +385,12 @@ async function hypaMemoryV3MainExp(
     );
     // End of performance measurement: summarize
 
-    hypaV3ProgressStore.set({
+    hypaV3State.progress = {
       open: false,
       miniMsg: "",
       msg: "",
       subMsg: "",
-    });
+    }
 
     // Note:
     // We can't save some successful summaries to the DB temporarily
@@ -597,12 +597,12 @@ async function hypaMemoryV3MainExp(
     });
 
     processor.progressCallback = (queuedCount) => {
-      hypaV3ProgressStore.set({
+      hypaV3State.progress = {
         open: true,
         miniMsg: `${queuedCount}`,
         msg: `${logPrefix} Similarity searching...`,
         subMsg: `${queuedCount} queued`,
-      });
+      }
     };
 
     try {
@@ -628,12 +628,12 @@ async function hypaMemoryV3MainExp(
         memory: toSerializableHypaV3Data(data),
       };
     } finally {
-      hypaV3ProgressStore.set({
+      hypaV3State.progress = {
         open: false,
         miniMsg: "",
         msg: "",
         subMsg: "",
-      });
+      }
     }
 
     const recentChats = chats
@@ -744,12 +744,12 @@ async function hypaMemoryV3MainExp(
           memory: toSerializableHypaV3Data(data),
         };
       } finally {
-        hypaV3ProgressStore.set({
+        hypaV3State.progress = {
           open: false,
           miniMsg: "",
           msg: "",
           subMsg: "",
-        });
+        }
       }
     }
 

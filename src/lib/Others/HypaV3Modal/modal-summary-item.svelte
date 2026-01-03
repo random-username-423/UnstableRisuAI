@@ -18,7 +18,7 @@
     type SerializableSummary,
     summarize,
     getCurrentHypaV3Preset,
-  } from "src/ts/process/memory/hypav3";
+  } from "src/ts/process/memory/hypav3.svelte";
   import { type OpenAIChat } from "src/ts/process/index.svelte";
   import { type Message } from "src/ts/storage/types/chat";
   import { translateHTML } from "src/ts/translator/translator";

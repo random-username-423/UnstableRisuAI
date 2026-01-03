@@ -23,7 +23,7 @@
     import MobileFooter from './lib/Mobile/MobileFooter.svelte';
     import { checkCharOrder } from './ts/globalApi.svelte';
     import { ArrowUpIcon, GlobeIcon, PlusIcon } from '@lucide/svelte';
-    import { hypaV3ModalOpen, hypaV3ProgressStore } from "./ts/stores.svelte";
+    import { hypaV3State } from "./ts/stores.svelte";
     import HypaV3Modal from './lib/Others/HypaV3Modal.svelte';
     import HypaV3Progress from './lib/Others/HypaV3Progress.svelte';
     import PluginAlertModal from './lib/Others/PluginAlertModal.svelte';
@@ -192,11 +192,11 @@
     {#if modalState.bookmark}
         <BookmarkList />
     {/if}
-    {#if $hypaV3ModalOpen}
+    {#if hypaV3State.open}
         <HypaV3Modal />
     {/if}
     <SavePopupIconComp />
-    {#if $hypaV3ProgressStore.open}
+    {#if hypaV3State.progress.open}
         <HypaV3Progress />
     {/if}
     <PluginAlertModal />

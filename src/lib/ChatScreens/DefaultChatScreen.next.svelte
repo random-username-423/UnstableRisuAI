@@ -3,7 +3,7 @@
     import Suggestion from './Suggestion.svelte';
     import AdvancedChatEditor from './AdvancedChatEditor.svelte';
     import { CameraIcon, DatabaseIcon, DicesIcon, GlobeIcon, ImagePlusIcon, LanguagesIcon, Laugh, MenuIcon, MicOffIcon, PackageIcon, Plus, RefreshCcwIcon, ReplyIcon, Send, StepForwardIcon, XIcon, BrainIcon } from "@lucide/svelte";
-    import { selectedCharID, PlaygroundStore, createSimpleCharacter, hypaV3ModalOpen } from "../../ts/stores.svelte";
+    import { selectedCharID, PlaygroundStore, createSimpleCharacter, hypaV3State } from "../../ts/stores.svelte";
     import Chat from "./Chat.svelte";
     import type { Message } from "../../ts/storage/types/chat";
     import type { character, groupChat } from "../../ts/storage/types/character";
@@ -844,7 +844,7 @@
                                     }
                                     showHypaV2Alert()
                                 } else if (DBState.db.hypaV3) {
-                                    $hypaV3ModalOpen = true
+                                    hypaV3State.open = true
                                 }
 
                                 openMenu = false

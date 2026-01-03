@@ -1,5 +1,5 @@
 import type { SerializableHypaV2Data } from 'src/ts/process/memory/hypav2';
-import type { SerializableHypaV3Data } from 'src/ts/process/memory/hypav3';
+import type { SerializableHypaV3Data } from 'src/ts/process/memory/hypav3.svelte';
 import type { loreBook } from './character';
 import type { OpenAIChat } from 'src/ts/process/index.svelte';
 

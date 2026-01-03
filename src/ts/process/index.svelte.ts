@@ -36,7 +36,7 @@ import { hypaMemoryV2 } from "./memory/hypav2";
 import { runLuaEditTrigger } from "./scriptings";
 import { parseChatML } from "../parser.svelte";
 import { getModelInfo, LLMFlags } from "../model/modellist";
-import { hypaMemoryV3 } from "./memory/hypav3";
+import { hypaMemoryV3 } from "./memory/hypav3.svelte";
 import { getModuleAssets, getModuleToggles } from "./modules";
 import { readImage } from "../globalApi.svelte";
 import { type OpenAIChat, type MultiModal } from "./types";

@@ -2,7 +2,7 @@
   import {
     type SerializableHypaV3Data,
     getCurrentHypaV3Preset,
-  } from "src/ts/process/memory/hypav3";
+  } from "src/ts/process/memory/hypav3.svelte";
   import { type Message } from "src/ts/storage/types/chat";
   import { DBState, selectedCharID } from "src/ts/stores.svelte";
   import { language } from "src/lang";
