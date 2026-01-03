@@ -24,9 +24,9 @@
     LayoutGridIcon,
     FolderIcon,
     FolderOpenIcon,
-    HomeIcon,
+    HouseIcon,
     WrenchIcon,
-    User2Icon,
+    UserRoundIcon,
   } from "@lucide/svelte";
     import {
   addCharacter,
@@ -321,7 +321,7 @@
     realmState.expanded = false
   }}
 >
-  <HomeIcon />
+  <HouseIcon />
   <span class="text-xs">{language.home}</span>
 </button>
 <button
@@ -351,7 +351,7 @@
 
   }}
 >
-  <User2Icon />
+  <UserRoundIcon />
   <span class="text-xs">{language.character}</span>
 </button>
 <button
@@ -406,7 +406,7 @@
           selectedCharID.set(-1)
           PlaygroundStore.set(0)
           realmState.expanded = false
-        }}><HomeIcon /></BarIcon>
+        }}><HouseIcon /></BarIcon>
       <div class="mt-2"></div>
       <BarIcon
         onClick={() => {
