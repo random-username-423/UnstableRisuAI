@@ -1,7 +1,7 @@
 <script lang="ts">
     import {
     CharEmotion,
-    DynamicGUI,
+    layoutState,
     botMakerMode,
     selectedCharID,
     settingsOpen,
@@ -685,13 +685,13 @@
   class:w-124={$sideBarSize === 2}
   class:w-138={$sideBarSize === 3}
   class:risu-sidebar-close={sideBarState.closing}
-  class:min-w-96={!$DynamicGUI && $sideBarSize === 0}
-  class:min-w-110={!$DynamicGUI && $sideBarSize === 1}
-  class:min-w-124={!$DynamicGUI && $sideBarSize === 2}
-  class:min-w-138={!$DynamicGUI && $sideBarSize === 3}
-  class:px-2={$DynamicGUI}
-  class:px-4={!$DynamicGUI}
-  class:dynamic-sidebar={$DynamicGUI}
+  class:min-w-96={!layoutState.compactMode && $sideBarSize === 0}
+  class:min-w-110={!layoutState.compactMode && $sideBarSize === 1}
+  class:min-w-124={!layoutState.compactMode && $sideBarSize === 2}
+  class:min-w-138={!layoutState.compactMode && $sideBarSize === 3}
+  class:px-2={layoutState.compactMode}
+  class:px-4={!layoutState.compactMode}
+  class:dynamic-sidebar={layoutState.compactMode}
   class:hidden={hidden}
   class:flex={!hidden}
   onanimationend={() => {
@@ -767,7 +767,7 @@
   {/if}
 </div>
 
-{#if $DynamicGUI}
+{#if layoutState.compactMode}
     <div role="button" tabindex="0" class="grow h-full min-w-12" class:hidden={hidden} onclick={() => {
       if(sideBarState.closing){
         return

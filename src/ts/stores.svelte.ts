@@ -10,22 +10,20 @@ import type { hubType } from "./characterCards.svelte";
 import type { PluginSafetyErrors } from "./plugins/pluginSafety";
 
 function updateSize(){
-    SizeState.w = window.innerWidth
-    SizeState.h = window.innerHeight
-
-    DynamicGUI.set(window.innerWidth <= 1024)
+    layoutState.width = window.innerWidth
+    layoutState.height = window.innerHeight
+    layoutState.compactMode = window.innerWidth <= 1024
 }
 
-export const SizeState = $state({
-    w: 0,
-    h: 0
+export const layoutState = $state({
+    width: 0,
+    height: 0,
+    compactMode: false,
 })
 
 export const appState = $state({
-    loaded: false
+    loaded: false,
 })
-
-export const DynamicGUI = writable(false)
 
 export const sideBarState = $state({
     open: window.innerWidth > 1024,

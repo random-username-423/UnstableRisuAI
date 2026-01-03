@@ -1,7 +1,7 @@
 <script lang="ts">
     import { ArrowLeft } from "@lucide/svelte";
     import { language } from "src/lang";
-    import { PlaygroundStore, SizeState, selectedCharID } from "src/ts/stores.svelte";
+    import { PlaygroundStore, layoutState, selectedCharID } from "src/ts/stores.svelte";
     import PlaygroundEmbedding from "./PlaygroundEmbedding.svelte";
     import PlaygroundTokenizer from "./PlaygroundTokenizer.svelte";
     import PlaygroundJinja from "./PlaygroundJinja.svelte";
@@ -137,7 +137,7 @@
             </button>
         </div>
     {:else}
-        {#if SizeState.w < 1024}
+        {#if layoutState.compactMode}
             <div class="mt-14"></div>
         {/if}
         <div class="w-full max-w-4xl flex flex-col p-2">
