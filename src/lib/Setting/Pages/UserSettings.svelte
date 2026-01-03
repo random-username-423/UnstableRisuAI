@@ -1,6 +1,6 @@
 <script lang="ts">
     import { language } from "src/lang";
-    import { hubURL } from "src/ts/characterCards";
+    import { hubURL } from "src/ts/characterCards.svelte";
     import { loadRisuAccountBackup, loadRisuAccountData, saveRisuAccountData } from "src/ts/drive/accounter";
     
     import { DBState } from 'src/ts/stores.svelte';

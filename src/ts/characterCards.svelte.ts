@@ -11,10 +11,10 @@ import { type character } from './storage/types/character'
 import { checkNullish, decryptBuffer, isKnownUri, selectFileByDom, sleep } from "./util"
 import { language } from "src/lang"
 import { v4 as uuidv4, v4 } from 'uuid';
-import { characterFormatUpdate } from "./characters"
+import { characterFormatUpdate } from "./characters.svelte"
 import { AppendableBuffer, BlankWriter, checkCharOrder, downloadFile, forageStorage, loadAsset, LocalWriter, openURL, readImage, saveAsset, VirtualWriter } from "./globalApi.svelte"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
-import { SettingsMenuIndex, ShowRealmFrameStore, selectedCharID, settingsOpen } from "./stores.svelte"
+import { SettingsMenuIndex, realmState, selectedCharID, settingsOpen } from "./stores.svelte"
 import { checkImageType, convertImage, hasher } from "./parser.svelte"
 import { type CharacterCardV3, type LorebookEntry } from '@risuai/ccardlib'
 import { reencodeImage } from "./process/files/inlays"
@@ -723,7 +723,7 @@ export async function exportChar(charaID:number):Promise<string> {
         exportCharacterCard(char,'png', {spec: 'v2'})
     }
     else if(option.type === 'realm'){
-        ShowRealmFrameStore.set("character")
+        realmState.uploadTarget = "character"
     }
     else{
         return option.type

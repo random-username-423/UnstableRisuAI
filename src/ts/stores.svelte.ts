@@ -6,7 +6,7 @@ import type { simpleCharacterArgument } from "./parser.svelte";
 import type { alertData } from "./alert";
 import { moduleUpdate } from "./process/modules";
 import { resetScriptCache } from "./process/scripts";
-import type { hubType } from "./characterCards";
+import type { hubType } from "./characterCards.svelte";
 import type { PluginSafetyErrors } from "./plugins/pluginSafety";
 
 function updateSize(){
@@ -51,9 +51,13 @@ export const SettingsMenuIndex = writable(-1)
 export const ReloadGUIPointer = writable(0)
 export const ReloadChatPointer = writable({} as Record<number, number>)
 export const ScrollToMessageStore = $state({ value: -1 })
-export const OpenRealmStore = writable(false)
-export const RealmInitialOpenChar = writable<null | hubType>(null)
-export const ShowRealmFrameStore = writable('')
+
+export const realmState = $state({
+    expanded: false, 
+    autoOpenChar: null as  hubType | null,
+    uploadTarget: ''
+})
+
 export const PlaygroundStore = writable(0)
 export const HideIconStore = writable(false)
 export const CustomCSSStore = writable('')

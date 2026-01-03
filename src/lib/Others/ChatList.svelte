@@ -5,7 +5,7 @@
     import { DBState } from 'src/ts/stores.svelte';
     import { selectedCharID } from "../../ts/stores.svelte";
     import { DownloadIcon, SquarePenIcon, HardDriveUploadIcon, PlusIcon, TrashIcon, XIcon } from "@lucide/svelte";
-    import { exportChat, importChat, findCharacterbyId } from "../../ts/characters";
+    import { exportChat, importChat, findCharacterbyId } from "../../ts/characters.svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
     import { changeChatTo } from "src/ts/globalApi.svelte";
 

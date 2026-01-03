@@ -6,7 +6,7 @@
     selectedCharID,
     settingsOpen,
     sideBarState,
-    OpenRealmStore,
+    realmState,
     PlaygroundStore,
 
     QuickSettings
@@ -32,14 +32,14 @@
   addCharacter,
     changeChar,
     getCharImage,
-  } from "../../ts/characters";
+  } from "../../ts/characters.svelte";
     import CharConfig from "./CharConfig.svelte";
     import { language } from "../../lang";
     import { isEqual } from "lodash";
     import SidebarAvatar from "./SidebarAvatar.svelte";
     import BaseRoundedButton from "../UI/BaseRoundedButton.svelte";
     import { selectSingleFile } from "src/ts/util";
-    import { getCharacterIndexObject } from "src/ts/characters";
+    import { getCharacterIndexObject } from "src/ts/characters.svelte";
     import { v4 } from "uuid";
     import { checkCharOrder, getFileSrc, saveAsset } from "src/ts/globalApi.svelte";
     import { alertInput, alertSelect } from "src/ts/alert";
@@ -318,7 +318,7 @@
     reseter();
     selectedCharID.set(-1)
     PlaygroundStore.set(0)
-    OpenRealmStore.set(false)
+    realmState.expanded = false
   }}
 >
   <HomeIcon />
@@ -405,7 +405,7 @@
           reseter();
           selectedCharID.set(-1)
           PlaygroundStore.set(0)
-          OpenRealmStore.set(false)
+          realmState.expanded = false
         }}><HomeIcon /></BarIcon>
       <div class="mt-2"></div>
       <BarIcon

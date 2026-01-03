@@ -17,7 +17,7 @@ import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingS
 import { loadPlugins } from "./plugins/plugins";
 import { alertError, alertMd, alertTOS, waitAlert } from "./alert";
 import { checkDriverInit } from "./drive/drive";
-import { characterURLImport } from "./characterCards";
+import { characterURLImport } from "./characterCards.svelte";
 import { defaultJailbreak, defaultMainPrompt, oldJailbreak, oldMainPrompt } from "./storage/defaultPrompts";
 import { loadRisuAccountData } from "./drive/accounter";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "./storage/risuSave";
@@ -27,7 +27,7 @@ import { autoServerBackup } from "./kei/backup";
 import { language } from "src/lang";
 import { startObserveDom } from "./observer.svelte";
 import { updateGuisize } from "./gui/guisize";
-import { updateLorebooks } from "./characters";
+import { updateLorebooks } from "./characters.svelte";
 import { initMobileGesture } from "./hotkey.svelte";
 import { moduleUpdate } from "./process/modules";
 import type { AccountStorage } from "./storage/accountStorage";

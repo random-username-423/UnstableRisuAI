@@ -3,7 +3,7 @@ import * as fflate from "fflate";
 import { asBuffer, sleep } from "../util";
 import { alertStore } from "../alert";
 import { hasher } from "../parser.svelte";
-import { hubURL } from "../characterCards";
+import { hubURL } from "../characterCards.svelte";
 
 export async function processZip(dataArray: Uint8Array): Promise<string> {
     const jszip = await import("jszip");

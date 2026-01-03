@@ -4,18 +4,18 @@
     import { saveImage as saveAsset } from "../../ts/storage/database.svelte";
     import type { character, groupChat } from "../../ts/storage/types/character";
     import { DBState } from 'src/ts/stores.svelte';
-    import { CharConfigSubMenu, MobileGUI, ShowRealmFrameStore, selectedCharID, hypaV3State } from "../../ts/stores.svelte";
+    import { CharConfigSubMenu, MobileGUI, realmState, selectedCharID, hypaV3State } from "../../ts/stores.svelte";
     import { PlusIcon, SmileIcon, TrashIcon, UserIcon, ActivityIcon, BookIcon, User, Braces, Volume2Icon, DownloadIcon, HardDriveUploadIcon, Share2Icon, ImageIcon, ImageOffIcon, ArrowUp, ArrowDown } from '@lucide/svelte'
     import Check from "../UI/GUI/CheckInput.svelte";
-    import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/characters";
+    import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/characters.svelte";
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
     import { alertTOS, showHypaV2Alert } from "../../ts/alert";
     import BarIcon from "./BarIcon.svelte";
     import { selectMultipleFile, selectSingleFile } from "../../ts/util";
     import { getAuthorNoteDefaultText } from "src/ts/process/prompt"
-    import { findCharacterbyId } from "../../ts/characters";
+    import { findCharacterbyId } from "../../ts/characters.svelte";
     import Help from "../Others/Help.svelte";
-    import { exportChar } from "src/ts/characterCards";
+    import { exportChar } from "src/ts/characterCards.svelte";
     import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices } from "src/ts/process/tts";
     import { getFileSrc } from "src/ts/globalApi.svelte";
     import { addGroupChar, rmCharFromGroup } from "src/ts/process/group";
@@ -711,7 +711,7 @@
     }
         <Button size="lg" onclick={async () => {
             if(await alertTOS()){
-                $ShowRealmFrameStore = 'character'
+                realmState.uploadTarget = 'character'
             }
         }} className="mt-2">
             {#if DBState.db.characters[$selectedCharID].realmId}

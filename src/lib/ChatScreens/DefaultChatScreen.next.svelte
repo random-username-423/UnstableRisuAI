@@ -8,10 +8,10 @@
     import type { Message } from "../../ts/storage/types/chat";
     import type { character, groupChat } from "../../ts/storage/types/character";
     import { DBState } from 'src/ts/stores.svelte';
-    import { getCharImage } from "../../ts/characters";
+    import { getCharImage } from "../../ts/characters.svelte";
     import { chatProcessStage, doingChat, sendChat } from "../../ts/process/index.svelte";
     import { sleep } from "../../ts/util";
-    import { findCharacterbyId } from "../../ts/characters";
+    import { findCharacterbyId } from "../../ts/characters.svelte";
     import { language } from "../../lang";
     import { isExpTranslator, translate } from "../../ts/translator/translator";
     import { alertError, alertNormal, alertWait, showHypaV2Alert } from "../../ts/alert";

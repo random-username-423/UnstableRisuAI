@@ -11,7 +11,7 @@ import { alertError, alertToast } from "../alert";
 import { loadLoreBookV3Prompt } from "./lorebook.svelte";
 import { isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax } from "../util";
 import { getAuthorNoteDefaultText } from "./prompt";
-import { findCharacterbyId } from "../characters";
+import { findCharacterbyId } from "../characters.svelte";
 import { getPersonaPrompt } from "../persona";
 import { getUserName } from "../persona";
 import { requestChatData } from "./request/request";

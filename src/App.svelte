@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { DynamicGUI, settingsOpen, sideBarState, ShowRealmFrameStore, modalState, MobileGUI, loadedStore, alertStore, LoadingStatusState, popupStore } from './ts/stores.svelte';
+    import { DynamicGUI, settingsOpen, sideBarState, realmState, modalState, MobileGUI, loadedStore, alertStore, LoadingStatusState, popupStore } from './ts/stores.svelte';
     import Sidebar from './lib/SideBars/Sidebar.svelte';
     import { DBState } from './ts/stores.svelte';
     import ChatScreen from './lib/ChatScreens/ChatScreen.svelte';
@@ -9,7 +9,7 @@
     import WelcomeRisu from './lib/Others/WelcomeRisu.svelte';
     import BookmarkList from './lib/Others/BookmarkList.svelte';
     import Settings from './lib/Setting/Settings.svelte';
-    import { showRealmInfoStore, importCharacterProcess } from './ts/characterCards';
+    import { showRealmInfoStore, importCharacterProcess } from './ts/characterCards.svelte';
     import { importPreset } from './ts/storage/preset-manager';
     import { importModuleFromData } from './ts/process/modules';
     import { alertNormal } from './ts/alert';
@@ -180,7 +180,7 @@
     {#if $showRealmInfoStore}
         <RealmPopUp bind:openedData={$showRealmInfoStore} />
     {/if}
-    {#if $ShowRealmFrameStore}
+    {#if realmState.uploadTarget}
         <RealmFrame />
     {/if}
     {#if modalState.preset}

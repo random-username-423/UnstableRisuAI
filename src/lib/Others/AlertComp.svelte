@@ -2,11 +2,11 @@
     import { alertGenerationInfoStore } from "../../ts/alert";
     
     import { DBState } from 'src/ts/stores.svelte';
-    import { getCharImage } from '../../ts/characters';
+    import { getCharImage } from '../../ts/characters.svelte';
     import { ParseMarkdown } from '../../ts/parser.svelte';
     import BarIcon from '../SideBars/BarIcon.svelte';
     import { ChevronRightIcon, User } from '@lucide/svelte';
-    import { hubURL, isCharacterHasAssets } from 'src/ts/characterCards';
+    import { hubURL, isCharacterHasAssets } from 'src/ts/characterCards.svelte';
     import TextInput from '../UI/GUI/TextInput.svelte';
     import { aiLawApplies, openURL } from 'src/ts/globalApi.svelte';
     import { getFetchLogs } from 'src/ts/fetch';

@@ -8,13 +8,13 @@ import { language } from "../lang";
 import { checkNullish, selectMultipleFile, selectSingleFile } from "./util";
 import { getUserName } from "./persona";
 import { v4 as uuidv4, v4 } from 'uuid';
-import { MobileGUIStack, OpenRealmStore, selectedCharID } from "./stores.svelte";
+import { MobileGUIStack, realmState, selectedCharID } from "./stores.svelte";
 import { AppendableBuffer, changeChatTo, checkCharOrder, downloadFile, getFileSrc, requiresFullEncoderReload } from "./globalApi.svelte";
 import { updateInlayScreen } from "./process/inlayScreen";
 import { checkImageType, parseMarkdownSafe } from "./parser.svelte";
 import { translateHTML } from "./translator/translator";
 import { doingChat } from "./process/index.svelte";
-import { importCharacter } from "./characterCards";
+import { importCharacter } from "./characterCards.svelte";
 import { PngChunk } from "./pngChunk";
 import type { Database } from "./storage/types";
 
@@ -863,7 +863,7 @@ export async function addCharacter(arg:{
     const r = await alertAddCharacter()
     if(r === 'importFromRealm'){
         selectedCharID.set(-1)
-        OpenRealmStore.set(true)
+        realmState.expanded = true
         MobileGUIStack.set(0)
         return
     }
