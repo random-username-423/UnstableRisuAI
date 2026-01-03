@@ -17,4 +17,3 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           gh pr comment "$PR_NUMBER" -R "$REPO" --body "@codex review"
-          gh pr comment "$PR_NUMBER" -R "$REPO" --body "@claude review"
