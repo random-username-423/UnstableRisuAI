@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { layoutState, settingsOpen, sideBarState, realmState, modalState, MobileGUI, appState, alertStore, LoadingStatusState, popupStore } from './ts/stores.svelte';
+    import { layoutState, settingsOpen, sideBarState, realmState, modalState, appState, alertStore, LoadingStatusState, popupStore } from './ts/stores.svelte';
     import Sidebar from './lib/SideBars/Sidebar.svelte';
     import { DBState } from './ts/stores.svelte';
     import ChatScreen from './lib/ChatScreens/ChatScreen.svelte';
@@ -33,6 +33,8 @@
     let gridOpen = $state(false)
     let aprilFools = $state(new Date().getMonth() === 3 && new Date().getDate() === 1)
     let aprilFoolsPage = $state(0)
+
+    let betaMobileSearch = $state('');
 
     // Drag and drop handlers
     function handleDragOver(e: DragEvent) {
@@ -149,10 +151,10 @@
         <WelcomeRisu />
     {:else if $settingsOpen}
         <Settings />
-    {:else if $MobileGUI}
+    {:else if layoutState.betaMobile.enabled}
         <div class="w-full h-full flex flex-col">
-            <MobileHeader />
-            <MobileBody />
+            <MobileHeader bind:search={betaMobileSearch}/>
+            <MobileBody search={betaMobileSearch}/>
             <MobileFooter />
         </div>
     {:else}

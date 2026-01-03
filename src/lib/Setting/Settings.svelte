@@ -8,7 +8,7 @@
     import PluginSettings from "./Pages/PluginSettings.svelte";
     import FilesSettings from "./Pages/FilesSettings.svelte";
     import AdvancedSettings from "./Pages/AdvancedSettings.svelte";
-    import { additionalSettingsMenu, MobileGUI, SettingsMenuIndex, settingsOpen } from "src/ts/stores.svelte";
+    import { additionalSettingsMenu, layoutState, SettingsMenuIndex, settingsOpen } from "src/ts/stores.svelte";
     import { DBState } from "src/ts/stores.svelte";
     import Communities from "./Pages/Communities.svelte";
     import GlobalLoreBookSettings from "./Pages/GlobalLoreBookSettings.svelte";
@@ -25,17 +25,17 @@
     import PluginDefinedIcon from "../Others/PluginDefinedIcon.svelte";
 
     let openLoreList = $state(false)
-    if(window.innerWidth >= 900 && $SettingsMenuIndex === -1 && !$MobileGUI){
+    if(window.innerWidth >= 900 && $SettingsMenuIndex === -1 && !layoutState.betaMobile.enabled){
         $SettingsMenuIndex = 1
     }
 
 </script>
-<div class="h-full w-full flex justify-center rs-setting-cont" class:bg-bgcolor={$MobileGUI} class:setting-bg={!$MobileGUI}>
+<div class="h-full w-full flex justify-center rs-setting-cont" class:bg-bgcolor={layoutState.betaMobile.enabled} class:setting-bg={!layoutState.betaMobile.enabled}>
     <div class="h-full max-w-(--breakpoint-lg) w-full flex relative rs-setting-cont-2">
-        {#if (window.innerWidth >= 700 && !$MobileGUI) || $SettingsMenuIndex === -1}
+        {#if (window.innerWidth >= 700 && !layoutState.betaMobile.enabled) || $SettingsMenuIndex === -1}
             <div class="flex h-full flex-col p-4 pt-8 gap-2 overflow-y-auto relative rs-setting-cont-3 shrink-0"
-                class:w-full={window.innerWidth < 700 || $MobileGUI}
-                class:bg-darkbg={!$MobileGUI} class:bg-bgcolor={$MobileGUI}
+                class:w-full={window.innerWidth < 700 || layoutState.betaMobile.enabled}
+                class:bg-darkbg={!layoutState.betaMobile.enabled} class:bg-bgcolor={layoutState.betaMobile.enabled}
             >
                 
                 {#if !$isLite}
@@ -162,14 +162,14 @@
                         </button>
                     {/each}
                 {/if}
-                {#if window.innerWidth < 700 && !$MobileGUI}
+                {#if window.innerWidth < 700 && !layoutState.betaMobile.enabled}
                     <button class="absolute top-2 right-2 hover:text-green-500 text-textcolor" onclick={() => {
                         settingsOpen.set(false)
                     }}> <CircleXIcon size={DBState.db.settingsCloseButtonSize} /> </button>
                 {/if}
             </div>
         {/if}
-        {#if (window.innerWidth >= 700 && !$MobileGUI) || $SettingsMenuIndex !== -1}
+        {#if (window.innerWidth >= 700 && !layoutState.betaMobile.enabled) || $SettingsMenuIndex !== -1}
             {#key $SettingsMenuIndex}
                 <div class="grow py-6 px-4 bg-bgcolor flex flex-col text-textcolor overflow-y-auto relative rs-setting-cont-4 min-w-0">
                     {#if $SettingsMenuIndex === 0}
@@ -213,7 +213,7 @@
                     {/if}
             </div>
             {/key}
-            {#if !$MobileGUI}
+            {#if !layoutState.betaMobile.enabled}
                 <button class="absolute top-2 right-2 hover:text-green-500 text-textcolor" onclick={() => {
                     if(window.innerWidth >= 700){
                         settingsOpen.set(false)

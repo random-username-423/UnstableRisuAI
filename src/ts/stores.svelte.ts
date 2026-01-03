@@ -19,6 +19,12 @@ export const layoutState = $state({
     width: 0,
     height: 0,
     compactMode: false,
+    ShowVN: false,
+    betaMobile: {
+        enabled: false,
+        stack: 0,
+        sideBar: 0,
+    },
 })
 
 export const appState = $state({
@@ -43,10 +49,7 @@ export const ViewBoxsize = writable({ width: 12 * 16, height: 12 * 16 }); // Def
 export const settingsOpen = writable(false)
 export const botMakerMode = writable(false)
 export const moduleBackgroundEmbedding = writable('')
-export const MobileGUI = writable(false)
-export const MobileGUIStack = writable(0)
-export const MobileSideBar = writable(0)
-export const ShowVN = writable(false)
+
 export const SettingsMenuIndex = writable(-1)
 export const ReloadGUIPointer = writable(0)
 export const ReloadChatPointer = writable({} as Record<number, number>)
@@ -62,7 +65,6 @@ export const PlaygroundStore = writable(0)
 export const HideIconStore = writable(false)
 export const CustomCSSStore = writable('')
 export const SafeModeStore = writable(false)
-export const MobileSearch = writable('')
 export const CharConfigSubMenu = writable(0)
 export const CustomGUISettingMenuStore = writable(false)
 export const alertStore = writable({

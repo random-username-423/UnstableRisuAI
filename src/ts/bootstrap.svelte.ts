@@ -12,7 +12,7 @@ import { changeFullscreen, maximizeWindow } from "./gui/window"
 import { v4 as uuidv4 } from 'uuid';
 import { setDatabase, defaultSdDataFunc, getDatabase } from "./storage/database.svelte";
 import { checkRisuUpdate } from "./update";
-import { MobileGUI, botMakerMode, selectedCharID, appState, DBState, LoadingStatusState } from "./stores.svelte";
+import { layoutState, botMakerMode, selectedCharID, appState, DBState, LoadingStatusState } from "./stores.svelte";
 import { loadPlugins } from "./plugins/plugins";
 import { alertError, alertMd, alertTOS, waitAlert } from "./alert";
 import { checkDriverInit } from "./drive/drive";
@@ -228,7 +228,7 @@ export async function loadData() {
             }
             if ((db.betaMobileGUI && window.innerWidth <= 800) || import.meta.env.VITE_RISU_LITE === 'TRUE') {
                 initMobileGesture()
-                MobileGUI.set(true)
+                layoutState.betaMobile.enabled = true
             }
             appState.loaded = true
             selectedCharID.set(-1)

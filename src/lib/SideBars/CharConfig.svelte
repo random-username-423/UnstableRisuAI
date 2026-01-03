@@ -4,7 +4,7 @@
     import { saveImage as saveAsset } from "../../ts/storage/database.svelte";
     import type { character, groupChat } from "../../ts/storage/types/character";
     import { DBState } from 'src/ts/stores.svelte';
-    import { CharConfigSubMenu, MobileGUI, realmState, selectedCharID, hypaV3State } from "../../ts/stores.svelte";
+    import { CharConfigSubMenu, layoutState, realmState, selectedCharID, hypaV3State } from "../../ts/stores.svelte";
     import { PlusIcon, SmileIcon, TrashIcon, UserIcon, ActivityIcon, BookIcon, User, Braces, Volume2Icon, DownloadIcon, HardDriveUploadIcon, Share2Icon, ImageIcon, ImageOffIcon, ArrowUp, ArrowDown } from '@lucide/svelte'
     import Check from "../UI/GUI/CheckInput.svelte";
     import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/characters.svelte";
@@ -216,7 +216,7 @@
 
 </script>
 
-{#if licensed !== 'private' && !$MobileGUI}
+{#if licensed !== 'private' && !layoutState.betaMobile.enabled}
     <div class="flex mb-2" class:gap-2={iconButtonSize === 24} class:gap-1={iconButtonSize < 24}>
         <button class={$CharConfigSubMenu === 0 ? 'text-textcolor ' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 0}}>
             <UserIcon size={iconButtonSize} />
@@ -318,7 +318,7 @@
     />
     <span class="text-textcolor2 mb-6 text-sm">{tokens.localNote} {language.tokens}</span>
 
-    {#if !$MobileGUI}
+    {#if !layoutState.betaMobile.enabled}
         <Toggles bind:chara={DBState.db.characters[$selectedCharID]} noContainer />
 
         {#if DBState.db.characters[$selectedCharID].type === 'group'}
@@ -333,7 +333,7 @@
         $CharConfigSubMenu = 0
     })()}
 {:else if $CharConfigSubMenu === 1}
-    {#if !$MobileGUI}
+    {#if !layoutState.betaMobile.enabled}
         <h2 class="mb-2 text-2xl font-bold mt-2">{language.characterDisplay}</h2>
     {/if}
 
@@ -659,13 +659,13 @@
             </div>
     {/if}
 {:else if $CharConfigSubMenu === 3}
-    {#if !$MobileGUI}
+    {#if !layoutState.betaMobile.enabled}
         <h2 class="mb-2 text-2xl font-bold mt-2">{language.loreBook} <Help key="lorebook"/></h2>
     {/if}
     <LoreBook />
 {:else if $CharConfigSubMenu === 4}
     {#if DBState.db.characters[$selectedCharID].type === 'character'}
-        {#if !$MobileGUI}
+        {#if !layoutState.betaMobile.enabled}
             <h2 class="mb-2 text-2xl font-bold mt-2">{language.scripts}</h2>
         {/if}
 
@@ -739,7 +739,7 @@
     
 {:else if $CharConfigSubMenu === 5}
     {#if DBState.db.characters[$selectedCharID].type === 'character'}
-        {#if !$MobileGUI}
+        {#if !layoutState.betaMobile.enabled}
             <h2 class="mb-2 text-2xl font-bold mt-2">TTS</h2>
         {/if}
         <span class="text-textcolor">{language.provider}</span>
@@ -1002,7 +1002,7 @@
         {/if}
     {/if}
 {:else if $CharConfigSubMenu === 2}
-    {#if !$MobileGUI}
+    {#if !layoutState.betaMobile.enabled}
         <h2 class="mb-2 text-2xl font-bold mt-2">{language.advancedSettings}</h2>
     {/if}
         {#if DBState.db.characters[$selectedCharID].type !== 'group'}
