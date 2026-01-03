@@ -10,14 +10,13 @@ import type { hubType } from "./characterCards";
 import type { PluginSafetyErrors } from "./plugins/pluginSafety";
 
 function updateSize(){
-    SizeStore.set({
-        w: window.innerWidth,
-        h: window.innerHeight
-    })
+    SizeState.w = window.innerWidth
+    SizeState.h = window.innerHeight
+
     DynamicGUI.set(window.innerWidth <= 1024)
 }
 
-export const SizeStore = writable({
+export const SizeState = $state({
     w: 0,
     h: 0
 })
