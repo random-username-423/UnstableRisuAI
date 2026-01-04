@@ -1,5 +1,5 @@
 <script lang="ts">
-    import AlertModal from "./AlertModal.svelte"
+    import AlertContainer from "./AlertContainer.svelte"
     import Button from "../../UI/GUI/Button.svelte"
     import { ChevronRightIcon, XIcon } from "@lucide/svelte"
     import { language } from "src/lang"
@@ -58,7 +58,7 @@
     }
 </script>
 
-<AlertModal title="Error" titleColor="red">
+<AlertContainer title="Error" titleColor="red">
     <!-- 에러 메시지 -->
     <span class="text-gray-300 whitespace-pre-wrap">{msg}</span>
     {#if submsg}
@@ -93,7 +93,7 @@
 
     <!-- OK 버튼 -->
     <Button className="mt-4" onclick={onClose}>OK</Button>
-</AlertModal>
+</AlertContainer>
 
 <style>
     .stack-trace {

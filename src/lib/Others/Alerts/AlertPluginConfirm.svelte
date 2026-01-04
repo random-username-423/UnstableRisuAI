@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AlertModal from "./AlertModal.svelte"
+	import AlertContainer from "./AlertContainer.svelte"
 	import Button from "../../UI/GUI/Button.svelte"
 	import { alertClear } from "src/ts/alert"
 
@@ -18,7 +18,7 @@
 	const warnings = mainParts.slice(1)
 </script>
 
-<AlertModal title="Plugin Import" titleColor="green">
+<AlertContainer title="Plugin Import" titleColor="green">
 	<div class="plugin-confirm-content">
 		<p class="plugin-name">{pluginName}</p>
 		{#if warnings.length > 0}
@@ -35,7 +35,7 @@
 		<Button className="grow" onclick={() => alertClear("yes")}>YES</Button>
 		<Button className="grow" onclick={() => alertClear("no")}>NO</Button>
 	</div>
-</AlertModal>
+</AlertContainer>
 
 <style>
 	.plugin-confirm-content .plugin-name {

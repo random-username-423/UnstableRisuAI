@@ -1,5 +1,5 @@
 <script lang="ts">
-    import AlertModal from "./AlertModal.svelte"
+    import AlertContainer from "./AlertContainer.svelte"
     import Button from "../../UI/GUI/Button.svelte"
     import TextInput from "../../UI/GUI/TextInput.svelte"
     import { ParseMarkdown } from "../../../ts/parser.svelte"
@@ -34,7 +34,7 @@
     }
 </script>
 
-<AlertModal {title} {titleColor}>
+<AlertContainer {title} {titleColor}>
     <!-- Message Content -->
     {#if msgType === "markdown"}
         <div class="markdown-content">
@@ -79,7 +79,7 @@
             <Button onclick={() => handleClose("")}>Cancel</Button>
         {/if}
     </div>
-</AlertModal>
+</AlertContainer>
 
 <style>
     .markdown-content :global(p) {
