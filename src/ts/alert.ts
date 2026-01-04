@@ -158,13 +158,6 @@ export function doingAlert() {
     return get(alertStoreImported).type !== 'none' && get(alertStoreImported).type !== 'toast' && get(alertStoreImported).type !== 'wait'
 }
 
-export function alertToast(msg: string) {
-    alertStoreImported.set({
-        'type': 'toast',
-        'msg': msg
-    })
-}
-
 export function alertWait(msg: string) {
     alertStoreImported.set({
         'type': 'wait',

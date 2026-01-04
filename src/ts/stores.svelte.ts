@@ -8,6 +8,7 @@ import { moduleUpdate } from "./process/modules";
 import { resetScriptCache } from "./process/scripts";
 import type { hubType } from "./characterCards.svelte";
 import type { PluginSafetyErrors } from "./plugins/pluginSafety";
+import type { ToastItem } from "./toast.svelte";
 
 function updateSize(){
     layoutState.width = window.innerWidth
@@ -71,6 +72,11 @@ export const alertStore = writable({
     type: 'none',
     msg: 'n',
 } as alertData)
+
+
+
+// 객체로 감싸서 reactivity 유지
+export const toastState = $state({ queue: [] as ToastItem[] })
 
 export const hypaV3State = $state({
     open: false,
