@@ -66,7 +66,7 @@
                 </Button>
                 <button
                     class="text-textcolor2 hover:text-textcolor p-1"
-                    onclick={alertClear}
+                    onclick={() => alertClear()}
                 >
                     <XIcon />
                 </button>

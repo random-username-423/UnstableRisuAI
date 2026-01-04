@@ -62,7 +62,7 @@
     </Button>
     <button
         class="ml-auto"
-        onclick={alertClear}
+        onclick={() => alertClear()}
         >✖</button
     >
 </div>
