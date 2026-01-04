@@ -9,7 +9,8 @@
 
 	let { msg }: Props = $props()
 
-	// 메시지 파싱
+	// Parse message
+	// svelte-ignore state_referenced_locally - msg never changes in alert context
 	const parts = msg.split("\n\n")
 	const mainPart = parts[0]
 	const confirmMessage = parts[1]
