@@ -8,7 +8,7 @@ import { alertStore as alertStoreImported } from "./stores.svelte"
 
 export interface alertData {
     type: 'error' | 'normal' | 'none' | 'ask' | 'wait' | 'selectChar'
-    | 'input' | 'toast' | 'wait2' | 'markdown' | 'select' | 'login'
+    | 'input' | 'wait2' | 'markdown' | 'select' | 'login'
     | 'tos' | 'cardexport' | 'requestdata' | 'addchar' | 'hypaV2' | 'selectModule'
     | 'chatOptions' | 'branches' | 'progress' | 'pluginconfirm' | 'requestlogs',
     msg: string,
@@ -155,7 +155,7 @@ export function alertMd(msg: string) {
 }
 
 export function doingAlert() {
-    return get(alertStoreImported).type !== 'none' && get(alertStoreImported).type !== 'toast' && get(alertStoreImported).type !== 'wait'
+    return get(alertStoreImported).type !== 'none' && get(alertStoreImported).type !== 'wait'
 }
 
 export function alertWait(msg: string) {
