@@ -174,10 +174,10 @@ export function alertWait(msg: string) {
 }
 
 
-export function alertClear() {
+export function alertClear(msg: string = "") {
     alertStoreImported.set({
         'type': 'none',
-        'msg': ''
+        'msg': msg
     })
 }
 

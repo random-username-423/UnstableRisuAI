@@ -4,12 +4,9 @@
     // ============================================================
     import { DBState } from "src/ts/stores.svelte"
     import { getCharImage } from "../../ts/characters.svelte"
-    import { ParseMarkdown } from "../../ts/parser.svelte"
     import BarIcon from "../SideBars/BarIcon.svelte"
     import { ChevronRightIcon, User } from "@lucide/svelte"
     import { hubURL, isCharacterHasAssets } from "src/ts/characterCards.svelte"
-    import TextInput from "../UI/GUI/TextInput.svelte"
-    import { openURL } from "src/ts/globalApi.svelte"
     import Button from "../UI/GUI/Button.svelte"
     import { XIcon } from "@lucide/svelte"
     import SelectInput from "../UI/GUI/SelectInput.svelte"
@@ -19,7 +16,6 @@
 
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte"
     import ModuleChatMenu from "../Setting/Pages/Module/ModuleChatMenu.svelte"
-    import { ColorSchemeTypeStore } from "src/ts/gui/colorscheme"
     import Help from "./Help.svelte"
     import { getChatBranches } from "src/ts/gui/branches"
     import { getCurrentCharacter } from "src/ts/storage/database.svelte"
@@ -27,6 +23,7 @@
     import AlertRequestLogs from "./Alerts/AlertRequestLogs.svelte"
     import AlertRequestData from "./Alerts/AlertRequestData.svelte"
     import AlertError from "./Alerts/AlertError.svelte"
+    import AlertSimple from "./Alerts/AlertSimple.svelte"
     import { alertClear } from "src/ts/alert"
 
     // ============================================================
@@ -87,61 +84,70 @@
 />
 
 <!-- ============================================================ -->
-<!-- MAIN MODAL - Standard Alerts -->
-<!-- Handles: error, ask, pluginconfirm, selectChar, input, login, -->
-<!--          select, normal, markdown, progress, wait, tos, -->
-<!--          requestdata, addchar, hypaV2, chatOptions -->
+<!-- ALERT ROUTING -->
 <!-- ============================================================ -->
- {#if $alertStore.type === "error"}
-    <AlertError 
+
+<!-- Error Alert (with stack trace) -->
+{#if $alertStore.type === "error"}
+    <AlertError
         msg={$alertStore.msg}
         submsg={$alertStore.submsg}
         stackTrace={$alertStore.stackTrace}
         onClose={() => alertClear()}
     />
-{:else if $alertStore.type !== "none" && $alertStore.type !== "toast" && $alertStore.type !== "cardexport" && $alertStore.type !== "branches" && $alertStore.type !== "selectModule" && $alertStore.type !== "pukmakkurit" && $alertStore.type !== "requestlogs"}
+
+<!-- Simple Alerts (using AlertSimple component) -->
+{:else if $alertStore.type === "normal"}
+    <AlertSimple
+        msg={$alertStore.msg}
+        buttons="ok"
+    />
+
+{:else if $alertStore.type === "markdown"}
+    <AlertSimple
+        msg={$alertStore.msg}
+        msgType="markdown"
+        buttons="ok"
+    />
+
+{:else if $alertStore.type === "ask"}
+    <AlertSimple
+        title="Confirm"
+        msg={$alertStore.msg}
+        buttons="yesno"
+    />
+
+{:else if $alertStore.type === "input"}
+    <AlertSimple
+        title="Input"
+        msg={$alertStore.msg}
+        buttons={{ type: "input", inputDatalist: $alertStore.datalist }}
+    />
+
+{:else if $alertStore.type === "tos"}
+    <AlertSimple
+        msg="You should accept [Terms of Service](https://sv.risuai.xyz/hub/tos) to continue"
+        msgType="markdown"
+        buttons="accept"
+    />
+
+<!-- Complex Alerts (inline implementation) -->
+{:else if $alertStore.type === "select" || $alertStore.type === "pluginconfirm" || $alertStore.type === "selectChar" || $alertStore.type === "progress" || $alertStore.type === "wait" || $alertStore.type === "wait2" || $alertStore.type === "login" || $alertStore.type === "requestdata" || $alertStore.type === "addchar" || $alertStore.type === "hypaV2" || $alertStore.type === "chatOptions"}
     <div class="absolute w-full h-full z-50 bg-black/50 flex justify-center items-center" class:vis={$alertStore.type === "wait2"}>
         <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-full overflow-y-auto">
             <!-- ================================================ -->
             <!-- SECTION 1: TITLES -->
-            <!-- Different title for each alert type -->
             <!-- ================================================ -->
-            {#if $alertStore.type === "ask"}
-                <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Confirm</h2>
-            {:else if $alertStore.type === "pluginconfirm"}
+            {#if $alertStore.type === "pluginconfirm"}
                 <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Plugin Import</h2>
             {:else if $alertStore.type === "selectChar"}
                 <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Select</h2>
-            {:else if $alertStore.type === "input"}
-                <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Input</h2>
             {/if}
 
             <!-- ================================================ -->
             <!-- SECTION 2: CONTENT/BODY -->
-            <!-- Different content for each alert type -->
             <!-- ================================================ -->
-            {#if $alertStore.type === "markdown"}
-                <div class="overflow-y-auto">
-                    <span class="text-gray-300 chattext prose chattext2" class:prose-invert={$ColorSchemeTypeStore}>
-                        {#await ParseMarkdown($alertStore.msg) then msg}
-                            {@html msg}
-                        {/await}
-                    </span>
-                </div>
-            {:else if $alertStore.type === "tos"}
-                <!-- svelte-ignore a11y_missing_attribute -->
-                <!-- svelte-ignore a11y_click_events_have_key_events -->
-                <div class="text-textcolor">
-                    You should accept <a
-                        role="button"
-                        tabindex="0"
-                        class="text-green-600 hover:text-green-500 transition-colors duration-200 cursor-pointer"
-                        onclick={() => {
-                            openURL("https://sv.risuai.xyz/hub/tos")
-                        }}>Terms of Service</a
-                    > to continue
-                </div>
-            {:else if $alertStore.type === "pluginconfirm"}
+            {#if $alertStore.type === "pluginconfirm"}
                 {@const parts = $alertStore.msg.split("\n\n")}
                 {@const mainPart = parts[0]}
                 {@const confirmMessage = parts[1]}
@@ -161,7 +167,7 @@
                 </div>
             {:else if $alertStore.type !== "select" && $alertStore.type !== "requestdata" && $alertStore.type !== "addchar" && $alertStore.type !== "hypaV2" && $alertStore.type !== "chatOptions"}
                 <!-- DEFAULT MESSAGE DISPLAY -->
-                <!-- Shared by: error, normal, input, progress, wait, etc. -->
+                <!-- Shared by: progress, wait, selectChar, etc. -->
                 <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
                 {#if $alertStore.submsg && $alertStore.type !== "progress"}
                     <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
@@ -181,9 +187,8 @@
 
             <!-- ================================================ -->
             <!-- SECTION 3: BUTTONS -->
-            <!-- Different button(s) for each alert type -->
             <!-- ================================================ -->
-            {#if $alertStore.type === "ask" || $alertStore.type === "pluginconfirm"}
+            {#if $alertStore.type === "pluginconfirm"}
                 <div class="flex gap-2 w-full">
                     <Button
                         className="mt-4 grow"
@@ -202,28 +207,6 @@
                                 msg: "no",
                             })
                         }}>NO</Button
-                    >
-                </div>
-            {:else if $alertStore.type === "tos"}
-                <div class="flex gap-2 w-full">
-                    <Button
-                        className="mt-4 grow"
-                        onclick={() => {
-                            alertStore.set({
-                                type: "none",
-                                msg: "yes",
-                            })
-                        }}>Accept</Button
-                    >
-                    <Button
-                        styled={"outlined"}
-                        className="mt-4 grow"
-                        onclick={() => {
-                            alertStore.set({
-                                type: "none",
-                                msg: "no",
-                            })
-                        }}>Do not Accept</Button
                     >
                 </div>
             {:else if $alertStore.type === "select"}
@@ -255,35 +238,6 @@
                             }}>{n}</Button
                         >
                     {/each}
-                {/if}
-            {:else if $alertStore.type === "normal" || $alertStore.type === "markdown"}
-                <Button
-                    className="mt-4"
-                    onclick={() => {
-                        alertStore.set({
-                            type: "none",
-                            msg: "",
-                        })
-                    }}>OK</Button
-                >
-            {:else if $alertStore.type === "input"}
-                <TextInput value="" id="alert-input" autocomplete="off" marginTop list="alert-input-list" />
-                <Button
-                    className="mt-4"
-                    onclick={() => {
-                        alertStore.set({
-                            type: "none",
-                            //@ts-expect-error 'value' doesn't exist on Element, but target is HTMLInputElement here
-                            msg: document.querySelector("#alert-input")?.value,
-                        })
-                    }}>OK</Button
-                >
-                {#if $alertStore.datalist}
-                    <datalist id="alert-input-list">
-                        {#each $alertStore.datalist as item}
-                            <option value={item[0]} label={item[1] ? item[1] : item[0]}>{item[1] ? item[1] : item[0]}</option>
-                        {/each}
-                    </datalist>
                 {/if}
             {:else if $alertStore.type === "login"}
                 <div class="fixed top-0 left-0 bg-black/50 w-full h-full flex justify-center items-center">
