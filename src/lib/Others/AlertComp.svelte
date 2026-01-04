@@ -368,14 +368,12 @@
 <!-- WAIT2 - Waiting message with visible background -->
 <!-- ============================================================ -->
 {:else if $alertStore.type === "wait2"}
-    <div class="absolute w-full h-full z-50 bg-black/50 flex justify-center items-center vis">
-        <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-full overflow-y-auto">
-            <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
-            {#if $alertStore.submsg}
-                <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
-            {/if}
-        </div>
-    </div>
+    <AlertContainer variant="opaque">
+        <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
+        {#if $alertStore.submsg}
+            <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
+        {/if}
+    </AlertContainer>
 
 <!-- ============================================================ -->
 <!-- SELECT - Button selection dialog -->
@@ -461,10 +459,5 @@
     .break-any {
         word-break: normal;
         overflow-wrap: anywhere;
-    }
-
-    .vis {
-        opacity: 1 !important;
-        --tw-bg-opacity: 1 !important;
     }
 </style>
