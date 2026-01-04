@@ -301,11 +301,6 @@
 {/if}
 
 <style>
-    .break-any{
-        word-break: normal;
-        overflow-wrap: anywhere;
-    }
-
     /* Drag and drop styles */
     .draggable-preset:hover {
         cursor: grab;

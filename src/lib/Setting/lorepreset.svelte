@@ -75,10 +75,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    .break-any{
-        word-break: normal;
-        overflow-wrap: anywhere;
-    }
-</style>
