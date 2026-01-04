@@ -4,6 +4,24 @@
     import { alertStore } from "src/ts/stores.svelte"
 </script>
 
+<svelte:window
+    onmessage={async (e) => {
+        if (
+            e.origin.startsWith("https://sv.risuai.xyz") ||
+            e.origin.startsWith("https://nightly.sv.risuai.xyz") ||
+            e.origin.startsWith("http://127.0.0.1") ||
+            e.origin === window.location.origin
+        ) {
+            if (e.data.msg?.data?.vaild && $alertStore.type === "login") {
+                $alertStore = {
+                    type: "none",
+                    msg: JSON.stringify(e.data.msg),
+                }
+            }
+        }
+    }}
+/>
+
 <AlertContainer>
     <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
     {#if $alertStore.submsg}
