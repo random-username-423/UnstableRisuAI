@@ -1,6 +1,6 @@
 <script lang="ts">
     import { toastState, removeToast } from "src/ts/toast.svelte"
-    import Toast from './toast.svelte'
+    import Toast from './Toast.svelte'
 
     function handleDismiss(id: string) {
         removeToast(id)
