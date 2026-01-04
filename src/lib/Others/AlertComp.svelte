@@ -642,18 +642,6 @@
     />
 
 <!-- ============================================================ -->
-<!-- PUKMAKKURIT - Log Generator Preview -->
-<!-- Log Generator by dootaang, GPL3 -->
-<!-- Svelte, Typescript version by Kwaroran -->
-<!-- ============================================================ -->
-{:else if $alertStore.type === "pukmakkurit"}
-    <div class="absolute w-full h-full z-50 bg-black/50 flex justify-center items-center">
-        <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-full overflow-y-auto">
-            <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">{language.preview}</h2>
-        </div>
-    </div>
-
-<!-- ============================================================ -->
 <!-- BRANCHES - Chat branch visualization -->
 <!-- ============================================================ -->
 {:else if $alertStore.type === "branches"}
