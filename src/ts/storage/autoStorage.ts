@@ -3,7 +3,7 @@ import { replaceDbResources } from "../globalApi.svelte"
 import { isCapacitor, isNodeServer } from "src/ts/platform"
 import { NodeStorage } from "./nodeStorage"
 import { OpfsStorage } from "./opfsStorage"
-import { alertInput, alertSelect, alertStore } from "../alert"
+import { alertClear, alertInput, alertSelect, alertStore } from "../alert"
 import { getDatabase } from "./database.svelte"
 import { type Database } from './types/database'
 import { AccountStorage } from "./accountStorage"
@@ -57,10 +57,7 @@ export class AutoStorage{
                 const sel = await alertSelect([language.loadDataFromAccount, language.saveCurrentDataToAccount])
                 if(sel === "0"){
                     this.realStorage = accountStorage
-                    alertStore.set({
-                        type: "none",
-                        msg: ""
-                    })
+                    alertClear()
                     localStorage.setItem('accountst', 'able')
                     localStorage.setItem('fallbackRisuToken',JSON.stringify(db.account))
                     this.isAccount = true
@@ -99,10 +96,7 @@ export class AutoStorage{
                 
             } catch (error) {}
             this.realStorage = accountStorage
-            alertStore.set({
-                type: "none",
-                msg: ""
-            })
+            alertClear()
 
             localStorage.setItem('accountst', 'able')
             localStorage.setItem('fallbackRisuToken',JSON.stringify(db.account))
@@ -163,10 +157,7 @@ export class AutoStorage{
                         i += 1
                     }
                     this.realStorage = opfs
-                    alertStore.set({
-                        type: "none",
-                        msg: ""
-                    })
+                    alertClear()
                     await forage.setItem("migrated", true)
                     return
                 }

@@ -3,6 +3,7 @@
     // IMPORTS
     // ============================================================
     import { DBState, alertStore, selectedCharID } from "src/ts/stores.svelte"
+    import { alertClear } from "src/ts/alert"
     import { XIcon } from "@lucide/svelte"
     import { isCharacterHasAssets } from "src/ts/characterCards.svelte"
     import Button from "../../UI/GUI/Button.svelte"
@@ -52,13 +53,10 @@
             <button
                 class="float-right text-textcolor2 hover:text-green-500"
                 onclick={() => {
-                    alertStore.set({
-                        type: "none",
-                        msg: JSON.stringify({
-                            type: "cancel",
-                            type2: cardExportType2,
-                        }),
-                    })
+                    alertClear(JSON.stringify({
+                        type: "cancel",
+                        type2: cardExportType2,
+                    }))
                 }}
             >
                 <XIcon />
@@ -157,13 +155,10 @@
         <Button
             className="mt-4"
             onclick={() => {
-                alertStore.set({
-                    type: "none",
-                    msg: JSON.stringify({
-                        type: cardExportType,
-                        type2: cardExportType2,
-                    }),
-                })
+                alertClear(JSON.stringify({
+                    type: cardExportType,
+                    type2: cardExportType2,
+                }))
             }}>{cardExportType === "realm" ? language.shareCloud : language.export}</Button
         >
     </div>

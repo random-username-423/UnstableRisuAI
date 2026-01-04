@@ -3,7 +3,7 @@ import { saveImage, setDatabase, defaultSdDataFunc, getDatabase, getCharacterByI
 import { type Chat } from './storage/types/chat';
 import { type loreBook } from './storage/types/character';
 import { type character } from './storage/types/character';
-import { alertAddCharacter, alertConfirm, alertError, alertNormal, alertSelect, alertStore, alertWait } from "./alert";
+import { alertAddCharacter, alertClear, alertConfirm, alertError, alertNormal, alertSelect, alertStore, alertWait } from "./alert";
 import { language } from "../lang";
 import { checkNullish, selectMultipleFile, selectSingleFile } from "./util";
 import { getUserName } from "./persona";
@@ -811,10 +811,7 @@ export async function makeGroupImage() {
         canvas.remove()
         db.characters[charID].image = await saveImage(dataURLtoBuffer(uri));
         setDatabase(db)
-        alertStore.set({
-            type: 'none',
-            msg: ''
-        })
+        alertClear()
     } catch (error) {
         alertError(error)
     }

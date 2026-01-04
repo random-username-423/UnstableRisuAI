@@ -1,5 +1,5 @@
 import { v4 } from 'uuid';
-import { alertError, alertInput, alertNormal, alertStore, alertWait } from '../alert';
+import { alertClear, alertError, alertInput, alertNormal, alertStore, alertWait } from '../alert';
 import { get, writable } from 'svelte/store';
 import { setDatabase, saveImage, getCurrentChat, setCurrentChat, getDatabase } from '../storage/database.svelte';
 import { type Chat } from '../storage/types/chat';
@@ -251,10 +251,7 @@ export async function createMultiuserRoom(){
     connectionOpen = true
     ConnectionOpenStore.set(true)
     RoomIdStore.set(roomId)
-    alertStore.set({
-        type: 'none',
-        msg: ''
-    })
+    alertClear()
     return
 }
 

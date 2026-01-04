@@ -1,5 +1,5 @@
 import { language } from "src/lang"
-import { alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "../alert"
+import { alertClear, alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "../alert"
 import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase } from "../storage/database.svelte"
 import { type triggerscript } from '../storage/types/character'
 import { type customscript } from '../storage/types/character'
@@ -166,10 +166,7 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
         }
         i++
     }
-    alertStore.set({
-        type: 'none',
-        msg: ''
-    })
+    alertClear()
 
     module.id = v4()
     return module

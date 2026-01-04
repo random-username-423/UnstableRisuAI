@@ -2,6 +2,7 @@
     import { hubURL } from "src/ts/characterCards.svelte"
     import AlertContainer from "./AlertContainer.svelte"
     import { alertStore } from "src/ts/stores.svelte"
+    import { alertClear } from "src/ts/alert"
 </script>
 
 <svelte:window
@@ -13,10 +14,7 @@
             e.origin === window.location.origin
         ) {
             if (e.data.msg?.data?.vaild && $alertStore.type === "login") {
-                $alertStore = {
-                    type: "none",
-                    msg: JSON.stringify(e.data.msg),
-                }
+                alertClear(JSON.stringify(e.data.msg))
             }
         }
     }}

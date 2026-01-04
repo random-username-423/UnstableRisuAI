@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store"
-import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertStore, alertTOS, alertWait } from "./alert"
+import { alertCardExport, alertClear, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertStore, alertTOS, alertWait } from "./alert"
 import { defaultSdDataFunc, setDatabase, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite, appVer } from "./storage/database.svelte"
 import { importPreset } from './storage/preset-manager'
 import { type triggerscript } from './storage/types/character'
@@ -1862,10 +1862,7 @@ export async function downloadRisuHub(id:string, arg:{
             const index = db.characters.length-1
             characterFormatUpdate(index);
             selectedCharID.set(index);
-            alertStore.set({
-                type: 'none',
-                msg: ''
-            })
+            alertClear()
         }
     } catch (error) {
         console.error(error)
