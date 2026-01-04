@@ -301,3 +301,10 @@ export function alertRequestLogs() {
         'msg': ''
     })
 }
+
+export function alertBranches() {
+    alertStoreImported.set({
+        'type': 'branches',
+        'msg': ''
+    })
+}
