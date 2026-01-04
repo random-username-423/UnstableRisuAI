@@ -2,18 +2,9 @@
     // ============================================================
     // IMPORTS
     // ============================================================
-    import { DBState } from "src/ts/stores.svelte"
-    import { getCharImage } from "../../ts/characters.svelte"
-    import BarIcon from "../SideBars/BarIcon.svelte"
-    import { ChevronRightIcon, User } from "@lucide/svelte"
-    import { hubURL } from "src/ts/characterCards.svelte"
-    import Button from "../UI/GUI/Button.svelte"
-    import { language } from "src/lang"
-    import { alertStore, selectedCharID } from "src/ts/stores.svelte"
-
-    import TextAreaInput from "../UI/GUI/TextAreaInput.svelte"
+    import { alertStore } from "src/ts/stores.svelte"
     import ModuleChatMenu from "../Setting/Pages/Module/ModuleChatMenu.svelte"
-    import Help from "./Help.svelte"
+    import Button from "../UI/GUI/Button.svelte"
 
     import AlertRequestLogs from "./Alerts/AlertRequestLogs.svelte"
     import AlertRequestData from "./Alerts/AlertRequestData.svelte"
@@ -23,12 +14,12 @@
     import AlertCardExport from "./Alerts/AlertCardExport.svelte"
     import AlertPluginConfirm from "./Alerts/AlertPluginConfirm.svelte"
     import AlertContainer from "./Alerts/AlertContainer.svelte"
+    import AlertSelectChar from "./Alerts/AlertSelectChar.svelte"
+    import AlertLogin from "./Alerts/AlertLogin.svelte"
+    import AlertHypaV2 from "./Alerts/AlertHypaV2.svelte"
+    import AlertAddChar from "./Alerts/AlertAddChar.svelte"
+    import AlertChatOptions from "./Alerts/AlertChatOptions.svelte"
     import { alertClear } from "src/ts/alert"
-
-    // ============================================================
-    // STATE VARIABLES
-    // ============================================================
-    let generationInfoMenuIndex = $state(0)
 </script>
 
 <!-- ============================================================ -->
@@ -100,262 +91,31 @@
         buttons="accept"
     />
 
+<!-- ============================================================ -->
+<!-- Complex Alerts (using dedicated components) -->
+<!-- ============================================================ -->
 {:else if $alertStore.type === "pluginconfirm"}
     <AlertPluginConfirm msg={$alertStore.msg} />
 
-<!-- Complex Alerts (inline implementation) -->
-{:else if $alertStore.type === "selectChar" || $alertStore.type === "login" || $alertStore.type === "requestdata" || $alertStore.type === "addchar" || $alertStore.type === "hypaV2" || $alertStore.type === "chatOptions"}
-    <div class="absolute w-full h-full z-50 bg-black/50 flex justify-center items-center">
-        <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-full overflow-y-auto">
-            <!-- ================================================ -->
-            <!-- SECTION 1: TITLES -->
-            <!-- ================================================ -->
-            {#if $alertStore.type === "selectChar"}
-                <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Select</h2>
-            {/if}
+{:else if $alertStore.type === "selectChar"}
+    <AlertSelectChar />
 
-            <!-- ================================================ -->
-            <!-- SECTION 2: CONTENT/BODY -->
-            <!-- ================================================ -->
-            {#if $alertStore.type !== "requestdata" && $alertStore.type !== "addchar" && $alertStore.type !== "hypaV2" && $alertStore.type !== "chatOptions"}
-                <!-- DEFAULT MESSAGE DISPLAY -->
-                <!-- Shared by: selectChar, login -->
-                <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
-                {#if $alertStore.submsg}
-                    <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
-                {/if}
-            {/if}
+{:else if $alertStore.type === "login"}
+    <AlertLogin />
 
-            <!-- ================================================ -->
-            <!-- SECTION 3: BUTTONS -->
-            <!-- ================================================ -->
-            {#if $alertStore.type === "login"}
-                <div class="fixed top-0 left-0 bg-black/50 w-full h-full flex justify-center items-center">
-                    <iframe src={hubURL + "/hub/login"} title="login" class="w-full h-full"> </iframe>
-                </div>
-            {:else if $alertStore.type === "selectChar"}
-                <div class="flex w-full items-start flex-wrap gap-2 justify-start">
-                    {#each DBState.db.characters as char, i}
-                        {#if char.type !== "group"}
-                            {#if char.image}
-                                {#await getCharImage(DBState.db.characters[i].image, "css")}
-                                    <BarIcon
-                                        onClick={() => {
-                                            alertClear(char.chaId)
-                                        }}
-                                    >
-                                        <User />
-                                    </BarIcon>
-                                {:then im}
-                                    <BarIcon
-                                        onClick={() => {
-                                            alertClear(char.chaId)
-                                        }}
-                                        additionalStyle={im}
-                                    />
-                                {/await}
-                            {:else}
-                                <BarIcon
-                                    onClick={() => {
-                                        alertClear(char.chaId)
-                                    }}
-                                >
-                                    <User />
-                                </BarIcon>
-                            {/if}
-                        {/if}
-                    {/each}
-                </div>
-            {:else if $alertStore.type === "requestdata"}
-                <AlertRequestData />
-            {:else if $alertStore.type === "hypaV2"}
-                <div class="flex flex-wrap gap-2 mb-4 max-w-full w-124">
-                    <Button
-                        selected={generationInfoMenuIndex === 0}
-                        size="sm"
-                        onclick={() => {
-                            generationInfoMenuIndex = 0
-                        }}
-                    >
-                        Chunks
-                    </Button>
-                    <Button
-                        selected={generationInfoMenuIndex === 1}
-                        size="sm"
-                        onclick={() => {
-                            generationInfoMenuIndex = 1
-                        }}
-                    >
-                        Summarized
-                    </Button>
-                    <button
-                        class="ml-auto"
-                        onclick={() => {
-                            alertClear("")
-                        }}>✖</button
-                    >
-                </div>
-                {#if generationInfoMenuIndex === 0}
-                    <div class="flex flex-col gap-2 w-full">
-                        {#each DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].hypaV2Data.chunks as chunk, i}
-                            <TextAreaInput bind:value={chunk.text} />
-                        {/each}
+{:else if $alertStore.type === "requestdata"}
+    <AlertRequestData />
 
-                        <!-- Adding non-bound chunk is not okay, change the user flow to edit existing ones. -->
-                    </div>
-                {:else}
-                    {#each DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].hypaV2Data.mainChunks as chunk, i}
-                        <!-- Summarized should be mainChunks, afaik. Be aware of that chunks are created with mainChunks, however this editing would not change related chunks. -->
-                        <div class="flex flex-col p-2 rounded-md border-darkborderc border">
-                            {#if i === 0}
-                                <span class="text-green-500">Active</span>
-                            {:else}
-                                <span>Inactive</span>
-                            {/if}
-                            <TextAreaInput bind:value={chunk.text} />
-                        </div>
-                    {/each}
-                {/if}
-            {:else if $alertStore.type === "addchar"}
-                <div class="w-2xl flex flex-col max-w-full">
-                    <button
-                        class="border-darkborderc border py-12 px-8 flex rounded-md hover:ring-2 justify-center items-center"
-                        onclick={(e) => {
-                            e.stopPropagation()
-                            e.preventDefault()
-                            alertClear("importFromRealm")
-                        }}
-                    >
-                        <div class="flex flex-col justify-start items-start">
-                            <span class="text-2xl font-bold">{language.importFromRealm}</span>
-                            <span class="text-textcolor2">{language.importFromRealmDesc}</span>
-                        </div>
-                        <div class="ml-9 float-right flex-1 flex justify-end">
-                            <ChevronRightIcon />
-                        </div>
-                    </button>
-                    <button
-                        class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
-                        onclick={(e) => {
-                            e.stopPropagation()
-                            e.preventDefault()
-                            alertClear("importCharacter")
-                        }}
-                    >
-                        <div class="flex flex-col justify-start items-start">
-                            <span>{language.importCharacter}</span>
-                        </div>
-                        <div class="ml-9 float-right flex-1 flex justify-end">
-                            <ChevronRightIcon />
-                        </div>
-                    </button>
-                    <button
-                        class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
-                        onclick={(e) => {
-                            e.stopPropagation()
-                            e.preventDefault()
-                            alertClear("createfromScratch")
-                        }}
-                    >
-                        <div class="flex flex-col justify-start items-start">
-                            <span>{language.createfromScratch}</span>
-                        </div>
-                        <div class="ml-9 float-right flex-1 flex justify-end">
-                            <ChevronRightIcon />
-                        </div>
-                    </button>
-                    <button
-                        class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
-                        onclick={(e) => {
-                            e.stopPropagation()
-                            e.preventDefault()
-                            alertClear("createGroup")
-                        }}
-                    >
-                        <div class="flex flex-col justify-start items-start">
-                            <span>{language.createGroup}</span>
-                        </div>
-                        <div class="ml-9 float-right flex-1 flex justify-end">
-                            <ChevronRightIcon />
-                        </div>
-                    </button>
-                    <button
-                        class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
-                        onclick={(e) => {
-                            e.stopPropagation()
-                            e.preventDefault()
-                            alertClear("cancel")
-                        }}
-                    >
-                        <div class="flex flex-col justify-start items-start">
-                            <span>{language.cancel}</span>
-                        </div>
-                    </button>
-                </div>
-            {:else if $alertStore.type === "chatOptions"}
-                <div class="w-2xl flex flex-col max-w-full">
-                    <h1 class="text-xl mb-4 font-bold">
-                        {language.chatOptions}
-                    </h1>
-                    <button
-                        class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
-                        onclick={() => {
-                            alertClear("0")
-                        }}
-                    >
-                        <div class="flex flex-col justify-start items-start">
-                            <span>{language.createCopy}</span>
-                        </div>
-                        <div class="ml-9 float-right flex-1 flex justify-end">
-                            <ChevronRightIcon />
-                        </div>
-                    </button>
-                    <button
-                        class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
-                        onclick={() => {
-                            alertClear("1")
-                        }}
-                    >
-                        <div class="flex flex-col justify-start items-start">
-                            <span>{language.bindPersona}</span>
-                        </div>
-                        <div class="ml-9 float-right flex-1 flex justify-end">
-                            <ChevronRightIcon />
-                        </div>
-                    </button>
-                    {#if DBState.db.useExperimental}
-                        <button
-                            class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
-                            onclick={() => {
-                                alertClear("2")
-                            }}
-                        >
-                            <div class="flex flex-col justify-start items-start">
-                                <span>{language.createMultiuserRoom} <Help key="experimental" /></span>
-                            </div>
-                            <div class="ml-9 float-right flex-1 flex justify-end">
-                                <ChevronRightIcon />
-                            </div>
-                        </button>
-                    {/if}
-                    <button
-                        class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
-                        onclick={() => {
-                            alertClear("cancel")
-                        }}
-                    >
-                        <div class="flex flex-col justify-start items-start">
-                            <span>{language.cancel}</span>
-                        </div>
-                    </button>
-                </div>
-            {/if}
-        </div>
-    </div>
+{:else if $alertStore.type === "hypaV2"}
+    <AlertHypaV2 />
 
-<!-- ============================================================ -->
+{:else if $alertStore.type === "addchar"}
+    <AlertAddChar />
+
+{:else if $alertStore.type === "chatOptions"}
+    <AlertChatOptions />
+
 <!-- WAIT - Simple waiting message -->
-<!-- ============================================================ -->
 {:else if $alertStore.type === "wait"}
     <AlertContainer>
         <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
@@ -364,9 +124,7 @@
         {/if}
     </AlertContainer>
 
-<!-- ============================================================ -->
 <!-- WAIT2 - Waiting message with visible background -->
-<!-- ============================================================ -->
 {:else if $alertStore.type === "wait2"}
     <AlertContainer variant="opaque">
         <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
@@ -375,9 +133,7 @@
         {/if}
     </AlertContainer>
 
-<!-- ============================================================ -->
 <!-- SELECT - Button selection dialog -->
-<!-- ============================================================ -->
 {:else if $alertStore.type === "select"}
     <AlertContainer>
         {@const hasDisplay = $alertStore.msg.startsWith("__DISPLAY__")}
@@ -405,9 +161,7 @@
         {/if}
     </AlertContainer>
 
-<!-- ============================================================ -->
 <!-- PROGRESS - Progress bar display -->
-<!-- ============================================================ -->
 {:else if $alertStore.type === "progress"}
     <AlertContainer>
         <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
@@ -422,15 +176,11 @@
         </div>
     </AlertContainer>
 
-<!-- ============================================================ -->
 <!-- CARD EXPORT - Uses external component -->
-<!-- ============================================================ -->
 {:else if $alertStore.type === "cardexport"}
     <AlertCardExport />
 
-<!-- ============================================================ -->
 <!-- SELECT MODULE - Uses external component -->
-<!-- ============================================================ -->
 {:else if $alertStore.type === "selectModule"}
     <ModuleChatMenu
         alertMode
@@ -439,15 +189,11 @@
         }}
     />
 
-<!-- ============================================================ -->
 <!-- BRANCHES - Chat branch visualization -->
-<!-- ============================================================ -->
 {:else if $alertStore.type === "branches"}
     <AlertBranches />
 
-<!-- ============================================================ -->
 <!-- REQUEST LOGS - Uses external component -->
-<!-- ============================================================ -->
 {:else if $alertStore.type === "requestlogs"}
     <AlertRequestLogs />
 {/if}
