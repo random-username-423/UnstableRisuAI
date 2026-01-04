@@ -38,7 +38,9 @@
     <!-- Message Content -->
     {#if msgType === "markdown"}
         <div class="markdown-content">
-            {@html ParseMarkdown(msg)}
+            {#await ParseMarkdown(msg) then parsedMsg}
+                {@html parsedMsg}
+            {/await}
         </div>
     {:else}
         <span class="text-gray-300 whitespace-pre-wrap">{msg}</span>
