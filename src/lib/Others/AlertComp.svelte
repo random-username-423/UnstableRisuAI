@@ -1,4 +1,7 @@
 <script lang="ts">
+    // ============================================================
+    // IMPORTS
+    // ============================================================
     import { DBState } from "src/ts/stores.svelte"
     import { getCharImage } from "../../ts/characters.svelte"
     import { ParseMarkdown } from "../../ts/parser.svelte"
@@ -20,15 +23,15 @@
     import Help from "./Help.svelte"
     import { getChatBranches } from "src/ts/gui/branches"
     import { getCurrentCharacter } from "src/ts/storage/database.svelte"
-    import { translateStackTrace } from "../../ts/sourcemap"
+
     import AlertRequestLogs from "./Alerts/AlertRequestLogs.svelte"
     import AlertRequestData from "./Alerts/AlertRequestData.svelte"
+    import AlertError from "./Alerts/AlertError.svelte"
+    import { alertClear } from "src/ts/alert"
 
-    let showDetails = $state(false)
-    let translatedStackTrace = $state("")
-    let isTranslated = $state(false)
-    let isTranslating = $state(false)
-
+    // ============================================================
+    // STATE VARIABLES
+    // ============================================================
     let btn
     let input = $state("")
     let cardExportType = $state("realm")
@@ -41,11 +44,10 @@
         content: string
     } = $state(null)
 
+    // ============================================================
+    // EFFECTS - State Reset on Alert Type Change
+    // ============================================================
     $effect.pre(() => {
-        showDetails = false
-        translatedStackTrace = ""
-        isTranslated = false
-        isTranslating = false
         if (btn) {
             btn.focus()
         }
@@ -61,38 +63,11 @@
             cardLicense = ""
         }
     })
-
-    $effect(() => {
-        if (showDetails) {
-            const shouldAutoTranslate = DBState.db.sourcemapTranslate
-            isTranslated = shouldAutoTranslate
-            if (shouldAutoTranslate && !translatedStackTrace) {
-                loadTranslatedTrace()
-            }
-        }
-    })
-
-    async function loadTranslatedTrace() {
-        if (isTranslating || translatedStackTrace) return
-        isTranslating = true
-        try {
-            translatedStackTrace = await translateStackTrace($alertStore.stackTrace)
-        } catch (e) {
-            console.error("Failed to translate stack trace:", e)
-            isTranslated = false
-        } finally {
-            isTranslating = false
-        }
-    }
-
-    async function handleToggleTranslate() {
-        if (!isTranslated && !translatedStackTrace) {
-            await loadTranslatedTrace()
-        }
-        isTranslated = !isTranslated
-    }
 </script>
 
+<!-- ============================================================ -->
+<!-- WINDOW MESSAGE LISTENER - Login Handler -->
+<!-- ============================================================ -->
 <svelte:window
     onmessage={async (e) => {
         if (
@@ -111,12 +86,27 @@
     }}
 />
 
-{#if $alertStore.type !== "none" && $alertStore.type !== "toast" && $alertStore.type !== "cardexport" && $alertStore.type !== "branches" && $alertStore.type !== "selectModule" && $alertStore.type !== "pukmakkurit" && $alertStore.type !== "requestlogs"}
+<!-- ============================================================ -->
+<!-- MAIN MODAL - Standard Alerts -->
+<!-- Handles: error, ask, pluginconfirm, selectChar, input, login, -->
+<!--          select, normal, markdown, progress, wait, tos, -->
+<!--          requestdata, addchar, hypaV2, chatOptions -->
+<!-- ============================================================ -->
+ {#if $alertStore.type === "error"}
+    <AlertError 
+        msg={$alertStore.msg}
+        submsg={$alertStore.submsg}
+        stackTrace={$alertStore.stackTrace}
+        onClose={() => alertClear()}
+    />
+{:else if $alertStore.type !== "none" && $alertStore.type !== "toast" && $alertStore.type !== "cardexport" && $alertStore.type !== "branches" && $alertStore.type !== "selectModule" && $alertStore.type !== "pukmakkurit" && $alertStore.type !== "requestlogs"}
     <div class="absolute w-full h-full z-50 bg-black/50 flex justify-center items-center" class:vis={$alertStore.type === "wait2"}>
         <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-full overflow-y-auto">
-            {#if $alertStore.type === "error"}
-                <h2 class="text-red-700 mt-0 mb-2 w-40 max-w-full">Error</h2>
-            {:else if $alertStore.type === "ask"}
+            <!-- ================================================ -->
+            <!-- SECTION 1: TITLES -->
+            <!-- Different title for each alert type -->
+            <!-- ================================================ -->
+            {#if $alertStore.type === "ask"}
                 <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Confirm</h2>
             {:else if $alertStore.type === "pluginconfirm"}
                 <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Plugin Import</h2>
@@ -125,6 +115,11 @@
             {:else if $alertStore.type === "input"}
                 <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Input</h2>
             {/if}
+
+            <!-- ================================================ -->
+            <!-- SECTION 2: CONTENT/BODY -->
+            <!-- Different content for each alert type -->
+            <!-- ================================================ -->
             {#if $alertStore.type === "markdown"}
                 <div class="overflow-y-auto">
                     <span class="text-gray-300 chattext prose chattext2" class:prose-invert={$ColorSchemeTypeStore}>
@@ -165,34 +160,11 @@
                     <p class="confirm-message">{confirmMessage}</p>
                 </div>
             {:else if $alertStore.type !== "select" && $alertStore.type !== "requestdata" && $alertStore.type !== "addchar" && $alertStore.type !== "hypaV2" && $alertStore.type !== "chatOptions"}
+                <!-- DEFAULT MESSAGE DISPLAY -->
+                <!-- Shared by: error, normal, input, progress, wait, etc. -->
                 <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
                 {#if $alertStore.submsg && $alertStore.type !== "progress"}
                     <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
-                {/if}
-
-                {#if $alertStore.type === "error" && $alertStore.stackTrace}
-                    <div class="mt-4">
-                        <Button styled="outlined" size="sm" onclick={() => (showDetails = !showDetails)}>
-                            {showDetails ? language.hideErrorDetails : language.showErrorDetails}
-                            {#if showDetails}
-                                <XIcon class="inline ml-2" />
-                            {:else}
-                                <ChevronRightIcon class="inline ml-2" />
-                            {/if}
-                        </Button>
-                        {#if showDetails}
-                            <Button styled="outlined" size="sm" onclick={handleToggleTranslate} disabled={isTranslating} className="ml-2">
-                                {#if isTranslating}
-                                    {language.translating}
-                                {:else if isTranslated}
-                                    {language.showOriginal}
-                                {:else}
-                                    {language.translateCode}
-                                {/if}
-                            </Button>
-                            <pre class="stack-trace">{@html isTranslated ? translatedStackTrace : $alertStore.stackTrace}</pre>
-                        {/if}
-                    </div>
                 {/if}
             {/if}
             {#if $alertStore.type === "progress"}
@@ -207,6 +179,10 @@
                 </div>
             {/if}
 
+            <!-- ================================================ -->
+            <!-- SECTION 3: BUTTONS -->
+            <!-- Different button(s) for each alert type -->
+            <!-- ================================================ -->
             {#if $alertStore.type === "ask" || $alertStore.type === "pluginconfirm"}
                 <div class="flex gap-2 w-full">
                     <Button
@@ -280,7 +256,7 @@
                         >
                     {/each}
                 {/if}
-            {:else if $alertStore.type === "error" || $alertStore.type === "normal" || $alertStore.type === "markdown"}
+            {:else if $alertStore.type === "normal" || $alertStore.type === "markdown"}
                 <Button
                     className="mt-4"
                     onclick={() => {
@@ -347,7 +323,7 @@
                     {/each}
                 </div>
             {:else if $alertStore.type === "requestdata"}
-                <AlertRequestData/>
+                <AlertRequestData />
             {:else if $alertStore.type === "hypaV2"}
                 <div class="flex flex-wrap gap-2 mb-4 max-w-full w-124">
                     <Button
@@ -562,6 +538,10 @@
             {/if}
         </div>
     </div>
+
+<!-- ============================================================ -->
+<!-- CARD EXPORT MODAL - Separate full-screen modal -->
+<!-- ============================================================ -->
 {:else if $alertStore.type === "cardexport"}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <div
@@ -701,6 +681,10 @@
             >
         </div>
     </div>
+
+<!-- ============================================================ -->
+<!-- TOAST NOTIFICATION - Bottom-right auto-dismissing message -->
+<!-- ============================================================ -->
 {:else if $alertStore.type === "toast"}
     <div
         class="toast-anime absolute right-0 bottom-0 bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-11/12 overflow-y-auto z-50 text-textcolor"
@@ -713,6 +697,10 @@
     >
         {$alertStore.msg}
     </div>
+
+<!-- ============================================================ -->
+<!-- SELECT MODULE - Uses external component -->
+<!-- ============================================================ -->
 {:else if $alertStore.type === "selectModule"}
     <ModuleChatMenu
         alertMode
@@ -723,15 +711,22 @@
             })
         }}
     />
-{:else if $alertStore.type === "pukmakkurit"}
-    <!-- Log Generator by dootaang, GPL3 -->
-    <!-- Svelte, Typescript version by Kwaroran -->
 
+<!-- ============================================================ -->
+<!-- PUKMAKKURIT - Log Generator Preview -->
+<!-- Log Generator by dootaang, GPL3 -->
+<!-- Svelte, Typescript version by Kwaroran -->
+<!-- ============================================================ -->
+{:else if $alertStore.type === "pukmakkurit"}
     <div class="absolute w-full h-full z-50 bg-black/50 flex justify-center items-center">
         <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-full overflow-y-auto">
             <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">{language.preview}</h2>
         </div>
     </div>
+
+<!-- ============================================================ -->
+<!-- BRANCHES - Chat branch visualization -->
+<!-- ============================================================ -->
 {:else if $alertStore.type === "branches"}
     <div class="absolute w-full h-full z-50 bg-black/80 flex justify-center items-center overflow-x-auto overflow-y-auto">
         {#if branchHover !== null}
@@ -804,10 +799,17 @@
             {/if}
         {/each}
     </div>
+
+<!-- ============================================================ -->
+<!-- REQUEST LOGS - Uses external component -->
+<!-- ============================================================ -->
 {:else if $alertStore.type === "requestlogs"}
     <AlertRequestLogs />
 {/if}
 
+<!-- ============================================================ -->
+<!-- STYLES -->
+<!-- ============================================================ -->
 <style>
     .plugin-confirm-content .plugin-name {
         font-size: 1.25rem;
@@ -854,18 +856,4 @@
         --tw-bg-opacity: 1 !important;
     }
 
-    .stack-trace {
-        background-color: var(--risu-theme-bgcolor);
-        color: var(--risu-theme-textcolor2);
-        border: 1px solid var(--risu-theme-darkborderc);
-        border-radius: 0.25rem;
-        padding: 0.5rem;
-        margin-top: 0.5rem;
-        font-family: monospace;
-        font-size: 0.75rem;
-        white-space: pre-wrap;
-        word-break: break-all;
-        max-height: 200px;
-        overflow-y: auto;
-    }
 </style>
