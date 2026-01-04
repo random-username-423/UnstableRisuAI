@@ -141,7 +141,7 @@
                                 {#await getCharImage(DBState.db.characters[i].image, "css")}
                                     <BarIcon
                                         onClick={() => {
-                                            alertStore.set({ type: "none", msg: char.chaId })
+                                            alertClear(char.chaId)
                                         }}
                                     >
                                         <User />
@@ -149,7 +149,7 @@
                                 {:then im}
                                     <BarIcon
                                         onClick={() => {
-                                            alertStore.set({ type: "none", msg: char.chaId })
+                                            alertClear(char.chaId)
                                         }}
                                         additionalStyle={im}
                                     />
@@ -157,7 +157,7 @@
                             {:else}
                                 <BarIcon
                                     onClick={() => {
-                                        alertStore.set({ type: "none", msg: char.chaId })
+                                        alertClear(char.chaId)
                                     }}
                                 >
                                     <User />
@@ -191,10 +191,7 @@
                     <button
                         class="ml-auto"
                         onclick={() => {
-                            alertStore.set({
-                                type: "none",
-                                msg: "",
-                            })
+                            alertClear("")
                         }}>✖</button
                     >
                 </div>
@@ -226,10 +223,7 @@
                         onclick={(e) => {
                             e.stopPropagation()
                             e.preventDefault()
-                            alertStore.set({
-                                type: "none",
-                                msg: "importFromRealm",
-                            })
+                            alertClear("importFromRealm")
                         }}
                     >
                         <div class="flex flex-col justify-start items-start">
@@ -245,10 +239,7 @@
                         onclick={(e) => {
                             e.stopPropagation()
                             e.preventDefault()
-                            alertStore.set({
-                                type: "none",
-                                msg: "importCharacter",
-                            })
+                            alertClear("importCharacter")
                         }}
                     >
                         <div class="flex flex-col justify-start items-start">
@@ -263,10 +254,7 @@
                         onclick={(e) => {
                             e.stopPropagation()
                             e.preventDefault()
-                            alertStore.set({
-                                type: "none",
-                                msg: "createfromScratch",
-                            })
+                            alertClear("createfromScratch")
                         }}
                     >
                         <div class="flex flex-col justify-start items-start">
@@ -281,10 +269,7 @@
                         onclick={(e) => {
                             e.stopPropagation()
                             e.preventDefault()
-                            alertStore.set({
-                                type: "none",
-                                msg: "createGroup",
-                            })
+                            alertClear("createGroup")
                         }}
                     >
                         <div class="flex flex-col justify-start items-start">
@@ -299,10 +284,7 @@
                         onclick={(e) => {
                             e.stopPropagation()
                             e.preventDefault()
-                            alertStore.set({
-                                type: "none",
-                                msg: "cancel",
-                            })
+                            alertClear("cancel")
                         }}
                     >
                         <div class="flex flex-col justify-start items-start">
@@ -318,10 +300,7 @@
                     <button
                         class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
                         onclick={() => {
-                            alertStore.set({
-                                type: "none",
-                                msg: "0",
-                            })
+                            alertClear("0")
                         }}
                     >
                         <div class="flex flex-col justify-start items-start">
@@ -334,10 +313,7 @@
                     <button
                         class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
                         onclick={() => {
-                            alertStore.set({
-                                type: "none",
-                                msg: "1",
-                            })
+                            alertClear("1")
                         }}
                     >
                         <div class="flex flex-col justify-start items-start">
@@ -351,10 +327,7 @@
                         <button
                             class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
                             onclick={() => {
-                                alertStore.set({
-                                    type: "none",
-                                    msg: "2",
-                                })
+                                alertClear("2")
                             }}
                         >
                             <div class="flex flex-col justify-start items-start">
@@ -368,10 +341,7 @@
                     <button
                         class="border-darkborderc border py-2 px-8 flex rounded-md hover:ring-2 items-center mt-2"
                         onclick={() => {
-                            alertStore.set({
-                                type: "none",
-                                msg: "cancel",
-                            })
+                            alertClear("cancel")
                         }}
                     >
                         <div class="flex flex-col justify-start items-start">
@@ -420,10 +390,7 @@
                 <Button
                     className="mt-4"
                     onclick={() => {
-                        alertStore.set({
-                            type: "none",
-                            msg: i.toString(),
-                        })
+                        alertClear(i.toString())
                     }}>{n}</Button
                 >
             {/each}
@@ -433,10 +400,7 @@
                 <Button
                     className="mt-4"
                     onclick={() => {
-                        alertStore.set({
-                            type: "none",
-                            msg: i.toString(),
-                        })
+                        alertClear(i.toString())
                     }}>{n}</Button
                 >
             {/each}
@@ -473,10 +437,7 @@
     <ModuleChatMenu
         alertMode
         close={(d) => {
-            alertStore.set({
-                type: "none",
-                msg: d,
-            })
+            alertClear(d)
         }}
     />
 
