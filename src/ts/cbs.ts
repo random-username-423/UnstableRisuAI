@@ -6,7 +6,6 @@ import type { RisuModule } from './process/modules';
 import type { LLMModel } from './model/modellist';
 import { get } from 'svelte/store';
 import { CurrentTriggerIdStore } from './stores.svelte';
-import { toGraphemes } from './util';
 
 export const defaultCBSRegisterArg: CBSRegisterArg = {
     registerFunction: () => { throw new Error('registerFunction not implemented') },
@@ -2121,7 +2120,8 @@ export function registerCBS(arg:CBSRegisterArg) {
     registerFunction({
         name: 'reverse',
         callback: (str, matcherArg, args, vars) => {
-            return toGraphemes(str).reverse().join('')
+            // NOTE: Using spread syntax for CBS compatibility
+            return [...str].reverse().join('')
         },
         alias: [],
         description: 'Reverses the input string.\n\nUsage:: {{reverse::some_value}}',
