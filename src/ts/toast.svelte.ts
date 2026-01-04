@@ -2,19 +2,23 @@ import { toastState } from './stores.svelte'
 
 export { toastState }
 
+export type ToastType = 'success' | 'error' | 'warning' | 'info'
+
 export interface ToastItem {
     id: string
     msg: string
     duration: number
     timestamp: number
+    type: ToastType
 }
 
-export function addToast(msg: string, duration: number = 3000) {
+export function addToast(msg: string, duration: number = 3000, type: ToastType = 'info') {
     const toast: ToastItem = {
         id: crypto.randomUUID(),
         msg: msg,
         duration: duration,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        type: type
     }
 
     toastState.queue.unshift(toast)

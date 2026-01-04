@@ -1,6 +1,6 @@
 <script lang="ts">
     import { toastState, removeToast } from "src/ts/toast.svelte"
-    import Toast from './Toast.svelte'
+    import Toast from './toast.svelte'
 
     function handleDismiss(id: string) {
         removeToast(id)
@@ -13,6 +13,7 @@
             id={toast.id}
             msg={toast.msg}
             duration={toast.duration}
+            type={toast.type}
             index={index}
             onDismiss={handleDismiss}
         />

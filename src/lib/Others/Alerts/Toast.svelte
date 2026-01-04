@@ -1,13 +1,16 @@
 <script lang="ts">
+    import type { ToastType } from 'src/ts/toast.svelte'
+
     type Props = {
         id: string
         msg: string
         duration: number
+        type: ToastType
         index: number
         onDismiss: (id: string) => void
     }
 
-    let { id, msg, duration, index, onDismiss }: Props = $props()
+    let { id, msg, duration, type, index, onDismiss }: Props = $props()
 
     let visible = $state(false)
     let dismissed = $state(false)
@@ -42,6 +45,10 @@
 <button
     class="toast-item"
     class:visible={visible}
+    class:success={type === 'success'}
+    class:error={type === 'error'}
+    class:warning={type === 'warning'}
+    class:info={type === 'info'}
     style:bottom="{index * 72}px"
     onclick={handleDismiss}
     aria-live="polite"
@@ -81,6 +88,31 @@
     .toast-item:not(.visible) {
         opacity: 0;
         transform: translateX(50%);
+    }
+
+    /* Type-specific styles */
+    .toast-item.success {
+        background-color: #10b981;
+        color: white;
+        border-left: 4px solid #059669;
+    }
+
+    .toast-item.error {
+        background-color: #ef4444;
+        color: white;
+        border-left: 4px solid #dc2626;
+    }
+
+    .toast-item.warning {
+        background-color: #f59e0b;
+        color: white;
+        border-left: 4px solid #d97706;
+    }
+
+    .toast-item.info {
+        background-color: #3b82f6;
+        color: white;
+        border-left: 4px solid #2563eb;
     }
 
     @media (max-width: 768px) {
