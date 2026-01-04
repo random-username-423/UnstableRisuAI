@@ -22,6 +22,7 @@
     import AlertBranches from "./Alerts/AlertBranches.svelte"
     import AlertCardExport from "./Alerts/AlertCardExport.svelte"
     import AlertPluginConfirm from "./Alerts/AlertPluginConfirm.svelte"
+    import AlertContainer from "./Alerts/AlertContainer.svelte"
     import { alertClear } from "src/ts/alert"
 
     // ============================================================
@@ -103,8 +104,8 @@
     <AlertPluginConfirm msg={$alertStore.msg} />
 
 <!-- Complex Alerts (inline implementation) -->
-{:else if $alertStore.type === "select" || $alertStore.type === "selectChar" || $alertStore.type === "progress" || $alertStore.type === "wait" || $alertStore.type === "wait2" || $alertStore.type === "login" || $alertStore.type === "requestdata" || $alertStore.type === "addchar" || $alertStore.type === "hypaV2" || $alertStore.type === "chatOptions"}
-    <div class="absolute w-full h-full z-50 bg-black/50 flex justify-center items-center" class:vis={$alertStore.type === "wait2"}>
+{:else if $alertStore.type === "selectChar" || $alertStore.type === "login" || $alertStore.type === "requestdata" || $alertStore.type === "addchar" || $alertStore.type === "hypaV2" || $alertStore.type === "chatOptions"}
+    <div class="absolute w-full h-full z-50 bg-black/50 flex justify-center items-center">
         <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-full overflow-y-auto">
             <!-- ================================================ -->
             <!-- SECTION 1: TITLES -->
@@ -116,60 +117,19 @@
             <!-- ================================================ -->
             <!-- SECTION 2: CONTENT/BODY -->
             <!-- ================================================ -->
-            {#if $alertStore.type !== "select" && $alertStore.type !== "requestdata" && $alertStore.type !== "addchar" && $alertStore.type !== "hypaV2" && $alertStore.type !== "chatOptions"}
+            {#if $alertStore.type !== "requestdata" && $alertStore.type !== "addchar" && $alertStore.type !== "hypaV2" && $alertStore.type !== "chatOptions"}
                 <!-- DEFAULT MESSAGE DISPLAY -->
-                <!-- Shared by: progress, wait, selectChar, etc. -->
+                <!-- Shared by: selectChar, login -->
                 <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
-                {#if $alertStore.submsg && $alertStore.type !== "progress"}
+                {#if $alertStore.submsg}
                     <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
                 {/if}
-            {/if}
-            {#if $alertStore.type === "progress"}
-                <div class="w-full min-w-64 md:min-w-138 h-2 bg-darkbg border border-darkborderc rounded-md mt-6">
-                    <div
-                        class="h-full bg-linear-to-r from-blue-500 to-purple-800 saving-animation transition-[width]"
-                        style:width={$alertStore.submsg + "%"}
-                    ></div>
-                </div>
-                <div class="w-full flex justify-center mt-6">
-                    <span class="text-gray-500 text-sm">{$alertStore.submsg + "%"}</span>
-                </div>
             {/if}
 
             <!-- ================================================ -->
             <!-- SECTION 3: BUTTONS -->
             <!-- ================================================ -->
-            {#if $alertStore.type === "select"}
-                {@const hasDisplay = $alertStore.msg.startsWith("__DISPLAY__")}
-                {#if hasDisplay}
-                    {@const parts = $alertStore.msg.substring(11).split("||")}
-                    <div class="mb-4 text-textcolor">{parts[0]}</div>
-                    {#each parts.slice(1) as n, i}
-                        <Button
-                            className="mt-4"
-                            onclick={() => {
-                                alertStore.set({
-                                    type: "none",
-                                    msg: i.toString(),
-                                })
-                            }}>{n}</Button
-                        >
-                    {/each}
-                {:else}
-                    {@const parts = $alertStore.msg.split("||")}
-                    {#each parts as n, i}
-                        <Button
-                            className="mt-4"
-                            onclick={() => {
-                                alertStore.set({
-                                    type: "none",
-                                    msg: i.toString(),
-                                })
-                            }}>{n}</Button
-                        >
-                    {/each}
-                {/if}
-            {:else if $alertStore.type === "login"}
+            {#if $alertStore.type === "login"}
                 <div class="fixed top-0 left-0 bg-black/50 w-full h-full flex justify-center items-center">
                     <iframe src={hubURL + "/hub/login"} title="login" class="w-full h-full"> </iframe>
                 </div>
@@ -422,6 +382,83 @@
             {/if}
         </div>
     </div>
+
+<!-- ============================================================ -->
+<!-- WAIT - Simple waiting message -->
+<!-- ============================================================ -->
+{:else if $alertStore.type === "wait"}
+    <AlertContainer>
+        <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
+        {#if $alertStore.submsg}
+            <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
+        {/if}
+    </AlertContainer>
+
+<!-- ============================================================ -->
+<!-- WAIT2 - Waiting message with visible background -->
+<!-- ============================================================ -->
+{:else if $alertStore.type === "wait2"}
+    <div class="absolute w-full h-full z-50 bg-black/50 flex justify-center items-center vis">
+        <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-full overflow-y-auto">
+            <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
+            {#if $alertStore.submsg}
+                <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
+            {/if}
+        </div>
+    </div>
+
+<!-- ============================================================ -->
+<!-- SELECT - Button selection dialog -->
+<!-- ============================================================ -->
+{:else if $alertStore.type === "select"}
+    <AlertContainer>
+        {@const hasDisplay = $alertStore.msg.startsWith("__DISPLAY__")}
+        {#if hasDisplay}
+            {@const parts = $alertStore.msg.substring(11).split("||")}
+            <div class="mb-4 text-textcolor">{parts[0]}</div>
+            {#each parts.slice(1) as n, i}
+                <Button
+                    className="mt-4"
+                    onclick={() => {
+                        alertStore.set({
+                            type: "none",
+                            msg: i.toString(),
+                        })
+                    }}>{n}</Button
+                >
+            {/each}
+        {:else}
+            {@const parts = $alertStore.msg.split("||")}
+            {#each parts as n, i}
+                <Button
+                    className="mt-4"
+                    onclick={() => {
+                        alertStore.set({
+                            type: "none",
+                            msg: i.toString(),
+                        })
+                    }}>{n}</Button
+                >
+            {/each}
+        {/if}
+    </AlertContainer>
+
+<!-- ============================================================ -->
+<!-- PROGRESS - Progress bar display -->
+<!-- ============================================================ -->
+{:else if $alertStore.type === "progress"}
+    <AlertContainer>
+        <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
+        <div class="w-full min-w-64 md:min-w-138 h-2 bg-darkbg border border-darkborderc rounded-md mt-6">
+            <div
+                class="h-full bg-linear-to-r from-blue-500 to-purple-800 saving-animation transition-[width]"
+                style:width={$alertStore.submsg + "%"}
+            ></div>
+        </div>
+        <div class="w-full flex justify-center mt-6">
+            <span class="text-gray-500 text-sm">{$alertStore.submsg + "%"}</span>
+        </div>
+    </AlertContainer>
 
 <!-- ============================================================ -->
 <!-- CARD EXPORT - Uses external component -->
