@@ -73,24 +73,31 @@
 <!-- ============================================================ -->
 <!-- Complex Alerts (using dedicated components) -->
 <!-- ============================================================ -->
+<!-- PLUGIN CONFIRM - Plugin confirmation dialog -->
 {:else if $alertStore.type === "pluginconfirm"}
     <AlertPluginConfirm msg={$alertStore.msg} />
 
+<!-- SELECT CHAR - Character selection dialog -->
 {:else if $alertStore.type === "selectChar"}
     <AlertSelectChar />
 
+<!-- LOGIN - Login iframe dialog -->
 {:else if $alertStore.type === "login"}
     <AlertLogin />
 
+<!-- REQUEST DATA - Data request dialog -->
 {:else if $alertStore.type === "requestdata"}
     <AlertRequestData />
 
+<!-- HYPA V2 - HypaV2 data editor -->
 {:else if $alertStore.type === "hypaV2"}
     <AlertHypaV2 />
 
+<!-- ADD CHAR - Character addition menu -->
 {:else if $alertStore.type === "addchar"}
     <AlertAddChar />
 
+<!-- CHAT OPTIONS - Chat options menu -->
 {:else if $alertStore.type === "chatOptions"}
     <AlertChatOptions />
 
