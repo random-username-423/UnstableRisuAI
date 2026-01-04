@@ -21,6 +21,7 @@
     import AlertSimple from "./Alerts/AlertSimple.svelte"
     import AlertBranches from "./Alerts/AlertBranches.svelte"
     import AlertCardExport from "./Alerts/AlertCardExport.svelte"
+    import AlertPluginConfirm from "./Alerts/AlertPluginConfirm.svelte"
     import { alertClear } from "src/ts/alert"
 
     // ============================================================
@@ -112,41 +113,24 @@
         buttons="accept"
     />
 
+{:else if $alertStore.type === "pluginconfirm"}
+    <AlertPluginConfirm msg={$alertStore.msg} />
+
 <!-- Complex Alerts (inline implementation) -->
-{:else if $alertStore.type === "select" || $alertStore.type === "pluginconfirm" || $alertStore.type === "selectChar" || $alertStore.type === "progress" || $alertStore.type === "wait" || $alertStore.type === "wait2" || $alertStore.type === "login" || $alertStore.type === "requestdata" || $alertStore.type === "addchar" || $alertStore.type === "hypaV2" || $alertStore.type === "chatOptions"}
+{:else if $alertStore.type === "select" || $alertStore.type === "selectChar" || $alertStore.type === "progress" || $alertStore.type === "wait" || $alertStore.type === "wait2" || $alertStore.type === "login" || $alertStore.type === "requestdata" || $alertStore.type === "addchar" || $alertStore.type === "hypaV2" || $alertStore.type === "chatOptions"}
     <div class="absolute w-full h-full z-50 bg-black/50 flex justify-center items-center" class:vis={$alertStore.type === "wait2"}>
         <div class="bg-darkbg p-4 break-any rounded-md flex flex-col max-w-3xl max-h-full overflow-y-auto">
             <!-- ================================================ -->
             <!-- SECTION 1: TITLES -->
             <!-- ================================================ -->
-            {#if $alertStore.type === "pluginconfirm"}
-                <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Plugin Import</h2>
-            {:else if $alertStore.type === "selectChar"}
+            {#if $alertStore.type === "selectChar"}
                 <h2 class="text-green-700 mt-0 mb-2 w-40 max-w-full">Select</h2>
             {/if}
 
             <!-- ================================================ -->
             <!-- SECTION 2: CONTENT/BODY -->
             <!-- ================================================ -->
-            {#if $alertStore.type === "pluginconfirm"}
-                {@const parts = $alertStore.msg.split("\n\n")}
-                {@const mainPart = parts[0]}
-                {@const confirmMessage = parts[1]}
-                {@const mainParts = mainPart.split("\n")}
-                {@const pluginName = mainParts[0]}
-                {@const warnings = mainParts.slice(1)}
-                <div class="plugin-confirm-content">
-                    <p class="plugin-name">{pluginName}</p>
-                    {#if warnings.length > 0}
-                        <ul class="warnings-list">
-                            {#each warnings as warning}
-                                <li class="warning-item">{warning}</li>
-                            {/each}
-                        </ul>
-                    {/if}
-                    <p class="confirm-message">{confirmMessage}</p>
-                </div>
-            {:else if $alertStore.type !== "select" && $alertStore.type !== "requestdata" && $alertStore.type !== "addchar" && $alertStore.type !== "hypaV2" && $alertStore.type !== "chatOptions"}
+            {#if $alertStore.type !== "select" && $alertStore.type !== "requestdata" && $alertStore.type !== "addchar" && $alertStore.type !== "hypaV2" && $alertStore.type !== "chatOptions"}
                 <!-- DEFAULT MESSAGE DISPLAY -->
                 <!-- Shared by: progress, wait, selectChar, etc. -->
                 <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
@@ -169,28 +153,7 @@
             <!-- ================================================ -->
             <!-- SECTION 3: BUTTONS -->
             <!-- ================================================ -->
-            {#if $alertStore.type === "pluginconfirm"}
-                <div class="flex gap-2 w-full">
-                    <Button
-                        className="mt-4 grow"
-                        onclick={() => {
-                            alertStore.set({
-                                type: "none",
-                                msg: "yes",
-                            })
-                        }}>YES</Button
-                    >
-                    <Button
-                        className="mt-4 grow"
-                        onclick={() => {
-                            alertStore.set({
-                                type: "none",
-                                msg: "no",
-                            })
-                        }}>NO</Button
-                    >
-                </div>
-            {:else if $alertStore.type === "select"}
+            {#if $alertStore.type === "select"}
                 {@const hasDisplay = $alertStore.msg.startsWith("__DISPLAY__")}
                 {#if hasDisplay}
                     {@const parts = $alertStore.msg.substring(11).split("||")}
@@ -511,26 +474,6 @@
 <!-- STYLES -->
 <!-- ============================================================ -->
 <style>
-    .plugin-confirm-content .plugin-name {
-        font-size: 1.25rem;
-        font-weight: bold;
-        color: white;
-    }
-    .plugin-confirm-content .warnings-list {
-        list-style-type: disc;
-        list-style-position: inside;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
-        padding-left: 1rem;
-        color: #f87171; /* red-400 */
-    }
-    .plugin-confirm-content .warning-item {
-        margin-bottom: 0.25rem;
-    }
-    .plugin-confirm-content .confirm-message {
-        margin-top: 1rem;
-        color: #d1d5db; /* gray-300 */
-    }
     .break-any {
         word-break: normal;
         overflow-wrap: anywhere;
