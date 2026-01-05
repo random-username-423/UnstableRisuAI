@@ -3,7 +3,7 @@ import { replaceDbResources } from "../globalApi.svelte"
 import { isCapacitor, isNodeServer } from "src/ts/platform"
 import { NodeStorage } from "./nodeStorage"
 import { OpfsStorage } from "./opfsStorage"
-import { alertClear, alertInput, alertSelect, alertStore, alertWait } from "../alert"
+import { alertClear, alertInput, alertSelect, alertWait } from "../alert"
 import { getDatabase } from "./database.svelte"
 import { type Database } from './types/database'
 import { AccountStorage } from "./accountStorage"
