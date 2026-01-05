@@ -1,4 +1,4 @@
-import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertWait } from "../alert";
+import { alertError, alertErrorWait, alertInput, alertNormal, alertSelect, alertWait } from "../alert";
 import { getDatabase } from "../storage/database.svelte";
 import { type Database } from '../storage/types/database';
 import { forageStorage, getUnpargeables, openURL } from "../globalApi.svelte";
@@ -73,16 +73,10 @@ export async function checkDriverInit() {
                     await loadDrive(json.access_token, 'backup')
                 }
                 else if(da === 'savetauri' || da === 'loadtauri'){
-                    alertStore.set({
-                        type: 'wait2',
-                        msg: `Copy and paste this Auth Code: ${json.access_token}`
-                    })
+                    await alertErrorWait(`Copy and paste this Auth Code: ${json.access_token}`)
                 }
                 else if(da === 'accesstauri'){
-                    alertStore.set({
-                        type: 'wait2',
-                        msg: JSON.stringify(json)
-                    })
+                    await alertErrorWait(JSON.stringify(json))
                 }
             }
             else{
