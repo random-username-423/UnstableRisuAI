@@ -1,6 +1,5 @@
 <script lang="ts">
     import { hubURL } from "src/ts/characterCards.svelte"
-    import AlertContainer from "./AlertContainer.svelte"
     import { alertState } from "src/ts/stores.svelte"
     import { alertClear } from "src/ts/alert.svelte"
 </script>
@@ -20,13 +19,6 @@
     }}
 />
 
-<AlertContainer>
-    <span class="text-gray-300 whitespace-pre-wrap">{alertState.msg}</span>
-    {#if alertState.submsg}
-        <span class="text-gray-500 text-sm">{alertState.submsg}</span>
-    {/if}
-
-    <div class="fixed top-0 left-0 bg-black/50 w-full h-full flex justify-center items-center">
-        <iframe src={hubURL + "/hub/login"} title="login" class="w-full h-full"> </iframe>
-    </div>
-</AlertContainer>
+<div class="fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-black/50">
+    <iframe src={hubURL + "/hub/login"} title="login" class="h-full w-full"> </iframe>
+</div>
