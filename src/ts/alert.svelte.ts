@@ -152,6 +152,9 @@ export function alertWait(msg: string) {
 export function alertClear(msg: string = "") {
     alertState.type = 'none'
     alertState.msg = msg
+    alertState.submsg = undefined
+    alertState.datalist = undefined
+    alertState.stackTrace = undefined
 }
 
 export async function alertSelectChar() {
