@@ -18,7 +18,7 @@
     import { exportChar } from "src/ts/characterCards.svelte";
     import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices } from "src/ts/process/tts";
     import { getFileSrc } from "src/ts/globalApi.svelte";
-    import { addGroupChar, rmCharFromGroup } from "src/ts/process/group";
+    import { addGroupChar, rmCharFromGroup } from "src/ts/process/group.svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
     import NumberInput from "../UI/GUI/NumberInput.svelte";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";

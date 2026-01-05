@@ -21,7 +21,7 @@ import { exampleMessage } from "./exampleMessages";
 import { sayTTS } from "./tts";
 import { supaMemory } from "./memory/supaMemory";
 import { v4 } from "uuid";
-import { groupOrder } from "./group";
+import { groupOrder } from "./group.svelte";
 import { runTrigger } from "./triggers";
 import { HypaProcesser } from "./memory/hypamemory";
 import { additionalInformations } from "./embedding/addinfo";
