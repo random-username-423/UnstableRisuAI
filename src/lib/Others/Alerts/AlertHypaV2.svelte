@@ -2,7 +2,7 @@
     import { DBState, selectedCharID } from "src/ts/stores.svelte"
     import Button from "src/lib/UI/GUI/Button.svelte"
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte"
-    import { alertClear } from "src/ts/alert"
+    import { alertClear } from "src/ts/alert.svelte"
     import AlertContainer from "./AlertContainer.svelte"
 
     let generationInfoMenuIndex = $state(0)

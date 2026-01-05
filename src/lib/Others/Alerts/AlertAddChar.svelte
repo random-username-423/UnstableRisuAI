@@ -1,7 +1,7 @@
 <script lang="ts">
     import { language } from "src/lang"
     import { ChevronRightIcon } from "@lucide/svelte"
-    import { alertClear } from "src/ts/alert"
+    import { alertClear } from "src/ts/alert.svelte"
     import AlertContainer from "./AlertContainer.svelte"
 </script>
 

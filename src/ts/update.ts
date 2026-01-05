@@ -1,4 +1,4 @@
-import { alertConfirm, alertWait } from "./alert";
+import { alertConfirm, alertWait } from "./alert.svelte";
 import { language } from "../lang";
 import {
     check,

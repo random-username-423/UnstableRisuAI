@@ -11,7 +11,7 @@
         alertMd,
         alertWait,
         alertClear,
-    } from "src/ts/alert"
+    } from "src/ts/alert.svelte"
     import { addToast } from "src/ts/toast.svelte"
 
     let errorMsg = $state("This is an error message")

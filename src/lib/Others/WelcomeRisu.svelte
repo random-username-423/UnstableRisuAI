@@ -6,7 +6,7 @@
     import Chat from "../ChatScreens/Chat.svelte";
     import { prebuiltPresets } from "src/ts/process/templates/templates";
     import { updateTextThemeAndCSS } from "src/ts/gui/colorscheme";
-    import { alertError } from "src/ts/alert";
+    import { alertError } from "src/ts/alert.svelte";
     import Airisu from '../../etc/Airisu.webp'
 
     const airisuStyle = `background: url("${Airisu}");background-size: cover;`

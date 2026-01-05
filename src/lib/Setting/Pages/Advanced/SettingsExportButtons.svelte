@@ -2,7 +2,7 @@
     import { language } from "src/lang";
     import Button from "src/lib/UI/GUI/Button.svelte";
     import { DBState } from 'src/ts/stores.svelte';
-    import { alertMd, alertNormal, alertRequestLogs } from "src/ts/alert";
+    import { alertMd, alertNormal, alertRequestLogs } from "src/ts/alert.svelte";
     import { downloadFile } from "src/ts/globalApi.svelte";
     import { isTauri, isNodeServer } from "src/ts/platform";
     import { getDatabase } from "src/ts/storage/database.svelte";

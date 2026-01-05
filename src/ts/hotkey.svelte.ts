@@ -1,8 +1,8 @@
 import { get } from "svelte/store"
-import { alertClear, alertMd, alertSelect, alertWait, doingAlert, alertRequestLogs } from "./alert"
+import { alertClear, alertMd, alertSelect, alertWait, doingAlert, alertRequestLogs } from "./alert.svelte"
 import { getDatabase  } from "./storage/database.svelte"
 import { changeToPreset as changeToPreset2 } from './storage/preset-manager'
-import { alertStore, layoutState, modalState, realmState, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
+import { alertState, layoutState, modalState, realmState, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
 import { language } from "src/lang"
 import { updateTextThemeAndCSS } from "./gui/colorscheme"
 import { defaultHotkeys } from "./defaulthotkeys"
@@ -265,7 +265,7 @@ export function initHotkey(){
             ev.preventDefault()
         }
         if(ev.key === 'Enter'){
-            const alertType = get(alertStore).type
+            const alertType = alertState.type
             if(alertType === 'ask' || alertType === 'normal' || alertType === 'error'){
                 alertClear('yes')
             }

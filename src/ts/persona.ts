@@ -1,6 +1,6 @@
 import { getDatabase, saveImage, setDatabase } from "./storage/database.svelte"
 import { selectSingleFile, sleep } from "./util"
-import { alertError, alertNormal, alertWait } from "./alert"
+import { alertError, alertNormal, alertWait } from "./alert.svelte"
 import { AppendableBuffer, downloadFile, readImage } from "./globalApi.svelte"
 import { language } from "src/lang"
 import { reencodeImage } from "./process/files/inlays"

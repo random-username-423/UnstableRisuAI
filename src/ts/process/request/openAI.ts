@@ -13,7 +13,7 @@ import { applyChatTemplate } from "../templates/chatTemplate"
 import { supportsInlayImage } from "../files/inlays"
 import { simplifySchema } from "src/ts/util"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { alertError } from "src/ts/alert";
+import { alertError } from "src/ts/alert.svelte";
 
 
 interface OAIResponseInputItem {

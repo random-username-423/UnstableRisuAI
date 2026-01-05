@@ -6,7 +6,7 @@ import { DBState } from '../stores.svelte';
 import { tokenize } from "../tokenizer";
 import { pickHashRand, selectSingleFile } from "../util";
 import { findCharacterbyId } from "../characters.svelte";
-import { alertError, alertNormal } from "../alert";
+import { alertError, alertNormal } from "../alert.svelte";
 import { language } from "../../lang";
 import { downloadFile } from "../globalApi.svelte";
 import { getModuleLorebooks } from "./modules";

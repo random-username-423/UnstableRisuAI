@@ -1,6 +1,6 @@
 <script lang="ts">
     import { language } from "src/lang";
-    import { alertConfirm } from "src/ts/alert";
+    import { alertConfirm } from "src/ts/alert.svelte";
     import { checkDriver } from "src/ts/drive/drive";
     import { isTauri, isNodeServer } from "src/ts/platform"
 

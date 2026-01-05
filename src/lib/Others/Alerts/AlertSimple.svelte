@@ -3,7 +3,7 @@
     import Button from "../../UI/GUI/Button.svelte"
     import TextInput from "../../UI/GUI/TextInput.svelte"
     import { ParseMarkdown } from "../../../ts/parser.svelte"
-    import { alertClear } from "../../../ts/alert"
+    import { alertClear } from "../../../ts/alert.svelte"
 
     type ButtonConfig =
         | "ok"

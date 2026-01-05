@@ -7,7 +7,7 @@ import { DBState } from '../stores.svelte';
 import { CharEmotion, selectedCharID } from "../stores.svelte";
 import { ChatTokenizer, tokenize, tokenizeNum } from "../tokenizer";
 import { language } from "../../lang";
-import { alertError } from "../alert";
+import { alertError } from "../alert.svelte";
 import { loadLoreBookV3Prompt } from "./lorebook.svelte";
 import { isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax } from "../util";
 import { getAuthorNoteDefaultText } from "./prompt";

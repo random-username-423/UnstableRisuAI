@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store"
-import { alertCardExport, alertClear, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertProgress, alertTOS, alertWait } from "./alert"
+import { alertCardExport, alertClear, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertProgress, alertTOS, alertWait } from "./alert.svelte"
 import { defaultSdDataFunc, setDatabase, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite, appVer } from "./storage/database.svelte"
 import { importPreset } from './storage/preset-manager'
 import { type triggerscript } from './storage/types/character'

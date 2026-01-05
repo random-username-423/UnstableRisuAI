@@ -1,7 +1,7 @@
 <script lang="ts">
     import { downloadRisuHub, getRisuHub, hubAdditionalHTML, type hubType } from "src/ts/characterCards.svelte";
     import { ArrowLeft, ArrowRight, MenuIcon, SearchIcon, XIcon } from "@lucide/svelte";
-    import { alertInput } from "src/ts/alert";
+    import { alertInput } from "src/ts/alert.svelte";
     import { language } from "src/lang";
     import RisuHubIcon from "./RealmHubIcon.svelte";
     import { layoutState, realmState } from "src/ts/stores.svelte";

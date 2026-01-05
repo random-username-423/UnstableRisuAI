@@ -2,7 +2,7 @@
     import { language } from "src/lang"
     import { ChevronRightIcon } from "@lucide/svelte"
     import { DBState } from "src/ts/stores.svelte"
-    import { alertClear } from "src/ts/alert"
+    import { alertClear } from "src/ts/alert.svelte"
     import Help from "../Help.svelte"
     import AlertContainer from "./AlertContainer.svelte"
 </script>

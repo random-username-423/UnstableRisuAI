@@ -2,8 +2,8 @@
     import { language } from "src/lang"
     import Button from "src/lib/UI/GUI/Button.svelte"
     import { aiLawApplies } from "src/ts/globalApi.svelte"
-    import { alertClear, alertGenerationInfoStore } from "src/ts/alert"
-    import { alertStore, DBState, selectedCharID } from "src/ts/stores.svelte"
+    import { alertClear, alertGenerationInfoStore } from "src/ts/alert.svelte"
+    import { alertState, DBState, selectedCharID } from "src/ts/stores.svelte"
     import { tokenize } from "src/ts/tokenizer"
     import { getFetchData } from "src/ts/fetch"
 
@@ -145,7 +145,7 @@
     </div>
 {/if}
 {#if generationInfoMenuIndex === 2}
-    {#await getFetchData($alertStore.msg) then data}
+    {#await getFetchData(alertState.msg) then data}
         {#if !data}
             <span class="text-gray-300 text-lg mt-2">{language.errors.requestLogRemoved}</span>
             <span class="text-gray-500">{language.errors.requestLogRemovedDesc}</span>

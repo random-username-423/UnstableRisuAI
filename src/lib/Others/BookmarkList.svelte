@@ -6,7 +6,7 @@
     import { getUserName, getUserIcon } from "src/ts/persona"
     import { createSimpleCharacter, modalState, DBState, selectedCharID, ScrollToMessageStore } from "src/ts/stores.svelte";
     import { language } from "src/lang";
-    import { alertInput } from "src/ts/alert";
+    import { alertInput } from "src/ts/alert.svelte";
 
     const close = () => modalState.bookmark = false;
     let chara = $derived(DBState.db.characters[$selectedCharID]);

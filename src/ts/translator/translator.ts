@@ -5,7 +5,7 @@ import { type groupChat } from '../storage/types/character'
 import { type character } from '../storage/types/character'
 import { globalFetch } from "../fetch"
 import { isTauri, isNodeServer } from "src/ts/platform"
-import { alertError } from "../alert"
+import { alertError } from "../alert.svelte"
 import { requestChatData } from "../process/request/request"
 import { doingChat, type OpenAIChat } from "../process/index.svelte"
 import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../parser.svelte"

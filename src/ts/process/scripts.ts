@@ -5,7 +5,7 @@ import { type customscript } from '../storage/types/character';
 import { type groupChat } from '../storage/types/character';
 import { type character } from '../storage/types/character';
 import { downloadFile } from "../globalApi.svelte";
-import { alertError, alertNormal } from "../alert";
+import { alertError, alertNormal } from "../alert.svelte";
 import { language } from "src/lang";
 import { selectSingleFile } from "../util";
 import { assetRegex, type CbsConditions, risuChatParser as risuChatParserOrg, type simpleCharacterArgument } from "../parser.svelte";

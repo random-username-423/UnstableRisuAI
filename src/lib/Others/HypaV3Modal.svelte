@@ -5,7 +5,7 @@
     type SerializableSummary, 
     summarize,
   } from "src/ts/process/memory/hypav3.svelte";
-  import { alertNormalWait } from "src/ts/alert";
+  import { alertNormalWait } from "src/ts/alert.svelte";
   import { DBState, selectedCharID, hypaV3State } from "src/ts/stores.svelte";
   import { language } from "src/lang";
   import { translateHTML } from "src/ts/translator/translator";

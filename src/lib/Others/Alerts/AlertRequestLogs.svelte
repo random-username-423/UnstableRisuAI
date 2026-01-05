@@ -4,7 +4,7 @@
     import json from 'highlight.js/lib/languages/json';
     import { language } from 'src/lang'
     import Button from "src/lib/UI/GUI/Button.svelte"
-    import { alertClear } from 'src/ts/alert'
+    import { alertClear } from 'src/ts/alert.svelte'
     import { getFetchLogs } from "src/ts/fetch"
 
     let expandedLogs: Set<number> = $state(new Set())

@@ -1,7 +1,7 @@
 import { type MCPTool, MCPToolHandler, type RPCToolCallContent } from '../mcplib'
 import { DBState } from 'src/ts/stores.svelte'
 import { pickHashRand } from 'src/ts/util'
-import { alertConfirm } from 'src/ts/alert'
+import { alertConfirm } from 'src/ts/alert.svelte'
 import { language } from 'src/lang'
 
 export class ModuleHandler extends MCPToolHandler {

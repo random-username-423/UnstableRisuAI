@@ -2,8 +2,8 @@
     // ============================================================
     // IMPORTS
     // ============================================================
-    import { DBState, alertStore, selectedCharID } from "src/ts/stores.svelte"
-    import { alertClear } from "src/ts/alert"
+    import { DBState, alertState, selectedCharID } from "src/ts/stores.svelte"
+    import { alertClear } from "src/ts/alert.svelte"
     import { XIcon } from "@lucide/svelte"
     import { isCharacterHasAssets } from "src/ts/characterCards.svelte"
     import Button from "../../UI/GUI/Button.svelte"
@@ -64,9 +64,9 @@
         </h1>
         <span class="text-textcolor mt-4">{language.type}</span>
         {#if cardExportType === ""}
-            {#if $alertStore.submsg === "module"}
+            {#if alertState.submsg === "module"}
                 <span class="text-textcolor2 text-sm">{language.risuMDesc}</span>
-            {:else if $alertStore.submsg === "preset"}
+            {:else if alertState.submsg === "preset"}
                 <span class="text-textcolor2 text-sm">{language.risupresetDesc}</span>
                 {#if cardExportType2 === "preset" && (DBState.db.botPresets[DBState.db.botPresetsId].image || DBState.db.botPresets[DBState.db.botPresetsId].regex?.length > 0)}
                     <span class="text-red-500 text-sm"
@@ -88,7 +88,7 @@
             <span class="text-textcolor2 text-sm">{language.realmDesc}</span>
         {/if}
         <div class="flex items-center flex-wrap mt-2">
-            {#if $alertStore.submsg === "preset"}
+            {#if alertState.submsg === "preset"}
                 <button
                     class="bg-bgcolor px-2 py-4 rounded-lg flex-1"
                     class:ring-1={cardExportType === "realm"}
@@ -103,7 +103,7 @@
                         cardExportType = ""
                     }}>Risupreset</button
                 >
-            {:else if $alertStore.submsg === "module"}
+            {:else if alertState.submsg === "module"}
                 <button
                     class="bg-bgcolor px-2 py-4 rounded-lg ml-2 flex-1"
                     class:ring-1={cardExportType === "realm"}
@@ -143,7 +143,7 @@
                 >
             {/if}
         </div>
-        {#if $alertStore.submsg === "" && cardExportType === ""}
+        {#if alertState.submsg === "" && cardExportType === ""}
             <span class="text-textcolor mt-4">{language.format}</span>
             <SelectInput bind:value={cardExportType2} className="mt-2">
                 <OptionInput value="charx">CHARX</OptionInput>

@@ -14,7 +14,7 @@
     import { findCharacterbyId } from "../../ts/characters.svelte";
     import { language } from "../../lang";
     import { isExpTranslator, translate } from "../../ts/translator/translator";
-    import { alertError, alertNormal, alertWait, showHypaV2Alert } from "../../ts/alert";
+    import { alertError, alertNormal, alertWait, showHypaV2Alert } from "../../ts/alert.svelte";
     import sendSound from '../../etc/send.mp3'
     import { processScript } from "src/ts/process/scripts";
     import CreatorQuote from "./CreatorQuote.svelte";

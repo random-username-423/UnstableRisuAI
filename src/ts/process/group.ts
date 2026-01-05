@@ -1,6 +1,6 @@
 import { shuffle } from "lodash";
 import { findCharacterbyId } from "../characters.svelte";
-import { alertConfirm, alertError, alertSelectChar } from "../alert";
+import { alertConfirm, alertError, alertSelectChar } from "../alert.svelte";
 import { language } from "src/lang";
 import { get } from "svelte/store";
 import { getDatabase, setDatabase } from "../storage/database.svelte";

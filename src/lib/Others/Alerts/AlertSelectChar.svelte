@@ -3,15 +3,15 @@
     import { getCharImage } from "src/ts/characters.svelte"
     import BarIcon from "src/lib/SideBars/BarIcon.svelte"
     import { User } from "@lucide/svelte"
-    import { alertClear } from "src/ts/alert"
+    import { alertClear } from "src/ts/alert.svelte"
     import AlertContainer from "./AlertContainer.svelte"
-    import { alertStore } from "src/ts/stores.svelte"
+    import { alertState } from "src/ts/stores.svelte"
 </script>
 
 <AlertContainer title="Select" titleColor="green">
-    <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
-    {#if $alertStore.submsg}
-        <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
+    <span class="text-gray-300 whitespace-pre-wrap">{alertState.msg}</span>
+    {#if alertState.submsg}
+        <span class="text-gray-500 text-sm">{alertState.submsg}</span>
     {/if}
 
     <div class="flex w-full items-start flex-wrap gap-2 justify-start">

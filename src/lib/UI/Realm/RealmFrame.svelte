@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { alertMd } from "src/ts/alert";
+    import { alertMd } from "src/ts/alert.svelte";
     import { shareRealmCardData } from "src/ts/realm";
     import { downloadPreset } from "src/ts/storage/preset-manager";
     import { DBState } from 'src/ts/stores.svelte';

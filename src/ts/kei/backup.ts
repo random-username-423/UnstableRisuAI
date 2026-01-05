@@ -1,4 +1,4 @@
-import { alertNormal, alertSelect } from "../alert"
+import { alertNormal, alertSelect } from "../alert.svelte"
 import { keiServerURL } from "./kei"
 import { getDatabase, setDatabase } from "../storage/database.svelte"
 import { requiresFullEncoderReload } from "../globalApi.svelte"

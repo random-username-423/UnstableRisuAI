@@ -9,7 +9,7 @@
     import Check from "../UI/GUI/CheckInput.svelte";
     import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/characters.svelte";
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
-    import { alertTOS, showHypaV2Alert } from "../../ts/alert";
+    import { alertTOS, showHypaV2Alert } from "../../ts/alert.svelte";
     import BarIcon from "./BarIcon.svelte";
     import { selectMultipleFile, selectSingleFile } from "../../ts/util";
     import { getAuthorNoteDefaultText } from "src/ts/process/prompt"

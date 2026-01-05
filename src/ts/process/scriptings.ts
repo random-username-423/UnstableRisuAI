@@ -8,7 +8,7 @@ import { type groupChat } from '../storage/types/character';
 import { type character } from '../storage/types/character';
 import { get } from "svelte/store";
 import { ReloadChatPointer, ReloadGUIPointer, selectedCharID } from "../stores.svelte";
-import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "../alert";
+import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "../alert.svelte";
 import { HypaProcesser } from "./memory/hypamemory";
 import { generateAIImage } from "./stableDiff";
 import { writeInlayImage, getInlayAsset } from "./files/inlays";

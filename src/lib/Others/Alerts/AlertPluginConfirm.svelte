@@ -1,7 +1,7 @@
 <script lang="ts">
 	import AlertContainer from "./AlertContainer.svelte"
 	import Button from "../../UI/GUI/Button.svelte"
-	import { alertClear } from "src/ts/alert"
+	import { alertClear } from "src/ts/alert.svelte"
 
 	type Props = {
 		msg: string

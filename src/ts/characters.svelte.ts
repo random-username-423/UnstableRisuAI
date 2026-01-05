@@ -3,7 +3,7 @@ import { saveImage, setDatabase, defaultSdDataFunc, getDatabase, getCharacterByI
 import { type Chat } from './storage/types/chat';
 import { type loreBook } from './storage/types/character';
 import { type character } from './storage/types/character';
-import { alertAddCharacter, alertClear, alertConfirm, alertError, alertNormal, alertSelect, alertWait } from "./alert";
+import { alertAddCharacter, alertClear, alertConfirm, alertError, alertNormal, alertSelect, alertWait } from "./alert.svelte";
 import { language } from "../lang";
 import { checkNullish, selectMultipleFile, selectSingleFile } from "./util";
 import { getUserName } from "./persona";

@@ -1,4 +1,4 @@
-import { alertError, alertErrorWait, alertInput, alertNormal, alertSelect, alertWait } from "../alert";
+import { alertError, alertErrorWait, alertInput, alertNormal, alertSelect, alertWait } from "../alert.svelte";
 import { getDatabase } from "../storage/database.svelte";
 import { type Database } from '../storage/types/database';
 import { forageStorage, getUnpargeables, openURL } from "../globalApi.svelte";

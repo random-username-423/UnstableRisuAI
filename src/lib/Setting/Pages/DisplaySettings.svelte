@@ -18,7 +18,7 @@
   import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
   import Button from "src/lib/UI/GUI/Button.svelte";
   import { CustomGUISettingMenuStore } from "src/ts/stores.svelte";
-  import { alertError } from "src/ts/alert";
+  import { alertError } from "src/ts/alert.svelte";
 
     const onSchemeInputChange = (e:Event) => {
         changeColorScheme((e.target as HTMLInputElement).value)

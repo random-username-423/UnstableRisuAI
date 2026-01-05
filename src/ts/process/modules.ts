@@ -1,5 +1,5 @@
 import { language } from "src/lang"
-import { alertClear, alertConfirm, alertError, alertModuleSelect, alertNormal, alertWait } from "../alert"
+import { alertClear, alertConfirm, alertError, alertModuleSelect, alertNormal, alertWait } from "../alert.svelte"
 import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase } from "../storage/database.svelte"
 import { type triggerscript } from '../storage/types/character'
 import { type customscript } from '../storage/types/character'

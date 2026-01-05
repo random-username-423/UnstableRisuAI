@@ -2,7 +2,7 @@
     import { XIcon } from "@lucide/svelte"
     import { getChatBranches } from "src/ts/gui/branches"
     import { getCurrentCharacter } from "src/ts/storage/database.svelte"
-    import { alertClear } from "src/ts/alert"
+    import { alertClear } from "src/ts/alert.svelte"
 
     // Local state for hover preview
     let branchHover: null | {

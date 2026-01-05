@@ -2,7 +2,7 @@
     // ============================================================
     // IMPORTS
     // ============================================================
-    import { alertStore } from "src/ts/stores.svelte"
+    import { alertState } from "src/ts/stores.svelte"
     import ModuleChatMenu from "../Setting/Pages/Module/ModuleChatMenu.svelte"
     import Button from "../UI/GUI/Button.svelte"
 
@@ -19,7 +19,7 @@
     import AlertHypaV2 from "./Alerts/AlertHypaV2.svelte"
     import AlertAddChar from "./Alerts/AlertAddChar.svelte"
     import AlertChatOptions from "./Alerts/AlertChatOptions.svelte"
-    import { alertClear } from "src/ts/alert"
+    import { alertClear } from "src/ts/alert.svelte"
 </script>
 
 <!-- ============================================================ -->
@@ -27,43 +27,43 @@
 <!-- ============================================================ -->
 
 <!-- Error Alert (with stack trace) -->
-{#if $alertStore.type === "error"}
+{#if alertState.type === "error"}
     <AlertError
-        msg={$alertStore.msg}
-        submsg={$alertStore.submsg}
-        stackTrace={$alertStore.stackTrace}
+        msg={alertState.msg}
+        submsg={alertState.submsg}
+        stackTrace={alertState.stackTrace}
         onClose={() => alertClear()}
     />
 
 <!-- Simple Alerts (using AlertSimple component) -->
-{:else if $alertStore.type === "normal"}
+{:else if alertState.type === "normal"}
     <AlertSimple
-        msg={$alertStore.msg}
+        msg={alertState.msg}
         buttons="ok"
     />
 
-{:else if $alertStore.type === "markdown"}
+{:else if alertState.type === "markdown"}
     <AlertSimple
-        msg={$alertStore.msg}
+        msg={alertState.msg}
         msgType="markdown"
         buttons="ok"
     />
 
-{:else if $alertStore.type === "ask"}
+{:else if alertState.type === "ask"}
     <AlertSimple
         title="Confirm"
-        msg={$alertStore.msg}
+        msg={alertState.msg}
         buttons="yesno"
     />
 
-{:else if $alertStore.type === "input"}
+{:else if alertState.type === "input"}
     <AlertSimple
         title="Input"
-        msg={$alertStore.msg}
-        buttons={{ type: "input", inputDatalist: $alertStore.datalist }}
+        msg={alertState.msg}
+        buttons={{ type: "input", inputDatalist: alertState.datalist }}
     />
 
-{:else if $alertStore.type === "tos"}
+{:else if alertState.type === "tos"}
     <AlertSimple
         msg="You should accept [Terms of Service](https://sv.risuai.xyz/hub/tos) to continue"
         msgType="markdown"
@@ -74,57 +74,57 @@
 <!-- Complex Alerts (using dedicated components) -->
 <!-- ============================================================ -->
 <!-- PLUGIN CONFIRM - Plugin confirmation dialog -->
-{:else if $alertStore.type === "pluginconfirm"}
-    <AlertPluginConfirm msg={$alertStore.msg} />
+{:else if alertState.type === "pluginconfirm"}
+    <AlertPluginConfirm msg={alertState.msg} />
 
 <!-- SELECT CHAR - Character selection dialog -->
-{:else if $alertStore.type === "selectChar"}
+{:else if alertState.type === "selectChar"}
     <AlertSelectChar />
 
 <!-- LOGIN - Login iframe dialog -->
-{:else if $alertStore.type === "login"}
+{:else if alertState.type === "login"}
     <AlertLogin />
 
 <!-- REQUEST DATA - Data request dialog -->
-{:else if $alertStore.type === "requestdata"}
+{:else if alertState.type === "requestdata"}
     <AlertRequestData />
 
 <!-- HYPA V2 - HypaV2 data editor -->
-{:else if $alertStore.type === "hypaV2"}
+{:else if alertState.type === "hypaV2"}
     <AlertHypaV2 />
 
 <!-- ADD CHAR - Character addition menu -->
-{:else if $alertStore.type === "addchar"}
+{:else if alertState.type === "addchar"}
     <AlertAddChar />
 
 <!-- CHAT OPTIONS - Chat options menu -->
-{:else if $alertStore.type === "chatOptions"}
+{:else if alertState.type === "chatOptions"}
     <AlertChatOptions />
 
 <!-- WAIT - Simple waiting message -->
-{:else if $alertStore.type === "wait"}
+{:else if alertState.type === "wait"}
     <AlertContainer>
-        <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
-        {#if $alertStore.submsg}
-            <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
+        <span class="text-gray-300 whitespace-pre-wrap">{alertState.msg}</span>
+        {#if alertState.submsg}
+            <span class="text-gray-500 text-sm">{alertState.submsg}</span>
         {/if}
     </AlertContainer>
 
 <!-- WAIT2 - Waiting message with visible background -->
-{:else if $alertStore.type === "wait2"}
+{:else if alertState.type === "wait2"}
     <AlertContainer variant="opaque">
-        <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
-        {#if $alertStore.submsg}
-            <span class="text-gray-500 text-sm">{$alertStore.submsg}</span>
+        <span class="text-gray-300 whitespace-pre-wrap">{alertState.msg}</span>
+        {#if alertState.submsg}
+            <span class="text-gray-500 text-sm">{alertState.submsg}</span>
         {/if}
     </AlertContainer>
 
 <!-- SELECT - Button selection dialog -->
-{:else if $alertStore.type === "select"}
+{:else if alertState.type === "select"}
     <AlertContainer>
-        {@const hasDisplay = $alertStore.msg.startsWith("__DISPLAY__")}
+        {@const hasDisplay = alertState.msg.startsWith("__DISPLAY__")}
         {#if hasDisplay}
-            {@const parts = $alertStore.msg.substring(11).split("||")}
+            {@const parts = alertState.msg.substring(11).split("||")}
             <div class="mb-4 text-textcolor">{parts[0]}</div>
             {#each parts.slice(1) as n, i}
                 <Button
@@ -135,7 +135,7 @@
                 >
             {/each}
         {:else}
-            {@const parts = $alertStore.msg.split("||")}
+            {@const parts = alertState.msg.split("||")}
             {#each parts as n, i}
                 <Button
                     className="mt-4"
@@ -148,26 +148,26 @@
     </AlertContainer>
 
 <!-- PROGRESS - Progress bar display -->
-{:else if $alertStore.type === "progress"}
+{:else if alertState.type === "progress"}
     <AlertContainer>
-        <span class="text-gray-300 whitespace-pre-wrap">{$alertStore.msg}</span>
+        <span class="text-gray-300 whitespace-pre-wrap">{alertState.msg}</span>
         <div class="w-full min-w-64 md:min-w-138 h-2 bg-darkbg border border-darkborderc rounded-md mt-6">
             <div
                 class="h-full bg-linear-to-r from-blue-500 to-purple-800 saving-animation transition-[width]"
-                style:width={$alertStore.submsg + "%"}
+                style:width={alertState.submsg + "%"}
             ></div>
         </div>
         <div class="w-full flex justify-center mt-6">
-            <span class="text-gray-500 text-sm">{$alertStore.submsg + "%"}</span>
+            <span class="text-gray-500 text-sm">{alertState.submsg + "%"}</span>
         </div>
     </AlertContainer>
 
 <!-- CARD EXPORT - Uses external component -->
-{:else if $alertStore.type === "cardexport"}
+{:else if alertState.type === "cardexport"}
     <AlertCardExport />
 
 <!-- SELECT MODULE - Uses external component -->
-{:else if $alertStore.type === "selectModule"}
+{:else if alertState.type === "selectModule"}
     <ModuleChatMenu
         alertMode
         close={(d) => {
@@ -176,11 +176,11 @@
     />
 
 <!-- BRANCHES - Chat branch visualization -->
-{:else if $alertStore.type === "branches"}
+{:else if alertState.type === "branches"}
     <AlertBranches />
 
 <!-- REQUEST LOGS - Uses external component -->
-{:else if $alertStore.type === "requestlogs"}
+{:else if alertState.type === "requestlogs"}
     <AlertRequestLogs />
 {/if}
 

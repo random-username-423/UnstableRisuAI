@@ -42,7 +42,7 @@
     import { getCharacterIndexObject } from "src/ts/characters.svelte";
     import { v4 } from "uuid";
     import { checkCharOrder, getFileSrc, saveAsset } from "src/ts/globalApi.svelte";
-    import { alertInput, alertSelect } from "src/ts/alert";
+    import { alertInput, alertSelect } from "src/ts/alert.svelte";
     import SideChatList from "./SideChatList.svelte";
     import { ConnectionIsHost, ConnectionOpenStore, RoomIdStore } from "src/ts/sync/multiuser";
   import { sideBarSize } from "src/ts/gui/guisize";
