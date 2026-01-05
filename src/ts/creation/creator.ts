@@ -1,5 +1,5 @@
 import { language } from "src/lang";
-import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../alert";
+import { alertError, alertInput, alertNormal, alertSelect, alertStore, alertWait } from "../alert";
 import { requestChatData } from "../process/request/request";
 import { checkCharOrder, saveAsset } from "../globalApi.svelte";
 import { globalFetch } from "../fetch";
@@ -191,10 +191,7 @@ async function createBotFromWebMain(prompt:string):Promise<creationResult>{
     }
 
 
-    alertStore.set({
-        type: 'wait',
-        msg: 'Loading..'
-    })
+    alertWait('Loading..')
     const rqv = val + "\n\n[[This was a character's wiki page data.]]"
     const ch = await requestChatData({
         formated: [{
@@ -301,10 +298,7 @@ async function createBotFromWeb() {
     if(search.length < 3){
         return
     }
-    alertStore.set({
-        type: 'wait',
-        msg: 'Fetching..'
-    })
+    alertWait('Fetching..')
     const d = (sel === 0) ? (await createBotFromWebMain(search)) : (await createBotByAI(search))
     if(d.ok === 'creation'){
         const db = getDatabase()

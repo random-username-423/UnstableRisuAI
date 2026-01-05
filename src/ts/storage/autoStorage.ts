@@ -3,7 +3,7 @@ import { replaceDbResources } from "../globalApi.svelte"
 import { isCapacitor, isNodeServer } from "src/ts/platform"
 import { NodeStorage } from "./nodeStorage"
 import { OpfsStorage } from "./opfsStorage"
-import { alertClear, alertInput, alertSelect, alertStore } from "../alert"
+import { alertClear, alertInput, alertSelect, alertStore, alertWait } from "../alert"
 import { getDatabase } from "./database.svelte"
 import { type Database } from './types/database'
 import { AccountStorage } from "./accountStorage"
@@ -74,10 +74,7 @@ export class AutoStorage{
             const replaced:{[key:string]:string} = {}
             
             for(const key of keys){
-                alertStore.set({
-                    type: "wait",
-                    msg: `Migrating your data...(${i}/${keys.length})`
-                })
+                alertWait(`Migrating your data...(${i}/${keys.length})`)
                 const rkey = await accountStorage.setItem(key,await this.realStorage.getItem(key))
                 if(rkey !== key){
                     replaced[key] = rkey

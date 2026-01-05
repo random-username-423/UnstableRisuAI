@@ -743,10 +743,7 @@ export function createBlankChar():character{
 
 export async function makeGroupImage() {
     try {
-        alertStore.set({
-            type: 'wait',
-            msg: `Loading..`
-        })
+        alertWait(`Loading..`)
         const db = getDatabase()
         const charID = get(selectedCharID)
         const group = db.characters[charID]

@@ -228,17 +228,11 @@ export function LoadLocalBackup(){
                         if (isTauri) {
                             await writeFile('database/database.bin', db, { baseDir: BaseDirectory.AppData });
                             await relaunch();
-                            alertStore.set({
-                                type: "wait",
-                                msg: "Success, Refreshing your app."
-                            });
+                            alertWait("Success, Refreshing your app.");
                         } else {
                             await forageStorage.setItem('database/database.bin', db);
                             location.search = '';
-                            alertStore.set({
-                                type: "wait",
-                                msg: "Success, Refreshing your app."
-                            });
+                            alertWait("Success, Refreshing your app.");
                         }
                     } else {
                         if (isTauri) {

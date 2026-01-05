@@ -87,10 +87,7 @@ export async function importCharacterProcess(f:{
 
     if(f.name.endsWith('charx') || f.name.endsWith('jpg') || f.name.endsWith('jpeg')){
         console.log('reading charx')
-        alertStore.set({
-            type: 'wait',
-            msg: 'Loading... (Reading)'
-        })
+        alertWait('Loading... (Reading)')
 
         let charXMode:'normal'|'skippable'|'signal' = 'normal'
         let signal = ''
@@ -176,12 +173,9 @@ export async function importCharacterProcess(f:{
         alertError(language.errors.noData)
         return
     }
-    
 
-    alertStore.set({
-        type: 'wait',
-        msg: 'Loading... (Reading)'
-    })
+
+    alertWait('Loading... (Reading)')
     await sleep(10)
     
     // const readed = PngChunk.read(img, ['chara'])?.['chara']
@@ -1339,11 +1333,8 @@ export async function exportCharacterCard(char:character, type:'png'|'json'|'cha
             }
     
             await sleep(10)
-            alertStore.set({
-                type: 'wait',
-                msg: 'Loading... (Writing)'
-            })
-    
+            alertWait('Loading... (Writing)')
+
             await writer.write("chara", Buffer.from(JSON.stringify(card)).toString('base64'))     
         }
         else if(spec === 'v3'){
@@ -1485,11 +1476,8 @@ export async function exportCharacterCard(char:character, type:'png'|'json'|'cha
             }
 
             await sleep(10)
-            alertStore.set({
-                type: 'wait',
-                msg: 'Loading... (Writing)'
-            })
-    
+            alertWait('Loading... (Writing)')
+
             if(type === 'charx' || type === 'charxJpeg'){
                 const md:RisuModule = {
                     name: `${char.name} Module`,
@@ -1808,10 +1796,7 @@ export async function downloadRisuHub(id:string, arg:{
             if(!(await alertTOS())){
                 return
             }
-            alertStore.set({
-                type: "wait",
-                msg: "Downloading..."
-            })
+            alertWait("Downloading...")
         }
         const res = await fetch("https://realm.risuai.net/api/v1/download/dynamic/" + id + '?cors=true', {
             headers: {

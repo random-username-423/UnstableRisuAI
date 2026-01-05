@@ -1,5 +1,5 @@
 import { language } from "src/lang"
-import { alertClear, alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "../alert"
+import { alertClear, alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore, alertWait } from "../alert"
 import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase } from "../storage/database.svelte"
 import { type triggerscript } from '../storage/types/character'
 import { type customscript } from '../storage/types/character'
@@ -74,10 +74,7 @@ export async function exportModule(module:RisuModule, arg:{
     for(let i=0;i<assets.length;i++){
         const asset = assets[i]
         writeByte(1) //mark as asset
-        alertStore.set({
-            type: 'wait',
-            msg: `Loading... (Adding Assets ${i} / ${assets.length})`
-        })
+        alertWait(`Loading... (Adding Assets ${i} / ${assets.length})`)
         let rData = await readImage(asset[1])
         if(!rData){
             rData = new Uint8Array(0) //blank buffer
@@ -157,10 +154,7 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
         const len = readLength()
         const data = readData(len)
         module.assets[i][1] = await saveAsset(Buffer.from(await decodeRPack(data)))
-        alertStore.set({
-            type: 'wait',
-            msg: `Loading... (Adding Assets ${i} / ${module.assets.length})`
-        })
+        alertWait(`Loading... (Adding Assets ${i} / ${module.assets.length})`)
         if(!isTauri && !isCapacitor &&!isNodeServer){
             await sleep(100)
         }
