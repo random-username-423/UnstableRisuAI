@@ -9,7 +9,6 @@
     import AlertRequestData from "./Alerts/AlertRequestData.svelte"
     import AlertError from "./Alerts/AlertError.svelte"
     import AlertSimple from "./Alerts/AlertSimple.svelte"
-    import AlertBranches from "./Alerts/AlertBranches.svelte"
     import AlertCardExport from "./Alerts/AlertCardExport.svelte"
     import AlertPluginConfirm from "./Alerts/AlertPluginConfirm.svelte"
     import AlertContainer from "./Alerts/AlertContainer.svelte"
@@ -173,8 +172,4 @@
             alertClear(d)
         }}
     />
-
-<!-- BRANCHES - Chat branch visualization -->
-{:else if alertState.type === "branches"}
-    <AlertBranches />
 {/if}

@@ -14,7 +14,7 @@
     import TextInput from "../UI/GUI/TextInput.svelte";
 
     import { exportChat, importChat, exportAllChats } from "src/ts/characters.svelte";
-    import { alertBranches, alertChatOptions, alertConfirm, alertError, alertNormal, alertSelect } from "src/ts/alert.svelte";
+    import { alertChatOptions, alertConfirm, alertError, alertNormal, alertSelect } from "src/ts/alert.svelte";
     import { sleep, sortableOptions } from "src/ts/util";
     import { findCharacterbyId } from "src/ts/characters.svelte";
     import { createMultiuserRoom } from "src/ts/sync/multiuser";
@@ -481,7 +481,7 @@
                 <PencilIcon size={18}/>
             </button>
             <button class="text-textcolor2 hover:text-green-500 mr-2 cursor-pointer" onclick={() => {
-                alertBranches()
+                modalState.branches = true
             }}>
                 <SplitIcon size={18}/>
             </button>

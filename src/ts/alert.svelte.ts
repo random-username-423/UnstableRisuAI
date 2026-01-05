@@ -8,7 +8,7 @@ export interface alertData {
     type: 'error' | 'normal' | 'none' | 'ask' | 'wait' | 'selectChar'
     | 'input' | 'wait2' | 'markdown' | 'select' | 'login'
     | 'tos' | 'cardexport' | 'requestdata' | 'addchar' | 'hypaV2' | 'selectModule'
-    | 'chatOptions' | 'branches' | 'progress' | 'pluginconfirm' | 'requestlogs',
+    | 'chatOptions' | 'progress' | 'pluginconfirm',
     msg: string,
     submsg?: string
     datalist?: [string, string][],
@@ -249,11 +249,6 @@ export function alertRequestData(info: AlertGenerationInfoStateData) {
 export function showHypaV2Alert() {
     alertState.type = 'hypaV2'
     alertState.msg = ""
-}
-
-export function alertBranches() {
-    alertState.type = 'branches'
-    alertState.msg = ''
 }
 
 export function alertProgress(msg: string = '', submsg: string = '') {

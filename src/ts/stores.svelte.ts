@@ -42,6 +42,7 @@ export const modalState = $state({
     persona: false,
     bookmark: false,
     requestLogs: false,
+    branches: false,
 })
 
 export const selectedCharID = writable(-1)

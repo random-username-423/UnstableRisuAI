@@ -30,6 +30,7 @@
     import PluginAlertModal from './lib/Others/PluginAlertModal.svelte';
     import PopupList from './lib/UI/PopupList.svelte';
     import ModalRequestLogs from 'src/lib/Others/Modals/ModalRequestLogs.svelte'
+    import ModalBranches from './lib/Others/Modals/ModalBranches.svelte'
 
 
     let didFirstSetup: boolean  = $derived(DBState.db?.didFirstSetup)
@@ -192,6 +193,8 @@
     {#if realmState.uploadTarget}
         <RealmFrame />
     {/if}
+
+    
     {#if modalState.preset}
         <Botpreset close={() => {modalState.preset = false}} />
     {/if}
@@ -205,8 +208,13 @@
         <HypaV3Modal />
     {/if}
     {#if modalState.requestLogs}
-    <ModalRequestLogs />
+        <ModalRequestLogs />
     {/if}
+    {#if modalState.branches}
+        <ModalBranches />
+    {/if}
+
+
     <SavePopupIconComp />
     {#if hypaV3State.progress.open}
         <HypaV3Progress />
