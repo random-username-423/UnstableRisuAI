@@ -1,5 +1,5 @@
 import { get } from "svelte/store"
-import { alertClear, alertMd, alertSelect, alertWait, doingAlert, alertRequestLogs } from "./alert.svelte"
+import { alertClear, alertMd, alertSelect, alertWait, doingAlert } from "./alert.svelte"
 import { getDatabase  } from "./storage/database.svelte"
 import { changeToPreset as changeToPreset2 } from './storage/preset-manager'
 import { alertState, layoutState, modalState, realmState, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
@@ -171,7 +171,7 @@ export function initHotkey(){
                     return
                 }
                 case 'toggleLog':{
-                    alertRequestLogs()
+                    modalState.requestLogs = true
                     break
                 }
                 case 'quickSettings':{

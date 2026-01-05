@@ -29,6 +29,8 @@
     import HypaV3Progress from './lib/Others/HypaV3Progress.svelte';
     import PluginAlertModal from './lib/Others/PluginAlertModal.svelte';
     import PopupList from './lib/UI/PopupList.svelte';
+    import ModalRequestLogs from 'src/lib/Others/Modals/ModalRequestLogs.svelte'
+
 
     let didFirstSetup: boolean  = $derived(DBState.db?.didFirstSetup)
     let gridOpen = $state(false)
@@ -201,6 +203,9 @@
     {/if}
     {#if hypaV3State.open}
         <HypaV3Modal />
+    {/if}
+    {#if modalState.requestLogs}
+    <ModalRequestLogs />
     {/if}
     <SavePopupIconComp />
     {#if hypaV3State.progress.open}

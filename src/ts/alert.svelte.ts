@@ -251,11 +251,6 @@ export function showHypaV2Alert() {
     alertState.msg = ""
 }
 
-export function alertRequestLogs() {
-    alertState.type = 'requestlogs'
-    alertState.msg = ''
-}
-
 export function alertBranches() {
     alertState.type = 'branches'
     alertState.msg = ''

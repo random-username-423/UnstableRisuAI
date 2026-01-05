@@ -6,7 +6,6 @@
     import ModuleChatMenu from "../Setting/Pages/Module/ModuleChatMenu.svelte"
     import Button from "../UI/GUI/Button.svelte"
 
-    import AlertRequestLogs from "./Alerts/AlertRequestLogs.svelte"
     import AlertRequestData from "./Alerts/AlertRequestData.svelte"
     import AlertError from "./Alerts/AlertError.svelte"
     import AlertSimple from "./Alerts/AlertSimple.svelte"
@@ -178,9 +177,4 @@
 <!-- BRANCHES - Chat branch visualization -->
 {:else if alertState.type === "branches"}
     <AlertBranches />
-
-<!-- REQUEST LOGS - Uses external component -->
-{:else if alertState.type === "requestlogs"}
-    <AlertRequestLogs />
 {/if}
-

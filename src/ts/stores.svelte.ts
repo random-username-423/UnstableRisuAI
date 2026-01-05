@@ -40,7 +40,8 @@ export const sideBarState = $state({
 export const modalState = $state({
     preset: false,
     persona: false,
-    bookmark: false
+    bookmark: false,
+    requestLogs: false,
 })
 
 export const selectedCharID = writable(-1)

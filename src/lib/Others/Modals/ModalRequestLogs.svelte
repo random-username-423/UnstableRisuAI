@@ -4,7 +4,7 @@
     import json from 'highlight.js/lib/languages/json';
     import { language } from 'src/lang'
     import Button from "src/lib/UI/GUI/Button.svelte"
-    import { alertClear } from 'src/ts/alert.svelte'
+    import { modalState } from 'src/ts/stores.svelte';
     import { getFetchLogs } from "src/ts/fetch"
 
     let expandedLogs: Set<number> = $state(new Set())
@@ -66,7 +66,7 @@
                 </Button>
                 <button
                     class="text-textcolor2 hover:text-textcolor p-1"
-                    onclick={() => alertClear()}
+                    onclick={() => modalState.requestLogs = false}
                 >
                     <XIcon />
                 </button>
