@@ -59,13 +59,13 @@
 </script>
 
 <AlertContainer title="Error" titleColor="red">
-    <!-- 에러 메시지 -->
+    <!-- Error message -->
     <span class="text-gray-300 whitespace-pre-wrap">{msg}</span>
     {#if submsg}
         <span class="text-gray-500 text-sm">{submsg}</span>
     {/if}
 
-    <!-- 스택 트레이스 -->
+    <!-- Stack trace -->
     {#if stackTrace}
         <div class="mt-4">
             <Button styled="outlined" size="sm" onclick={() => (showDetails = !showDetails)}>
@@ -91,7 +91,7 @@
         </div>
     {/if}
 
-    <!-- OK 버튼 -->
+    <!-- OK button -->
     <Button className="mt-4" onclick={onClose}>OK</Button>
 </AlertContainer>
 

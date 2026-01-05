@@ -23,7 +23,7 @@ export function addToast(msg: string, duration: number = 3000, type: ToastType =
 
     toastState.queue.unshift(toast)
 
-    // 최대 5개로 제한
+    // Limit to maximum 5 items
     if (toastState.queue.length > 5) {
         toastState.queue.pop()
     }
