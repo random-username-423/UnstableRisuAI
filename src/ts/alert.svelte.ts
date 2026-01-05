@@ -224,12 +224,7 @@ export async function alertModuleSelect() {
     alertState.type = 'selectModule'
     alertState.msg = ''
 
-    while (true) {
-        if (alertState.type === 'none') {
-            break
-        }
-        await sleep(20)
-    }
+    await waitAlert()
 
     return alertState.msg
 }
