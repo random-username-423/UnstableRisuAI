@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store"
-import { alertCardExport, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertStore, alertTOS, alertWait } from "./alert"
+import { alertCardExport, alertClear, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertProgress, alertTOS, alertWait } from "./alert.svelte"
 import { defaultSdDataFunc, setDatabase, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite, appVer } from "./storage/database.svelte"
 import { importPreset } from './storage/preset-manager'
 import { type triggerscript } from './storage/types/character'
@@ -87,10 +87,7 @@ export async function importCharacterProcess(f:{
 
     if(f.name.endsWith('charx') || f.name.endsWith('jpg') || f.name.endsWith('jpeg')){
         console.log('reading charx')
-        alertStore.set({
-            type: 'wait',
-            msg: 'Loading... (Reading)'
-        })
+        alertWait('Loading... (Reading)')
 
         let charXMode:'normal'|'skippable'|'signal' = 'normal'
         let signal = ''
@@ -176,12 +173,9 @@ export async function importCharacterProcess(f:{
         alertError(language.errors.noData)
         return
     }
-    
 
-    alertStore.set({
-        type: 'wait',
-        msg: 'Loading... (Reading)'
-    })
+
+    alertWait('Loading... (Reading)')
     await sleep(10)
     
     // const readed = PngChunk.read(img, ['chara'])?.['chara']
@@ -253,11 +247,7 @@ export async function importCharacterProcess(f:{
                 alertWait('Loading... (Loaded ' + readedPngChunks + ' Assets)')
             }
             else{
-                alertStore.set({
-                    type: 'progress',
-                    msg: 'Loading... (Loading Assets)',
-                    submsg: (readedPngChunks / pngChunks * 100).toFixed(2)
-                })
+                alertProgress('Loading... (Loading Assets)', (readedPngChunks / pngChunks * 100).toFixed(2))
             }
 
             readedPngChunks++
@@ -762,11 +752,7 @@ async function importCharacterCardSpec(card:CharacterCardV2Risu|CharacterCardV3,
     if(risuext && card.spec === 'chara_card_v2'){
         if(risuext.emotions){
             for(let i=0;i<risuext.emotions.length;i++){
-                alertStore.set({
-                    type: 'progress',
-                    msg: `Loading... (Loading Emotions)`,
-                    submsg: (i / risuext.emotions.length * 100).toFixed(2)
-                })
+                alertProgress(`Loading... (Loading Emotions)`, (i / risuext.emotions.length * 100).toFixed(2))
                 await sleep(10)
                 if(risuext.emotions[i][1].startsWith('__asset:')){
                     const key = risuext.emotions[i][1].replace('__asset:', '')
@@ -783,11 +769,7 @@ async function importCharacterCardSpec(card:CharacterCardV2Risu|CharacterCardV3,
         }
         if(risuext.additionalAssets){
             for(let i=0;i<risuext.additionalAssets.length;i++){
-                alertStore.set({
-                    type: 'progress',
-                    msg: `Loading... (Loading Assets)`,
-                    submsg: (i / risuext.additionalAssets.length * 100).toFixed(2)
-                })
+                alertProgress(`Loading... (Loading Assets)`, (i / risuext.additionalAssets.length * 100).toFixed(2))
 
                 if(i % 100 === 0){
                     await sleep(10)
@@ -811,11 +793,7 @@ async function importCharacterCardSpec(card:CharacterCardV2Risu|CharacterCardV3,
         if(risuext.vits){
             const keys = Object.keys(risuext.vits)
             for(let i=0;i<keys.length;i++){
-                alertStore.set({
-                    type: 'progress',
-                    msg: `Loading... (Loading VITS)`,
-                    submsg: (i / keys.length * 100).toFixed(2)
-                })
+                alertProgress(`Loading... (Loading VITS)`, (i / keys.length * 100).toFixed(2))
                 await sleep(10)
                 const key = keys[i]
                 if(risuext.vits[key].startsWith('__asset:')){
@@ -854,11 +832,7 @@ async function importCharacterCardSpec(card:CharacterCardV2Risu|CharacterCardV3,
         const data = card.data //required for type checking
         if(data.assets){
             for(let i=0;i<data.assets.length;i++){
-                alertStore.set({
-                    type: 'progress',
-                    msg: `Loading... (Assets)`,
-                    submsg: (i / data.assets.length * 100).toFixed(2)
-                })
+                alertProgress(`Loading... (Assets)`, (i / data.assets.length * 100).toFixed(2))
                 if(i % 100 === 0){
                     await sleep(10)
                 }
@@ -1285,11 +1259,7 @@ export async function exportCharacterCard(char:character, type:'png'|'json'|'cha
             const card = await createBaseV2(char)
             if(card.data.extensions.risuai.emotions && card.data.extensions.risuai.emotions.length > 0){
                 for(let i=0;i<card.data.extensions.risuai.emotions.length;i++){
-                    alertStore.set({
-                        type: 'progress',
-                        msg: 'Loading... (Adding Emotions)',
-                        submsg: (i / card.data.extensions.risuai.emotions.length * 100).toFixed(2)
-                    })
+                    alertProgress('Loading... (Adding Emotions)', (i / card.data.extensions.risuai.emotions.length * 100).toFixed(2))
                     const key = card.data.extensions.risuai.emotions[i][1]
                     const rData = await readImage(key)
                     const b64encoded = Buffer.from(await convertImage(rData)).toString('base64')
@@ -1302,11 +1272,7 @@ export async function exportCharacterCard(char:character, type:'png'|'json'|'cha
             
             if(card.data.extensions.risuai.additionalAssets && card.data.extensions.risuai.additionalAssets.length > 0){
                 for(let i=0;i<card.data.extensions.risuai.additionalAssets.length;i++){
-                    alertStore.set({
-                        type: 'progress',
-                        msg: 'Loading... (Adding Additional Assets)',
-                        submsg: (i / card.data.extensions.risuai.additionalAssets.length * 100).toFixed(2)
-                    })
+                    alertProgress('Loading... (Adding Additional Assets)', (i / card.data.extensions.risuai.additionalAssets.length * 100).toFixed(2))
                     const key = card.data.extensions.risuai.additionalAssets[i][1]
                     const rData = await readImage(key)
                     const b64encoded = Buffer.from(await convertImage(rData)).toString('base64')
@@ -1319,11 +1285,7 @@ export async function exportCharacterCard(char:character, type:'png'|'json'|'cha
             if(char.vits && char.ttsMode === 'vits'){
                 const keys = Object.keys(char.vits.files)
                 for(let i=0;i<keys.length;i++){
-                    alertStore.set({
-                        type: 'progress',
-                        msg: 'Loading... (Adding VITS)',
-                        submsg: (i / keys.length * 100).toFixed(2)
-                    })
+                    alertProgress('Loading... (Adding VITS)', (i / keys.length * 100).toFixed(2))
                     const key = keys[i]
                     const rData = await loadAsset(char.vits.files[key])
                     const b64encoded = Buffer.from(rData).toString('base64')
@@ -1339,22 +1301,15 @@ export async function exportCharacterCard(char:character, type:'png'|'json'|'cha
             }
     
             await sleep(10)
-            alertStore.set({
-                type: 'wait',
-                msg: 'Loading... (Writing)'
-            })
-    
+            alertWait('Loading... (Writing)')
+
             await writer.write("chara", Buffer.from(JSON.stringify(card)).toString('base64'))     
         }
         else if(spec === 'v3'){
             const card = createBaseV3(char)
             if(card.data.assets && card.data.assets.length > 0){
                 for(let i=0;i<card.data.assets.length;i++){
-                    alertStore.set({
-                        type: 'progress',
-                        msg: 'Loading... (Adding Assets)',
-                        submsg: (i / card.data.assets.length * 100).toFixed(2)
-                    })
+                    alertProgress('Loading... (Adding Assets)', (i / card.data.assets.length * 100).toFixed(2))
                     let key = card.data.assets[i].uri
                     let rData:Uint8Array
                     if(key === 'ccdefault:' && type !== 'png'){
@@ -1485,11 +1440,8 @@ export async function exportCharacterCard(char:character, type:'png'|'json'|'cha
             }
 
             await sleep(10)
-            alertStore.set({
-                type: 'wait',
-                msg: 'Loading... (Writing)'
-            })
-    
+            alertWait('Loading... (Writing)')
+
             if(type === 'charx' || type === 'charxJpeg'){
                 const md:RisuModule = {
                     name: `${char.name} Module`,
@@ -1808,10 +1760,7 @@ export async function downloadRisuHub(id:string, arg:{
             if(!(await alertTOS())){
                 return
             }
-            alertStore.set({
-                type: "wait",
-                msg: "Downloading..."
-            })
+            alertWait("Downloading...")
         }
         const res = await fetch("https://realm.risuai.net/api/v1/download/dynamic/" + id + '?cors=true', {
             headers: {
@@ -1862,10 +1811,7 @@ export async function downloadRisuHub(id:string, arg:{
             const index = db.characters.length-1
             characterFormatUpdate(index);
             selectedCharID.set(index);
-            alertStore.set({
-                type: 'none',
-                msg: ''
-            })
+            alertClear()
         }
     } catch (error) {
         console.error(error)

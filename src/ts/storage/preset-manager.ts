@@ -1,7 +1,7 @@
 import * as fflate from 'fflate';
 import { encode as encodeMsgpack } from "msgpackr/index-no-eval";
 import { language } from 'src/lang';
-import { alertNormal } from '../alert';
+import { alertNormal } from '../alert.svelte';
 import { downloadFile } from '../globalApi.svelte';
 import { LLMFormat } from '../model/modellist';
 import { decodeRPack, encodeRPack } from '../rpack/rpack_bg';

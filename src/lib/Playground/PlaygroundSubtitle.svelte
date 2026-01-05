@@ -8,7 +8,7 @@
     import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
     import { requestChatData } from "src/ts/process/request/request";
     import { asBuffer, selectFileByDom, selectSingleFile, sleep } from "src/ts/util";
-    import { alertError, alertSelect } from "src/ts/alert";
+    import { alertError, alertSelect } from "src/ts/alert.svelte";
     import { risuChatParser } from "src/ts/parser.svelte";
     import { AppendableBuffer, downloadFile } from "src/ts/globalApi.svelte";
     import { getLanguageCodes } from "src/ts/util";

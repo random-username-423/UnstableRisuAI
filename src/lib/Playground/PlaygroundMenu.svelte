@@ -18,6 +18,7 @@
   import PlaygroundTranslation from "./PlaygroundTranslation.svelte";
   import PlaygroundMcp from "./PlaygroundMCP.svelte";
     import PlaygroundDocs from "./PlaygroundDocs.svelte";
+    import PlaygroundAlert from "./PlaygroundAlert.svelte";
 
     let easterEggTouch = $state(0)
 
@@ -123,6 +124,11 @@
                 <h1 class="text-2xl font-bold text-start">{language.joinMultiUserRoom}</h1>
             </button>
             <button class="bg-darkbg rounded-md p-6 flex flex-col transition-shadow hover:ring-1" onclick={() => {
+                PlaygroundStore.set(14)
+            }}>
+                <h1 class="text-2xl font-bold text-start">Alert</h1>
+            </button>
+            <button class="bg-darkbg rounded-md p-6 flex flex-col transition-shadow hover:ring-1" onclick={() => {
                 easterEggTouch += 1
             }}>
                 <h1 class="text-2xl font-bold text-start">
@@ -182,6 +188,9 @@
             {/if}
             {#if $PlaygroundStore === 13}
                 <PlaygroundDocs/>
+            {/if}
+            {#if $PlaygroundStore === 14}
+                <PlaygroundAlert/>
             {/if}
             {#if $PlaygroundStore === 101}
                 <ToolConversion/>

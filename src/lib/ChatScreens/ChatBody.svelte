@@ -2,7 +2,7 @@
     import { isEqual } from "lodash"
     import { DBState } from 'src/ts/stores.svelte'
     import { sleep } from "src/ts/util"
-    import { alertError } from "../../ts/alert"
+    import { alertError } from "../../ts/alert.svelte"
     import { addMetadataToElement, getDistance, ParseMarkdown, postTranslationParse, trimMarkdown, type CbsConditions, type simpleCharacterArgument } from "../../ts/parser.svelte"
     import { getLLMCache, translateHTML } from "../../ts/translator/translator"
     import { getModuleAssets } from "src/ts/process/modules";

@@ -17,7 +17,7 @@
 <script lang="ts">
     import { TriangleAlert, FlaskConicalIcon, CircleQuestionMarkIcon } from "@lucide/svelte";
     import { language } from "src/lang";
-    import { alertMd } from "src/ts/alert";
+    import { alertMd } from "src/ts/alert.svelte";
 
     interface Props {
         unrecommended?: boolean;

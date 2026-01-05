@@ -13,8 +13,8 @@ import { open } from '@tauri-apps/plugin-shell'
 import { setDatabase, getDatabase, appVer, getCurrentCharacter } from "./storage/database.svelte";
 import { type Database } from './storage/types/database';
 import { selectedCharID, DBState, selIdState, ReloadGUIPointer } from "./stores.svelte";
-import { alertConfirm, alertNormal, alertNormalWait, alertSelect } from "./alert";
-import { syncDrive } from "./drive/drive";
+import { alertConfirm, alertNormal, alertNormalWait, alertSelect } from "./alert.svelte";
+import { syncDrive } from "./drive/drive.svelte";
 import { hasher } from "./parser.svelte";
 import { hubURL } from "./characterCards.svelte";
 import { decodeRisuSave, RisuSaveEncoder, type toSaveType } from "./storage/risuSave";

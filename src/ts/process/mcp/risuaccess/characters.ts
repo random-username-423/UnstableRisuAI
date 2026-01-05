@@ -5,7 +5,7 @@ import { type groupChat } from 'src/ts/storage/types/character'
 import { type character } from 'src/ts/storage/types/character'
 import { DBState } from 'src/ts/stores.svelte'
 import { pickHashRand } from 'src/ts/util'
-import { alertConfirm } from 'src/ts/alert'
+import { alertConfirm } from 'src/ts/alert.svelte'
 import { language } from 'src/lang'
 
 export class CharacterHandler extends MCPToolHandler {

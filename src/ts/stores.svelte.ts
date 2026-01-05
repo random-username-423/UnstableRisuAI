@@ -3,13 +3,14 @@ import type { Database } from './storage/types/database';
 import type { groupChat } from './storage/types/character';
 import type { character } from './storage/types/character';
 import type { simpleCharacterArgument } from "./parser.svelte";
-import type { alertData } from "./alert";
+import type { alertData } from "./alert.svelte";
 import { moduleUpdate } from "./process/modules";
 import { resetScriptCache } from "./process/scripts";
 import type { hubType } from "./characterCards.svelte";
 import type { PluginSafetyErrors } from "./plugins/pluginSafety";
+import type { ToastItem } from "./toast.svelte";
 
-function updateSize(){
+function updateSize() {
     layoutState.width = window.innerWidth
     layoutState.height = window.innerHeight
     layoutState.compactMode = window.innerWidth <= 1024
@@ -44,7 +45,7 @@ export const modalState = $state({
 
 export const selectedCharID = writable(-1)
 export const CurrentTriggerIdStore = writable<string | null>(null)
-export const CharEmotion = writable({} as {[key:string]: [string, string, number][]})
+export const CharEmotion = writable({} as { [key: string]: [string, string, number][] })
 export const ViewBoxsize = writable({ width: 12 * 16, height: 12 * 16 }); // Default width and height in pixels
 export const settingsOpen = writable(false)
 export const botMakerMode = writable(false)
@@ -56,8 +57,8 @@ export const ReloadChatPointer = writable({} as Record<number, number>)
 export const ScrollToMessageStore = $state({ value: -1 })
 
 export const realmState = $state({
-    expanded: false, 
-    autoOpenChar: null as  hubType | null,
+    expanded: false,
+    autoOpenChar: null as hubType | null,
     uploadTarget: ''
 })
 
@@ -67,10 +68,15 @@ export const CustomCSSStore = writable('')
 export const SafeModeStore = writable(false)
 export const CharConfigSubMenu = writable(0)
 export const CustomGUISettingMenuStore = writable(false)
-export const alertStore = writable({
+
+
+export const alertState = $state({
     type: 'none',
     msg: 'n',
 } as alertData)
+
+// 객체로 감싸서 reactivity 유지
+export const toastState = $state({ queue: [] as ToastItem[] })
 
 export const hypaV3State = $state({
     open: false,
@@ -90,10 +96,10 @@ export const selIdState = $state({
 CustomCSSStore.subscribe((css) => {
     console.log(css)
     const q = document.querySelector('#customcss')
-    if(q){
+    if (q) {
         q.innerHTML = css
     }
-    else{
+    else {
         const s = document.createElement('style')
         s.id = 'customcss'
         s.innerHTML = css
@@ -101,12 +107,12 @@ CustomCSSStore.subscribe((css) => {
     }
 })
 
-export function createSimpleCharacter(char:character|groupChat){
-    if((!char) || char.type === 'group'){
+export function createSimpleCharacter(char: character | groupChat) {
+    if ((!char) || char.type === 'group') {
         return null
     }
 
-    const simpleChar:simpleCharacterArgument = {
+    const simpleChar: simpleCharacterArgument = {
         type: "simple",
         customscript: char.customscript,
         chaId: char.chaId,
@@ -145,7 +151,7 @@ export const disableHighlight = writable(true)
 export type MenuDef = {
     name: string,
     icon: string,
-    iconType:'html'|'img'|'none',
+    iconType: 'html' | 'img' | 'none',
     callback: any,
     id: string,
 }
@@ -158,7 +164,7 @@ export const popupStore = $state({
     children: null as null | import("svelte").Snippet,
     mouseX: 0,
     mouseY: 0,
-openId: 0,
+    openId: 0,
 })
 
 //Set might be more ideal, however since Svelte doesn't support reactive Sets, using array for now

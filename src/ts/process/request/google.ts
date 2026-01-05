@@ -8,7 +8,7 @@ import { setInlayAsset, writeInlayImage } from "../files/inlays"
 import { extractJSON, getGeneralJSONSchema } from "../templates/jsonSchema"
 import { applyParameters, type Parameter, type RequestDataArgumentExtended, type requestDataResponse, type StreamResponseChunk } from "./request"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { alertError } from "src/ts/alert";
+import { alertError } from "src/ts/alert.svelte";
 import { addFetchLog } from "src/ts/fetch"
 
 type GeminiFunctionCall = {

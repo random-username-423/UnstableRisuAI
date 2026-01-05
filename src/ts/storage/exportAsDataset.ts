@@ -1,6 +1,6 @@
 import { getDatabase } from "./database.svelte";
 import { downloadFile } from "../globalApi.svelte";
-import { alertNormal } from "../alert";
+import { alertNormal } from "../alert.svelte";
 import { language } from "src/lang";
 
 export async function exportAsDataset(){

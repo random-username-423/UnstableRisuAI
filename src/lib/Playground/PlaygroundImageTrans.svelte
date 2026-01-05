@@ -5,7 +5,7 @@
     import Button from "../UI/GUI/Button.svelte";
     import { jsonOutputTrimmer, selectSingleFile } from "src/ts/util";
     import { requestChatData } from "src/ts/process/request/request";
-    import { alertError } from "src/ts/alert";
+    import { alertError } from "src/ts/alert.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import NumberInput from "../UI/GUI/NumberInput.svelte";
 

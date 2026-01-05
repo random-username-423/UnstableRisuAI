@@ -2,7 +2,7 @@ import { exportCharacterCard } from "./characterCards.svelte";
 import { VirtualWriter } from "./globalApi.svelte";
 import { getCurrentCharacter, getDatabase } from "./storage/database.svelte";
 import { type character } from './storage/types/character';
-import { alertStore } from "./alert";
+import { alertClear } from "./alert.svelte";
 import { asBuffer } from "./util";
 
 let pong = false;
@@ -21,10 +21,7 @@ export async function shareRealmCardData():Promise<{ name: ArrayBuffer; data: Ar
     const writer = new VirtualWriter()
     const namebuf = new TextEncoder().encode(trimedName + '.png')
     await exportCharacterCard(char, 'png', {writer: writer, spec: 'v3'})
-    alertStore.set({
-        type: 'none',
-        msg: ''
-    })
+    alertClear()
     return {
         name: asBuffer(namebuf.buffer),
         data: asBuffer(writer.buf.buffer.buffer)

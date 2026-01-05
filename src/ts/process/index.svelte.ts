@@ -7,7 +7,7 @@ import { DBState } from '../stores.svelte';
 import { CharEmotion, selectedCharID } from "../stores.svelte";
 import { ChatTokenizer, tokenize, tokenizeNum } from "../tokenizer";
 import { language } from "../../lang";
-import { alertError, alertToast } from "../alert";
+import { alertError } from "../alert.svelte";
 import { loadLoreBookV3Prompt } from "./lorebook.svelte";
 import { isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax } from "../util";
 import { getAuthorNoteDefaultText } from "./prompt";
@@ -21,7 +21,7 @@ import { exampleMessage } from "./exampleMessages";
 import { sayTTS } from "./tts";
 import { supaMemory } from "./memory/supaMemory";
 import { v4 } from "uuid";
-import { groupOrder } from "./group";
+import { groupOrder } from "./group.svelte";
 import { runTrigger } from "./triggers";
 import { HypaProcesser } from "./memory/hypamemory";
 import { additionalInformations } from "./embedding/addinfo";
@@ -40,6 +40,7 @@ import { hypaMemoryV3 } from "./memory/hypav3.svelte";
 import { getModuleAssets, getModuleToggles } from "./modules";
 import { readImage } from "../globalApi.svelte";
 import { type OpenAIChat, type MultiModal } from "./types";
+import { addToast } from "../toast.svelte";
 export type { OpenAIChat, MultiModal };
 
 export interface OpenAIChatFull extends OpenAIChat{
@@ -176,7 +177,7 @@ export async function sendChat(chatProcessIndex = -1,arg:{
         })
 
         if(findId === -1){
-            alertToast(`Cannot find preset: ${ele}`)
+            addToast(`Cannot find preset: ${ele}`)
         }
         else{
             changeToPreset(findId, true)

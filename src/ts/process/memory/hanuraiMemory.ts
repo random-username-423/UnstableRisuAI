@@ -1,4 +1,4 @@
-import { alertError } from "src/ts/alert";
+import { alertError } from "src/ts/alert.svelte";
 import type { OpenAIChat } from "../index.svelte";
 import { HypaProcesser } from "./hypamemory";
 import { language } from "src/lang";

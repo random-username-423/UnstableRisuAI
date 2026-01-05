@@ -1,4 +1,4 @@
-import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../alert";
+import { alertError, alertWaitOpaque, alertInput, alertNormal, alertSelect, alertWait } from "../alert.svelte";
 import { getDatabase } from "../storage/database.svelte";
 import { type Database } from '../storage/types/database';
 import { forageStorage, getUnpargeables, openURL } from "../globalApi.svelte";
@@ -73,16 +73,10 @@ export async function checkDriverInit() {
                     await loadDrive(json.access_token, 'backup')
                 }
                 else if(da === 'savetauri' || da === 'loadtauri'){
-                    alertStore.set({
-                        type: 'wait2',
-                        msg: `Copy and paste this Auth Code: ${json.access_token}`
-                    })
+                    alertWaitOpaque(`Copy and paste this Auth Code: ${json.access_token}`)
                 }
                 else if(da === 'accesstauri'){
-                    alertStore.set({
-                        type: 'wait2',
-                        msg: JSON.stringify(json)
-                    })
+                    alertWaitOpaque(JSON.stringify(json))
                 }
             }
             else{
@@ -116,10 +110,7 @@ export function syncDrive() {
 
 
 async function backupDrive(ACCESS_TOKEN:string) {
-    alertStore.set({
-        type: "wait",
-        msg: "Uploading Backup..."
-    })
+    alertWait("Uploading Backup...")
 
     //check backup data is corrupted
     const corrupted = await fetch(hubURL + '/backupcheck', {
@@ -145,10 +136,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
         let i = 0;
         for(const asset of assets){
             i += 1;
-            alertStore.set({
-                type: "wait",
-                msg: `Uploading Backup... (${i} / ${assets.length})`
-            })
+            alertWait(`Uploading Backup... (${i} / ${assets.length})`)
             const key = asset.name
             if(!key || !key.endsWith('.png')){
                 continue
@@ -163,10 +151,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
         const keys = await forageStorage.keys()
 
         for(let i=0;i<keys.length;i++){
-            alertStore.set({
-                type: "wait",
-                msg: `Uploading Backup... (${i} / ${keys.length})`
-            })
+            alertWait(`Uploading Backup... (${i} / ${keys.length})`)
             const key = keys[i]
             if(!key.endsWith('.png')){
                 continue
@@ -180,10 +165,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
 
     const dbData = encodeRisuSaveLegacy(getDatabase(), 'compression')
 
-    alertStore.set({
-        type: "wait",
-        msg: `Uploading Backup... (Saving database)`
-    })
+    alertWait(`Uploading Backup... (Saving database)`)
 
     await createFileInFolder(ACCESS_TOKEN, `${(Date.now() / 1000).toFixed(0)}-database.risudat`, dbData)
 
@@ -199,10 +181,7 @@ type DriveFile = {
 
 async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<void|"noSync"> {
     if(mode === 'backup'){
-        alertStore.set({
-            type: "wait",
-            msg: "Loading Backup..."
-        })
+        alertWait("Loading Backup...")
     }
     const files:DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
     let foragekeys:string[] = []
@@ -274,10 +253,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
 
     if(dbs.length !== 0){
         if(mode === 'sync'){
-            alertStore.set({
-                type: "wait",
-                msg: "Sync Data..."
-            })
+            alertWait("Sync Data...")
         }
         async function getDbFromList(){
             const selectables:string[] = []
@@ -304,16 +280,10 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
             for(let tries=0;tries<3;tries++){
                 const formatedImage = tries === 0 ? newFormatKeys(images) : formatKeys(images)
                 if(mode === 'sync'){
-                    alertStore.set({
-                        type: "wait",
-                        msg: `Sync Files... (${ind} / ${requiredImages.length})`
-                    })
+                    alertWait(`Sync Files... (${ind} / ${requiredImages.length})`)
                 }
                 else{
-                    alertStore.set({
-                        type: "wait",
-                        msg: `Loading Backup... (${ind} / ${requiredImages.length})`
-                    })
+                    alertWait(`Loading Backup... (${ind} / ${requiredImages.length})`)
                 }
                 if(await checkImageExists(images)){
                     //skip process
@@ -336,10 +306,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
                             }
                         }
                         else{
-                            alertStore.set({
-                                type: "wait",
-                                msg: `Loading Backup... (${ind} / ${requiredImages.length}) (Error in ${formatedImage})`
-                            })
+                            alertWait(`Loading Backup... (${ind} / ${requiredImages.length}) (Error in ${formatedImage})`)
                             await sleep(1000)
                         }
                     }
@@ -352,18 +319,12 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         if(isTauri){
             await writeFile('database/database.bin', dbData, {baseDir: BaseDirectory.AppData})
             relaunch()
-            alertStore.set({
-                type: "wait",
-                msg: "Success, Refreshing your app."
-            })
+            alertWait("Success, Refreshing your app.")
         }
         else{
             await forageStorage.setItem('database/database.bin', dbData)
             location.search = ''
-            alertStore.set({
-                type: "wait",
-                msg: "Success, Refreshing your app."
-            })
+            alertWait("Success, Refreshing your app.")
         }
     }
     else if(mode === 'backup'){

@@ -1,9 +1,10 @@
 <script lang="ts">
-    import { layoutState, settingsOpen, sideBarState, realmState, modalState, appState, alertStore, LoadingStatusState, popupStore } from './ts/stores.svelte';
+    import { layoutState, settingsOpen, sideBarState, realmState, modalState, appState, LoadingStatusState, popupStore, alertState } from './ts/stores.svelte';
     import Sidebar from './lib/SideBars/Sidebar.svelte';
     import { DBState } from './ts/stores.svelte';
     import ChatScreen from './lib/ChatScreens/ChatScreen.svelte';
     import AlertComp from './lib/Others/AlertComp.svelte';
+    import ToastContainer from './lib/Others/Alerts/ToastContainer.svelte';
     import RealmPopUp from './lib/UI/Realm/RealmPopUp.svelte';
     import GridChars from './lib/Others/GridCatalog.svelte';
     import WelcomeRisu from './lib/Others/WelcomeRisu.svelte';
@@ -12,7 +13,7 @@
     import { showRealmInfoStore, importCharacterProcess } from './ts/characterCards.svelte';
     import { importPreset } from './ts/storage/preset-manager';
     import { importModuleFromData } from './ts/process/modules';
-    import { alertNormal } from './ts/alert';
+    import { alertNormal } from './ts/alert.svelte';
     import { language } from './lang';
     import RealmFrame from './lib/UI/Realm/RealmFrame.svelte';
     import SavePopupIconComp from './lib/Others/SavePopupIcon.svelte';
@@ -176,9 +177,13 @@
     {/if}
 
     <!-- Overlay -->
-    {#if $alertStore.type !== 'none'}
+    {#if alertState.type !== 'none'}
         <AlertComp />
     {/if}
+
+    <!-- Toast notifications -->
+    <ToastContainer />
+
     {#if $showRealmInfoStore}
         <RealmPopUp bind:openedData={$showRealmInfoStore} />
     {/if}

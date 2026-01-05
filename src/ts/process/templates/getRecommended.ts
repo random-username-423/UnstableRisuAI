@@ -3,7 +3,7 @@ import { setPreset } from 'src/ts/storage/preset-manager';
 import { type botPreset } from 'src/ts/storage/types/preset';
 import { defaultAutoSuggestPrefixOoba, defaultAutoSuggestPrompt, defaultAutoSuggestPromptOoba } from "src/ts/storage/defaultPrompts";
 import { prebuiltPresets } from "./templates";
-import { alertConfirm, alertSelect } from "src/ts/alert";
+import { alertConfirm, alertSelect } from "src/ts/alert.svelte";
 import { language } from "src/lang";
 
 export async function setRecommended(model: string, ask:'ask'|'force') {

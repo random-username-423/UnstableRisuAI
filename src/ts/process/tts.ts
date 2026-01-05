@@ -1,4 +1,4 @@
-import { alertError } from "../alert";
+import { alertError } from "../alert.svelte";
 import { getCurrentCharacter, getDatabase } from "../storage/database.svelte";
 import { type character } from '../storage/types/character';
 import { runTranslator, translateVox } from "../translator/translator";

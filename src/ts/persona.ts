@@ -1,6 +1,6 @@
 import { getDatabase, saveImage, setDatabase } from "./storage/database.svelte"
 import { selectSingleFile, sleep } from "./util"
-import { alertError, alertNormal, alertStore } from "./alert"
+import { alertError, alertNormal, alertWait } from "./alert.svelte"
 import { AppendableBuffer, downloadFile, readImage } from "./globalApi.svelte"
 import { language } from "src/lang"
 import { reencodeImage } from "./process/files/inlays"
@@ -86,10 +86,7 @@ export async function exportUserPersona() {
         note: db.userNote,
     })
 
-    alertStore.set({
-        type: 'wait',
-        msg: 'Loading... (Writing Exif)'
-    })
+    alertWait('Loading... (Writing Exif)')
 
     await sleep(10)
 
@@ -97,10 +94,7 @@ export async function exportUserPersona() {
         "persona": Buffer.from(JSON.stringify(card)).toString('base64')
     })) as Uint8Array
 
-    alertStore.set({
-        type: 'wait',
-        msg: 'Loading... (Writing)'
-    })
+    alertWait('Loading... (Writing)')
 
     await sleep(10)
     await downloadFile(`${db.username.replace(/[<>:"/\\|?*\.\,]/g, "")}_export.png`, img)

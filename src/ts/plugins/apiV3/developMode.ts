@@ -1,4 +1,4 @@
-import { alertError } from "src/ts/alert"
+import { alertError } from "src/ts/alert.svelte"
 import { importPlugin } from "../plugins"
 import { sleep } from "src/ts/util"
 

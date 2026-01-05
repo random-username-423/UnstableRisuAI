@@ -1,5 +1,5 @@
 import { getDatabase } from "./database.svelte";
-import { alertNormal } from "../alert";
+import { alertNormal } from "../alert.svelte";
 import { language } from "src/lang";
 import { isTauri, isNodeServer, isFirefox } from "src/ts/platform"
 

@@ -14,8 +14,8 @@ import { setDatabase, defaultSdDataFunc, getDatabase } from "./storage/database.
 import { checkRisuUpdate } from "./update";
 import { layoutState, botMakerMode, selectedCharID, appState, DBState, LoadingStatusState } from "./stores.svelte";
 import { loadPlugins } from "./plugins/plugins";
-import { alertError, alertMd, alertTOS, waitAlert } from "./alert";
-import { checkDriverInit } from "./drive/drive";
+import { alertError, alertMd, alertTOS, waitAlert } from "./alert.svelte";
+import { checkDriverInit } from "./drive/drive.svelte";
 import { characterURLImport } from "./characterCards.svelte";
 import { defaultJailbreak, defaultMainPrompt, oldJailbreak, oldMainPrompt } from "./storage/defaultPrompts";
 import { loadRisuAccountData } from "./drive/accounter";
