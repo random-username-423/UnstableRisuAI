@@ -1,6 +1,6 @@
 
 import type { SettingItem } from './types';
-import { isTauri, isNodeServer } from '../platform';
+import { isNodeServer, isTauri } from '../platform';
 
 export const advancedSettingsItems: SettingItem[] = [
     { type: 'header', id: 'adv.header', labelKey: 'advancedSettings', options: { level: 'h2' }, classes: '!mb-0' },

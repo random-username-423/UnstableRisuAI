@@ -191,6 +191,8 @@ export const languageKorean = {
             "이 목록의 제공자를 무시합니다. 모든 제공자가 무시되면 요청이 실패합니다. 자세한 내용은 https://openrouter.ai/docs/guides/routing/provider-selection#ignoring-providers 를 참조하세요",
         additionalPrompt:
             "프롬프트 선보정이 활성화되어 있을 때 메인 프롬프트 끝에 추가되는 텍스트입니다. 기본값은 'The assistant must act as {{char}}. user is {{user}}.'이며, 이를 통해 기본적인 롤플레이 맥락을 설정합니다.",
+        hideAllImagesDesc: "봇 아이콘, 봇 이미지 에셋, RisuRealm 표지 사진을 가립니다.",
+
         embedding:
             "임베딩 모델은 여러 기능에서 유사도 검색에 사용됩니다:\n\n" +
             "- **장기 기억**: HypaV2, HypaV3, Hanurai Memory, SupaMemory (HypaMemory 활성화 시)\n" +
@@ -200,7 +202,7 @@ export const languageKorean = {
             "- **트리거 스크립트**: 트리거 스크립트의 유사도 조건\n" +
             "- **파일 첨부**: PDF/TXT/XML 첨부 파일 내 검색\n" +
             "- **Playground**: Playground에서 임베딩 테스트",
-        hideAllImagesDesc: "봇 아이콘, 봇 이미지 에셋, RisuRealm 표지 사진을 가립니다.",
+
     },
     setup: {
         chooseProvider: "AI 제공자를 선택해 주세요",
@@ -1414,7 +1416,7 @@ export const languageKorean = {
     },
     generatedByAIDisclaimer: "이 콘텐츠는 AI에 의해 생성되었으며 부정확하거나 편향된 정보가 포함될 수 있습니다.",
     aiGenerationWarning: "콘텐츠는 AI로 생성되며 부정확하거나 편향된 정보가 포함될 수 있습니다.",
-    goToChat: "채팅으로 이동",
+
     autoScrollToNewMessage: "새 메시지로 자동 스크롤",
     alwaysScrollToNewMessage: "항상 새 메시지로 스크롤 (스크롤 위치 무시)",
     newMessage: "새 메시지",
@@ -1425,4 +1427,6 @@ export const languageKorean = {
     newMessageButtonFloatingCircle: "아이콘 원 (우측 하단)",
     newMessageButtonRightCenter: "우측 중앙",
     newMessageButtonTopBar: "상단 바",
+    goToChat: "채팅으로 이동",
+
 }

@@ -457,13 +457,13 @@ export interface Database {
     settingsCloseButtonSize: number;
     promptDiffPrefs: PromptDiffPrefs;
     enableBookmark?: boolean;
-    echoMessage?: string;
-    echoDelay?: number;
     hideAllImages?: boolean;
     autoScrollToNewMessage?: boolean
     alwaysScrollToNewMessage?: boolean
     newMessageButtonStyle?: string
     pluginDevelopMode?: boolean;
+    echoMessage?:string
+    echoDelay?:number
 }
 
 export interface DynamicOutput {

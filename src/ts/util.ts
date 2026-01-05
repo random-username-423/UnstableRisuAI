@@ -617,6 +617,7 @@ const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme
 export function toGraphemes(str: string): string[] {
     return [...graphemeSegmenter.segment(str)].map(s => s.segment)
 }
+
 /**
  * Converts a ReadableStream of Uint8Array to a text string.
  *
@@ -626,7 +627,9 @@ export function toGraphemes(str: string): string[] {
 
 export function textifyReadableStream(stream: ReadableStream<Uint8Array>) {
     return new Response(stream).text();
-}/**
+}
+
+/**
  * Generates a list of valid ISO 639-1 language codes with localized display names.
  *
  * This function iterates through all possible two-letter combinations (AA-ZZ),

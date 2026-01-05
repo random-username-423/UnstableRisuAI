@@ -215,6 +215,8 @@ export const languageGerman = {
             "Ignorieren Sie die Anbieter in dieser Liste. Wenn alle Anbieter ignoriert werden, schlägt die Anfrage fehl. Siehe Details unter https://openrouter.ai/docs/guides/routing/provider-selection#ignoring-providers",
         additionalPrompt:
             "Text, der am Ende der Haupt-Anweisung angehängt wird, wenn die Anweisungsvorverarbeitung aktiviert ist. Der Standardwert ist 'The assistant must act as {{char}}. user is {{user}}.' Dies hilft, den grundlegenden Rollenspielkontext einzurichten.",
+        hideAllImagesDesc: "Blendet Bot-Symbole, Bot-Bild-Assets und RisuRealm-Coverbilder aus.",
+
         embedding:
             "Das Embedding-Modell wird für die Ähnlichkeitssuche in mehreren Funktionen verwendet:\n\n" +
             "- **Langzeitgedächtnis**: HypaV2, HypaV3, Hanurai Memory und SupaMemory (bei aktiviertem HypaMemory)\n" +
@@ -224,7 +226,7 @@ export const languageGerman = {
             "- **Trigger-Skripte**: Ähnlichkeitsbedingungen in Trigger-Skripten\n" +
             "- **Dateianhänge**: Suche in PDF/TXT/XML-Anhängen\n" +
             "- **Playground**: Embedding-Tests im Playground",
-        hideAllImagesDesc: "Blendet Bot-Symbole, Bot-Bild-Assets und RisuRealm-Coverbilder aus.",
+
     },
     setup: {
         chooseProvider: "Wählen Sie Ihren AI-Anbieter aus",

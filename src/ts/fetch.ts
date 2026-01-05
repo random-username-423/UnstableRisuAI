@@ -177,43 +177,18 @@ export function addFetchLogInGlobalFetch(response: any, success: boolean, url: s
  * @param {ReadableStream<Uint8Array>} readableStream - The readable stream to pipe.
  * @returns {ReadableStream<Uint8Array>} - The new readable stream.
  */
-export const pipeFetchLog = (fetchLogIndex: number, readableStream: ReadableStream<Uint8Array>) => {
-    const textDecoderBuffer = new AppendableBuffer();
-    let textDecoderPointer = 0;
-    const textDecoder = TextDecoderStream ? (new TextDecoderStream()) : new TransformStream<Uint8Array, string>({
-        transform(chunk, controller) {
-            try {
-                textDecoderBuffer.append(chunk);
-                const decoded = new TextDecoder('utf-8', {
-                    fatal: true
-                }).decode(textDecoderBuffer.buffer);
-                const newString = decoded.slice(textDecoderPointer);
-                textDecoderPointer = decoded.length;
-                controller.enqueue(newString);
-            } catch { }
-        }
-    });
-    textDecoder.readable.pipeTo(new WritableStream({
-        write(chunk) {
-            fetchLog[fetchLogIndex].response += chunk;
-        }
-    }));
-    const writer = textDecoder.writable.getWriter();
-    return new ReadableStream<Uint8Array>({
-        start(controller) {
-            readableStream.pipeTo(new WritableStream({
-                write(chunk) {
-                    controller.enqueue(chunk);
-                    writer.write(chunk as any);
-                },
-                close() {
-                    controller.close();
-                    writer.close();
-                }
-            }));
-        }
-    });
-};
+const pipeFetchLog = (fetchLogIndex: number, readableStream: ReadableStream<Uint8Array>) => {
+    
+    const splited = readableStream.tee();
+    
+    (async () => {
+        const text = await (new Response(splited[0])).text()
+        fetchLog[fetchLogIndex].response = text
+    })()
+    
+    return splited[1]
+}
+
 export interface fetchLog {
     body: string;
     header: string;
@@ -226,9 +201,10 @@ export interface fetchLog {
     status?: number;
 }
 export const fetchLog: fetchLog[] = [];
+
 /**
  * Interface representing the arguments for the global fetch function.
- *
+ * 
  * @interface GlobalFetchArgs
  * @property {boolean} [plainFetchForce] - Whether to force plain fetch.
  * @property {any} [body] - The body of the request.
@@ -239,7 +215,6 @@ export const fetchLog: fetchLog[] = [];
  * @property {boolean} [useRisuToken] - Whether to use the Risu token.
  * @property {string} [chatId] - The chat ID associated with the request.
  */
-
 export interface GlobalFetchArgs {
     plainFetchForce?: boolean;
     plainFetchDeforce?: boolean;
@@ -251,21 +226,22 @@ export interface GlobalFetchArgs {
     useRisuToken?: boolean;
     chatId?: string;
 }
+
 /**
  * Interface representing the result of the global fetch function.
- *
+ * 
  * @interface GlobalFetchResult
  * @property {boolean} ok - Whether the request was successful.
  * @property {any} data - The data returned from the request.
  * @property {{ [key: string]: string }} headers - The headers returned from the request.
  */
-
 export interface GlobalFetchResult {
     ok: boolean;
     data: any;
     headers: { [key: string]: string; };
     status: number;
 }
+
 /**
  * Index for fetch operations.
  * @type {number}
@@ -369,13 +345,13 @@ if (isCapacitor) {
     })
     streamedFetchListening = true
 }
+
 /**
  * Retrieves fetch data for a given chat ID.
- *
+ * 
  * @param {string} id - The chat ID to search for in the fetch log.
  * @returns {fetchLog | null} - The fetch log entry if found, otherwise null.
  */
-
 export function getFetchData(id: string) {
     for (const log of fetchLog) {
         if (log.chatId === id) {
@@ -383,7 +359,9 @@ export function getFetchData(id: string) {
         }
     }
     return null;
-}/**
+}
+
+/**
  * Adds a fetch log entry.
  *
  * @param {Object} arg - The arguments for the fetch log entry.

@@ -238,6 +238,8 @@ export const languageEnglish = {
             "Ignore the providers in this list, if all the provider is ingored, the request will failed. See detail on https://openrouter.ai/docs/guides/routing/provider-selection#ignoring-providers",
         additionalPrompt:
             "Text that gets appended to the Main Prompt when Prompt Preprocess is enabled. Default is 'The assistant must act as {{char}}. user is {{user}}.' This helps set up basic roleplay context.",
+        hideAllImagesDesc: "Hides bot icons, bot image assets, and RisuRealm cover images.",
+
         embedding:
             "Embedding model is used for similarity search across multiple features:\n\n" +
             "- **Long Term Memory**: HypaV2, HypaV3, Hanurai Memory, and SupaMemory (with HypaMemory enabled)\n" +
@@ -247,7 +249,7 @@ export const languageEnglish = {
             "- **Trigger Scripts**: Similarity conditions in trigger scripts\n" +
             "- **File Attachments**: Searching within PDF/TXT/XML attachments\n" +
             "- **Playground**: Embedding testing in Playground",
-        hideAllImagesDesc: "Hides bot icons, bot image assets, and RisuRealm cover images.",
+
     },
     setup: {
         chooseProvider: "Choose AI Provider",
@@ -1488,4 +1490,8 @@ export const languageEnglish = {
     newMessageButtonTopBar: "Top Bar",
     trimStartNewChat: "Trim 'Start New Chat' Messages",
     pluginDevelopMode: "Plugin Develop Mode",
+    fetchLogConsent: "Plugin {} is requesting to fetch logs, which may expose sensitive information. Do you want to allow this?", 
+    getFullDatabaseConsent: "Plugin {} is requesting to access the full database, which may expose sensitive information. Do you want to allow this?",
+    mainDomAccessConsent: "Plugin {} is requesting to access the main Document, which may expose sensitive information. Do you want to allow this?",
+    pluginV2Warning: "Plugin V2 and V2.1 is considered unsafe and will stop working in future versions. **Please do not use these versions of plugins.**. If you are the developer of this plugin, please update to V3 as soon as possible.",
 }
