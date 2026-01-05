@@ -1,5 +1,4 @@
 import { writable } from "svelte/store"
-import { sleep } from "./util"
 import { language } from "../lang"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
 import { getDatabase } from "./storage/database.svelte"
@@ -67,12 +66,22 @@ export function alertError(msg: string | Error) {
 }
 
 export async function waitAlert() {
-    while (true) {
-        if (alertState.type === 'none') {
-            break
-        }
-        await sleep(10)
+    // Return immediately if already closed
+    if (alertState.type === 'none') {
+        return alertState.msg
     }
+
+    // Wait reactively using Svelte $effect instead of polling
+    return new Promise<string>((resolve) => {
+        const cleanup = $effect.root(() => {
+            $effect(() => {
+                if (alertState.type === 'none') {
+                    cleanup()
+                    resolve(alertState.msg)
+                }
+            })
+        })
+    })
 }
 
 export function alertNormal(msg: string) {
