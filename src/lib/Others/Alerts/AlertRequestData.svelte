@@ -6,6 +6,7 @@
     import { alertState, DBState, selectedCharID } from "src/ts/stores.svelte"
     import { tokenize } from "src/ts/tokenizer"
     import { getFetchData } from "src/ts/fetch"
+    import AlertContainer from "./AlertContainer.svelte"
 
     let generationInfoMenuIndex = $state(0)
 
@@ -18,54 +19,55 @@
     }
 </script>
 
-{#if aiLawApplies()}
-    <div>
-        {language.generatedByAIDisclaimer}
+<AlertContainer>
+    {#if aiLawApplies()}
+        <div>
+            {language.generatedByAIDisclaimer}
+        </div>
+    {/if}
+    <div class="flex flex-wrap gap-2">
+        <Button
+            selected={generationInfoMenuIndex === 0}
+            size="sm"
+            onclick={() => {
+                generationInfoMenuIndex = 0
+            }}
+        >
+            {language.tokens}
+        </Button>
+        <Button
+            selected={generationInfoMenuIndex === 1}
+            size="sm"
+            onclick={() => {
+                generationInfoMenuIndex = 1
+            }}
+        >
+            {language.metaData}
+        </Button>
+        <Button
+            selected={generationInfoMenuIndex === 2}
+            size="sm"
+            onclick={() => {
+                generationInfoMenuIndex = 2
+            }}
+        >
+            {language.log}
+        </Button>
+        <Button
+            selected={generationInfoMenuIndex === 3}
+            size="sm"
+            onclick={() => {
+                generationInfoMenuIndex = 3
+            }}
+        >
+            {language.prompt}
+        </Button>
+        <button
+            class="ml-auto"
+            onclick={() => alertClear()}
+            >✖</button
+        >
     </div>
-{/if}
-<div class="flex flex-wrap gap-2">
-    <Button
-        selected={generationInfoMenuIndex === 0}
-        size="sm"
-        onclick={() => {
-            generationInfoMenuIndex = 0
-        }}
-    >
-        {language.tokens}
-    </Button>
-    <Button
-        selected={generationInfoMenuIndex === 1}
-        size="sm"
-        onclick={() => {
-            generationInfoMenuIndex = 1
-        }}
-    >
-        {language.metaData}
-    </Button>
-    <Button
-        selected={generationInfoMenuIndex === 2}
-        size="sm"
-        onclick={() => {
-            generationInfoMenuIndex = 2
-        }}
-    >
-        {language.log}
-    </Button>
-    <Button
-        selected={generationInfoMenuIndex === 3}
-        size="sm"
-        onclick={() => {
-            generationInfoMenuIndex = 3
-        }}
-    >
-        {language.prompt}
-    </Button>
-    <button
-        class="ml-auto"
-        onclick={() => alertClear()}
-        >✖</button
-    >
-</div>
 {#if generationInfoMenuIndex === 0}
     <div class="mt-4 flex justify-center w-full">
         <div
@@ -198,3 +200,4 @@
         </div>
     {/if}
 {/if}
+</AlertContainer>
