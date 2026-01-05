@@ -40,6 +40,9 @@
         <div class="markdown-content">
             {#await ParseMarkdown(msg) then parsedMsg}
                 {@html parsedMsg}
+            {:catch error}
+                <span class="text-red-400">Failed to parse markdown: {error.message}</span>
+                <pre class="text-gray-300 mt-2">{msg}</pre>
             {/await}
         </div>
     {:else}
