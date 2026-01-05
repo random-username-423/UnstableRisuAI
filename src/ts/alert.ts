@@ -174,10 +174,6 @@ export function alertClear(msg: string = "") {
     })
 }
 
-export function alertFinish(msg: string = "") {
-    alertStore.set({ type: "none", msg })
-}
-
 export async function alertSelectChar() {
     alertStoreImported.set({
         'type': 'selectChar',
@@ -306,5 +302,13 @@ export function alertBranches() {
     alertStoreImported.set({
         'type': 'branches',
         'msg': ''
+    })
+}
+
+export function alertProgress(msg: string = '', submsg: string = '') {
+    alertStoreImported.set({
+        'type': 'progress',
+        'msg': msg,
+        'submsg': submsg,
     })
 }

@@ -1,7 +1,7 @@
 import { AppendableBuffer, saveAsset, type LocalWriter, type VirtualWriter } from "../globalApi.svelte";
 import * as fflate from "fflate";
 import { asBuffer, sleep } from "../util";
-import { alertStore } from "../alert";
+import { alertProgress } from "../alert";
 import { hasher } from "../parser.svelte";
 import { hubURL } from "../characterCards.svelte";
 
@@ -191,11 +191,7 @@ export class CharXReader{
         this.assetQueueLength++
         this.onQueue++
         if(this.alertInfo){
-            alertStore.set({ 
-                type: 'progress',
-                msg: `Loading...`,
-                submsg: (this.doneAssets / this.assetQueueLength * 100).toFixed(2)
-            })
+            alertProgress(`Loading...`, (this.doneAssets / this.assetQueueLength * 100).toFixed(2))
         }
         if(this.assetSavePromises.length >= 10){
             await Promise.any(this.assetSavePromises.map(a => a.promise))
@@ -213,11 +209,7 @@ export class CharXReader{
             this.doneAssets++
             this.assetQueueDone.add(asset.id)
             if(this.alertInfo){
-                alertStore.set({ 
-                    type: 'progress',
-                    msg: `Loading...`,
-                    submsg: (this.doneAssets / this.assetQueueLength * 100).toFixed(2)
-                })
+                alertProgress(`Loading...`, (this.doneAssets / this.assetQueueLength * 100).toFixed(2))
             }
             
             

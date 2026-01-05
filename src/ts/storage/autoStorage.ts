@@ -146,10 +146,7 @@ export class AutoStorage{
                     let i = 0;
                     const opfs = new OpfsStorage()
                     for(const key of keys){
-                        alertStore.set({
-                            type: "wait",
-                            msg: `Migrating your data...(${i}/${keys.length})`
-                        })
+                        alertWait(`Migrating your data...(${i}/${keys.length})`)
                         await opfs.setItem(key,await forage.getItem(key))
                         i += 1
                     }
