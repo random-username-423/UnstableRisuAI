@@ -12,6 +12,8 @@ export interface ToastItem {
     type: ToastType
 }
 
+const MAX_TOASTS = 5
+
 export function addToast(msg: string, duration: number = 3000, type: ToastType = 'info') {
     const toast: ToastItem = {
         id: crypto.randomUUID(),
@@ -23,8 +25,8 @@ export function addToast(msg: string, duration: number = 3000, type: ToastType =
 
     toastState.queue.unshift(toast)
 
-    // Limit to maximum 5 items
-    if (toastState.queue.length > 5) {
+    // Limit to maximum toast items
+    if (toastState.queue.length > MAX_TOASTS) {
         toastState.queue.pop()
     }
 }
