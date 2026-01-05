@@ -120,10 +120,9 @@ export async function alertSelect(msg: string[], display?: string) {
     return alertState.msg
 }
 
-export async function alertErrorWait(msg: string) {
+export function alertWaitOpaque(msg: string) {
     alertState.type = 'wait2'
     alertState.msg = msg
-    await waitAlert()
 }
 
 export function alertMd(msg: string) {

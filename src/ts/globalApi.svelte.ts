@@ -14,7 +14,7 @@ import { setDatabase, getDatabase, appVer, getCurrentCharacter } from "./storage
 import { type Database } from './storage/types/database';
 import { selectedCharID, DBState, selIdState, ReloadGUIPointer } from "./stores.svelte";
 import { alertConfirm, alertNormal, alertNormalWait, alertSelect } from "./alert.svelte";
-import { syncDrive } from "./drive/drive";
+import { syncDrive } from "./drive/drive.svelte";
 import { hasher } from "./parser.svelte";
 import { hubURL } from "./characterCards.svelte";
 import { decodeRisuSave, RisuSaveEncoder, type toSaveType } from "./storage/risuSave";

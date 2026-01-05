@@ -271,7 +271,7 @@
                 newArray.splice(0, newArray.length, ...sortedArray);
 
                 // For debugging: output current array and new array
-                /*alertErrorWait('=== Drag and Drop Debugging Info ===\n' +
+                /*alertWaitOpaque('=== Drag and Drop Debugging Info ===\n' +
                       'oldIndex: ' + oldIndex + ', newIndex: ' + newIndex + '\n' +
                       'Original Array:\n' + JSON.stringify(currentArray, null, 2) + '\n\n' +
                       'Final Sorted Array:\n' + JSON.stringify(newArray, null, 2));*/
