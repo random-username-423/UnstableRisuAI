@@ -3,8 +3,8 @@
     import TextInput from "../UI/GUI/TextInput.svelte";
     import NumberInput from "../UI/GUI/NumberInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
-    import { getRequestLog } from "src/ts/globalApi.svelte";
-    import { alertMd, alertWait } from "src/ts/alert";
+    import { getRequestLog } from "src/ts/fetch";
+    import { alertMd, alertWait } from "src/ts/alert.svelte";
     import Accordion from "../UI/Accordion.svelte";
     import { getCharToken, getChatToken } from "src/ts/tokenizer";
     import { tokenizePreset } from "src/ts/process/prompt";

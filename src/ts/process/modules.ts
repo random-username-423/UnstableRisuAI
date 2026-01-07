@@ -1,6 +1,9 @@
 import { language } from "src/lang"
-import { alertConfirm, alertError, alertModuleSelect, alertNormal, alertStore } from "../alert"
-import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase, type customscript, type loreBook, type triggerscript } from "../storage/database.svelte"
+import { alertClear, alertConfirm, alertError, alertModuleSelect, alertNormal, alertWait } from "../alert.svelte"
+import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentCharacter, setDatabase } from "../storage/database.svelte"
+import { type triggerscript } from '../storage/types/character'
+import { type customscript } from '../storage/types/character'
+import { type loreBook } from '../storage/types/character'
 import { AppendableBuffer, downloadFile, readImage, saveAsset } from "../globalApi.svelte"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
 import { selectSingleFile, sleep } from "../util"
@@ -71,15 +74,12 @@ export async function exportModule(module:RisuModule, arg:{
     for(let i=0;i<assets.length;i++){
         const asset = assets[i]
         writeByte(1) //mark as asset
-        alertStore.set({
-            type: 'wait',
-            msg: `Loading... (Adding Assets ${i} / ${assets.length})`
-        })
+        alertWait(`Loading... (Adding Assets ${i} / ${assets.length})`)
         let rData = await readImage(asset[1])
         if(!rData){
             rData = new Uint8Array(0) //blank buffer
         }
-        let encoded = await encodeRPack(Buffer.from(await convertImage(rData)))
+        const encoded = await encodeRPack(Buffer.from(await convertImage(rData)))
         writeLength(encoded.length)
         apb.append(encoded)
     }
@@ -139,7 +139,7 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
         return
     }
 
-    let module = main.module
+    const module = main.module
 
     let i = 0
     while(true){
@@ -154,22 +154,23 @@ export async function readModule(buf:Buffer):Promise<RisuModule> {
         const len = readLength()
         const data = readData(len)
         module.assets[i][1] = await saveAsset(Buffer.from(await decodeRPack(data)))
-        alertStore.set({
-            type: 'wait',
-            msg: `Loading... (Adding Assets ${i} / ${module.assets.length})`
-        })
+        alertWait(`Loading... (Adding Assets ${i} / ${module.assets.length})`)
         if(!isTauri && !isCapacitor &&!isNodeServer){
             await sleep(100)
         }
         i++
     }
-    alertStore.set({
-        type: 'none',
-        msg: ''
-    })
+    alertClear()
 
     module.id = v4()
     return module
+}
+
+export async function importModuleFromData(data: Uint8Array) {
+    const module = await readModule(Buffer.from(data))
+    const db = getDatabase()
+    db.modules.push(module)
+    setDatabase(db)
 }
 
 export async function importModule(){
@@ -177,7 +178,7 @@ export async function importModule(){
     if(!f){
         return
     }
-    let fileData = f.data
+    const fileData = f.data
     const db = getDatabase()
     if(f.name.endsWith('.risum')){
         try {
@@ -274,8 +275,8 @@ function getModuleByIds(ids:string[]){
 }
 
 function deduplicateModuleById(modules:RisuModule[]){
-    let ids:string[] = []
-    let newModules:RisuModule[] = []
+    const ids:string[] = []
+    const newModules:RisuModule[] = []
     for(let i=0;i<modules.length;i++){
         if(ids.includes(modules[i].id)){
             continue
@@ -308,7 +309,7 @@ export function getModules(){
         return lastModuleData
     }
 
-    let modules:RisuModule[] = getModuleByIds(ids)
+    const modules:RisuModule[] = getModuleByIds(ids)
     lastModules = idsJoined
     lastModuleData = modules
     return modules

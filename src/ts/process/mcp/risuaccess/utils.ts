@@ -1,4 +1,6 @@
-import { getCurrentCharacter, type character, type groupChat } from 'src/ts/storage/database.svelte'
+import { getCurrentCharacter } from 'src/ts/storage/database.svelte'
+import { type groupChat } from 'src/ts/storage/types/character'
+import { type character } from 'src/ts/storage/types/character'
 import { DBState } from 'src/ts/stores.svelte'
 
 export function getCharacter(id: string): character | groupChat {

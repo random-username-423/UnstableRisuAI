@@ -1,15 +1,15 @@
 <script lang="ts">
     import { language } from "src/lang";
-    import { hubURL } from "src/ts/characterCards";
+    import { hubURL } from "src/ts/characterCards.svelte";
     import { loadRisuAccountBackup, loadRisuAccountData, saveRisuAccountData } from "src/ts/drive/accounter";
     
     import { DBState } from 'src/ts/stores.svelte';
     import Check from "src/lib/UI/GUI/CheckInput.svelte";
-    import { alertConfirm} from "src/ts/alert";
+    import { alertConfirm} from "src/ts/alert.svelte";
     import { forageStorage, loadInternalBackup } from "src/ts/globalApi.svelte";
     import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
     import { unMigrationAccount } from "src/ts/storage/accountStorage";
-    import { checkDriver } from "src/ts/drive/drive";
+    import { checkDriver } from "src/ts/drive/drive.svelte";
     import { LoadLocalBackup, SaveLocalBackup } from "src/ts/drive/backuplocal";
     import Button from "src/lib/UI/GUI/Button.svelte";
     import { exportAsDataset } from "src/ts/storage/exportAsDataset";

@@ -1,4 +1,4 @@
-import { alertError } from "src/ts/alert";
+import { alertError } from "src/ts/alert.svelte";
 import type { OpenAIChat } from "../index.svelte";
 import { HypaProcesser } from "./hypamemory";
 import { language } from "src/lang";
@@ -14,7 +14,7 @@ export async function hanuraiMemory(chats:OpenAIChat[],arg:{
     const db = getDatabase()
     const tokenizer = arg.tokenizer
     const processer = new HypaProcesser()
-    let addTexts:string[] = []
+    const addTexts:string[] = []
     const queryStartIndex=chats.length-maxRecentChatQuery
     console.log(chats.length,maxRecentChatQuery,queryStartIndex)
     chats.map((chat, index) => {
@@ -39,7 +39,7 @@ export async function hanuraiMemory(chats:OpenAIChat[],arg:{
     })
     await processer.addText(addTexts)
 
-    let scoredResults:{[key:string]:number} = {}
+    const scoredResults:{[key:string]:number} = {}
     for(let i=1;i<maxRecentChatQuery;i++){
         const chat = chats[chats.length-i]
         if(!chat?.content){
@@ -71,7 +71,7 @@ export async function hanuraiMemory(chats:OpenAIChat[],arg:{
 
     tokens -= db.hanuraiTokens
 
-    let resultTexts:string[] = []
+    const resultTexts:string[] = []
     for(const vector of vectorResult){
         const chat = chats.find((chat) => chat.content === vector[0].substring(16))
         if(chat){

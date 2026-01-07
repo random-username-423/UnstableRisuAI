@@ -1,5 +1,5 @@
 <script>
-    import { alertConfirm } from "../../ts/alert";
+    import { alertConfirm } from "../../ts/alert.svelte";
     import { language } from "../../lang";
     
     import { DBState } from 'src/ts/stores.svelte';
@@ -75,10 +75,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    .break-any{
-        word-break: normal;
-        overflow-wrap: anywhere;
-    }
-</style>

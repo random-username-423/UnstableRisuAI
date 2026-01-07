@@ -6,9 +6,9 @@ import DOMPurify from 'dompurify';
 import { additionalChatMenu, additionalFloatingActionButtons, additionalHamburgerMenu, additionalSettingsMenu, type MenuDef } from "src/ts/stores.svelte";
 import { v4 } from "uuid";
 import { sleep } from "src/ts/util";
-import { alertConfirm, alertError, alertNormal } from "src/ts/alert";
+import { alertConfirm, alertError, alertNormal } from "src/ts/alert.svelte";
 import { language } from "src/lang";
-import { getFetchLogs } from "src/ts/globalApi.svelte";
+import { getFetchLogs } from "src/ts/fetch";
 
 /*
     V3 API for RisuAI Plugins
@@ -479,7 +479,7 @@ const unloadV3Plugin = async (pluginName: string) => {
     }
     if(callbacks){
         pluginUnloadCallbacks.delete(pluginName); 
-        let promises: Promise<void>[] = [];
+        const promises: Promise<void>[] = [];
         for(const callback of callbacks){
             const result = callback();
             if(result instanceof Promise){

@@ -1,44 +1,25 @@
-import { get, writable, type Writable } from "svelte/store"
-import type { Database, Message } from "./storage/database.svelte"
 import { getDatabase } from "./storage/database.svelte"
-import { selectedCharID } from "./stores.svelte"
-import {open} from '@tauri-apps/plugin-dialog'
+import { open } from '@tauri-apps/plugin-dialog'
 import { readFile } from "@tauri-apps/plugin-fs"
 import { basename } from "@tauri-apps/api/path"
-import { createBlankChar, getCharImage } from "./characters"
-import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { isIOS, isTauri } from "src/ts/platform"
-import type { Attachment } from "svelte/attachments"
-import { mount, unmount, type Snippet } from "svelte"
-import PopupList from "src/lib/UI/PopupList.svelte"
-const appWindow = isTauri ? getCurrentWebviewWindow() : null
-
-export interface Messagec extends Message{
-    index: number
-}
-
-export function messageForm(arg:Message[], loadPages:number){
-    function reformatContent(data:string){
-        return data?.trim()
-    }
-
-    let a:Messagec[] = []
-    for(let i=0;i<arg.length;i++){
-        const m = arg[i]
-        a.unshift({
-            role: m.role,
-            data: reformatContent(m.data),
-            index: i,
-            saying: m.saying,
-            chatId: m.chatId ?? 'none',
-            generationInfo: m.generationInfo,
-        })
-    }
-    return a.slice(0, loadPages)
-}
 
 export function sleep(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
+}
+
+const baseNameRegex = /\\/g
+
+/**
+ * Gets the basename of a given path.
+ *
+ * @param {string} data - The path to get the basename from.
+ * @returns {string} - The basename of the path.
+ */
+export function getBasename(data: string) {
+    const splited = data.replace(baseNameRegex, '/').split('/')
+    const lasts = splited[splited.length - 1]
+    return lasts
 }
 
 export function checkNullish(data:any){
@@ -71,7 +52,7 @@ export async function selectSingleFile(ext:string[]){
 export async function selectMultipleFile(ext:string[]){
     if(!isTauri){
         const v = await selectFileByDom(ext, 'multiple')
-        let arr:{name:string, data:Uint8Array}[] = []
+        const arr:{name:string, data:Uint8Array}[] = []
         for(const file of v){
             arr.push({name: file.name,data:await readFileAsUint8Array(file)})
         }
@@ -86,7 +67,7 @@ export async function selectMultipleFile(ext:string[]){
         multiple: true
     });
     if (Array.isArray(selected)) {
-        let arr:{name:string, data:Uint8Array}[] = []
+        const arr:{name:string, data:Uint8Array}[] = []
         for(const file of selected){
             arr.push({name: await basename(file),data:await readFile(file)})
         }
@@ -95,71 +76,6 @@ export async function selectMultipleFile(ext:string[]){
         return null
     } else {
         return [{name: await basename(selected),data:await readFile(selected)}]
-    }
-}
-
-export const replacePlaceholders = (msg:string, name:string) => {
-    let db = getDatabase()
-    let selectedChar = get(selectedCharID)
-    let currentChar = db.characters[selectedChar]
-    return msg  .replace(/({{char}})|({{Char}})|(<Char>)|(<char>)/gi, currentChar.name)
-                .replace(/({{user}})|({{User}})|(<User>)|(<user>)/gi, getUserName())
-                .replace(/(\{\{((set)|(get))var::.+?\}\})/gu,'')
-}
-
-function checkPersonaBinded(){
-    try {
-        let db = getDatabase()
-        const selectedChar = get(selectedCharID)
-        const character = db.characters[selectedChar]
-        const chat = character.chats[character.chatPage]
-        if(!chat.bindedPersona){
-            return null
-        }
-        const persona = db.personas.find(v => v.id === chat.bindedPersona)
-        return persona 
-    } catch (error) {
-        return null
-    }
-}
-
-export function getUserName(){
-    const bindedPersona = checkPersonaBinded()
-    if(bindedPersona){
-        return bindedPersona.name
-    }
-    const db = getDatabase()
-    return db.username ?? 'User'
-}
-
-export function getUserIcon(){
-    const bindedPersona = checkPersonaBinded()
-    if(bindedPersona){
-        return bindedPersona.icon
-    }
-    const db = getDatabase()
-    return db.userIcon ?? ''
-}
-
-export function getPersonaPrompt(){
-    const bindedPersona = checkPersonaBinded()
-    if(bindedPersona){
-        return bindedPersona.personaPrompt
-    }
-    const db = getDatabase()
-    return db.personaPrompt ?? ''
-}
-
-export function getUserIconProtrait(){
-    try {
-        const bindedPersona = checkPersonaBinded()
-        if(bindedPersona){
-            return bindedPersona.largePortrait
-        }
-        const db = getDatabase()
-        return db.personas[db.selectedPersona].largePortrait       
-    } catch (error) {
-        return false
     }
 }
 
@@ -218,163 +134,6 @@ function readFileAsUint8Array(file: File) {
     });
 }
 
-export async function changeFullscreen(){
-    const db = getDatabase()
-    const isFull = await appWindow.isFullscreen()
-    if(db.fullScreen && (!isFull)){
-        await appWindow.setFullscreen(true)
-    }
-    if((!db.fullScreen) && (isFull)){
-        await appWindow.setFullscreen(false)
-    }
-}
-
-export async function getCustomBackground(db:string){
-    if(db.length < 2){
-        return ''
-    }
-    else{
-        const filesrc = await getCharImage(db, 'plain')
-        return `background: url("${filesrc}"); background-size: cover;`
-    }
-}
-
-export function findCharacterbyId(id:string) {
-    const db = getDatabase()
-    for(const char of db.characters){
-        if(char.type !== 'group'){
-            if(char.chaId === id){
-                return char
-            }
-        }
-    }
-    let unknown =createBlankChar()
-    unknown.name = 'Unknown Character'
-    return unknown
-}
-
-export function findCharacterIndexbyId(id:string) {
-    const db = getDatabase()
-    let i=0;
-    for(const char of db.characters){
-        if(char.chaId === id){
-            return i
-        }
-        i += 1
-    }
-    return -1
-}
-
-export function getCharacterIndexObject() {
-    const db = getDatabase()
-    let i=0;
-    let result:{[key:string]:number} = {}
-    for(const char of db.characters){
-        result[char.chaId] = i
-        i += 1
-    }
-    return result
-}
-
-export function defaultEmotion(em:[string,string][]){
-    if(!em){
-        return ''
-    }
-    for(const v of em){
-        if(v[0] === 'neutral'){
-            return v[1]
-        }
-    }
-    return ''
-}
-
-export async function getEmotion(db:Database,chaEmotion:{[key:string]: [string, string, number][]}, type:'contain'|'plain'|'css'){
-    const selectedChar = get(selectedCharID)
-    const currentDat = db.characters[selectedChar]
-    if(!currentDat){
-        return []
-    }
-    let charIdList:string[] = []
-
-    if(currentDat.type === 'group'){
-        if(currentDat.characters.length === 0){
-            return []
-        }
-        switch(currentDat.viewScreen){
-            case "multiple":
-                charIdList = currentDat.characters
-                break
-            case "single":{
-                let newist:[string,string,number] = ['', '', 0]
-                let newistChar = currentDat.characters[0]
-                for(const currentChar of currentDat.characters){
-                    const cha = chaEmotion[currentChar]
-                    if(cha){
-                        const latestEmotion = cha[cha.length - 1]
-                        if(latestEmotion && latestEmotion[2] > newist[2]){
-                            newist = latestEmotion
-                            newistChar = currentChar
-                        }
-                    }
-                }
-                charIdList = [newistChar]
-                break
-            }
-            case "emp":{
-                charIdList = currentDat.characters
-                break
-            }
-        }
-    }
-    else{
-        charIdList = [currentDat.chaId]
-    }
-
-    let datas: string[] = [currentDat.viewScreen === 'emp' ? 'emp' : 'normal' as const]
-    for(const chaid of charIdList){
-        const currentChar = findCharacterbyId(chaid)
-        if(currentChar.viewScreen === 'emotion'){
-            const currEmotion = chaEmotion[currentChar.chaId]
-            let im = ''
-            if(!currEmotion || currEmotion.length === 0){
-                im = (await getCharImage(defaultEmotion(currentChar?.emotionImages),type))
-            }
-            else{
-                im = (await getCharImage(currEmotion[currEmotion.length - 1][1], type))
-            }
-            if(im && im.length > 2){
-                datas.push(im)
-            }
-        }
-        else if(currentChar.viewScreen === 'imggen'){
-            const currEmotion = chaEmotion[currentChar.chaId]
-            if(!currEmotion || currEmotion.length === 0){
-                datas.push(await getCharImage(currentChar.image ?? '', 'plain'))
-            }
-            else{
-                datas.push(currEmotion[currEmotion.length - 1][1])
-            }
-        }
-    }
-    return datas
-}
-
-export function getAuthorNoteDefaultText(){
-    const db = getDatabase()
-    const template = db.promptTemplate
-    if(!template){
-        return ''
-    }
-
-    for(const v of template){
-        if(v.type === 'authornote'){
-            return v.defaultText ?? ''
-        }
-    }
-    return ''
-
-}
-
 export async function encryptBuffer(data:Uint8Array, keys:string){
     // hash the key to get a fixed length key value
     const keyArray = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(keys))
@@ -425,10 +184,6 @@ export async function decryptBuffer(data:Uint8Array, keys:string){
     return result
 }
 
-export function toState<T>(t:T):Writable<T>{
-    return writable(t)
-}
-
 export function BufferToText(data:Uint8Array){
     if(!TextDecoder){
         return Buffer.from(data).toString('utf-8')
@@ -448,7 +203,7 @@ export function encodeMultilangString(data:{[code:string]:string}){
 }
 
 export function parseMultilangString(data:string){
-    let result:{[code:string]:string} = {}
+    const result:{[code:string]:string} = {}
     const regex = /# `(.+?)`\n([\s\S]+?)(?=\n# `|$)/g
     let m:RegExpExecArray
     while ((m = regex.exec(data)) !== null) {
@@ -503,7 +258,7 @@ export const languageCodes = ["af","ak","am","an","ar","as","ay","az","be","bg",
 export function sfc32(a:number, b:number, c:number, d:number) {
     return function() {
       a |= 0; b |= 0; c |= 0; d |= 0;
-      let t = (a + b | 0) + d | 0;
+      const t = (a + b | 0) + d | 0;
       d = d + 1 | 0;
       a = b ^ b >>> 9;
       b = c + (c << 3) | 0;
@@ -626,358 +381,6 @@ export function getNodetextToSentence(node: Node): string {
     return result;
 }
 
-
-export const TagList = [
-    {
-        value: 'female',
-        alias: [
-            'feminine', 'girl'
-        ]
-    },
-    {
-        value: 'male',
-        alias: [
-            'masculine', 'boy'
-        ]
-    },
-    {
-        value: 'OC',
-        alias: [
-            'original-character', 'original-characters',
-        ]
-    },
-    {
-        value: 'game-character',
-        alias: [
-            'video_game', 'video-game', 'game', 'video-game-character'
-        ]
-    },
-    {
-        value: 'anime',
-        alias: [
-            'animation', 'anime-character'
-        ]
-    },
-    {
-        value: 'v-tuber',
-        alias: [
-            'virtual-tuber', 'virtual-youtuber', 'virtual-youtube'
-        ]
-    },
-    {
-        value: 'fantasy',
-        alias: [
-            'mystical'
-        ]
-    },
-    {
-        value: 'religious',
-        alias: [
-            'spiritual', 'faith', 'religion', 'religious-character'
-        ]
-    },
-    {
-        value: 'comedy',
-        alias: [
-            'funny', 'humor', 'humorous'
-        ]
-    },
-    {
-        value: 'mystery',
-        alias: [
-            'mysterious', 'enigma'
-        ]
-    },
-    {
-        value: 'romance',
-        alias: [
-            'love', 'lovers', 'couple'
-        ]
-    },
-    {
-        value: 'dominance',
-        alias: [
-            'dominant', 'dom', 'submissive', 'sub', 'bdsm'
-        ]
-    },
-    {
-        value: 'yandere',
-        alias: [
-            'yan', 'yandere-character'
-        ]
-    },
-    {
-        value: 'non-character',
-        alias: [
-            'not-a-character', 'noncharacter', 'non-characters'
-        ]
-    },
-    {
-        value: 'simulator',
-        alias: [
-            'simulation', 'sim'
-        ]
-    },
-    {
-        value: 'minor',
-        alias: [
-            'underage', 'young'
-        ]
-    },
-    {
-        value: 'giant',
-        alias: [
-            'giantess', 'giant-character'
-        ]
-    },
-    {
-        value: 'tiny',
-        alias: [
-            'tiny-character', 'tiny-characters'
-        ]
-    },
-    {
-        value: 'realistic',
-        alias: [
-            'real', 'real-life'
-        ]
-    },
-    {
-        value: 'cartoon',
-        alias: [
-            'toon', 'animated'
-        ]
-    },
-    {
-        value: 'furry',
-        alias: [
-            'anthropomorphic'
-        ]
-    },
-    {
-        value: 'kenomimi',
-        alias: [
-            'animal-ears',
-        ]
-    },
-    {
-        value: 'mecha',
-        alias: [
-            'robot', 'mech'
-        ]
-    },
-    {
-        value: 'monster',
-        alias: [
-            'creature', 'beast', 'monstrous'
-        ]
-    },
-    {
-        value: 'alien',
-        alias: [
-            'extraterrestrial', 'alien-character'
-        ]
-    },
-    {
-        value: 'demon',
-        alias: [
-            'devil', 'demonic', 'demon-character'
-        ]
-    },
-    {
-        value: 'angel',
-        alias: [
-            'heavenly', 'angelic', 'angel-character'
-        ]
-    },
-    {
-        value: 'elf',
-        alias: [
-            'elven', 'elf-character'
-        ]
-    },
-    {
-        value: 'mermaid',
-        alias: [
-            'merfolk', 'mermaid-character'
-        ]
-    },
-    {
-        value: 'vampire',
-        alias: [
-            'vampiric', 'vampire-character'
-        ]
-    },
-    {
-        value: 'werewolf',
-        alias: [
-            'lycan', 'lycanthrope', 'werewolf-character'
-        ]
-    },
-    {
-        value: 'zombie',
-        alias: [
-            'undead', 'zombie-character'
-        ]
-    },
-    {
-        value: 'ghost',
-        alias: [
-            'spirit', 'apparition', 'ghost-character'
-        ]
-    },
-    {
-        value: 'witch',
-        alias: [
-            'sorceress', 'witch-character'
-        ]
-    },
-    {
-        value: 'wizard',
-        alias: [
-            'sorcerer', 'wizard-character'
-        ]
-    },
-    {
-        value: 'ninja',
-        alias: [
-            'shinobi', 'ninja-character'
-        ]
-    },
-    {
-        value: 'pirate',
-        alias: [
-            'buccaneer', 'pirate-character'
-        ]
-    },
-    {
-        value: 'knight',
-        alias: [
-            'paladin', 'knight-character'
-        ]
-    },
-    {
-        value: 'samurai',
-        alias: [
-            'bushi', 'samurai-character'
-        ]
-    },
-    {
-        value: 'cowboy',
-        alias: [
-            'cowgirl', 'cowboy-character'
-        ]
-    },
-    {
-        value: 'noble',
-        alias: [
-            'royal', 'nobility', 'noble-character'
-        ]
-    },
-    {
-        value: 'thief',
-        alias: [
-            'rogue', 'thief-character'
-        ]
-    },
-    {
-        value: 'spy',
-        alias: [
-            'secret-agent', 'spy-character'
-        ]
-    },
-    {
-        value: 'soldier',
-        alias: [
-            'military', 'soldier-character'
-        ]
-    },
-    {
-        value: 'villain',
-        alias: [
-            'antagonist', 'villain-character'
-        ]
-    },
-    {
-        value: 'hero',
-        alias: [
-            'protagonist', 'hero-character'
-        ]
-    },
-    {
-        value: 'superhero',
-        alias: [
-            'super-hero', 'super-heroine', 'superhero-character'
-        ]
-    },
-    {
-        value: 'mage',
-        alias: [
-            'magician', 'mage-character', 'magical'
-        ]
-    },
-    {
-        value: 'animal',
-        alias: [
-            'pet', 'pet-character'
-        ]
-    },
-    {
-        value: 'cute',
-        alias: [
-            'adorable', 'cute-character'
-        ]
-    },
-    {
-        value: 'nonbinary',
-        alias: [
-            'genderqueer', 'genderfluid'
-        ]
-    },
-    {
-        value: 'multiple-characters',
-        alias: [
-            'group', 'multiple'
-        ]
-    },
-    {
-        value: 'rpg',
-        alias: [
-            'roleplaying', 'role-playing'
-        ]
-    },
-    {
-        value: 'non-human',
-        alias: [
-            'inhuman', 'nonhuman', 'non-human-character', 'not-human'
-        ]
-    }
-]
-
-export const searchTagList = (query:string) => {
-    const splited = query.split(',').map(v => v.trim())
-    if(splited.length > 10){
-        return []
-    }
-    const realQuery = splited.at(-1).trim().toLowerCase()
-
-    const result: string[] = []
-
-    for(const tag of TagList){
-        if(tag.value.startsWith(realQuery)){
-            result.push(tag.value)
-            continue
-        }
-        for(const alias of tag.alias){
-            if(alias.startsWith(realQuery)){
-                result.push(tag.value)
-                break
-            }
-        }
-    }
-
-    return result.filter(v => splited.indexOf(v) === -1)
-}
 
 export const isKnownUri = (uri:string) => {
     return uri.startsWith('http://')
@@ -1188,17 +591,6 @@ export function simplifySchema(schema:any, args:{
 
 }
 
-export const prebuiltAssetCommand = `
-<Image Tag Instruction>Insert HTML image tags between paragraphs based on context.
-Set src as keywords from the list below that matches current character, outfit, situation sentiment and etc.
-print as many different images as possible. Use only available keywords.
-if there are no matching keywords, try to put clostest matching image src.
-try to put at least 1 image per output.
-<keywords>{{join::{{chardisplayasset}}::,}}</keywords>
-Example: <img src="{{ele::{{chardisplayasset}}::0}}">
-<Image Tag Instruction>
-`
-
 export const jsonOutputTrimmer = (data:string) => {
     
     data = data.replace(/<Thoughts>(.+?)<\/Thoughts>/gms, '').trim()
@@ -1219,3 +611,64 @@ export function asBuffer(arr: Uint8Array<ArrayBufferLike> | ArrayBufferLike): Ui
         return arr as unknown as ArrayBuffer
     }
 }
+
+const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
+
+export function toGraphemes(str: string): string[] {
+    return [...graphemeSegmenter.segment(str)].map(s => s.segment)
+}
+
+/**
+ * Converts a ReadableStream of Uint8Array to a text string.
+ *
+ * @param {ReadableStream<Uint8Array>} stream - The readable stream to convert.
+ * @returns {Promise<string>} A promise that resolves to the text content of the stream.
+ */
+
+export function textifyReadableStream(stream: ReadableStream<Uint8Array>) {
+    return new Response(stream).text();
+}
+
+/**
+ * Generates a list of valid ISO 639-1 language codes with localized display names.
+ *
+ * This function iterates through all possible two-letter combinations (AA-ZZ),
+ * uses the browser's Intl.DisplayNames API to filter only valid language codes,
+ * and returns them with names displayed in the specified UI language.
+ *
+ * @param {string} uiLanguage - The UI language code to display language names in (e.g., 'en', 'ko', 'cn').
+ * @returns {Array<{code: string, name: string}>} An array of language objects sorted by localized name.
+ */
+
+export function getLanguageCodes(uiLanguage: string) {
+    let languageCodes: {
+        code: string;
+        name: string;
+    }[] = [];
+
+    for (let i = 0x41; i <= 0x5A; i++) {
+        for (let j = 0x41; j <= 0x5A; j++) {
+            languageCodes.push({
+                code: String.fromCharCode(i) + String.fromCharCode(j),
+                name: ''
+            });
+        }
+    }
+
+    languageCodes = languageCodes.map(v => {
+        return {
+            code: v.code.toLocaleLowerCase(),
+            name: new Intl.DisplayNames([
+                uiLanguage === 'cn' ? 'zh' : uiLanguage
+            ], {
+                type: 'language',
+                fallback: 'none'
+            }).of(v.code)
+        };
+    }).filter((a) => {
+        return a.name;
+    }).sort((a, b) => a.name.localeCompare(b.name));
+
+    return languageCodes;
+}
+

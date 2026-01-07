@@ -1,12 +1,15 @@
 import type { OpenAIChat } from "../index.svelte";
-import { getDatabase, type Chat, type character, type groupChat } from "../../storage/database.svelte";
+import { getDatabase } from "../../storage/database.svelte";
+import { type Chat } from 'src/ts/storage/types/chat';
+import { type groupChat } from 'src/ts/storage/types/character';
+import { type character } from 'src/ts/storage/types/character';
 import { tokenize, type ChatTokenizer } from "../../tokenizer";
 import { requestChatData } from "../request/request";
 import { HypaProcesser } from "./hypamemory";
 import { stringlizeChat } from "../stringlize";
-import { globalFetch } from "src/ts/globalApi.svelte";
+import { globalFetch } from "src/ts/fetch";
 import { runSummarizer } from "../transformers";
-import { getUserName } from "src/ts/util";
+import { getUserName } from "src/ts/persona";
 import { parseChatML } from "src/ts/parser.svelte";
 
 export async function supaMemory(
@@ -44,7 +47,7 @@ export async function supaMemory(
 
         if(room.supaMemoryData && room.supaMemoryData.length > 4){
             const splited = room.supaMemoryData.split('\n')
-            let id = splited.splice(0,1)[0]
+            const id = splited.splice(0,1)[0]
             const data = splited.join('\n')
 
             if(arg.asHyper && (!id.startsWith("hypa:"))){
@@ -74,7 +77,7 @@ export async function supaMemory(
                     for(let j=0;j<HypaData.length;j++){
                         let i =0;
                         let countTokens  = currentTokens
-                        let countChats = safeStructuredClone(chats)
+                        const countChats = safeStructuredClone(chats)
                         while(true){
                             if(countChats.length === 0){
                                 break
@@ -253,7 +256,7 @@ export async function supaMemory(
                 }
             }
             else {
-                let parsedPrompt = parseChatML(supaPrompt.replaceAll('{{slot}}', stringlizedChat))
+                const parsedPrompt = parseChatML(supaPrompt.replaceAll('{{slot}}', stringlizedChat))
                 const promptbody:OpenAIChat[] = parsedPrompt ?? [
                     {
                         role: "user",

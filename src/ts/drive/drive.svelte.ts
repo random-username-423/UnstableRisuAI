@@ -1,12 +1,13 @@
-import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../alert";
-import { getDatabase, type Database } from "../storage/database.svelte";
+import { alertError, alertWaitOpaque, alertInput, alertNormal, alertSelect, alertWait } from "../alert.svelte";
+import { getDatabase } from "../storage/database.svelte";
+import { type Database } from '../storage/types/database';
 import { forageStorage, getUnpargeables, openURL } from "../globalApi.svelte";
 import { isTauri } from "src/ts/platform"
 import { BaseDirectory, exists, readFile, readDir, writeFile } from "@tauri-apps/plugin-fs";
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
-import { sleep } from "../util";
-import { hubURL } from "../characterCards";
+import { sleep, getBasename } from "../util";
+import { hubURL } from "../characterCards.svelte";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 
 export async function checkDriver(type:'save'|'load'|'loadtauri'|'savetauri'|'reftoken'){
@@ -72,16 +73,10 @@ export async function checkDriverInit() {
                     await loadDrive(json.access_token, 'backup')
                 }
                 else if(da === 'savetauri' || da === 'loadtauri'){
-                    alertStore.set({
-                        type: 'wait2',
-                        msg: `Copy and paste this Auth Code: ${json.access_token}`
-                    })
+                    alertWaitOpaque(`Copy and paste this Auth Code: ${json.access_token}`)
                 }
                 else if(da === 'accesstauri'){
-                    alertStore.set({
-                        type: 'wait2',
-                        msg: JSON.stringify(json)
-                    })
+                    alertWaitOpaque(JSON.stringify(json))
                 }
             }
             else{
@@ -115,10 +110,7 @@ export function syncDrive() {
 
 
 async function backupDrive(ACCESS_TOKEN:string) {
-    alertStore.set({
-        type: "wait",
-        msg: "Uploading Backup..."
-    })
+    alertWait("Uploading Backup...")
 
     //check backup data is corrupted
     const corrupted = await fetch(hubURL + '/backupcheck', {
@@ -142,12 +134,9 @@ async function backupDrive(ACCESS_TOKEN:string) {
     if(isTauri){
         const assets = await readDir('assets', {baseDir: BaseDirectory.AppData})
         let i = 0;
-        for(let asset of assets){
+        for(const asset of assets){
             i += 1;
-            alertStore.set({
-                type: "wait",
-                msg: `Uploading Backup... (${i} / ${assets.length})`
-            })
+            alertWait(`Uploading Backup... (${i} / ${assets.length})`)
             const key = asset.name
             if(!key || !key.endsWith('.png')){
                 continue
@@ -162,10 +151,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
         const keys = await forageStorage.keys()
 
         for(let i=0;i<keys.length;i++){
-            alertStore.set({
-                type: "wait",
-                msg: `Uploading Backup... (${i} / ${keys.length})`
-            })
+            alertWait(`Uploading Backup... (${i} / ${keys.length})`)
             const key = keys[i]
             if(!key.endsWith('.png')){
                 continue
@@ -179,10 +165,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
 
     const dbData = encodeRisuSaveLegacy(getDatabase(), 'compression')
 
-    alertStore.set({
-        type: "wait",
-        msg: `Uploading Backup... (Saving database)`
-    })
+    alertWait(`Uploading Backup... (Saving database)`)
 
     await createFileInFolder(ACCESS_TOKEN, `${(Date.now() / 1000).toFixed(0)}-database.risudat`, dbData)
 
@@ -198,15 +181,12 @@ type DriveFile = {
 
 async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<void|"noSync"> {
     if(mode === 'backup'){
-        alertStore.set({
-            type: "wait",
-            msg: "Loading Backup..."
-        })
+        alertWait("Loading Backup...")
     }
     const files:DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
     let foragekeys:string[] = []
     let loadedForageKeys = false
-    let db = getDatabase()
+    const db = getDatabase()
 
     async function checkImageExists(images:string) {
         if(db?.account?.useSync){
@@ -228,7 +208,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
     })
 
 
-    let dbs:[DriveFile,number][] = []
+    const dbs:[DriveFile,number][] = []
     let noSyncData = true
 
     if(mode === 'backup'){
@@ -273,13 +253,10 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
 
     if(dbs.length !== 0){
         if(mode === 'sync'){
-            alertStore.set({
-                type: "wait",
-                msg: "Sync Data..."
-            })
+            alertWait("Sync Data...")
         }
         async function getDbFromList(){
-            let selectables:string[] = []
+            const selectables:string[] = []
             for(let i=0;i<dbs.length;i++){
                 selectables.push(`Backup saved in ${(new Date(dbs[i][1] * 1000)).toLocaleString()}`)
                 if(selectables.length > 7){
@@ -297,22 +274,16 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         localStorage.setItem('risu_lastsaved', `${lastSaved}`)
         const requiredImages = (getUnpargeables(db))
         let ind = 0;
-        let errorLogs:string[] = []
+        const errorLogs:string[] = []
         for(const images of requiredImages){
             ind += 1
             for(let tries=0;tries<3;tries++){
                 const formatedImage = tries === 0 ? newFormatKeys(images) : formatKeys(images)
                 if(mode === 'sync'){
-                    alertStore.set({
-                        type: "wait",
-                        msg: `Sync Files... (${ind} / ${requiredImages.length})`
-                    })
+                    alertWait(`Sync Files... (${ind} / ${requiredImages.length})`)
                 }
                 else{
-                    alertStore.set({
-                        type: "wait",
-                        msg: `Loading Backup... (${ind} / ${requiredImages.length})`
-                    })
+                    alertWait(`Loading Backup... (${ind} / ${requiredImages.length})`)
                 }
                 if(await checkImageExists(images)){
                     //skip process
@@ -335,10 +306,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
                             }
                         }
                         else{
-                            alertStore.set({
-                                type: "wait",
-                                msg: `Loading Backup... (${ind} / ${requiredImages.length}) (Error in ${formatedImage})`
-                            })
+                            alertWait(`Loading Backup... (${ind} / ${requiredImages.length}) (Error in ${formatedImage})`)
                             await sleep(1000)
                         }
                     }
@@ -351,18 +319,12 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         if(isTauri){
             await writeFile('database/database.bin', dbData, {baseDir: BaseDirectory.AppData})
             relaunch()
-            alertStore.set({
-                type: "wait",
-                msg: "Success, Refreshing your app."
-            })
+            alertWait("Success, Refreshing your app.")
         }
         else{
             await forageStorage.setItem('database/database.bin', dbData)
             location.search = ''
-            alertStore.set({
-                type: "wait",
-                msg: "Success, Refreshing your app."
-            })
+            alertWait("Success, Refreshing your app.")
         }
     }
     else if(mode === 'backup'){
@@ -380,7 +342,7 @@ function formatKeys(name:string) {
 }
 
 function newFormatKeys(name:string) {
-    let n = getBasename(name)
+    const n = getBasename(name)
     const bf = Buffer.from(n).toString('hex')
     return n + '.bin'
 }
@@ -442,12 +404,6 @@ async function createFileInFolder(accessToken:string, fileName:string, content:U
     }
 }
   
-const baseNameRegex = /\\/g
-function getBasename(data:string){
-    const splited = data.replace(baseNameRegex, '/').split('/')
-    const lasts = splited[splited.length-1]
-    return lasts
-}
 
 async function getFileData(ACCESS_TOKEN:string,fileId:string) {
     const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;

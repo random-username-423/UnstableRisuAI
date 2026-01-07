@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { hypaV3ProgressStore } from "src/ts/stores.svelte";
+  import { hypaV3State } from "src/ts/stores.svelte";
 
   let isExpanded = $state(false);
 
@@ -18,7 +18,7 @@
       onclick={toggleExpand}
     >
       <span class="mb-6 text-left text-gray-500 text-sm"
-        >{$hypaV3ProgressStore.msg || ""}</span
+        >{hypaV3State.progress.msg || ""}</span
       >
       <div
         class="w-full min-w-64 md:min-w-138 h-2 bg-darkbg border border-darkborderc rounded-md"
@@ -28,7 +28,7 @@
         ></div>
       </div>
       <span class="w-full mt-6 text-center text-gray-500 text-sm"
-        >{$hypaV3ProgressStore.subMsg || ""}</span
+        >{hypaV3State.progress.subMsg || ""}</span
       >
     </button>
   </div>
@@ -48,7 +48,7 @@
       <div
         class="absolute inset-1 flex items-center justify-center text-xs text-gray-300"
       >
-        {$hypaV3ProgressStore.miniMsg || ""}
+        {hypaV3State.progress.miniMsg || ""}
       </div>
     </div>
   </button>

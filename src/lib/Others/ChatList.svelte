@@ -1,12 +1,11 @@
 <script>
-    import { alertConfirm, alertError } from "../../ts/alert";
+    import { alertConfirm, alertError } from "../../ts/alert.svelte";
     import { language } from "../../lang";
     
     import { DBState } from 'src/ts/stores.svelte';
-    import { ReloadGUIPointer, selectedCharID } from "../../ts/stores.svelte";
+    import { selectedCharID } from "../../ts/stores.svelte";
     import { DownloadIcon, SquarePenIcon, HardDriveUploadIcon, PlusIcon, TrashIcon, XIcon } from "@lucide/svelte";
-    import { exportChat, importChat } from "../../ts/characters";
-    import { findCharacterbyId } from "../../ts/util";
+    import { exportChat, importChat, findCharacterbyId } from "../../ts/characters.svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
     import { changeChatTo } from "src/ts/globalApi.svelte";
 
@@ -103,10 +102,3 @@
         </div>
     </div>
 </div>
-
-<style>
-    .break-any{
-        word-break: normal;
-        overflow-wrap: anywhere;
-    }
-</style>

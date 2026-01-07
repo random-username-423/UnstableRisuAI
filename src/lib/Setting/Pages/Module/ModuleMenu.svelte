@@ -1,7 +1,7 @@
 <script lang="ts">
     import { language } from "src/lang";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
-    import type { loreBook } from "src/ts/storage/database.svelte";
+    import type { loreBook } from "src/ts/storage/types/character";
     import LoreBookList from "src/lib/SideBars/LoreBook/LoreBookList.svelte";
     import { type CCLorebook, convertExternalLorebook } from "src/ts/process/lorebook.svelte";
     import type { RisuModule } from "src/ts/process/modules";
@@ -12,7 +12,7 @@
     import Help from "src/lib/Others/Help.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import { getFileSrc, saveAsset, downloadFile } from "src/ts/globalApi.svelte";
-    import { alertNormal, alertError } from "src/ts/alert";
+    import { alertNormal, alertError } from "src/ts/alert.svelte";
     import { exportRegex, importRegex } from "src/ts/process/scripts";
     import { selectMultipleFile } from "src/ts/util";
     
@@ -279,7 +279,6 @@
                         <td class="font-medium truncate">
                             {#if assetFilePath[i] && DBState.db.useAdditionalAssetsPreview}
                                 {#if assetFileExtensions[i] === 'mp4'}
-                                <!-- svelte-ignore a11y_media_has_caption -->
                                     <video controls class="mt-2 px-2 w-full m-1 rounded-md"><source src={assetFilePath[i]} type="video/mp4"></video>
                                 {:else if assetFileExtensions[i] === 'mp3'}
                                     <audio controls class="mt-2 px-2 w-full h-16 m-1 rounded-md" loop><source src={assetFilePath[i]} type="audio/mpeg"></audio>

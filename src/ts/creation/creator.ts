@@ -1,11 +1,13 @@
 import { language } from "src/lang";
-import { alertError, alertInput, alertNormal, alertSelect, alertStore } from "../alert";
+import { alertError, alertInput, alertNormal, alertSelect, alertWait } from "../alert.svelte";
 import { requestChatData } from "../process/request/request";
-import { checkCharOrder, globalFetch, saveAsset } from "../globalApi.svelte";
+import { checkCharOrder, saveAsset } from "../globalApi.svelte";
+import { globalFetch } from "../fetch";
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
 import { tokenize } from "../tokenizer";
-import { createBlankChar } from "../characters";
-import { getDatabase, setDatabase, type character } from "../storage/database.svelte";
+import { createBlankChar } from "../characters.svelte";
+import { getDatabase, setDatabase } from "../storage/database.svelte";
+import { type character } from '../storage/types/character';
 import { sleep } from "../util";
 
 
@@ -163,7 +165,7 @@ async function createBotFromWebMain(prompt:string):Promise<creationResult>{
     let tokns = await tokenize(val)
     if (tokns > 3200){
         const v = val.split('\n')
-        let chunks:[string,string,number][] = [["main","",0]]
+        const chunks:[string,string,number][] = [["main","",0]]
 
         for(const a of v){
             if(a.startsWith('==') && (a.endsWith('=='))){
@@ -189,10 +191,7 @@ async function createBotFromWebMain(prompt:string):Promise<creationResult>{
     }
 
 
-    alertStore.set({
-        type: 'wait',
-        msg: 'Loading..'
-    })
+    alertWait('Loading..')
     const rqv = val + "\n\n[[This was a character's wiki page data.]]"
     const ch = await requestChatData({
         formated: [{
@@ -255,7 +254,7 @@ async function createBotByAI(search:string):Promise<creationResult> {
     }
 
     const res = ch.result.trim().split("\n")
-    let charname = res[0].split(":").at(-1).trim()
+    const charname = res[0].split(":").at(-1).trim()
 
     const char = createBlankChar()
 
@@ -295,14 +294,11 @@ async function createBotFromWeb() {
         }
     }
 
-    let search = (await alertInput((sel === 0) ? language.createBotInternetAlert : language.inputBotGenerationPrompt))
+    const search = (await alertInput((sel === 0) ? language.createBotInternetAlert : language.inputBotGenerationPrompt))
     if(search.length < 3){
         return
     }
-    alertStore.set({
-        type: 'wait',
-        msg: 'Fetching..'
-    })
+    alertWait('Fetching..')
     const d = (sel === 0) ? (await createBotFromWebMain(search)) : (await createBotByAI(search))
     if(d.ok === 'creation'){
         const db = getDatabase()
@@ -330,7 +326,7 @@ export const BotCreator = {
 }
 
 function surroundTextWithAsterisks(fulltext:string) {
-    let result:string[] = []
+    const result:string[] = []
 
     const splited = fulltext.split("\n")
     for(const text of splited){
@@ -339,11 +335,11 @@ function surroundTextWithAsterisks(fulltext:string) {
             continue
         }
         let output = '';
-        let parts = text.split('"');
+        const parts = text.split('"');
         for(let i = 0; i < parts.length; i++) {
-            let part = parts[i];
+            const part = parts[i];
             if(i % 2 === 0) {
-                let trimmed = part.trim();
+                const trimmed = part.trim();
                 output += trimmed ? '*' + trimmed + '*' : part;
             } else {
                 output += '"' + part + '"';

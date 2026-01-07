@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { characterFormatUpdate, getCharImage, removeChar } from "../../ts/characters";
-    import { type Database } from "../../ts/storage/database.svelte";
+    import { characterFormatUpdate, getCharImage, removeChar } from "../../ts/characters.svelte";
+    import type { Database } from "../../ts/storage/types/database";
     import { DBState } from 'src/ts/stores.svelte';
     import BarIcon from "../SideBars/BarIcon.svelte";
     import { ArrowLeft, User, Users, SquareMousePointer, TrashIcon, Undo2Icon } from "@lucide/svelte";
@@ -157,7 +157,7 @@
                 </div>
             {/each}
         {:else if selected === 3}
-            <MobileCharacters gridMode endGrid={endGrid} />
+            <MobileCharacters gridMode endGrid={endGrid} search={search} />
         {/if}
     </div>
 </div>

@@ -5,7 +5,7 @@ import { selectSingleFile, asBuffer  } from 'src/ts/util';
 import { v4 } from 'uuid';
 let tfCache: Cache = null
 let tfLoaded = false
-let tfMap: { [key: string]: string } = {}
+const tfMap: { [key: string]: string } = {}
 async function initTransformers() {
     if (tfLoaded) {
         return
@@ -38,11 +38,11 @@ async function initTransformers() {
 export const runTransformers = async (baseText: string, model: string, config: TextGenerationConfig, device: 'webgpu' | 'wasm' = 'wasm') => {
     await initTransformers()
     const { pipeline } = await import('@huggingface/transformers');
-    let text = baseText
-    let generator = await pipeline('text-generation', model, {
+    const text = baseText
+    const generator = await pipeline('text-generation', model, {
         device
     });
-    let output = await generator(text, config) as TextGenerationOutput
+    const output = await generator(text, config) as TextGenerationOutput
     const outputOne = output[0]
     return outputOne
 }
@@ -50,7 +50,7 @@ export const runTransformers = async (baseText: string, model: string, config: T
 export const runSummarizer = async (text: string) => {
     await initTransformers()
     const { pipeline } = await import('@huggingface/transformers');
-    let classifier = await pipeline("summarization", "Xenova/distilbart-cnn-6-6")
+    const classifier = await pipeline("summarization", "Xenova/distilbart-cnn-6-6")
     const v = await classifier(text) as SummarizationOutput
     return v[0].summary_text
 }
@@ -61,7 +61,7 @@ type EmbeddingModel = 'Xenova/all-MiniLM-L6-v2' | 'nomic-ai/nomic-embed-text-v1.
 export const runEmbedding = async (texts: string[], model: EmbeddingModel = 'Xenova/all-MiniLM-L6-v2', device: 'webgpu' | 'wasm'): Promise<Float32Array[]> => {
     await initTransformers()
     console.log('running embedding')
-    let embeddingModelQuery = model + device
+    const embeddingModelQuery = model + device
     const { pipeline } = await import('@huggingface/transformers');
     if (!extractor || embeddingModelQuery !== lastEmbeddingModelQuery) {
         // Dispose old extractor
@@ -79,12 +79,12 @@ export const runEmbedding = async (texts: string[], model: EmbeddingModel = 'Xen
         lastEmbeddingModelQuery = embeddingModelQuery
         console.log('extractor loaded')
     }
-    let result = await extractor(texts, { pooling: 'mean', normalize: true });
+    const result = await extractor(texts, { pooling: 'mean', normalize: true });
     console.log(texts, result)
     const data = result.data as Float32Array
     console.log(data)
     const lenPerText = data.length / texts.length
-    let res: Float32Array[] = []
+    const res: Float32Array[] = []
     for (let i = 0; i < texts.length; i++) {
         res.push(data.subarray(i * lenPerText, (i + 1) * lenPerText))
     }
@@ -135,7 +135,7 @@ export const runVITS = async (text: string, modelData: string | OnnxModelFiles =
             synthesizer = await pipeline<"text-to-speech">('text-to-speech', modelData.id);
         }
     }
-    let out = await synthesizer(text, {});
+    const out = await synthesizer(text, {});
     const wav = new WaveFile();
     wav.fromScratch(1, out.sampling_rate, '32f', out.audio);
     const audioContext = new AudioContext();
@@ -173,7 +173,7 @@ export const registerOnnxModel = async (): Promise<OnnxModelFiles> => {
 
     console.log(unziped)
 
-    let fileIdMapped: { [key: string]: string } = {}
+    const fileIdMapped: { [key: string]: string } = {}
 
     const keys = Object.keys(unziped)
     for (let i = 0; i < keys.length; i++) {

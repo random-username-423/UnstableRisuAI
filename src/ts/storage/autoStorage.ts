@@ -3,8 +3,9 @@ import { replaceDbResources } from "../globalApi.svelte"
 import { isCapacitor, isNodeServer } from "src/ts/platform"
 import { NodeStorage } from "./nodeStorage"
 import { OpfsStorage } from "./opfsStorage"
-import { alertInput, alertSelect, alertStore } from "../alert"
-import { getDatabase, type Database } from "./database.svelte"
+import { alertClear, alertInput, alertSelect, alertWait } from "../alert.svelte"
+import { getDatabase } from "./database.svelte"
+import { type Database } from './types/database'
 import { AccountStorage } from "./accountStorage"
 import { decodeRisuSave, encodeRisuSaveLegacy } from "./risuSave";
 import { language } from "src/lang"
@@ -39,7 +40,7 @@ export class AutoStorage{
     }
 
     async checkAccountSync(){
-        let db = getDatabase()
+        const db = getDatabase()
         if(this.isAccount){
             return true
         }
@@ -56,10 +57,7 @@ export class AutoStorage{
                 const sel = await alertSelect([language.loadDataFromAccount, language.saveCurrentDataToAccount])
                 if(sel === "0"){
                     this.realStorage = accountStorage
-                    alertStore.set({
-                        type: "none",
-                        msg: ""
-                    })
+                    alertClear()
                     localStorage.setItem('accountst', 'able')
                     localStorage.setItem('fallbackRisuToken',JSON.stringify(db.account))
                     this.isAccount = true
@@ -73,13 +71,10 @@ export class AutoStorage{
                 return false
             }
 
-            let replaced:{[key:string]:string} = {}
+            const replaced:{[key:string]:string} = {}
             
             for(const key of keys){
-                alertStore.set({
-                    type: "wait",
-                    msg: `Migrating your data...(${i}/${keys.length})`
-                })
+                alertWait(`Migrating your data...(${i}/${keys.length})`)
                 const rkey = await accountStorage.setItem(key,await this.realStorage.getItem(key))
                 if(rkey !== key){
                     replaced[key] = rkey
@@ -98,10 +93,7 @@ export class AutoStorage{
                 
             } catch (error) {}
             this.realStorage = accountStorage
-            alertStore.set({
-                type: "none",
-                msg: ""
-            })
+            alertClear()
 
             localStorage.setItem('accountst', 'able')
             localStorage.setItem('fallbackRisuToken',JSON.stringify(db.account))
@@ -154,18 +146,12 @@ export class AutoStorage{
                     let i = 0;
                     const opfs = new OpfsStorage()
                     for(const key of keys){
-                        alertStore.set({
-                            type: "wait",
-                            msg: `Migrating your data...(${i}/${keys.length})`
-                        })
+                        alertWait(`Migrating your data...(${i}/${keys.length})`)
                         await opfs.setItem(key,await forage.getItem(key))
                         i += 1
                     }
                     this.realStorage = opfs
-                    alertStore.set({
-                        type: "none",
-                        msg: ""
-                    })
+                    alertClear()
                     await forage.setItem("migrated", true)
                     return
                 }

@@ -1,12 +1,12 @@
 <script lang="ts">
-    import { alertCardExport, alertConfirm, alertError } from "../../ts/alert";
+    import { alertCardExport, alertConfirm, alertError } from "../../ts/alert.svelte";
     import { language } from "../../lang";
-    import { changeToPreset, copyPreset, downloadPreset, importPreset } from "../../ts/storage/database.svelte";
+    import { changeToPreset, copyPreset, downloadPreset, importPreset } from "../../ts/storage/preset-manager";
     import { DBState } from 'src/ts/stores.svelte';
     import { CopyIcon, Share2Icon, PencilIcon, HardDriveUploadIcon, PlusIcon, TrashIcon, XIcon, GitCompare } from "@lucide/svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
     import { prebuiltPresets } from "src/ts/process/templates/templates";
-    import { ShowRealmFrameStore } from "src/ts/stores.svelte";
+    import { realmState } from "src/ts/stores.svelte";
     import PromptDiffModal from "../Others/PromptDiffModal.svelte";
 
     let editMode = $state(false)
@@ -211,7 +211,7 @@
                             downloadPreset(i, 'risupreset')
                         }
                         if(data.type === 'realm'){
-                            $ShowRealmFrameStore = `preset:${i}`
+                            realmState.uploadTarget = `preset:${i}`
                         }
                     }} onkeydown={(e) => {
                         if(e.key === 'Enter' && e.currentTarget instanceof HTMLElement){
@@ -301,11 +301,6 @@
 {/if}
 
 <style>
-    .break-any{
-        word-break: normal;
-        overflow-wrap: anywhere;
-    }
-
     /* Drag and drop styles */
     .draggable-preset:hover {
         cursor: grab;

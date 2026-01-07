@@ -543,6 +543,8 @@ export const languageChinese = {
     "temperature": "温度（Temperature）",
     "frequencyPenalty": "频率惩罚（Frequency Penalty）",
     "presensePenalty": "存在惩罚（Presence Penalty）",
+    "repetitionPenalty": "重复惩罚（Repetition Penalty）",
+    "verbosity": "详细程度（Verbosity）",
     "advancedSettings": "高级设置",
     "advancedSettingsWarn": "警告：若不确定该选项的作用，请勿进行修改！",
     "formatingOrder": "格式顺序",

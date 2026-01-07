@@ -1,9 +1,10 @@
 <script lang="ts">
     import { getModuleToggles } from "src/ts/process/modules";
-    import { DBState, MobileGUI } from "src/ts/stores.svelte";
+    import { DBState, layoutState } from "src/ts/stores.svelte";
     import { parseToggleSyntax, type sidebarToggle, type sidebarToggleGroup } from "src/ts/util";
     import { language } from "src/lang";
-    import type { character, groupChat } from "src/ts/storage/database.svelte";
+    import type { PromptItem } from "src/ts/process/prompt";
+    import type { character, groupChat } from "src/ts/storage/types/character";
     import Accordion from '../UI/Accordion.svelte'
     import CheckInput from "../UI/GUI/CheckInput.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
@@ -16,6 +17,37 @@
     }
 
     let { chara = $bindable(), noContainer }: Props = $props();
+
+    const jailbreakToggleToken = '{{jbtoggled}}'
+    const usesJailbreakToggle = (value?: string) =>
+        typeof value === 'string' && value.includes(jailbreakToggleToken)
+    const templateUsesJailbreakToggle = (template: PromptItem[]) =>
+        template.some(item => {
+            if (item.type === 'jailbreak') {
+                return true
+            }
+            if ('text' in item && usesJailbreakToggle(item.text)) {
+                // plain, jailbreak, cot
+                return true
+            }
+            if ('innerFormat' in item && usesJailbreakToggle(item.innerFormat)) {
+                // persona, description, lorebook, postEverything, memory
+                return true
+            }
+            if ('defaultText' in item && usesJailbreakToggle(item.defaultText)) {
+                // author note
+                return true
+            }
+            return false
+        })
+
+    let hasJailbreakPrompt = $derived.by(() => {
+        const template = DBState.db.promptTemplate
+        if (!template) {
+            return (DBState.db.jailbreak ?? '').trim().length > 0
+        }
+        return templateUsesJailbreakToggle(template)
+    })
 
     let groupedToggles = $derived.by(() => {
         const ungrouped = parseToggleSyntax(DBState.db.customPromptTemplateToggle + getModuleToggles())
@@ -47,7 +79,7 @@
                 </Accordion>
             </div>
         {:else if toggle.type === 'select'}
-            <div class="w-full flex gap-2 mt-2 items-center" class:justify-end={$MobileGUI} >
+            <div class="w-full flex gap-2 mt-2 items-center" class:justify-end={layoutState.betaMobile.enabled} >
                 <span>{toggle.value}</span>
                 <SelectInput className="w-32" bind:value={DBState.db.globalChatVariables[`toggle_${toggle.key}`]}>
                     {#each toggle.options as option, i}
@@ -56,7 +88,7 @@
                 </SelectInput>
             </div>
         {:else if toggle.type === 'text'}
-            <div class="w-full flex gap-2 mt-2 items-center" class:justify-end={$MobileGUI}>
+            <div class="w-full flex gap-2 mt-2 items-center" class:justify-end={layoutState.betaMobile.enabled}>
                 <span>{toggle.value}</span>
                 <TextInput className="w-32" bind:value={DBState.db.globalChatVariables[`toggle_${toggle.key}`]} />
             </div>
@@ -71,7 +103,7 @@
                 </div>
             {/if}
         {:else}
-            <div class="w-full flex mt-2 items-center" class:justify-end={$MobileGUI}>
+            <div class="w-full flex mt-2 items-center" class:justify-end={layoutState.betaMobile.enabled}>
                 <CheckInput check={DBState.db.globalChatVariables[`toggle_${toggle.key}`] === '1'} reverse={reverse} name={toggle.value} onChange={() => {
                     DBState.db.globalChatVariables[`toggle_${toggle.key}`] = DBState.db.globalChatVariables[`toggle_${toggle.key}`] === '1' ? '0' : '1'
                 }} />
@@ -82,20 +114,24 @@
 
 {#if !noContainer && groupedToggles.length > 4}
     <div class="h-48 border-darkborderc p-2 border rounded-sm flex flex-col items-start mt-2 overflow-y-auto">
-        <div class="flex mt-2 items-center w-full" class:justify-end={$MobileGUI}>
-            <CheckInput bind:check={DBState.db.jailbreakToggle} name={language.jailbreakToggle} reverse />
-        </div>
+        {#if hasJailbreakPrompt}
+            <div class="flex mt-2 items-center w-full" class:justify-end={layoutState.betaMobile.enabled}>
+                <CheckInput bind:check={DBState.db.jailbreakToggle} name={language.jailbreakToggle} reverse />
+            </div>
+        {/if}
         {@render toggles(groupedToggles, true)}
         {#if DBState.db.supaModelType !== 'none' || DBState.db.hanuraiEnable || DBState.db.hypaV3}
-            <div class="flex mt-2 items-center w-full" class:justify-end={$MobileGUI}>
+            <div class="flex mt-2 items-center w-full" class:justify-end={layoutState.betaMobile.enabled}>
                 <CheckInput bind:check={chara.supaMemory} reverse name={DBState.db.hypaV3 ? language.ToggleHypaMemory : DBState.db.hanuraiEnable ? language.hanuraiMemory : DBState.db.hypaMemory ? language.ToggleHypaMemory : language.ToggleSuperMemory}/>
             </div>
         {/if}
     </div>
 {:else}
-    <div class="flex mt-2 items-center">
-        <CheckInput bind:check={DBState.db.jailbreakToggle} name={language.jailbreakToggle}/>
-    </div>
+    {#if hasJailbreakPrompt}
+        <div class="flex mt-2 items-center">
+            <CheckInput bind:check={DBState.db.jailbreakToggle} name={language.jailbreakToggle}/>
+        </div>
+    {/if}
     {@render toggles(groupedToggles)}
     {#if DBState.db.supaModelType !== 'none' || DBState.db.hanuraiEnable || DBState.db.hypaV3}
         <div class="flex mt-2 items-center">

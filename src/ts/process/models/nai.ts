@@ -1,14 +1,15 @@
 import { getDatabase, setDatabase } from "src/ts/storage/database.svelte"
 import type { OpenAIChat } from "../index.svelte"
-import { globalFetch } from "src/ts/globalApi.svelte"
-import { alertError, alertInput, alertNormal, alertWait } from "src/ts/alert"
-import { getUserName, sleep } from "src/ts/util"
+import { globalFetch } from "src/ts/fetch"
+import { alertError, alertInput, alertNormal, alertWait } from "src/ts/alert.svelte"
+import { sleep } from "src/ts/util"
+import { getUserName } from "src/ts/persona"
 
 export function stringlizeNAIChat(formated:OpenAIChat[], char:string, continued: boolean){
     const db = getDatabase()
-    let seperator = db.NAIsettings.seperator.replaceAll("\\n","\n") || '\n'
-    let starter = db.NAIsettings.starter.replaceAll("\\n","\n") || '⁂'
-    let resultString:string[] = []
+    const seperator = db.NAIsettings.seperator.replaceAll("\\n","\n") || '\n'
+    const starter = db.NAIsettings.starter.replaceAll("\\n","\n") || '⁂'
+    const resultString:string[] = []
 
     for(const form of formated){
         if(form.role === 'system'){

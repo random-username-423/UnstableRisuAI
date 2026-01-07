@@ -77,7 +77,6 @@ let specialDay = $state('')
         {/if}
     {/if}
     {#if specialDay === 'anniversary'}
-        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
         {#if clicks < 5}
             <img src="./birthday.png" alt="birthday" class="absolute logo-top"
                 style:top={(-28 + iconAnimation).toFixed(0) + 'px'}

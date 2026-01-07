@@ -4,7 +4,8 @@
     import Sortable from 'sortablejs/modular/sortable.core.esm.js';
     import { DownloadIcon, PencilIcon, HardDriveUploadIcon, MenuIcon, TrashIcon, SplitIcon, FolderPlusIcon, BookmarkCheckIcon } from "@lucide/svelte";
 
-    import type { Chat, ChatFolder, character, groupChat } from "src/ts/storage/database.svelte";
+    import type { Chat, ChatFolder } from "src/ts/storage/types/chat";
+    import type { character, groupChat } from "src/ts/storage/types/character";
     import { DBState, ReloadGUIPointer } from 'src/ts/stores.svelte';
     import { selectedCharID } from "src/ts/stores.svelte";
 
@@ -12,11 +13,12 @@
     import Button from "../UI/GUI/Button.svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
 
-    import { exportChat, importChat, exportAllChats } from "src/ts/characters";
-    import { alertChatOptions, alertConfirm, alertError, alertNormal, alertSelect, alertStore } from "src/ts/alert";
-    import { findCharacterbyId, sleep, sortableOptions } from "src/ts/util";
+    import { exportChat, importChat, exportAllChats } from "src/ts/characters.svelte";
+    import { alertBranches, alertChatOptions, alertConfirm, alertError, alertNormal, alertSelect } from "src/ts/alert.svelte";
+    import { sleep, sortableOptions } from "src/ts/util";
+    import { findCharacterbyId } from "src/ts/characters.svelte";
     import { createMultiuserRoom } from "src/ts/sync/multiuser";
-    import { bookmarkListOpen } from "src/ts/stores.svelte";
+    import { modalState } from "src/ts/stores.svelte";
     import { language } from "src/lang";
     import Toggles from "./Toggles.svelte";
     import { changeChatTo, createChatCopyName } from "src/ts/globalApi.svelte";
@@ -479,15 +481,12 @@
                 <PencilIcon size={18}/>
             </button>
             <button class="text-textcolor2 hover:text-green-500 mr-2 cursor-pointer" onclick={() => {
-                alertStore.set({
-                  type: "branches",
-                  msg: ""
-                })
+                alertBranches()
             }}>
                 <SplitIcon size={18}/>
             </button>
             <button class="text-textcolor2 hover:text-green-500 mr-2 cursor-pointer" onclick={() => {
-                $bookmarkListOpen = true;
+                modalState.bookmark = true;
             }}>
                 <BookmarkCheckIcon size={18}/>
             </button>

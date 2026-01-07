@@ -1,4 +1,3 @@
-import type { Parameter } from "../process/request/request"
 import { getDatabase } from "../storage/database.svelte"
 import {
     LLMFlags,
@@ -498,7 +497,7 @@ export const LLMModels: LLMModel[] = [
     },
 ]
 
-for(let model of LLMModels){
+for(const model of LLMModels){
     model.shortName ??= model.name
     model.internalID ??= model.id
     model.fullName ??= model.provider !== LLMProvider.AsIs ? `${ProviderNames.get(model.provider) ?? ''} ${model.name}`.trim() : model.name
@@ -621,8 +620,8 @@ export function getModelList<T extends boolean>(arg:{
          models = models.filter(model => model.recommended)
     }
     if(arg.groupedByProvider){
-        let group: GetModelListGroup[] = []
-        for(let model of models){
+        const group: GetModelListGroup[] = []
+        for(const model of models){
             if(model.provider === LLMProvider.AsIs){
                 group.push({
                     providerName: '@as-is',
@@ -631,8 +630,8 @@ export function getModelList<T extends boolean>(arg:{
                 continue
             }
 
-            let providerName = ProviderNames.get(model.provider) || 'Unknown'
-            let groupIndex = group.findIndex(g => g.providerName === providerName)
+            const providerName = ProviderNames.get(model.provider) || 'Unknown'
+            const groupIndex = group.findIndex(g => g.providerName === providerName)
             if(groupIndex === -1){
                 group.push({
                     providerName,

@@ -543,6 +543,8 @@ export const languageVietnamese = {
     "temperature": "Nhiệt độ",
     "frequencyPenalty": "Hình phạt tần số",
     "presensePenalty": "Hình phạt có mặt",
+    "repetitionPenalty": "hình phạt lặp lại",
+    "verbosity": "mức độ chi tiết",
     "advancedSettings": "Cài đặt nâng cao",
     "advancedSettingsWarn": "Cảnh báo: Nếu bạn không biết tùy chọn này làm gì, đừng thay đổi nó!",
     "formatingOrder": "Thứ tự hình thành",

@@ -2,8 +2,8 @@
   import {
     type SerializableHypaV3Data,
     getCurrentHypaV3Preset,
-  } from "src/ts/process/memory/hypav3";
-  import { type Message } from "src/ts/storage/database.svelte";
+  } from "src/ts/process/memory/hypav3.svelte";
+  import { type Message } from "src/ts/storage/types/chat";
   import { DBState, selectedCharID } from "src/ts/stores.svelte";
   import { language } from "src/lang";
   import { getFirstMessage, processRegexScript } from "./utils";

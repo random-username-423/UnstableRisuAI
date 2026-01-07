@@ -1,9 +1,9 @@
 import { AppendableBuffer, saveAsset, type LocalWriter, type VirtualWriter } from "../globalApi.svelte";
 import * as fflate from "fflate";
 import { asBuffer, sleep } from "../util";
-import { alertStore } from "../alert";
+import { alertWait } from "../alert.svelte";
 import { hasher } from "../parser.svelte";
-import { hubURL } from "../characterCards";
+import { hubURL } from "../characterCards.svelte";
 
 // File size and chunk size constants
 const MAX_ASSET_SIZE_BYTES = 50 * 1024 * 1024; // 50MB
@@ -121,7 +121,7 @@ export class CharXWriter{
         }
 
         const splitName = sanitized.split('.');
-        let baseName = splitName.slice(0, -1).join('.');
+        const baseName = splitName.slice(0, -1).join('.');
         const extension = splitName.length > 1 ? '.' + splitName[splitName.length - 1] : '';
         let counter = 1;
         let uniqueName = baseName + extension;
@@ -242,10 +242,7 @@ export class CharXImporter{
         this.semaphore = new Semaphore(MAX_CONCURRENT_ASSET_SAVES)
         this.onProgress = (done, total) => {
             if(this.alertInfo){
-                alertStore.set({
-                    type: 'wait',
-                    msg: `Loading... (Saving Assets ${done}/${total})`
-                })
+                alertWait(`Loading... (Saving Assets ${done}/${total})`)
             }
         }
     }

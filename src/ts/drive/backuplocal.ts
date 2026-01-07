@@ -1,20 +1,13 @@
 import { BaseDirectory, readFile, readDir, writeFile } from "@tauri-apps/plugin-fs";
 import localforage from "localforage";
-import { alertError, alertNormal, alertStore, alertWait, alertMd } from "../alert";
+import { alertError, alertNormal, alertWait, alertMd } from "../alert.svelte";
 import { LocalWriter, forageStorage, requiresFullEncoderReload } from "../globalApi.svelte";
 import { isTauri } from "src/ts/platform"
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 import { getDatabase, setDatabaseLite } from "../storage/database.svelte";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { sleep } from "../util";
-import { hubURL } from "../characterCards";
-
-function getBasename(data:string){
-    const baseNameRegex = /\\/g
-    const splited = data.replace(baseNameRegex, '/').split('/')
-    const lasts = splited[splited.length-1]
-    return lasts
-}
+import { hubURL } from "../characterCards.svelte";
 
 export async function SaveLocalBackup(){
     alertWait("Saving local backup...")
@@ -84,7 +77,7 @@ export async function SaveLocalBackup(){
     if(isTauri){
         const assets = await readDir('assets', {baseDir: BaseDirectory.AppData})
         let i = 0;
-        for(let asset of assets){
+        for(const asset of assets){
             i += 1;
             let message = `Saving local Backup... (${i} / ${assets.length})`
             if (missingAssets.length > 0) {
@@ -235,17 +228,11 @@ export function LoadLocalBackup(){
                         if (isTauri) {
                             await writeFile('database/database.bin', db, { baseDir: BaseDirectory.AppData });
                             await relaunch();
-                            alertStore.set({
-                                type: "wait",
-                                msg: "Success, Refreshing your app."
-                            });
+                            alertWait("Success, Refreshing your app.");
                         } else {
                             await forageStorage.setItem('database/database.bin', db);
                             location.search = '';
-                            alertStore.set({
-                                type: "wait",
-                                msg: "Success, Refreshing your app."
-                            });
+                            alertWait("Success, Refreshing your app.");
                         }
                     } else {
                         if (isTauri) {

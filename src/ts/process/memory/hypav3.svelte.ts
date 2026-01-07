@@ -7,44 +7,21 @@ import {
 } from "./hypamemoryv2";
 import { type DisplayMode as ModalDisplayMode } from "src/lib/Others/HypaV3Modal/types";
 import {
-  type Chat,
-  type character,
-  type groupChat,
   getDatabase,
 } from "src/ts/storage/database.svelte";
-import { type OpenAIChat } from "../index.svelte";
+import { type Chat } from 'src/ts/storage/types/chat';
+import { type groupChat } from 'src/ts/storage/types/character';
+import { type character } from 'src/ts/storage/types/character';
+import { type OpenAIChat } from "../types";
 import { requestChatData } from "../request/request";
 import { chatCompletion, unloadEngine } from "../webllm";
 import { parseChatML } from "src/ts/parser.svelte";
-import { hypaV3ProgressStore } from "src/ts/stores.svelte";
+import { hypaV3State } from "src/ts/stores.svelte";
 import { type ChatTokenizer } from "src/ts/tokenizer";
+import { type HypaV3Preset, type HypaV3Settings, createHypaV3Preset } from "./hypav3Preset";
 
-export interface HypaV3Preset {
-  name: string;
-  settings: HypaV3Settings;
-}
-
-export interface HypaV3Settings {
-  summarizationModel: string;
-  summarizationPrompt: string;
-  reSummarizationPrompt: string;
-  memoryTokensRatio: number;
-  extraSummarizationRatio: number;
-  maxChatsPerSummary: number;
-  recentMemoryRatio: number;
-  similarMemoryRatio: number;
-  enableSimilarityCorrection: boolean;
-  preserveOrphanedMemory: boolean;
-  processRegexScript: boolean;
-  doNotSummarizeUserMessage: boolean;
-  // Experimental
-  useExperimentalImpl: boolean;
-  summarizationRequestsPerMinute: number;
-  summarizationMaxConcurrent: number;
-  embeddingRequestsPerMinute: number;
-  embeddingMaxConcurrent: number;
-  alwaysToggleOn: boolean;
-}
+// Re-export for backward compatibility
+export { type HypaV3Preset, type HypaV3Settings, createHypaV3Preset };
 
 interface HypaV3Data {
   summaries: Summary[];
@@ -377,12 +354,12 @@ async function hypaMemoryV3MainExp(
     });
 
     rateLimiter.taskQueueChangeCallback = (queuedCount) => {
-      hypaV3ProgressStore.set({
+      hypaV3State.progress = {
         open: true,
         miniMsg: `${rateLimiter.queuedTaskCount}`,
         msg: `${logPrefix} Summarizing...`,
         subMsg: `${rateLimiter.queuedTaskCount} queued`,
-      });
+      }
     };
 
     const summarizationTasks = toSummarizeArray.map(
@@ -408,12 +385,12 @@ async function hypaMemoryV3MainExp(
     );
     // End of performance measurement: summarize
 
-    hypaV3ProgressStore.set({
+    hypaV3State.progress = {
       open: false,
       miniMsg: "",
       msg: "",
       subMsg: "",
-    });
+    }
 
     // Note:
     // We can't save some successful summaries to the DB temporarily
@@ -620,12 +597,12 @@ async function hypaMemoryV3MainExp(
     });
 
     processor.progressCallback = (queuedCount) => {
-      hypaV3ProgressStore.set({
+      hypaV3State.progress = {
         open: true,
         miniMsg: `${queuedCount}`,
         msg: `${logPrefix} Similarity searching...`,
         subMsg: `${queuedCount} queued`,
-      });
+      }
     };
 
     try {
@@ -651,12 +628,12 @@ async function hypaMemoryV3MainExp(
         memory: toSerializableHypaV3Data(data),
       };
     } finally {
-      hypaV3ProgressStore.set({
+      hypaV3State.progress = {
         open: false,
         miniMsg: "",
         msg: "",
         subMsg: "",
-      });
+      }
     }
 
     const recentChats = chats
@@ -767,12 +744,12 @@ async function hypaMemoryV3MainExp(
           memory: toSerializableHypaV3Data(data),
         };
       } finally {
-        hypaV3ProgressStore.set({
+        hypaV3State.progress = {
           open: false,
           miniMsg: "",
           msg: "",
           subMsg: "",
-        });
+        }
       }
     }
 
@@ -1332,6 +1309,58 @@ async function hypaMemoryV3Main(
       );
     });
 
+    interface SummaryChunkVector {
+      chunk: SummaryChunk;
+      vector: memoryVector;
+    }
+
+    class HypaProcesserEx extends HypaProcesser {
+      // Maintain references to SummaryChunks and their associated memoryVectors
+      summaryChunkVectors: SummaryChunkVector[] = [];
+
+      async addSummaryChunks(chunks: SummaryChunk[]): Promise<void> {
+        // Maintain the superclass's caching structure by adding texts
+        const texts = chunks.map((chunk) => chunk.text);
+
+        await this.addText(texts);
+
+        // Create new SummaryChunkVectors
+        const newSummaryChunkVectors: SummaryChunkVector[] = [];
+
+        for (const chunk of chunks) {
+          const vector = this.vectors.find((v) => v.content === chunk.text);
+
+          if (!vector) {
+            throw new Error(
+              `Failed to create vector for summary chunk:\n${chunk.text}`
+            );
+          }
+
+          newSummaryChunkVectors.push({
+            chunk,
+            vector,
+          });
+        }
+
+        // Append new SummaryChunkVectors to the existing collection
+        this.summaryChunkVectors.push(...newSummaryChunkVectors);
+      }
+
+      async similaritySearchScoredEx(
+        query: string
+      ): Promise<[SummaryChunk, number][]> {
+        const queryVector = (await this.getEmbeds(query))[0];
+
+        return this.summaryChunkVectors
+          .map((scv) => ({
+            chunk: scv.chunk,
+            similarity: similarity(queryVector, scv.vector.embedding),
+          }))
+          .sort((a, b) => b.similarity - a.similarity)
+          .map((result) => [result.chunk, result.similarity]);
+      }
+    }
+
     // Initialize embedding processor
     const processor = new HypaProcesserEx(db.hypaModel);
     processor.oaikey = db.supaMemoryKey;
@@ -1751,50 +1780,6 @@ export function getCurrentHypaV3Preset(): HypaV3Preset {
   return preset;
 }
 
-export function createHypaV3Preset(
-  name = "New Preset",
-  existingSettings = {}
-): HypaV3Preset {
-  const settings: HypaV3Settings = {
-    summarizationModel: "subModel",
-    summarizationPrompt: "",
-    reSummarizationPrompt: "",
-    memoryTokensRatio: 0.2,
-    extraSummarizationRatio: 0,
-    maxChatsPerSummary: 6,
-    recentMemoryRatio: 0.4,
-    similarMemoryRatio: 0.4,
-    enableSimilarityCorrection: false,
-    preserveOrphanedMemory: false,
-    processRegexScript: false,
-    doNotSummarizeUserMessage: false,
-    // Experimental
-    useExperimentalImpl: false,
-    summarizationRequestsPerMinute: 20,
-    summarizationMaxConcurrent: 1,
-    embeddingRequestsPerMinute: 100,
-    embeddingMaxConcurrent: 1,
-    alwaysToggleOn: false,
-  };
-
-  if (
-    existingSettings &&
-    typeof existingSettings === "object" &&
-    !Array.isArray(existingSettings)
-  ) {
-    for (const [key, value] of Object.entries(existingSettings)) {
-      if (key in settings && typeof value === typeof settings[key]) {
-        settings[key] = value;
-      }
-    }
-  }
-
-  return {
-    name,
-    settings,
-  };
-}
-
 function simpleCC<T>(
   scoredLists: [T, number][][],
   weightFunc?: (listIndex: number, totalLists: number) => number
@@ -1879,56 +1864,4 @@ function normalizeScores<T>(scoredList: [T, number][]): [T, number][] {
     const normalizedScore = (score - minScore) / (maxScore - minScore);
     return [item, normalizedScore];
   });
-}
-
-interface SummaryChunkVector {
-  chunk: SummaryChunk;
-  vector: memoryVector;
-}
-
-class HypaProcesserEx extends HypaProcesser {
-  // Maintain references to SummaryChunks and their associated memoryVectors
-  summaryChunkVectors: SummaryChunkVector[] = [];
-
-  async addSummaryChunks(chunks: SummaryChunk[]): Promise<void> {
-    // Maintain the superclass's caching structure by adding texts
-    const texts = chunks.map((chunk) => chunk.text);
-
-    await this.addText(texts);
-
-    // Create new SummaryChunkVectors
-    const newSummaryChunkVectors: SummaryChunkVector[] = [];
-
-    for (const chunk of chunks) {
-      const vector = this.vectors.find((v) => v.content === chunk.text);
-
-      if (!vector) {
-        throw new Error(
-          `Failed to create vector for summary chunk:\n${chunk.text}`
-        );
-      }
-
-      newSummaryChunkVectors.push({
-        chunk,
-        vector,
-      });
-    }
-
-    // Append new SummaryChunkVectors to the existing collection
-    this.summaryChunkVectors.push(...newSummaryChunkVectors);
-  }
-
-  async similaritySearchScoredEx(
-    query: string
-  ): Promise<[SummaryChunk, number][]> {
-    const queryVector = (await this.getEmbeds(query))[0];
-
-    return this.summaryChunkVectors
-      .map((scv) => ({
-        chunk: scv.chunk,
-        similarity: similarity(queryVector, scv.vector.embedding),
-      }))
-      .sort((a, b) => b.similarity - a.similarity)
-      .map((result) => [result.chunk, result.similarity]);
-  }
 }

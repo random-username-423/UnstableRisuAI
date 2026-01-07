@@ -1,7 +1,7 @@
 import { get } from "svelte/store";
 import { getCurrentCharacter, getCurrentChat, getDatabase, setCurrentChat, setDatabase } from "../storage/database.svelte";
 import { selectedCharID } from "../stores.svelte";
-import { alertInput, alertMd, alertNormal, alertSelect } from "../alert";
+import { alertInput, alertMd, alertNormal, alertSelect } from "../alert.svelte";
 import { sayTTS } from "./tts";
 import { risuChatParser } from "../parser.svelte";
 import { sendChat } from "./index.svelte";
@@ -308,8 +308,8 @@ function commandParser(command:string, pipe:string){
     }
     const sliced = command.split(' ').filter((e)=>e!='')
     const commandName = sliced[0]
-    let argArray:string[] = []
-    let namedArg:{[key:string]:string} = {}
+    const argArray:string[] = []
+    const namedArg:{[key:string]:string} = {}
     for(let i = 1; i<sliced.length; i++){
         if(sliced[i].includes('=')){
             const [key, value] = sliced[i].split('=')

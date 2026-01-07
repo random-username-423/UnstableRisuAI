@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { PlusIcon, TrashIcon, LinkIcon, CodeXmlIcon } from "@lucide/svelte";
+    import { PlusIcon, TrashIcon, LinkIcon, CodeXmlIcon, PowerIcon, PowerOffIcon } from "@lucide/svelte";
     import { language } from "src/lang";
-    import { alertConfirm, alertMd, alertSelect } from "src/ts/alert";
+    import { alertConfirm, alertMd, alertSelect } from "src/ts/alert.svelte";
     import { TriangleAlert } from '@lucide/svelte';
 
     import { DBState, hotReloading } from "src/ts/stores.svelte";
-    import { checkPluginUpdate, createBlankPlugin, importPlugin, loadPlugins, updatePlugin } from "src/ts/plugins/plugins";
+    import { checkPluginUpdate, importPlugin, loadPlugins, updatePlugin } from "src/ts/plugins/plugins";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
@@ -93,6 +93,22 @@
                     {/if}
                 {/await}
             {/if}
+
+            <button
+                class="textcolor2 hover:gray-200 cursor-pointer"
+                onclick={async (e) => {
+                    plugin.enabled = !plugin.enabled
+                    DBState.db.plugins[i] = plugin
+                    loadPlugins()
+                    e.preventDefault()
+                }}
+            >
+                {#if plugin.enabled}
+                    <PowerIcon />
+                {:else}
+                    <PowerOffIcon />
+                {/if}
+            </button>
 
             <!--Also, remove button.-->
             <button

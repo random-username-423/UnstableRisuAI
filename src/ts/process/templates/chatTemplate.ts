@@ -1,7 +1,7 @@
 import { Template } from '@huggingface/jinja';
 import type { OpenAIChat } from '../index.svelte';
 import { getCurrentCharacter, getDatabase } from 'src/ts/storage/database.svelte';
-import { getUserName } from 'src/ts/util';
+import { getUserName } from "src/ts/persona";
 
 export const chatTemplates = {
     'llama3': "{% set bos_token = '<|begin_of_text|>' %}{% set loop_messages = messages %}{% for message in loop_messages %}{% set content = '<|start_header_id|>' + message['role'] + '<|end_header_id|>\n\n'+ message['content'] | trim + '<|eot_id|>' %}{% if loop.index0 == 0 %}{% set content = bos_token + content %}{% endif %}{{ content }}{% endfor %}{{ '<|start_header_id|>assistant<|end_header_id|>\n\n' }}",
@@ -34,9 +34,9 @@ export const applyChatTemplate = (messages:OpenAIChat[], arg:{
     if(!type){
         throw new Error('Template type is not set')
     }
-    let clonedMessages = safeStructuredClone(messages)
+    const clonedMessages = safeStructuredClone(messages)
     const template = type === 'jinja' ? (new Template(arg.custom ?? db.JinjaTemplate)) :(new Template(chatTemplates[type]))
-    let formatedMessages:{
+    const formatedMessages:{
         "role": 'user'|'assistant'|'system',
         "content": string
     }[] = []

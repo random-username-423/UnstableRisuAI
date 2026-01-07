@@ -4,9 +4,9 @@
   import { 
     type SerializableSummary, 
     summarize,
-  } from "src/ts/process/memory/hypav3";
-  import { alertNormalWait } from "src/ts/alert";
-  import { DBState, selectedCharID, hypaV3ModalOpen } from "src/ts/stores.svelte";
+  } from "src/ts/process/memory/hypav3.svelte";
+  import { alertNormalWait } from "src/ts/alert.svelte";
+  import { DBState, selectedCharID, hypaV3State } from "src/ts/stores.svelte";
   import { language } from "src/lang";
   import { translateHTML } from "src/ts/translator/translator";
   import { alertConfirmTwice } from "./HypaV3Modal/utils";
@@ -115,7 +115,7 @@
   });
 
   $effect(() => {
-    if ($hypaV3ModalOpen) {
+    if (hypaV3State.open) {
       const currentImportantCount = untrack(() => hypaV3Data.summaries.filter(s => s.isImportant).length);
 
       if (currentImportantCount > 0) {
