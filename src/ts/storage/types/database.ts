@@ -260,7 +260,6 @@ export interface Database {
     requestInfoInsideChat?: boolean;
     additionalParams: [string, string][];
     heightMode: string;
-    useAdvancedEditor: boolean;
     noWaitForTranslate: boolean;
     antiClaudeOverload: boolean;
     maxSupaChunkSize: number;
@@ -453,6 +452,13 @@ export interface Database {
     ImagenImageSize: string;
     ImagenAspectRatio: string;
     ImagenPersonGeneration: string;
+    openaiCompatImage: {
+        url: string
+        key: string
+        model: string
+        size: string
+        quality: string
+    }
     sourcemapTranslate: boolean;
     settingsCloseButtonSize: number;
     promptDiffPrefs: PromptDiffPrefs;
@@ -464,6 +470,7 @@ export interface Database {
     pluginDevelopMode?: boolean;
     echoMessage?:string
     echoDelay?:number
+    createFolderOnBranch?:boolean
 }
 
 export interface DynamicOutput {

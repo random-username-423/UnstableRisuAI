@@ -541,7 +541,9 @@ const makeRisuaiAPIV3 = (iframe:HTMLIFrameElement,plugin:RisuPlugin) => {
             if(!conf){
                 return null;
             }
-            const db = getDatabase();
+            const db = getDatabase({
+                snapshot: true
+            });
             let liteDB = {}
             for(const key of allowedDbKeys){
                 (liteDB as any)[key] = (db as any)[key];
@@ -716,8 +718,10 @@ const makeRisuaiAPIV3 = (iframe:HTMLIFrameElement,plugin:RisuPlugin) => {
                 return null;
             }
             return unsafeFetchLog.map(log => {
+
+                const url = new URL(log.url);
                 return {
-                    url: log.url,
+                    url: url.origin + url.pathname,
                     body: log.body,
                     status: log.status,
                     response: log.response,

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { ArrowLeft, ArrowLeftRightIcon, ArrowRight, BookmarkIcon, BotIcon, CopyIcon, PowerOff, GitBranch, LanguagesIcon, PencilIcon, RefreshCcwIcon, SplitIcon, TrashIcon, UserIcon, Volume2Icon, Scissors } from "@lucide/svelte"
-    import { aiLawApplies, changeChatTo, foldChatToMessage, getFileSrc } from "src/ts/globalApi.svelte"
+    import { aiLawApplies, changeChatTo, foldChatToMessage, getFileSrc, createChatCopyName } from "src/ts/globalApi.svelte"
     import { ColorSchemeTypeStore } from "src/ts/gui/colorscheme"
     import { longpress } from "src/ts/gui/longtouch"
     import { getModelInfo } from "src/ts/model/modellist"
@@ -391,6 +391,7 @@
         {:else}
             <span class="text-xs">{statusMessage}</span>
             <div class="flex items-center ml-2 gap-2">
+                {@render translationButton()}
                 {#if window.innerWidth >= 640}
                     {@render majorIconButtonsBody(false)}
                     {#if DBState.db.characters[selIdState.selId]}
@@ -683,17 +684,16 @@
         </button>
     {/if}
 {/if}
-{#if DBState.db.translator !== '' && !blankMessage}
-    <button class={"flex items-center cursor-pointer hover:text-blue-500 transition-colors button-icon-translate " + (translated ? 'text-blue-400':'')} class:translating={translating} onclick={async () => {
-        translated = !translated
-    }}>
-        <LanguagesIcon />
+{/snippet}
 
-        {#if showNames}
-            <span class="ml-1">{language.translate}</span>
-        {/if}
-    </button>
-{/if}
+{#snippet translationButton()}
+    {#if DBState.db.translator !== '' && !blankMessage}
+        <button class={"flex items-center cursor-pointer hover:text-blue-500 transition-colors button-icon-translate " + (translated ? 'text-blue-400':'')} class:translating={translating} onclick={async () => {
+            translated = !translated
+        }}>
+            <LanguagesIcon />
+        </button>
+    {/if}
 {/snippet}
 
 {#snippet rerolls()}
@@ -733,9 +733,20 @@
     <button class="flex items-center hover:text-blue-500 transition-colors" onclick={async () => {
         await sleep(1)
         const currentChat = DBState.db.characters[selIdState.selId].chats[DBState.db.characters[selIdState.selId].chatPage]
+        
+        if(DBState.db.createFolderOnBranch && !currentChat.folderId){
+            const folderId = v4()
+            DBState.db.characters[selIdState.selId].chatFolders.unshift({
+                id: folderId,
+                name: `Branches of ${currentChat.name}`,
+                folded: false,
+            })
+            currentChat.folderId = folderId
+        }
+        
         const currentMessage = currentChat.message[idx]
         const newChat = $state.snapshot(currentChat)
-        newChat.name = `Copy of ${newChat.name}`
+        newChat.name = createChatCopyName(newChat.name, 'Branch')
         newChat.id = v4()
         newChat.message = newChat.message.slice(0, idx + 1)
         newChat.message.push({

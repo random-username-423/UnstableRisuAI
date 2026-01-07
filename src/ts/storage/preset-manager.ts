@@ -4,7 +4,7 @@ import { language } from 'src/lang';
 import { alertNormal } from '../alert.svelte';
 import { downloadFile } from '../globalApi.svelte';
 import { LLMFormat } from '../model/modellist';
-import { decodeRPack, encodeRPack } from '../rpack/rpack_bg';
+import { decodeRPack, encodeRPack } from '../rpack/rpack_js';
 import { decryptBuffer, encryptBuffer, selectSingleFile } from '../util';
 import { getDatabase, presetTemplate, setDatabase } from './database.svelte';
 import type { botPreset, Database } from './types';

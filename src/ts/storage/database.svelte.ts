@@ -16,8 +16,8 @@ import type { Database } from './types/database';
 import type { AINsettings, OobaSettings } from './types/settings';
 
 //APP_VERSION_POINT is to locate the app version in the database file for version bumping
-export const appVer = "166.3.3" //<APP_VERSION_POINT>
-export const webAppSubVer = ''
+export let appVer = "2026.1.63" //<APP_VERSION_POINT>
+export let webAppSubVer = ''
 
 
 export function setDatabase(data:Database){
@@ -456,6 +456,13 @@ export function setDatabase(data:Database){
     data.ImagenImageSize ??= '1K'
     data.ImagenAspectRatio ??= '1:1'
     data.ImagenPersonGeneration ??= 'allow_all'
+    data.openaiCompatImage ??= {
+        url: '',
+        key: '',
+        model: '',
+        size: '1024x1024',
+        quality: 'auto'
+    }
     data.autoScrollToNewMessage ??= true
     data.alwaysScrollToNewMessage ??= false
     data.newMessageButtonStyle ??= 'bottom-center'
@@ -465,6 +472,7 @@ export function setDatabase(data:Database){
         //this is intended to forcely reduce the size of the database in web
         data.promptInfoInsideChat = false
     }
+    data.createFolderOnBranch ??= true
     changeLanguage(data.language)
     setDatabaseLite(data)
 }
