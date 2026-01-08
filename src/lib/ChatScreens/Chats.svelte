@@ -3,7 +3,7 @@
     import type { character, groupChat } from 'src/ts/storage/types/character';
     import { mount, onDestroy, unmount } from 'svelte';
     import Chat from './Chat.svelte';
-    import { getCharImage } from 'src/ts/characters.svelte';;
+    import { getCharImage } from 'src/ts/characters.svelte';
     import { createSimpleCharacter, DBState, selectedCharID, ReloadChatPointer } from 'src/ts/stores.svelte';
     import { chatFoldedStateMessageIndex } from 'src/ts/globalApi.svelte';
     import { get } from 'svelte/store';
@@ -70,11 +70,13 @@
             loadEnd = Math.max(0, chatFoldedStateMessageIndex.index - loadPages)
         }
 
+        const reloadPointerMap = get(ReloadChatPointer);
+
         for(let i=loadStart ; i >= loadEnd; i--){
             if(i < 0) break; // Prevent out of bounds
             const message = messages[i];
             const messageLargePortrait = message.role === 'user' ? (userIconPortrait ?? false) : ((currentCharacter as character).largePortrait ?? false);
-            const reloadPointer = get(ReloadChatPointer)[i] ?? 0;
+            const reloadPointer = reloadPointerMap[i] ?? 0;
             let hashd = message.data + (message.chatId ?? '') + i.toString() + messageLargePortrait.toString() + message.disabled?.toString() + reloadPointer.toString();
             const currentHash = hashCode(hashd);
             currentHashes.add(currentHash);
@@ -167,7 +169,7 @@
 
     $effect(() => {
         console.log('Updating Chats');
-        const reloadPointerTrigger = $ReloadChatPointer; // Make $effect track ReloadChatPointer changes
+        void $ReloadChatPointer; // Make $effect track ReloadChatPointer changes
         const wasAtBottom = checkIfAtBottom();
         updateChatBody()
         
