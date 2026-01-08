@@ -1,8 +1,10 @@
 import { get } from "svelte/store"
-import { getDatabase, type character } from "../storage/database.svelte"
+import { getDatabase } from "../storage/database.svelte"
+import { type character } from '../storage/types/character'
 import { requestChatData } from "./request/request"
-import { alertError } from "../alert"
-import { fetchNative, globalFetch, readImage } from "../globalApi.svelte"
+import { alertError } from "../alert.svelte"
+import { readImage } from "../globalApi.svelte"
+import { globalFetch, fetchNative } from "../fetch"
 import { CharEmotion } from "../stores.svelte"
 import type { OpenAIChat } from "./index.svelte"
 import { processZip } from "./processzip"
@@ -10,7 +12,7 @@ import { keiServerURL } from "../kei/kei"
 import { random } from "lodash"
 
 export async function stableDiff(currentChar:character,prompt:string){
-    let db = getDatabase()
+    const db = getDatabase()
 
     if(db.sdProvider === ''){
         alertError("Stable diffusion is not set in settings.")
@@ -100,7 +102,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
                 }
             }
             else if(da.ok){
-                let charemotions = get(CharEmotion)
+                const charemotions = get(CharEmotion)
                 const img = `data:image/png;base64,${da.data.images[0]}`
                 console.log(img)
                 const emos:[string, string,number][] = [[img, img, Date.now()]]
@@ -232,7 +234,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
                 }
 
                 // Use selected encoding or first available
-                let encodingKey = db.NAIImgConfig.vibe_model_selection ? 
+                const encodingKey = db.NAIImgConfig.vibe_model_selection ? 
                                  Object.keys(vibeData.encodings[modelKey]).find(key => 
                                     vibeData.encodings[modelKey][key].params.information_extracted === 
                                     (db.NAIImgConfig.InfoExtracted || 1)) : 
@@ -321,7 +323,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
         }
 
         if(db.NAII2I){
-            let seed = random(0, 1000000000);
+            const seed = random(0, 1000000000);
 
             let base64img = ''
             if(!db.NAIImgConfig.image || db.NAIImgConfig.image === ''){
@@ -368,7 +370,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
             }
 
             else if(da.ok){
-                let charemotions = get(CharEmotion)
+                const charemotions = get(CharEmotion)
                 const img = await processZip(da.data);
                 const emos:[string, string,number][] = [[img, img, Date.now()]]
                 charemotions[currentChar.chaId] = emos
@@ -404,7 +406,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
         console.log(da)
 
         if(returnSdData === 'inlay'){
-            let res = da?.data?.data?.[0]?.b64_json
+            const res = da?.data?.data?.[0]?.b64_json
             if(!res){
                 alertError(JSON.stringify(da.data))
                 return ''
@@ -413,7 +415,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
         }
 
         else if(da.ok){
-            let charemotions = get(CharEmotion)
+            const charemotions = get(CharEmotion)
             let img = da?.data?.data?.[0]?.b64_json
             if(!img){
                 alertError(JSON.stringify(da.data))
@@ -472,7 +474,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
             return `data:image/png;base64,${Buffer.from(res).toString('base64')}`
         }
 
-        let charemotions = get(CharEmotion)
+        const charemotions = get(CharEmotion)
         const img = `data:image/png;base64,${Buffer.from(res).toString('base64')}`
         const emos:[string, string,number][] = [[img, img, Date.now()]]
         charemotions[currentChar.chaId] = emos
@@ -569,7 +571,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
                 return `data:image/png;base64,${img64}`
             }
             else {
-                let charemotions = get(CharEmotion)
+                const charemotions = get(CharEmotion)
                 const img = `data:image/png;base64,${img64}`
                 const emos:[string, string,number][] = [[img, img, Date.now()]]
                 charemotions[currentChar.chaId] = emos
@@ -606,7 +608,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
             return da.data.data
         }
         else{
-            let charemotions = get(CharEmotion)
+            const charemotions = get(CharEmotion)
             const img = da.data.data
             const emos:[string, string,number][] = [[img, img, Date.now()]]
             charemotions[currentChar.chaId] = emos
@@ -619,7 +621,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
         const model = db.falModel
         const token = db.falToken
 
-        let body:{[key:string]:any} = {
+        const body:{[key:string]:any} = {
             prompt: genPrompt,
             enable_safety_checker: false,
             sync_mode: true,
@@ -659,7 +661,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
             return false
         }
 
-        let image = res.data?.images?.[0]?.url
+        const image = res.data?.images?.[0]?.url
         if(!image){
             alertError(JSON.stringify(res.data))
             return false
@@ -669,7 +671,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
             return image
         }
         else{
-            let charemotions = get(CharEmotion)
+            const charemotions = get(CharEmotion)
             const emos:[string, string,number][] = [[image, image, Date.now()]]
             charemotions[currentChar.chaId] = emos
             CharEmotion.set(charemotions)
@@ -681,7 +683,7 @@ export async function generateAIImage(genPrompt:string, currentChar:character, n
         const aspect = db.ImagenAspectRatio
         const person = db.ImagenPersonGeneration
 
-        let body:any = {
+        const body:any = {
             instances: [{
                 prompt: genPrompt
             }],

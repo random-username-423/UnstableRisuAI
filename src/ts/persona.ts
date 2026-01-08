@@ -1,11 +1,13 @@
 import { getDatabase, saveImage, setDatabase } from "./storage/database.svelte"
 import { selectSingleFile, sleep } from "./util"
-import { alertError, alertNormal, alertStore } from "./alert"
+import { alertError, alertNormal, alertWait } from "./alert.svelte"
 import { AppendableBuffer, downloadFile, readImage } from "./globalApi.svelte"
 import { language } from "src/lang"
 import { reencodeImage } from "./process/files/inlays"
 import { PngChunk } from "./pngChunk"
 import { v4 } from "uuid"
+import { get } from "svelte/store"
+import { selectedCharID } from "./stores.svelte"
 
 export async function selectUserImg() {
     const selected = await selectSingleFile(['png'])
@@ -13,7 +15,7 @@ export async function selectUserImg() {
         return
     }
     const img = selected.data
-    let db = getDatabase()
+    const db = getDatabase()
     const imgp = await saveImage(img)
     db.userIcon = imgp
     db.personas[db.selectedPersona] = {
@@ -28,7 +30,7 @@ export async function selectUserImg() {
 }
 
 export function saveUserPersona() {
-    let db = getDatabase()
+    const db = getDatabase()
     db.personas[db.selectedPersona].name = db.username
     db.personas[db.selectedPersona].icon = db.userIcon
     db.personas[db.selectedPersona].personaPrompt = db.personaPrompt
@@ -40,7 +42,7 @@ export function changeUserPersona(id: number, save: 'save' | 'noSave' = 'save') 
     if (save === 'save') {
         saveUserPersona()
     }
-    let db = getDatabase()
+    const db = getDatabase()
     const pr = db.personas[id]
     db.personaPrompt = pr.personaPrompt
     db.username = pr.name
@@ -57,7 +59,7 @@ interface PersonaCard {
 }
 
 export async function exportUserPersona() {
-    let db = getDatabase({ snapshot: true })
+    const db = getDatabase({ snapshot: true })
     if ((!db.username) || (!db.personaPrompt)) {
         alertError("username or persona prompt is empty")
         return
@@ -78,16 +80,13 @@ export async function exportUserPersona() {
         img = await readImage(db.userIcon)
     }
 
-    let card: PersonaCard = safeStructuredClone({
+    const card: PersonaCard = safeStructuredClone({
         name: db.username,
         personaPrompt: db.personaPrompt,
         note: db.userNote,
     })
 
-    alertStore.set({
-        type: 'wait',
-        msg: 'Loading... (Writing Exif)'
-    })
+    alertWait('Loading... (Writing Exif)')
 
     await sleep(10)
 
@@ -95,10 +94,7 @@ export async function exportUserPersona() {
         "persona": Buffer.from(JSON.stringify(card)).toString('base64')
     })) as Uint8Array
 
-    alertStore.set({
-        type: 'wait',
-        msg: 'Loading... (Writing)'
-    })
+    alertWait('Loading... (Writing)')
 
     await sleep(10)
     await downloadFile(`${db.username.replace(/[<>:"/\\|?*\.\,]/g, "")}_export.png`, img)
@@ -128,7 +124,7 @@ export async function importUserPersona() {
         }
         const data: PersonaCard = JSON.parse(Buffer.from(decoded, 'base64').toString('utf-8'))
         if (data.name && data.personaPrompt) {
-            let db = getDatabase()
+            const db = getDatabase()
             db.personas.push({
                 name: data.name,
                 icon: await saveImage(await reencodeImage(v.data)),
@@ -146,3 +142,54 @@ export async function importUserPersona() {
         return
     }
 }
+export function getUserName() {
+    const bindedPersona = checkPersonaBinded()
+    if (bindedPersona) {
+        return bindedPersona.name
+    }
+    const db = getDatabase()
+    return db.username ?? 'User'
+}export function checkPersonaBinded() {
+    try {
+        const db = getDatabase()
+        const selectedChar = get(selectedCharID)
+        const character = db.characters[selectedChar]
+        const chat = character.chats[character.chatPage]
+        if (!chat.bindedPersona) {
+            return null
+        }
+        const persona = db.personas.find(v => v.id === chat.bindedPersona)
+        return persona
+    } catch (error) {
+        return null
+    }
+}
+export function getUserIcon() {
+    const bindedPersona = checkPersonaBinded()
+    if (bindedPersona) {
+        return bindedPersona.icon
+    }
+    const db = getDatabase()
+    return db.userIcon ?? ''
+}
+export function getPersonaPrompt() {
+    const bindedPersona = checkPersonaBinded()
+    if (bindedPersona) {
+        return bindedPersona.personaPrompt
+    }
+    const db = getDatabase()
+    return db.personaPrompt ?? ''
+}
+export function getUserIconProtrait() {
+    try {
+        const bindedPersona = checkPersonaBinded()
+        if (bindedPersona) {
+            return bindedPersona.largePortrait
+        }
+        const db = getDatabase()
+        return db.personas[db.selectedPersona].largePortrait
+    } catch (error) {
+        return false
+    }
+}
+

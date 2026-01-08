@@ -1,9 +1,12 @@
 import { v4 } from 'uuid';
-import { alertError, alertInput, alertNormal, alertStore, alertWait } from '../alert';
+import { alertClear, alertError, alertInput, alertNormal, alertWait } from '../alert.svelte';
 import { get, writable } from 'svelte/store';
-import { setDatabase, type character, saveImage, type Chat, getCurrentChat, setCurrentChat, getDatabase } from '../storage/database.svelte';
+import { setDatabase, saveImage, getCurrentChat, setCurrentChat, getDatabase } from '../storage/database.svelte';
+import { type Chat } from '../storage/types/chat';
+import { type character } from '../storage/types/character';
 import { selectedCharID } from '../stores.svelte';
-import { findCharacterIndexbyId, sleep } from '../util';
+import { sleep } from '../util';
+import { findCharacterIndexbyId } from "../characters.svelte";
 import type { DataConnection, Peer } from 'peerjs';
 import { readImage } from '../globalApi.svelte';
 import { doingChat } from '../process/index.svelte';
@@ -50,12 +53,12 @@ type ReciveData = ReciveFirst|RequestFirst|ReciveAsset|RequestSync|ReciveSync|Re
 
 let conn:DataConnection
 let peer:Peer
-let connections:DataConnection[] = []
+const connections:DataConnection[] = []
 export let connectionOpen = false
-let requestChatSafeQueue = new Map<string, {remaining:number,safe:boolean,conn?:DataConnection}>()
-export let ConnectionOpenStore = writable(false)
-export let ConnectionIsHost = writable(false)
-export let RoomIdStore = writable('')
+const requestChatSafeQueue = new Map<string, {remaining:number,safe:boolean,conn?:DataConnection}>()
+export const ConnectionOpenStore = writable(false)
+export const ConnectionIsHost = writable(false)
+export const RoomIdStore = writable('')
 
 export async function createMultiuserRoom(){
     //create a room with webrtc
@@ -248,10 +251,7 @@ export async function createMultiuserRoom(){
     connectionOpen = true
     ConnectionOpenStore.set(true)
     RoomIdStore.set(roomId)
-    alertStore.set({
-        type: 'none',
-        msg: ''
-    })
+    alertClear()
     return
 }
 

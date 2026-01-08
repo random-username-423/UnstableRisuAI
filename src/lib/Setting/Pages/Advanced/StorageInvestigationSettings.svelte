@@ -1,7 +1,6 @@
 <script lang="ts">
     import { Capacitor } from "@capacitor/core";
     import { capStorageInvestigation } from "src/ts/storage/mobileStorage";
-    import { language } from "src/lang";
     import Button from "src/lib/UI/GUI/Button.svelte";
 
     let estaStorage:{

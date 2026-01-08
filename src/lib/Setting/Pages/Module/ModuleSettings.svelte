@@ -8,7 +8,7 @@
     import { SquarePen, TrashIcon, Globe, Share2Icon, PlusIcon, HardDriveUpload, Waypoints } from "@lucide/svelte";
     import { v4 } from "uuid";
     import { tooltip } from "src/ts/gui/tooltip";
-    import { alertConfirm } from "src/ts/alert";
+    import { alertConfirm } from "src/ts/alert.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import { onDestroy } from "svelte";
     import { importMCPModule } from "src/ts/process/mcp/mcp";

@@ -1,12 +1,12 @@
 import { getDatabase } from "./database.svelte";
 import { downloadFile } from "../globalApi.svelte";
-import { alertNormal } from "../alert";
+import { alertNormal } from "../alert.svelte";
 import { language } from "src/lang";
 
 export async function exportAsDataset(){
     const db = getDatabase()
 
-    let dataset = []
+    const dataset = []
     for(const char of db.characters){
         if(char.type === 'group'){
             continue

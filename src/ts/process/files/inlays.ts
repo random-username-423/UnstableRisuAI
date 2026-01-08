@@ -213,8 +213,8 @@ export async function reencodeImage(img:Uint8Array){
     const imgObj = new Image()
     imgObj.src = URL.createObjectURL(new Blob([asBuffer(img)], {type: `image/png`}))
     await imgObj.decode()
-    let drawHeight = imgObj.height
-    let drawWidth = imgObj.width
+    const drawHeight = imgObj.height
+    const drawWidth = imgObj.width
     canvas.width = drawWidth
     canvas.height = drawHeight
     const ctx = canvas.getContext('2d')

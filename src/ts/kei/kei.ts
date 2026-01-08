@@ -1,4 +1,4 @@
-import { hubURL } from "../characterCards";
+import { hubURL } from "../characterCards.svelte";
 import { getDatabase } from "../storage/database.svelte";
 
 export function keiServerURL(){

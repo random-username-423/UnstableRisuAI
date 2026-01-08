@@ -239,6 +239,7 @@ export const languageEnglish = {
         additionalPrompt:
             "Text that gets appended to the Main Prompt when Prompt Preprocess is enabled. Default is 'The assistant must act as {{char}}. user is {{user}}.' This helps set up basic roleplay context.",
         hideAllImagesDesc: "Hides bot icons, bot image assets, and RisuRealm cover images.",
+
         embedding:
             "Embedding model is used for similarity search across multiple features:\n\n" +
             "- **Long Term Memory**: HypaV2, HypaV3, Hanurai Memory, and SupaMemory (with HypaMemory enabled)\n" +
@@ -248,6 +249,7 @@ export const languageEnglish = {
             "- **Trigger Scripts**: Similarity conditions in trigger scripts\n" +
             "- **File Attachments**: Searching within PDF/TXT/XML attachments\n" +
             "- **Playground**: Embedding testing in Playground",
+
     },
     setup: {
         chooseProvider: "Choose AI Provider",
@@ -639,6 +641,8 @@ export const languageEnglish = {
     temperature: "Temperature",
     frequencyPenalty: "Frequency Penalty",
     presensePenalty: "Presense Penalty",
+    repetitionPenalty: "Repetition Penalty",
+    verbosity: "Verbosity",
     advancedSettings: "Advanced Settings",
     advancedSettingsWarn: "Warn: If you don't know what the option does, don't change it!",
     formatingOrder: "Formating Order",

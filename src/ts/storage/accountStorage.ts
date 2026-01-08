@@ -1,7 +1,7 @@
 import { writable } from "svelte/store"
 import { getDatabase } from "./database.svelte"
 import localforage from "localforage"
-import { alertLogin, alertNormalWait, alertStore } from "../alert"
+import { alertClear, alertLogin, alertNormalWait, alertWait } from "../alert.svelte"
 import { forageStorage, getUnpargeables } from "../globalApi.svelte"
 import { encodeRisuSaveLegacy } from "./risuSave"
 import { v4 } from "uuid"
@@ -13,7 +13,7 @@ export const AccountWarning = writable('')
 const risuSession = Date.now().toFixed(0)
 const cachedForage = localforage.createInstance({name: "risuaiAccountCached"})
 
-let seenWarnings:string[] = []
+const seenWarnings:string[] = []
 
 export class AccountStorage{
     auth:string
@@ -158,7 +158,7 @@ export class AccountStorage{
         return Buffer.from(appendable)
     }
     keys():string[]{
-        let db = getDatabase()
+        const db = getDatabase()
         return getUnpargeables(db, 'pure')
     }
     removeItem(key:string){
@@ -183,15 +183,12 @@ export class AccountStorage{
 
 export async function unMigrationAccount() {
     const keys = await forageStorage.keys()
-    let db = getDatabase()
+    const db = getDatabase()
     let i = 0;
     const MigrationStorage = localforage.createInstance({name: "risuai"})
     
     for(const key of keys){
-        alertStore.set({
-            type: "wait",
-            msg: `Migrating your data...(${i}/${keys.length})`
-        })
+        alertWait(`Migrating your data...(${i}/${keys.length})`)
         await MigrationStorage.setItem(key,await forageStorage.getItem(key))
         i += 1
     }
@@ -199,10 +196,7 @@ export async function unMigrationAccount() {
     db.account = null
     await MigrationStorage.setItem('database/database.bin', encodeRisuSaveLegacy(db))
 
-    alertStore.set({
-        type: "none",
-        msg: ""
-    })
+    alertClear()
 
     localStorage.setItem('dosync', 'avoid')
     localStorage.removeItem('accountst')

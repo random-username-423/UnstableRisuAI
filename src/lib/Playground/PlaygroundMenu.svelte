@@ -1,14 +1,13 @@
 <script lang="ts">
     import { ArrowLeft } from "@lucide/svelte";
     import { language } from "src/lang";
-    import { PlaygroundStore, SizeStore, selectedCharID } from "src/ts/stores.svelte";
+    import { PlaygroundStore, layoutState, selectedCharID } from "src/ts/stores.svelte";
     import PlaygroundEmbedding from "./PlaygroundEmbedding.svelte";
     import PlaygroundTokenizer from "./PlaygroundTokenizer.svelte";
     import PlaygroundJinja from "./PlaygroundJinja.svelte";
     import PlaygroundSyntax from "./PlaygroundSyntax.svelte";
-    import { findCharacterIndexbyId } from "src/ts/util";
-    import { characterFormatUpdate, createBlankChar } from "src/ts/characters";
-    import { type character } from "src/ts/storage/database.svelte";
+    import { characterFormatUpdate, createBlankChar, findCharacterIndexbyId } from "src/ts/characters.svelte";
+    import type { character } from "src/ts/storage/types/character";
     import { DBState } from 'src/ts/stores.svelte';
     import PlaygroundImageGen from "./PlaygroundImageGen.svelte";
     import PlaygroundParser from "./PlaygroundParser.svelte";
@@ -19,6 +18,7 @@
   import PlaygroundTranslation from "./PlaygroundTranslation.svelte";
   import PlaygroundMcp from "./PlaygroundMCP.svelte";
     import PlaygroundDocs from "./PlaygroundDocs.svelte";
+    import PlaygroundAlert from "./PlaygroundAlert.svelte";
 
     let easterEggTouch = $state(0)
 
@@ -124,6 +124,11 @@
                 <h1 class="text-2xl font-bold text-start">{language.joinMultiUserRoom}</h1>
             </button>
             <button class="bg-darkbg rounded-md p-6 flex flex-col transition-shadow hover:ring-1" onclick={() => {
+                PlaygroundStore.set(14)
+            }}>
+                <h1 class="text-2xl font-bold text-start">Alert</h1>
+            </button>
+            <button class="bg-darkbg rounded-md p-6 flex flex-col transition-shadow hover:ring-1" onclick={() => {
                 easterEggTouch += 1
             }}>
                 <h1 class="text-2xl font-bold text-start">
@@ -138,7 +143,7 @@
             </button>
         </div>
     {:else}
-        {#if $SizeStore.w < 1024}
+        {#if layoutState.compactMode}
             <div class="mt-14"></div>
         {/if}
         <div class="w-full max-w-4xl flex flex-col p-2">
@@ -183,6 +188,9 @@
             {/if}
             {#if $PlaygroundStore === 13}
                 <PlaygroundDocs/>
+            {/if}
+            {#if $PlaygroundStore === 14}
+                <PlaygroundAlert/>
             {/if}
             {#if $PlaygroundStore === 101}
                 <ToolConversion/>

@@ -1,7 +1,7 @@
 import { MCPClientLike } from "./internalmcp";
 import type { MCPTool, RPCToolCallContent } from "./mcplib";
-import { fetchNative } from "../../globalApi.svelte";
-import { alertInput } from "../../alert";
+import { fetchNative } from "../../fetch";
+import { alertInput } from "../../alert.svelte";
 import localforage from "localforage";
 
 interface WebSearchArgs {

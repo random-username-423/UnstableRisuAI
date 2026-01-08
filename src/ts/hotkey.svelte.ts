@@ -1,11 +1,13 @@
 import { get } from "svelte/store"
-import { alertMd, alertSelect, alertToast, alertWait, doingAlert, alertRequestLogs } from "./alert"
-import { changeToPreset as changeToPreset2, getDatabase  } from "./storage/database.svelte"
-import { alertStore, MobileGUIStack, MobileSideBar, openPersonaList, openPresetList, OpenRealmStore, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
+import { alertClear, alertMd, alertSelect, alertWait, doingAlert, alertRequestLogs } from "./alert.svelte"
+import { getDatabase  } from "./storage/database.svelte"
+import { changeToPreset as changeToPreset2 } from './storage/preset-manager'
+import { alertState, layoutState, modalState, realmState, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
 import { language } from "src/lang"
 import { updateTextThemeAndCSS } from "./gui/colorscheme"
 import { defaultHotkeys } from "./defaulthotkeys"
 import { doingChat, previewBody, sendChat } from "./process/index.svelte"
+import { addToast } from "./toast.svelte"
 
 export function initHotkey(){
     document.addEventListener('keydown', async (ev) => {
@@ -102,11 +104,11 @@ export function initHotkey(){
                     break
                 }
                 case 'presets':{
-                    openPresetList.set(!get(openPresetList))
+                    modalState.preset = !modalState.preset
                     break
                 }
                 case 'persona':{
-                    openPersonaList.set(!get(openPersonaList))
+                    modalState.persona = !modalState.persona
                     break
                 }
                 case 'toggleCSS':{
@@ -127,7 +129,7 @@ export function initHotkey(){
                     }
                     selectedCharID.set(sorted[currentIndex - 1].i)
                     PlaygroundStore.set(0)
-                    OpenRealmStore.set(false)
+                    realmState.expanded = false
                     break
                 }
                 case 'nextChar':{
@@ -143,7 +145,7 @@ export function initHotkey(){
                     }
                     selectedCharID.set(sorted[currentIndex + 1].i)
                     PlaygroundStore.set(0)
-                    OpenRealmStore.set(false)
+                    realmState.expanded = false
                     break
                 }
                 case 'quickMenu':{
@@ -255,7 +257,7 @@ export function initHotkey(){
         }
         if(ev.key === 'Escape'){
             if(doingAlert()){
-                alertToast('Alert Closed')
+                addToast('Alert Closed')
             }
             if(get(settingsOpen)){
                 settingsOpen.set(false)
@@ -263,12 +265,9 @@ export function initHotkey(){
             ev.preventDefault()
         }
         if(ev.key === 'Enter'){
-            const alertType = get(alertStore).type 
+            const alertType = alertState.type
             if(alertType === 'ask' || alertType === 'normal' || alertType === 'error'){
-                alertStore.set({
-                    type: 'none',
-                    msg: 'yes'
-                })
+                alertClear('yes')
             }
         }
     })
@@ -306,15 +305,15 @@ async function quickMenu(){
     ])
     const sel = parseInt(selStr)
     if(sel === 0){
-        openPresetList.set(!get(openPresetList))
+        modalState.preset = !modalState.preset
     }
     if(sel === 1){
-        openPersonaList.set(!get(openPersonaList))
+        modalState.persona = !modalState.persona
     }
 }
 
 function clickQuery(query:string){
-    let ele = document.querySelector(query) as HTMLElement
+    const ele = document.querySelector(query) as HTMLElement
     console.log(ele)
     if(ele){
         ele.click()
@@ -322,7 +321,7 @@ function clickQuery(query:string){
 }
 
 function focusQuery(query:string){
-    let ele = document.querySelector(query) as HTMLElement
+    const ele = document.querySelector(query) as HTMLElement
     if(ele){
         ele.focus()
     }
@@ -332,7 +331,7 @@ function focusQuery(query:string){
 
 export function initMobileGesture(){
 
-    let pressingPointers = new Map<number, {x:number, y:number}>()
+    const pressingPointers = new Map<number, {x:number, y:number}>()
 
     document.addEventListener('touchstart', (ev) => {
         for(const touch of ev.changedTouches){
@@ -354,25 +353,25 @@ export function initMobileGesture(){
 
             if(moveX > 50 && Math.abs(moveY) < Math.abs(moveX)){
                 if(get(selectedCharID) === -1){
-                    if(get(MobileGUIStack) > 0){
-                        MobileGUIStack.update(v => v - 1)
+                    if(layoutState.betaMobile.stack > 0){
+                        layoutState.betaMobile.stack -= 1
                     }
                 }
                 else{
-                    if(get(MobileSideBar) > 0){
-                        MobileSideBar.update(v => v - 1)
+                    if(layoutState.betaMobile.sideBar > 0){
+                        layoutState.betaMobile.sideBar -= 1
                     }
                 }
             }
             else if(moveX < -50 && Math.abs(moveY) < Math.abs(moveX)){
                 if(get(selectedCharID) === -1){
-                    if(get(MobileGUIStack) < 2){
-                        MobileGUIStack.update(v => v + 1)
+                    if(layoutState.betaMobile.stack < 2){
+                        layoutState.betaMobile.stack += 1;
                     }
                 }
                 else{
-                    if(get(MobileSideBar) < 3){
-                        MobileSideBar.update(v => v + 1)
+                    if(layoutState.betaMobile.sideBar < 3){
+                        layoutState.betaMobile.sideBar += 1
                     }
                 }
             }
@@ -384,10 +383,10 @@ export function initMobileGesture(){
 
 function changeToPreset(num:number){
     if(!doingAlert()){
-        let db = getDatabase()
-        let pres = db.botPresets
+        const db = getDatabase()
+        const pres = db.botPresets
         if(pres.length > num){
-            alertToast(`Changed to Preset: ${pres[num].name}`)
+            addToast(`Changed to Preset: ${pres[num].name}`)
             changeToPreset2(num)
         }
     }

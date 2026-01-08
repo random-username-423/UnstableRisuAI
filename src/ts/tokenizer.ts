@@ -1,11 +1,14 @@
 import type { Tiktoken } from "@dqbd/tiktoken";
 import type { Tokenizer } from "@mlc-ai/web-tokenizers";
-import { type groupChat, type character, type Chat, getCurrentCharacter, getDatabase } from "./storage/database.svelte";
+import { getCurrentCharacter, getDatabase } from "./storage/database.svelte";
+import { type Chat } from './storage/types/chat';
+import { type groupChat } from './storage/types/character';
+import { type character } from './storage/types/character';
 import type { MultiModal, OpenAIChat } from "./process/index.svelte";
 import { supportsInlayImage } from "./process/files/inlays";
 import { risuChatParser } from "./parser.svelte";
 import { tokenizeGGUFModel } from "./process/models/local";
-import { globalFetch } from "./globalApi.svelte";
+import { globalFetch } from "./fetch";
 import { getModelInfo, LLMTokenizer, type LLMModel } from "./model/modellist";
 import { pluginV2 } from "./plugins/plugins";
 import type { GemmaTokenizer } from "@huggingface/transformers";
@@ -187,7 +190,7 @@ let tokenizersTokenizer:Tokenizer = null
 let tokenizersType:tokenizerType = null
 let lastTikModel = 'cl100k_base'
 
-let googleCloudTokenizedCache = new Map<string, number>()
+const googleCloudTokenizedCache = new Map<string, number>()
 
 async function tokenizeGoogleCloud(text:string) {
     const db = getDatabase()
@@ -453,7 +456,7 @@ export async function strongBan(data:string, bias:{[key:number]:number}) {
     }
     const performace = performance.now()
     const length = Object.keys(bias).length
-    let charAlt = [
+    const charAlt = [
         data,
         data.trim(),
         data.toLocaleUpperCase(),
@@ -462,8 +465,8 @@ export async function strongBan(data:string, bias:{[key:number]:number}) {
         data[0].toLocaleLowerCase() + data.slice(1),
     ]
 
-    let banChars = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~“”‘’«»「」…–―※"
-    let unbanChars:number[] = []
+    const banChars = " !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~“”‘’«»「」…–―※"
+    const unbanChars:number[] = []
 
     for(const char of banChars){
         unbanChars.push((await tokenizeNum(char))[0])
@@ -479,7 +482,7 @@ export async function strongBan(data:string, bias:{[key:number]:number}) {
             }
         }
         for(const alt of charAlt){
-            let fchar = char
+            const fchar = char
 
             const encoded = await tokenizeNum(alt + fchar)
             if(encoded.length > 0){
@@ -520,7 +523,7 @@ export async function getCharToken(char?:character|groupChat|null){
     persistant += await basicTokenize(char.personality ?? '')
     persistant += await basicTokenize(char.scenario ?? '')
     for(const lore of char.globalLore){
-        let cont = lore.content.split('\n').filter((line) => {
+        const cont = lore.content.split('\n').filter((line) => {
             if(line.startsWith('@@')){
                 return false
             }

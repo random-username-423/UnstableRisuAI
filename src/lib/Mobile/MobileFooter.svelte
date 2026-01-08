@@ -2,26 +2,26 @@
 
   import { SettingsIcon, GlobeIcon, HouseIcon, Volume2Icon, Braces, ActivityIcon, BookIcon, SmileIcon, UserIcon } from "@lucide/svelte";
   import { language } from "src/lang";
-  import { CharConfigSubMenu, MobileGUIStack, MobileSideBar, selectedCharID } from "src/ts/stores.svelte";
+  import { CharConfigSubMenu, layoutState, selectedCharID } from "src/ts/stores.svelte";
 
 </script>
 {#if $selectedCharID === -1}
 
     <div class="w-full p-4 text-lg border-t border-t-darkborderc bg-darkbg flex items-center justify-center text-textcolor2">
-        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={$MobileGUIStack === 0} onclick={() => {
-            MobileGUIStack.set(0)
+        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={layoutState.betaMobile.stack === 0} onclick={() => {
+            layoutState.betaMobile.stack = 0
         }}>
             <GlobeIcon size={24} />
             <span class="text-xs">RisuRealm</span>
         </button>
-        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={$MobileGUIStack === 1} onclick={() => {
-            MobileGUIStack.set(1)
+        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={layoutState.betaMobile.stack === 1} onclick={() => {
+            layoutState.betaMobile.stack = 1
         }}>
             <HouseIcon size={24} />
             <span class="text-xs">{language.character}</span>
         </button>
-        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={$MobileGUIStack === 2} onclick={() => {
-            MobileGUIStack.set(2)
+        <button class="flex justify-center items-center flex-col gap-2 w-20" class:text-textcolor={layoutState.betaMobile.stack === 2} onclick={() => {
+            layoutState.betaMobile.stack = 2
         }}>
             <SettingsIcon size={24} />
             <span class="text-xs">{language.settings}</span>
@@ -30,7 +30,7 @@
 
 {/if}
 
-{#if $selectedCharID !== -1 && $MobileSideBar === 2}
+{#if $selectedCharID !== -1 && layoutState.betaMobile.sideBar === 2}
     <div class="w-full p-4 text-lg border-t border-t-darkborderc bg-darkbg flex items-center justify-center text-textcolor2 truncate">
         <button class="flex justify-center items-center flex-col gap-2 w-16 max-w-16" class:text-textcolor={$CharConfigSubMenu === 0} onclick={() => {
             CharConfigSubMenu.set(0)

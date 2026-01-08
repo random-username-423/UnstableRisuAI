@@ -2,7 +2,7 @@ import { get, writable } from "svelte/store";
 import { getDatabase, setDatabase } from "../storage/database.svelte";
 import { downloadFile } from "../globalApi.svelte";
 import { BufferToText, selectSingleFile } from "../util";
-import { alertError } from "../alert";
+import { alertError } from "../alert.svelte";
 import { isLite } from "../lite";
 import { CustomCSSStore, SafeModeStore } from "../stores.svelte";
 
@@ -152,7 +152,7 @@ export const colorSchemeList = Object.keys(colorShemes) as (keyof typeof colorSh
 
 export function changeColorScheme(colorScheme: string){
     try {
-        let db = getDatabase()
+        const db = getDatabase()
         if(colorScheme !== 'custom'){
             db.colorScheme = safeStructuredClone(colorShemes[colorScheme])
         }
@@ -164,7 +164,7 @@ export function changeColorScheme(colorScheme: string){
 
 export function updateColorScheme(){
     try {
-        let db = getDatabase()
+        const db = getDatabase()
 
         let colorScheme = db.colorScheme
 
@@ -192,7 +192,7 @@ export function updateColorScheme(){
 
 export function changeColorSchemeType(type: 'light'|'dark'){
     try {
-        let db = getDatabase()
+        const db = getDatabase()
         db.colorScheme.type = type
         setDatabase(db)
         updateColorScheme()
@@ -201,8 +201,8 @@ export function changeColorSchemeType(type: 'light'|'dark'){
 }
 
 export function exportColorScheme(){
-    let db = getDatabase()
-    let json = JSON.stringify(db.colorScheme)
+    const db = getDatabase()
+    const json = JSON.stringify(db.colorScheme)
     downloadFile('colorScheme.json', json)
 }
 
@@ -231,7 +231,7 @@ export async function importColorScheme(){
             return
         }
         changeColorScheme('custom')
-        let db = getDatabase()
+        const db = getDatabase()
         db.colorScheme = colorScheme
         setDatabase(db)
         updateColorScheme()
@@ -244,13 +244,13 @@ export async function importColorScheme(){
 }
 
 export function updateTextThemeAndCSS(){
-    let db = getDatabase()
+    const db = getDatabase()
     const root = document.querySelector(':root') as HTMLElement;
     if(!root){
         return
     }
-    let textTheme = get(isLite) ? 'standard' : db.textTheme
-    let colorScheme = get(isLite) ? 'dark' : db.colorScheme.type
+    const textTheme = get(isLite) ? 'standard' : db.textTheme
+    const colorScheme = get(isLite) ? 'dark' : db.colorScheme.type
     switch(textTheme){
         case "standard":{
             if(colorScheme === 'dark'){

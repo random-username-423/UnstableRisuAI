@@ -2,8 +2,9 @@
     import { XIcon, LinkIcon, SunIcon, BookCopyIcon, FolderIcon, FolderOpen, PlusIcon } from "@lucide/svelte";
     import { v4 } from "uuid";
     import { language } from "../../../lang";
-    import { getCurrentCharacter, getCurrentChat, type loreBook } from "../../../ts/storage/database.svelte";
-    import { alertConfirm, alertMd } from "../../../ts/alert";
+    import { getCurrentCharacter, getCurrentChat } from "../../../ts/storage/database.svelte";
+    import type { loreBook } from "../../../ts/storage/types/character";
+    import { alertConfirm, alertMd } from "../../../ts/alert.svelte";
     import Check from "../../UI/GUI/CheckInput.svelte";
     import Help from "../../Others/Help.svelte";
     import TextInput from "../../UI/GUI/TextInput.svelte";

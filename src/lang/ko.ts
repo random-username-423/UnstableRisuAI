@@ -543,6 +543,8 @@ export const languageKorean = {
     "temperature": "온도",
     "frequencyPenalty": "빈도 패널티",
     "presensePenalty": "프리센스 패널티",
+    "repetitionPenalty": "반복 패널티",
+    "verbosity": "상세도 (Verbosity)",
     "advancedSettings": "고급 설정",
     "advancedSettingsWarn": "어떤 설정인지 모르겠으면, 만지지 마세요!",
     "formatingOrder": "포맷 순서",

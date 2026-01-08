@@ -1,10 +1,12 @@
 import { get } from "svelte/store";
 import {selectedCharID} from '../stores.svelte'
-import { type Message, type loreBook } from "../storage/database.svelte";
+import { type Message } from "../storage/types/chat";
+import { type loreBook } from '../storage/types/character';
 import { DBState } from '../stores.svelte';
 import { tokenize } from "../tokenizer";
-import { findCharacterbyId, pickHashRand, selectSingleFile } from "../util";
-import { alertError, alertNormal } from "../alert";
+import { pickHashRand, selectSingleFile } from "../util";
+import { findCharacterbyId } from "../characters.svelte";
+import { alertError, alertNormal } from "../alert.svelte";
 import { language } from "../../lang";
 import { downloadFile } from "../globalApi.svelte";
 import { getModuleLorebooks } from "./modules";
@@ -85,12 +87,12 @@ export async function loadLoreBookV3Prompt(){
     const fullWordMatchingSetting = char.loreSettings?.fullWordMatching ?? false
     const chatLength = currentChat.length + 1 //includes first message
     const recursiveScanning = char.loreSettings?.recursiveScanning ?? true
-    let recursivePrompt:{
+    const recursivePrompt:{
         prompt: string,
         source: string,
         data: string
     }[] = []
-    let matchLog:{
+    const matchLog:{
         prompt: string,
         source: string
         activated: string
@@ -171,7 +173,7 @@ export async function loadLoreBookV3Prompt(){
             }
         })
 
-        let allMode = arg.all ?? false
+        const allMode = arg.all ?? false
         let allModeMatched = true
 
         for(const m of mList){
@@ -222,7 +224,7 @@ export async function loadLoreBookV3Prompt(){
     }
 
     let matching = true
-    let actives:{
+    const actives:{
         depth:number,
         pos:string,
         prompt:string
@@ -238,9 +240,9 @@ export async function loadLoreBookV3Prompt(){
             lore:boolean
         }|null
     }[] = []
-    let activatedIndexes:number[] = []
-    let disabledUIPrompts:string[] = []
-    let matchTimes = 0
+    const activatedIndexes:number[] = []
+    const disabledUIPrompts:string[] = []
+    const matchTimes = 0
     let keepActivateAfterMatch = false
     let dontActivateAfterMatch = false
     while(matching){
@@ -262,11 +264,11 @@ export async function loadLoreBookV3Prompt(){
             } = null
             let depth = 0
             let scanDepth = loreDepth
-            let order = fullLore[i].insertorder
+            const order = fullLore[i].insertorder
             let priority = fullLore[i].insertorder
             let forceState:string = 'none'
             let role:'system'|'user'|'assistant' = 'system'
-            let searchQueries:{
+            const searchQueries:{
                 keys:string[],
                 negative:boolean,
                 all?:boolean
@@ -656,7 +658,7 @@ export async function loadLoreBookV3Prompt(){
 export async function importLoreBook(mode:'global'|'local'|'sglobal'){
     const selectedID = get(selectedCharID)
     const page = mode === 'sglobal' ? -1 : DBState.db.characters[selectedID].chatPage
-    let lore = 
+    const lore = 
         mode === 'global' ? DBState.db.characters[selectedID].globalLore : 
         DBState.db.characters[selectedID].chats[page].localLore
     const lorebook = (await selectSingleFile(['json', 'lorebook'])).data
@@ -713,7 +715,7 @@ export interface CCLorebook{
 }
 
 export function convertExternalLorebook(entries:{[key:string]:CCLorebook}){
-    let lore:loreBook[] = []
+    const lore:loreBook[] = []
     for(const key in entries){
         const currentLore = entries[key]
         lore.push({

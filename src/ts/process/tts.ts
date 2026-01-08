@@ -1,7 +1,9 @@
-import { alertError } from "../alert";
-import { getCurrentCharacter, getDatabase, type character } from "../storage/database.svelte";
+import { alertError } from "../alert.svelte";
+import { getCurrentCharacter, getDatabase } from "../storage/database.svelte";
+import { type character } from '../storage/types/character';
 import { runTranslator, translateVox } from "../translator/translator";
-import { globalFetch, loadAsset } from "../globalApi.svelte";
+import { loadAsset } from "../globalApi.svelte";
+import { globalFetch } from "../fetch";
 import { language } from "src/lang";
 import { sleep } from "../util";
 import { runVITS } from "./transformers";
@@ -22,7 +24,7 @@ export async function sayTTS(character:character,text:string) {
             return
         }
     
-        let db = getDatabase()
+        const db = getDatabase()
         text = text.replace(/\*/g,'')
     
         if(character.ttsReadOnlyQuoted){
@@ -384,7 +386,7 @@ export function getWebSpeechTTSVoices() {
 }
 
 export async function getElevenTTSVoices() {
-    let db = getDatabase()
+    const db = getDatabase()
 
     const data = await fetch('https://api.elevenlabs.io/v1/voices', {
         headers: {

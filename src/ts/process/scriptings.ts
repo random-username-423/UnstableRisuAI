@@ -1,10 +1,14 @@
 import { asBuffer } from 'src/ts/util';
 import { getChatVar, hasher, setChatVar, getGlobalChatVar, type simpleCharacterArgument, risuChatParser } from "../parser.svelte";
 import { LuaEngine, LuaFactory } from "wasmoon";
-import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase, type Chat, type character, type groupChat, type triggerscript } from "../storage/database.svelte";
+import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase } from "../storage/database.svelte";
+import { type Chat } from '../storage/types/chat';
+import { type triggerscript } from '../storage/types/character';
+import { type groupChat } from '../storage/types/character';
+import { type character } from '../storage/types/character';
 import { get } from "svelte/store";
 import { ReloadChatPointer, ReloadGUIPointer, selectedCharID } from "../stores.svelte";
-import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "../alert";
+import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "../alert.svelte";
 import { HypaProcesser } from "./memory/hypamemory";
 import { generateAIImage } from "./stableDiff";
 import { writeInlayImage, getInlayAsset } from "./files/inlays";
@@ -14,13 +18,16 @@ import { v4 } from "uuid";
 import { getModuleLorebooks, getModuleTriggers } from "./modules";
 import { Mutex } from "../mutex";
 import { tokenize } from "../tokenizer";
-import { fetchNative, readImage } from "../globalApi.svelte";
+import { readImage } from "../globalApi.svelte";
+import { fetchNative } from "../fetch";
 import { loadLoreBookV3Prompt } from './lorebook.svelte';
-import { getPersonaPrompt, getUserName, getUserIcon } from '../util';
+import { getPersonaPrompt } from "../persona";
+import { getUserIcon } from "../persona";
+import { getUserName } from "../persona";
 let luaFactory:LuaFactory
-let ScriptingSafeIds = new Set<string>()
-let ScriptingEditDisplayIds = new Set<string>()
-let ScriptingLowLevelIds = new Set<string>()
+const ScriptingSafeIds = new Set<string>()
+const ScriptingEditDisplayIds = new Set<string>()
+const ScriptingLowLevelIds = new Set<string>()
 let lastRequestResetTime = 0
 let lastRequestsCount = 0
 
@@ -44,9 +51,9 @@ interface PythonScriptingEngineState extends BasicScriptingEngineState {
 
 type ScriptingEngineState = LuaScriptingEngineState | PythonScriptingEngineState;
 
-let ScriptingEngines = new Map<string, ScriptingEngineState>()
+const ScriptingEngines = new Map<string, ScriptingEngineState>()
 let luaFactoryPromise: Promise<void> | null = null;
-let pendingEngineCreations = new Map<string, Promise<ScriptingEngineState>>();
+const pendingEngineCreations = new Map<string, Promise<ScriptingEngineState>>();
 
 export async function runScripted(code:string, arg:{
     char?:character|groupChat|simpleCharacterArgument,
@@ -69,12 +76,12 @@ export async function runScripted(code:string, arg:{
 
     let chat = arg.chat ?? getCurrentChat()
     let stopSending = false
-    let lowLevelAccess = arg.lowLevelAccess ?? false
+    const lowLevelAccess = arg.lowLevelAccess ?? false
 
     if(type === 'lua'){
         await ensureLuaFactory()
     }
-    let ScriptingEngineState = await getOrCreateEngineState(mode, type);
+    const ScriptingEngineState = await getOrCreateEngineState(mode, type);
     
     return await ScriptingEngineState.mutex.runExclusive(async () => {
         ScriptingEngineState.chat = chat
@@ -197,14 +204,14 @@ export async function runScripted(code:string, arg:{
                 if(!ScriptingSafeIds.has(id)){
                     return
                 }
-                let roleData:'user'|'char' = role === 'user' ? 'user' : 'char'
+                const roleData:'user'|'char' = role === 'user' ? 'user' : 'char'
                 ScriptingEngineState.chat.message.push({role: roleData, data: value ?? ''})
             })
             declareAPI('insertChat', (id:string, index:number, role:string, value:string) => {
                 if(!ScriptingSafeIds.has(id)){
                     return
                 }
-                let roleData:'user'|'char' = role === 'user' ? 'user' : 'char'
+                const roleData:'user'|'char' = role === 'user' ? 'user' : 'char'
                 ScriptingEngineState.chat.message.splice(index, 0, {role: roleData, data: value ?? ''})
             })
 
@@ -440,14 +447,14 @@ export async function runScripted(code:string, arg:{
             })
 
             declareAPI('LLMMain', async (id:string, promptStr:string, useMultimodal: boolean = false) => {
-                let prompt:{
+                const prompt:{
                     role: string,
                     content: string
                 }[] = JSON.parse(promptStr)
                 if(!ScriptingLowLevelIds.has(id)){
                     return
                 }
-                let promptbody:OpenAIChat[] = prompt.map((dict) => {
+                const promptbody:OpenAIChat[] = prompt.map((dict) => {
                     let role:'system'|'user'|'assistant' = 'assistant'
                     switch(dict['role']){
                         case 'system':
@@ -782,14 +789,14 @@ export async function runScripted(code:string, arg:{
             })
 
             declareAPI('axLLMMain', async (id:string, promptStr:string, useMultimodal: boolean = false) => {
-                let prompt:{
+                const prompt:{
                     role: string,
                     content: string
                 }[] = JSON.parse(promptStr)
                 if(!ScriptingLowLevelIds.has(id)){
                     return
                 }
-                let promptbody:OpenAIChat[] = prompt.map((dict) => {
+                const promptbody:OpenAIChat[] = prompt.map((dict) => {
                     let role:'system'|'user'|'assistant' = 'assistant'
                     switch(dict['role']){
                         case 'system':
@@ -962,7 +969,7 @@ export async function runScripted(code:string, arg:{
             }
             ScriptingEngineState.code = code
         }
-        let accessKey = v4()
+        const accessKey = v4()
         if(mode === 'editDisplay'){
             ScriptingEditDisplayIds.add(accessKey)
         }
@@ -1117,12 +1124,12 @@ async function getOrCreateEngineState(
     mode: string, 
     type: 'lua'|'py'
 ): Promise<ScriptingEngineState> {
-    let engineState = ScriptingEngines.get(mode);
+    const engineState = ScriptingEngines.get(mode);
     if (engineState) {
         return engineState;
     }
     
-    let pendingCreation = pendingEngineCreations.get(mode);
+    const pendingCreation = pendingEngineCreations.get(mode);
     if (pendingCreation) {
         return pendingCreation;
     }
@@ -1318,7 +1325,7 @@ export async function runLuaEditTrigger<T extends string|OpenAIChat[]>(char:char
             return v
         }).concat(getModuleTriggers()))
     
-        for(let trigger of triggers){
+        for(const trigger of triggers){
             if(trigger?.effect?.[0]?.type === 'triggerlua'){
                 const runResult = await runScripted(trigger.effect[0].code, {
                     char: char,
@@ -1346,7 +1353,7 @@ export async function runLuaButtonTrigger(char:character|groupChat|simpleCharact
             lowLevelAccess: char.type !== 'simple' ? char.lowLevelAccess ?? false : false
         })).concat(getModuleTriggers())
 
-        for(let trigger of triggers){
+        for(const trigger of triggers){
             if(trigger?.effect?.[0]?.type === 'triggerlua'){
                 runResult = await runScripted(trigger.effect[0].code, {
                     char: char,

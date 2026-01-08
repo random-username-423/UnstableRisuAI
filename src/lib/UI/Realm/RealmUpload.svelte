@@ -109,16 +109,17 @@
 <script lang="ts">
     import { XIcon } from "@lucide/svelte";
     import { language } from "src/lang";
-    import { alertError } from "src/ts/alert";
-    import { shareRisuHub2 } from "src/ts/characterCards";
-    import { type character } from "src/ts/storage/database.svelte";
+    import { alertError } from "src/ts/alert.svelte";
+    import { shareRisuHub2 } from "src/ts/characterCards.svelte";
+    import type { character } from "src/ts/storage/types/character";
     import { DBState } from 'src/ts/stores.svelte';
     import TextInput from "../GUI/TextInput.svelte";
     import Button from "../GUI/Button.svelte";
     import SelectInput from "../GUI/SelectInput.svelte";
     import { CCLicenseData } from "src/ts/creation/license";
     import OptionInput from "../GUI/OptionInput.svelte";
-    import { parseMultilangString, searchTagList, sleep } from "src/ts/util";
+    import { parseMultilangString, sleep } from "src/ts/util";
+    import { searchTagList } from "src/ts/realm";
     import MultiLangInput from "../GUI/MultiLangInput.svelte";
     interface Props {
         close?: any;

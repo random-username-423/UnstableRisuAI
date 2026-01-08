@@ -3,7 +3,7 @@ import { getDatabase } from "../storage/database.svelte"
 export async function openRouterModels() {
     try {
         const db = getDatabase()
-        let headers = {
+        const headers = {
             "Authorization": "Bearer " + db.openrouterKey,
             "Content-Type": "application/json"
         }
@@ -14,7 +14,7 @@ export async function openRouterModels() {
         const res = await (await aim).json()
         return res.data.map((model: any) => {
             let name = model.name
-            let price = ((Number(model.pricing.prompt) * 3) + Number(model.pricing.completion)) / 4
+            const price = ((Number(model.pricing.prompt) * 3) + Number(model.pricing.completion)) / 4
             console.log(model.pricing, price)
             if(price > 0){
                 name += ` - $${(price*1000).toFixed(5)}/1k`

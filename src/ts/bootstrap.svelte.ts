@@ -7,29 +7,27 @@ import {
     readDir,
     remove
 } from "@tauri-apps/plugin-fs"
-import { changeFullscreen, checkNullish, sleep } from "./util"
+import { checkNullish, sleep, getBasename } from "./util"
+import { changeFullscreen, maximizeWindow } from "./gui/window"
 import { v4 as uuidv4 } from 'uuid';
-import { get } from "svelte/store";
-import { setDatabase, type Database, defaultSdDataFunc, getDatabase } from "./storage/database.svelte";
-import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { setDatabase, defaultSdDataFunc, getDatabase } from "./storage/database.svelte";
 import { checkRisuUpdate } from "./update";
-import { MobileGUI, botMakerMode, selectedCharID, loadedStore, DBState, LoadingStatusState } from "./stores.svelte";
+import { layoutState, botMakerMode, selectedCharID, appState, DBState, LoadingStatusState } from "./stores.svelte";
 import { loadPlugins } from "./plugins/plugins";
-import { alertError, alertMd, alertTOS, waitAlert } from "./alert";
-import { checkDriverInit } from "./drive/drive";
-import { characterURLImport } from "./characterCards";
+import { alertError, alertMd, alertTOS, waitAlert } from "./alert.svelte";
+import { checkDriverInit } from "./drive/drive.svelte";
+import { characterURLImport } from "./characterCards.svelte";
 import { defaultJailbreak, defaultMainPrompt, oldJailbreak, oldMainPrompt } from "./storage/defaultPrompts";
 import { loadRisuAccountData } from "./drive/accounter";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "./storage/risuSave";
 import { updateAnimationSpeed } from "./gui/animation";
 import { updateColorScheme, updateTextThemeAndCSS } from "./gui/colorscheme";
 import { autoServerBackup } from "./kei/backup";
-import { Capacitor } from '@capacitor/core';
 import { language } from "src/lang";
 import { startObserveDom } from "./observer.svelte";
 import { updateGuisize } from "./gui/guisize";
-import { updateLorebooks } from "./characters";
-import { initMobileGesture } from "./hotkey";
+import { updateLorebooks } from "./characters.svelte";
+import { initMobileGesture } from "./hotkey.svelte";
 import { moduleUpdate } from "./process/modules";
 import type { AccountStorage } from "./storage/accountStorage";
 import { makeColdData } from "./process/coldstorage.svelte";
@@ -38,24 +36,21 @@ import {
     saveDb,
     getDbBackups,
     getUnpargeables,
-    getBasename,
     setUsingSw,
     checkCharOrder
 } from "./globalApi.svelte";
-import { isTauri } from "./platform";
-
-const appWindow = isTauri ? getCurrentWebviewWindow() : null
+import { isTauri, isCapacitor, isInStandaloneMode } from "./platform";
 
 /**
  * Loads the application data.
  */
 export async function loadData() {
-    const loaded = get(loadedStore)
+    const loaded = appState.loaded
     if (!loaded) {
         try {
             if (isTauri) {
                 LoadingStatusState.text = "Checking Files..."
-                appWindow.maximize()
+                maximizeWindow()
                 if (!await exists('', { baseDir: BaseDirectory.AppData })) {
                     await mkdir('', { baseDir: BaseDirectory.AppData })
                 }
@@ -177,7 +172,7 @@ export async function loadData() {
                     return
                 }
                 LoadingStatusState.text = "Checking Service Worker..."
-                if (navigator.serviceWorker && (!Capacitor.isNativePlatform())) {
+                if (navigator.serviceWorker && !isCapacitor) {
                     setUsingSw(true)
                     await registerSw()
                 }
@@ -205,8 +200,6 @@ export async function loadData() {
                 } catch (error) { }
             }
             try {
-                //@ts-expect-error navigator.standalone is iOS Safari non-standard property, not in Navigator interface
-                const isInStandaloneMode = (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone) || document.referrer.includes('android-app://');
                 if (isInStandaloneMode) {
                     await navigator.storage.persist()
                 }
@@ -235,9 +228,9 @@ export async function loadData() {
             }
             if ((db.betaMobileGUI && window.innerWidth <= 800) || import.meta.env.VITE_RISU_LITE === 'TRUE') {
                 initMobileGesture()
-                MobileGUI.set(true)
+                layoutState.betaMobile.enabled = true
             }
-            loadedStore.set(true)
+            appState.loaded = true
             selectedCharID.set(-1)
             startObserveDom()
             assignIds()
@@ -320,7 +313,7 @@ function updateHeightMode() {
  * Checks and updates the database format to the latest version.
  */
 async function checkNewFormat(): Promise<void> {
-    let db = getDatabase();
+    const db = getDatabase();
 
     // Check data integrity
     db.characters = db.characters.map((v) => {
@@ -404,7 +397,7 @@ async function checkNewFormat(): Promise<void> {
     }
     if (db.formatversion < 3) {
         for (let i = 0; i < db.characters.length; i++) {
-            let cha = db.characters[i];
+            const cha = db.characters[i];
             if (cha.type === 'character') {
                 if (checkNullish(cha.sdData)) {
                     cha.sdData = defaultSdDataFunc();

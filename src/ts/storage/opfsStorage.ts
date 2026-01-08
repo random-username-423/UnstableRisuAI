@@ -33,7 +33,7 @@ export class OpfsStorage{
     }
     async keys():Promise<string[]>{
         await this.Init()
-        let entries:string[] = []
+        const entries:string[] = []
         for await (const entry of this.opfs.values()) {
             entries.push(Buffer.from(entry.name, 'hex').toString('utf-8'))
         }

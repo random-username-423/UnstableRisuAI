@@ -1,9 +1,11 @@
 import { type MCPTool, MCPToolHandler, type RPCToolCallContent } from '../mcplib'
 import { getCharacter } from './utils'
-import { type character, type groupChat, type loreBook } from 'src/ts/storage/database.svelte'
+import { type loreBook } from 'src/ts/storage/types/character'
+import { type groupChat } from 'src/ts/storage/types/character'
+import { type character } from 'src/ts/storage/types/character'
 import { DBState } from 'src/ts/stores.svelte'
 import { pickHashRand } from 'src/ts/util'
-import { alertConfirm } from 'src/ts/alert'
+import { alertConfirm } from 'src/ts/alert.svelte'
 import { language } from 'src/lang'
 
 export class CharacterHandler extends MCPToolHandler {
@@ -398,7 +400,7 @@ export class CharacterHandler extends MCPToolHandler {
       ]
     }
 
-    let response: Record<string, any> = {}
+    const response: Record<string, any> = {}
 
     const fieldRemap = {
       name: 'name',

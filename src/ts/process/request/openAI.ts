@@ -4,7 +4,8 @@ import { getDatabase } from "src/ts/storage/database.svelte"
 import { LLMFlags, LLMFormat } from "src/ts/model/modellist"
 import { strongBan, tokenizeNum } from "src/ts/tokenizer"
 import { getFreeOpenRouterModel } from "src/ts/model/openrouter"
-import { addFetchLog, fetchNative, globalFetch, textifyReadableStream } from "src/ts/globalApi.svelte"
+import { textifyReadableStream } from "src/ts/util"
+import { globalFetch, fetchNative, addFetchLog } from "src/ts/fetch"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
 import type { OpenAIChatFull } from "../index.svelte"
 import { extractJSON, getOpenAIJSONSchema } from "../templates/jsonSchema"
@@ -12,7 +13,7 @@ import { applyChatTemplate } from "../templates/chatTemplate"
 import { supportsInlayImage } from "../files/inlays"
 import { simplifySchema } from "src/ts/util"
 import { callTool, decodeToolCall, encodeToolCall } from "../mcp/mcp"
-import { alertError } from "src/ts/alert";
+import { alertError } from "src/ts/alert.svelte";
 
 
 interface OAIResponseInputItem {
@@ -126,8 +127,8 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
             formatedChat.push(...processedMessages)
         }
         else if(m.multimodals && m.multimodals.length > 0 && m.role === 'user'){
-            let v:OpenAIChatExtra = safeStructuredClone(m)
-            let contents:OpenAIContents[] = []
+            const v:OpenAIChatExtra = safeStructuredClone(m)
+            const contents:OpenAIContents[] = []
             for(let j=0;j<m.multimodals.length;j++){
                 contents.push({
                     "type": "image_url",
@@ -149,7 +150,7 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
         }
     }
     
-    let oobaSystemPrompts:string[] = []
+    const oobaSystemPrompts:string[] = []
     for(let i=0;i<formatedChat.length;i++){
         if(formatedChat[i].role !== 'function'){
             if(!(formatedChat[i].name && formatedChat[i].name.startsWith('example_') && db.newOAIHandle)){
@@ -238,7 +239,7 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
     if(arg.modelInfo.format === LLMFormat.Mistral){
         requestModel = aiModel
 
-        let reformatedChat:OpenAIChatExtra[] = []
+        const reformatedChat:OpenAIChatExtra[] = []
 
         for(let i=0;i<formatedChat.length;i++){
             const chat = formatedChat[i]
@@ -520,7 +521,7 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
         }
     }
 
-    let headers = {
+    const headers = {
         "Authorization": "Bearer " + (arg.key ?? (aiModel === 'reverse_proxy' ?  db.proxyKey : (aiModel === 'openrouter' ? db.openrouterKey : db.openAIKey))),
         "Content-Type": "application/json"
     }
@@ -549,10 +550,10 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
         }
         body.n = db.genTime
     }
-    let throughProxi = (!isTauri) && (!isNodeServer) && (!db.usePlainFetch) && (!isCapacitor)
+    const throughProxi = (!isTauri) && (!isNodeServer) && (!db.usePlainFetch) && (!isCapacitor)
     if(arg.useStreaming){
         body.stream = true
-        let urlHost = new URL(replacerURL).host
+        const urlHost = new URL(replacerURL).host
         if(urlHost.includes("localhost") || urlHost.includes("172.0.0.1") || urlHost.includes("0.0.0.0")){
             if(!isTauri){
                 return {
@@ -613,7 +614,7 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
     }
 
     if(aiModel === 'reverse_proxy' || aiModel.startsWith('xcustom:::')){
-        let additionalParams = aiModel === 'reverse_proxy' ? db.additionalParams : []
+        const additionalParams = aiModel === 'reverse_proxy' ? db.additionalParams : []
 
         if(aiModel.startsWith('xcustom:::')){
             const found = db.customModels.find(m => m.id === aiModel)
@@ -706,7 +707,7 @@ export async function requestHTTPOpenAI(replacerURL:string,body:any, headers:Rec
 
     function processTextResponse(dat: any):string{
         if(dat?.choices[0]?.text){
-            let text = dat.choices[0].text as string
+            const text = dat.choices[0].text as string
             if(arg.extractJson && (db.jsonSchemaEnabled || arg.schema)){
                 try {
                     const parsed = JSON.parse(text)
@@ -1185,10 +1186,10 @@ function getTranStream(arg:RequestDataArgumentExtended):TransformStream<Uint8Arr
     return new TransformStream<Uint8Array, StreamResponseChunk>({
         transform(chunk, control) {
             dataUint = Buffer.from(new Uint8Array([...dataUint, ...chunk]))
-            let JSONreaded:{[key:string]:string} = {}
+            const JSONreaded:{[key:string]:string} = {}
                         try {
                 const datas = dataUint.toString().split('\n')
-                let readed:{[key:string]:string} = {}
+                const readed:{[key:string]:string} = {}
                 for(const data of datas){
                     if(data.startsWith("data: ")){
                         try {

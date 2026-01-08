@@ -1,20 +1,25 @@
 import { get, writable } from "svelte/store";
-import { saveImage, setDatabase, type character, type Chat, defaultSdDataFunc, type loreBook, getDatabase, getCharacterByIndex, setCharacterByIndex } from "./storage/database.svelte";
-import { alertAddCharacter, alertConfirm, alertError, alertNormal, alertSelect, alertStore, alertWait } from "./alert";
+import { saveImage, setDatabase, defaultSdDataFunc, getDatabase, getCharacterByIndex, setCharacterByIndex } from "./storage/database.svelte";
+import { type Chat } from './storage/types/chat';
+import { type loreBook } from './storage/types/character';
+import { type character } from './storage/types/character';
+import { alertAddCharacter, alertClear, alertConfirm, alertError, alertNormal, alertSelect, alertWait } from "./alert.svelte";
 import { language } from "../lang";
-import { checkNullish, findCharacterbyId, getUserName, selectMultipleFile, selectSingleFile } from "./util";
+import { checkNullish, selectMultipleFile, selectSingleFile } from "./util";
+import { getUserName } from "./persona";
 import { v4 as uuidv4, v4 } from 'uuid';
-import { MobileGUIStack, OpenRealmStore, selectedCharID } from "./stores.svelte";
+import { layoutState, realmState, selectedCharID } from "./stores.svelte";
 import { AppendableBuffer, changeChatTo, checkCharOrder, downloadFile, getFileSrc, requiresFullEncoderReload } from "./globalApi.svelte";
 import { updateInlayScreen } from "./process/inlayScreen";
 import { checkImageType, parseMarkdownSafe } from "./parser.svelte";
 import { translateHTML } from "./translator/translator";
 import { doingChat } from "./process/index.svelte";
-import { importCharacter } from "./characterCards";
+import { importCharacter } from "./characterCards.svelte";
 import { PngChunk } from "./pngChunk";
+import type { Database } from "./storage/types";
 
 export function createNewCharacter() {
-    let db = getDatabase()
+    const db = getDatabase()
     db.characters.push(createBlankChar())
     setDatabase(db)
     checkCharOrder()
@@ -22,7 +27,7 @@ export function createNewCharacter() {
 }
 
 export function createNewGroup(){
-    let db = getDatabase()
+    const db = getDatabase()
     db.characters.push({
         type: 'group',
         name: "",
@@ -93,7 +98,7 @@ export async function selectCharImg(charIndex:number) {
         return
     }
     const img = selected.data
-    let db = getDatabase()
+    const db = getDatabase()
 
     const type = checkImageType(img)
     console.log(type)
@@ -136,7 +141,7 @@ export async function selectCharImg(charIndex:number) {
 }
 
 export function dumpCharImage(charIndex:number) {
-    let db = getDatabase()
+    const db = getDatabase()
     const char = db.characters[charIndex] as character
     if(!char.image || char.image === ''){
         return
@@ -154,7 +159,7 @@ export function dumpCharImage(charIndex:number) {
 }
 
 export function changeCharImage(charIndex:number,changeIndex:number) {
-    let db = getDatabase()
+    const db = getDatabase()
     const char = db.characters[charIndex] as character
     const image = char.ccAssets[changeIndex].uri
     char.ccAssets.splice(changeIndex, 1)
@@ -174,12 +179,12 @@ export async function addCharEmotion(charId:number) {
         addingEmotion.set(false)
         return
     }
-    let db = getDatabase()
+    const db = getDatabase()
     for(const f of selected){
         const img = f.data
         const imgp = await saveImage(img)
         const name = f.name.replace('.png','').replace('.webp','')
-        let dbChar = db.characters[charId]
+        const dbChar = db.characters[charId]
         if(dbChar.type !== 'group'){
             dbChar.emotionImages.push([name,imgp])
             db.characters[charId] = dbChar
@@ -190,8 +195,8 @@ export async function addCharEmotion(charId:number) {
 }
 
 export function rmCharEmotion(charId:number, emotionId:number) {
-    let db = getDatabase()
-    let dbChar = db.characters[charId]
+    const db = getDatabase()
+    const dbChar = db.characters[charId]
     if(dbChar.type !== 'group'){
         dbChar.emotionImages.splice(emotionId, 1)
         db.characters[charId] = dbChar
@@ -386,11 +391,11 @@ export async function importChat(){
     }
     try {
         const selectedID = get(selectedCharID)
-        let db = getDatabase()
+        const db = getDatabase()
 
         if(dat.name.endsWith('jsonl')){
             const lines = Buffer.from(dat.data).toString('utf-8').split('\n')
-            let newChat:Chat = {
+            const newChat:Chat = {
                 message: [],
                 note: "",
                 name: "Imported Chat",
@@ -436,8 +441,8 @@ export async function importChat(){
                 const folders = json.folders || []
                 const chats = Array.isArray(json.data) ? json.data : [json.data]
                 const selectedID = get(selectedCharID)
-                let db = getDatabase()
-                let folderIdMap = {}
+                const db = getDatabase()
+                const folderIdMap = {}
                 folders.forEach(folder => {
                     if(db.characters[selectedID].chatFolders?.some(f => f.id === folder.id)){
                         const newId = uuidv4()
@@ -738,10 +743,7 @@ export function createBlankChar():character{
 
 export async function makeGroupImage() {
     try {
-        alertStore.set({
-            type: 'wait',
-            msg: `Loading..`
-        })
+        alertWait(`Loading..`)
         const db = getDatabase()
         const charID = get(selectedCharID)
         const group = db.characters[charID]
@@ -762,7 +764,7 @@ export async function makeGroupImage() {
       
         // Load the images
         const images = [];
-        let loadedImages = 0;
+        const loadedImages = 0;
       
         await Promise.all(
             imageUrls.map(
@@ -806,10 +808,7 @@ export async function makeGroupImage() {
         canvas.remove()
         db.characters[charID].image = await saveImage(dataURLtoBuffer(uri));
         setDatabase(db)
-        alertStore.set({
-            type: 'none',
-            msg: ''
-        })
+        alertClear()
     } catch (error) {
         alertError(error)
     }
@@ -836,7 +835,7 @@ export async function removeChar(index:number,name:string, type:'normal'|'perman
             return
         }
     }
-    let chars = db.characters
+    const chars = db.characters
     if(type === 'normal'){
         chars[index].trashTime = Date.now()
     }
@@ -853,13 +852,13 @@ export async function removeChar(index:number,name:string, type:'normal'|'perman
 export async function addCharacter(arg:{
     reseter?:()=>any,
 } = {}){
-    MobileGUIStack.set(100)
+    layoutState.betaMobile.stack = 100
     const reseter = arg.reseter ?? (() => {})
     const r = await alertAddCharacter()
     if(r === 'importFromRealm'){
         selectedCharID.set(-1)
-        OpenRealmStore.set(true)
-        MobileGUIStack.set(0)
+        realmState.expanded = true
+        layoutState.betaMobile.stack = 0
         return
     }
     reseter();
@@ -874,14 +873,14 @@ export async function addCharacter(arg:{
             await importCharacter()
             break
         default:
-            MobileGUIStack.set(1)
+            layoutState.betaMobile.stack = 1
             return
     }
-    let db = getDatabase()
+    const db = getDatabase()
     if(db.characters[db.characters.length-1]){
         changeChar(db.characters.length-1)
     }
-    MobileGUIStack.set(1)
+    layoutState.betaMobile.stack = 1
 }
 
 export function changeChar(index: number, arg:{
@@ -896,4 +895,128 @@ export function changeChar(index: number, arg:{
       updateInteraction: true,
     });
     selectedCharID.set(index);
+}export async function getCustomBackground(db: string) {
+    if (db.length < 2) {
+        return ''
+    }
+    else {
+        const filesrc = await getCharImage(db, 'plain')
+        return `background: url("${filesrc}"); background-size: cover;`
+    }
 }
+export function findCharacterbyId(id: string) {
+    const db = getDatabase()
+    for (const char of db.characters) {
+        if (char.type !== 'group') {
+            if (char.chaId === id) {
+                return char
+            }
+        }
+    }
+    const unknown = createBlankChar()
+    unknown.name = 'Unknown Character'
+    return unknown
+}
+export function findCharacterIndexbyId(id: string) {
+    const db = getDatabase()
+    let i = 0
+    for (const char of db.characters) {
+        if (char.chaId === id) {
+            return i
+        }
+        i += 1
+    }
+    return -1
+}
+export function getCharacterIndexObject() {
+    const db = getDatabase()
+    let i = 0
+    const result: { [key: string]: number}  = {}
+    for (const char of db.characters) {
+        result[char.chaId] = i
+        i += 1
+    }
+    return result
+}
+export function defaultEmotion(em: [string, string][]) {
+    if (!em) {
+        return ''
+    }
+    for (const v of em) {
+        if (v[0] === 'neutral') {
+            return v[1]
+        }
+    }
+    return ''
+}
+export async function getEmotion(db: Database, chaEmotion: { [key: string]: [string, string, number][]} , type: 'contain' | 'plain' | 'css') {
+    const selectedChar = get(selectedCharID)
+    const currentDat = db.characters[selectedChar]
+    if (!currentDat) {
+        return []
+    }
+    let charIdList: string[] = []
+
+    if (currentDat.type === 'group') {
+        if (currentDat.characters.length === 0) {
+            return []
+        }
+        switch (currentDat.viewScreen) {
+            case "multiple":
+                charIdList = currentDat.characters
+                break
+            case "single": {
+                let newist: [string, string, number] = ['', '', 0]
+                let newistChar = currentDat.characters[0]
+                for (const currentChar of currentDat.characters) {
+                    const cha = chaEmotion[currentChar]
+                    if (cha) {
+                        const latestEmotion = cha[cha.length - 1]
+                        if (latestEmotion && latestEmotion[2] > newist[2]) {
+                            newist = latestEmotion
+                            newistChar = currentChar
+                        }
+                    }
+                }
+                charIdList = [newistChar]
+                break
+            }
+            case "emp": {
+                charIdList = currentDat.characters
+                break
+            }
+        }
+    }
+    else {
+        charIdList = [currentDat.chaId]
+    }
+
+    const datas: string[] = [currentDat.viewScreen === 'emp' ? 'emp' : 'normal' as const]
+    for (const chaid of charIdList) {
+        const currentChar = findCharacterbyId(chaid)
+        if (currentChar.viewScreen === 'emotion') {
+            const currEmotion = chaEmotion[currentChar.chaId]
+            let im = ''
+            if (!currEmotion || currEmotion.length === 0) {
+                im = (await getCharImage(defaultEmotion(currentChar?.emotionImages), type))
+            }
+            else {
+                im = (await getCharImage(currEmotion[currEmotion.length - 1][1], type))
+            }
+            if (im && im.length > 2) {
+                datas.push(im)
+            }
+        }
+        else if (currentChar.viewScreen === 'imggen') {
+            const currEmotion = chaEmotion[currentChar.chaId]
+            if (!currEmotion || currEmotion.length === 0) {
+                datas.push(await getCharImage(currentChar.image ?? '', 'plain'))
+            }
+            else {
+                datas.push(currEmotion[currEmotion.length - 1][1])
+            }
+        }
+    }
+    return datas
+}
+
