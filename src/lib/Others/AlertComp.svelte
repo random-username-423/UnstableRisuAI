@@ -13,7 +13,6 @@
     import AlertPluginConfirm from "./Alerts/AlertPluginConfirm.svelte"
     import AlertContainer from "./Alerts/AlertContainer.svelte"
     import AlertSelectChar from "./Alerts/AlertSelectChar.svelte"
-    import AlertLogin from "./Alerts/AlertLogin.svelte"
     import AlertHypaV2 from "./Alerts/AlertHypaV2.svelte"
     import AlertAddChar from "./Alerts/AlertAddChar.svelte"
     import AlertChatOptions from "./Alerts/AlertChatOptions.svelte"
@@ -78,10 +77,6 @@
 <!-- SELECT CHAR - Character selection dialog -->
 {:else if alertState.type === "selectChar"}
     <AlertSelectChar />
-
-<!-- LOGIN - Login iframe dialog -->
-{:else if alertState.type === "login"}
-    <AlertLogin />
 
 <!-- REQUEST DATA - Data request dialog -->
 {:else if alertState.type === "requestdata"}

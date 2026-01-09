@@ -8,6 +8,7 @@ import { v4 } from "uuid"
 import { language } from "src/lang"
 import { sleep } from "../util"
 import { fetchProtectedResource } from "../sionyw"
+import { requestLogin } from "src/lib/Others/Modals/ModalLogin.svelte"
 
 export const AccountWarning = writable('')
 const risuSession = Date.now().toFixed(0)
@@ -77,7 +78,7 @@ export class AccountStorage{
                 if(da.headers.get('x-risu-status') === 'warn'){
                     return
                 }
-                localStorage.setItem("fallbackRisuToken",await alertLogin())
+                localStorage.setItem("fallbackRisuToken",await requestLogin())
                 this.checkAuth()
             }
         }
@@ -110,7 +111,7 @@ export class AccountStorage{
                 }
             })
             if(da.status === 403){
-                localStorage.setItem("fallbackRisuToken",await alertLogin())
+                localStorage.setItem("fallbackRisuToken",await requestLogin())
                 this.checkAuth()
             }
         }

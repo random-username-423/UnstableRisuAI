@@ -6,7 +6,7 @@ import { alertState } from "./stores.svelte"
 
 export interface alertData {
     type: 'error' | 'normal' | 'none' | 'ask' | 'wait' | 'selectChar'
-    | 'input' | 'wait2' | 'markdown' | 'select' | 'login'
+    | 'input' | 'wait2' | 'markdown' | 'select'
     | 'tos' | 'cardexport' | 'requestdata' | 'addchar' | 'hypaV2' | 'selectModule'
     | 'chatOptions' | 'progress' | 'pluginconfirm',
     msg: string,
@@ -109,14 +109,6 @@ export async function alertChatOptions() {
     await waitAlert()
 
     return parseInt(alertState.msg)
-}
-
-export async function alertLogin() {
-    alertState.type = 'login'
-    alertState.msg = 'login'
-    await waitAlert()
-
-    return alertState.msg
 }
 
 export async function alertSelect(msg: string[], display?: string) {

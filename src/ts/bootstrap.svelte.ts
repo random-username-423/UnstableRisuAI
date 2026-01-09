@@ -29,7 +29,7 @@ import { updateGuisize } from "./gui/guisize";
 import { updateLorebooks } from "./characters.svelte";
 import { initMobileGesture } from "./hotkey.svelte";
 import { moduleUpdate } from "./process/modules";
-import type { AccountStorage } from "./storage/accountStorage";
+import type { AccountStorage } from "./storage/accountStorage.svelte";
 import { makeColdData } from "./process/coldstorage.svelte";
 import {
     forageStorage,
