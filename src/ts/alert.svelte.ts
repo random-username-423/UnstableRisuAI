@@ -1,26 +1,18 @@
 import { language } from "../lang"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
 import { getDatabase } from "./storage/database.svelte"
-import { type MessageGenerationInfo } from './storage/types/chat'
 import { alertState } from "./stores.svelte"
 
 export interface alertData {
     type: 'error' | 'normal' | 'none' | 'ask' | 'wait' | 'selectChar'
     | 'input' | 'wait2' | 'markdown' | 'select'
-    | 'tos' | 'cardexport' | 'requestdata' | 'addchar' | 'hypaV2' | 'selectModule'
+    | 'tos' | 'addchar' | 'hypaV2' | 'selectModule'
     | 'chatOptions' | 'progress' | 'pluginconfirm',
     msg: string,
     submsg?: string
     datalist?: [string, string][],
     stackTrace?: string;
 }
-
-type AlertGenerationInfoStateData = {
-    genInfo: MessageGenerationInfo,
-    idx: number
-}
-
-export const alertGenerationInfoState = $state({} as AlertGenerationInfoStateData)
 
 export function alertError(msg: string | Error) {
     console.error(msg)
@@ -216,12 +208,6 @@ export async function alertModuleSelect() {
     await waitAlert()
 
     return alertState.msg
-}
-
-export function alertRequestData(info: AlertGenerationInfoStateData) {
-    Object.assign(alertGenerationInfoState, info)
-    alertState.type = 'requestdata'
-    alertState.msg = info.genInfo.generationId ?? 'none'
 }
 
 export function showHypaV2Alert() {

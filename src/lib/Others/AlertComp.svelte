@@ -6,7 +6,6 @@
     import ModuleChatMenu from "../Setting/Pages/Module/ModuleChatMenu.svelte"
     import Button from "../UI/GUI/Button.svelte"
 
-    import AlertRequestData from "./Alerts/AlertRequestData.svelte"
     import AlertError from "./Alerts/AlertError.svelte"
     import AlertSimple from "./Alerts/AlertSimple.svelte"
     import AlertPluginConfirm from "./Alerts/AlertPluginConfirm.svelte"
@@ -76,10 +75,6 @@
 <!-- SELECT CHAR - Character selection dialog -->
 {:else if alertState.type === "selectChar"}
     <AlertSelectChar />
-
-<!-- REQUEST DATA - Data request dialog -->
-{:else if alertState.type === "requestdata"}
-    <AlertRequestData />
 
 <!-- HYPA V2 - HypaV2 data editor -->
 {:else if alertState.type === "hypaV2"}
