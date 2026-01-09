@@ -9,7 +9,6 @@
     import AlertRequestData from "./Alerts/AlertRequestData.svelte"
     import AlertError from "./Alerts/AlertError.svelte"
     import AlertSimple from "./Alerts/AlertSimple.svelte"
-    import AlertCardExport from "./Alerts/AlertCardExport.svelte"
     import AlertPluginConfirm from "./Alerts/AlertPluginConfirm.svelte"
     import AlertContainer from "./Alerts/AlertContainer.svelte"
     import AlertSelectChar from "./Alerts/AlertSelectChar.svelte"
@@ -154,10 +153,6 @@
             <span class="text-gray-500 text-sm">{alertState.submsg + "%"}</span>
         </div>
     </AlertContainer>
-
-<!-- CARD EXPORT - Uses external component -->
-{:else if alertState.type === "cardexport"}
-    <AlertCardExport />
 
 <!-- SELECT MODULE - Uses external component -->
 {:else if alertState.type === "selectModule"}

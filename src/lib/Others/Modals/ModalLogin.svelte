@@ -1,4 +1,3 @@
-<!-- ModalLogin.svelte -->
 <script lang="ts" module>
 let resolver: ((value: string) => void) | null = null
 const loginState = $state({ open: false })
@@ -36,7 +35,7 @@ function handleResult(data: string) {
     }
 }} />
 
-{#if open}
+{#if loginState.open}
 <div class="fixed top-0 left-0 z-50 flex h-full w-full items-center justify-center bg-black/50">
     <iframe src={hubURL + "/hub/login"} title="login" class="h-full w-full"></iframe>
 </div>

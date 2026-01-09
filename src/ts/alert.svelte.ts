@@ -178,20 +178,6 @@ export async function alertPluginConfirm(msg: string) {
     return alertState.msg === 'yes'
 }
 
-export async function alertCardExport(type: string = '') {
-
-    alertState.type = 'cardexport'
-    alertState.msg = ''
-    alertState.submsg = type
-
-    await waitAlert()
-
-    return JSON.parse(alertState.msg) as {
-        type: string,
-        type2: string,
-    }
-}
-
 export async function alertTOS() {
 
     if (localStorage.getItem('tos2') === 'true') {

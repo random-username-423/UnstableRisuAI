@@ -31,6 +31,7 @@
     import PopupList from './lib/UI/PopupList.svelte';
     import ModalRequestLogs from 'src/lib/Others/Modals/ModalRequestLogs.svelte'
     import ModalBranches from './lib/Others/Modals/ModalBranches.svelte'
+    import ModalCardExport from './lib/Others/Modals/ModalCardExport.svelte'
 
 
     let didFirstSetup: boolean  = $derived(DBState.db?.didFirstSetup)
@@ -213,6 +214,7 @@
     {#if modalState.branches}
         <ModalBranches />
     {/if}
+    <ModalCardExport />
 
 
     <SavePopupIconComp />

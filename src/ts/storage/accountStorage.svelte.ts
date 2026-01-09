@@ -1,7 +1,7 @@
 import { writable } from "svelte/store"
 import { getDatabase } from "./database.svelte"
 import localforage from "localforage"
-import { alertClear, alertLogin, alertNormalWait, alertWait } from "../alert.svelte"
+import { alertClear, alertNormalWait, alertWait } from "../alert.svelte"
 import { forageStorage, getUnpargeables } from "../globalApi.svelte"
 import { encodeRisuSaveLegacy } from "./risuSave"
 import { v4 } from "uuid"
