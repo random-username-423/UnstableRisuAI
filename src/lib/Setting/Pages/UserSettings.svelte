@@ -29,6 +29,7 @@
             await saveRisuAccountData()
             popup.close()
         }
+        // NOTE: backend typo
         else if(e.data.msg?.data.vaild){
             openIframe = false
             DBState.db.account = {

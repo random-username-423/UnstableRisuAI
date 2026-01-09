@@ -54,7 +54,7 @@
         class="fixed top-0 left-0 h-full w-full bg-black/50 flex flex-col z-50 items-center justify-center"
         role="button"
         tabindex="0"
-        onclick={close}
+        onclick={() => handleResult({ type: "cancel", type2: "" })}
     >
         <div
             class="bg-darkbg rounded-md p-4 max-w-full flex flex-col w-2xl"

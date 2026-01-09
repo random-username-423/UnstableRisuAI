@@ -29,6 +29,7 @@ function handleResult(data: string) {
         e.origin.startsWith("http://127.0.0.1") ||
         e.origin === window.location.origin
     ) {
+        // NOTE: backend typo
         if (e.data.msg?.data?.vaild) {
             handleResult(JSON.stringify(e.data.msg))
         }
