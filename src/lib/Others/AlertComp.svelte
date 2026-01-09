@@ -6,16 +6,11 @@
     import ModuleChatMenu from "../Setting/Pages/Module/ModuleChatMenu.svelte"
     import Button from "../UI/GUI/Button.svelte"
 
-    import AlertRequestLogs from "./Alerts/AlertRequestLogs.svelte"
-    import AlertRequestData from "./Alerts/AlertRequestData.svelte"
     import AlertError from "./Alerts/AlertError.svelte"
     import AlertSimple from "./Alerts/AlertSimple.svelte"
-    import AlertBranches from "./Alerts/AlertBranches.svelte"
-    import AlertCardExport from "./Alerts/AlertCardExport.svelte"
     import AlertPluginConfirm from "./Alerts/AlertPluginConfirm.svelte"
     import AlertContainer from "./Alerts/AlertContainer.svelte"
     import AlertSelectChar from "./Alerts/AlertSelectChar.svelte"
-    import AlertLogin from "./Alerts/AlertLogin.svelte"
     import AlertHypaV2 from "./Alerts/AlertHypaV2.svelte"
     import AlertAddChar from "./Alerts/AlertAddChar.svelte"
     import AlertChatOptions from "./Alerts/AlertChatOptions.svelte"
@@ -80,14 +75,6 @@
 <!-- SELECT CHAR - Character selection dialog -->
 {:else if alertState.type === "selectChar"}
     <AlertSelectChar />
-
-<!-- LOGIN - Login iframe dialog -->
-{:else if alertState.type === "login"}
-    <AlertLogin />
-
-<!-- REQUEST DATA - Data request dialog -->
-{:else if alertState.type === "requestdata"}
-    <AlertRequestData />
 
 <!-- HYPA V2 - HypaV2 data editor -->
 {:else if alertState.type === "hypaV2"}
@@ -162,10 +149,6 @@
         </div>
     </AlertContainer>
 
-<!-- CARD EXPORT - Uses external component -->
-{:else if alertState.type === "cardexport"}
-    <AlertCardExport />
-
 <!-- SELECT MODULE - Uses external component -->
 {:else if alertState.type === "selectModule"}
     <ModuleChatMenu
@@ -174,13 +157,4 @@
             alertClear(d)
         }}
     />
-
-<!-- BRANCHES - Chat branch visualization -->
-{:else if alertState.type === "branches"}
-    <AlertBranches />
-
-<!-- REQUEST LOGS - Uses external component -->
-{:else if alertState.type === "requestlogs"}
-    <AlertRequestLogs />
 {/if}
-

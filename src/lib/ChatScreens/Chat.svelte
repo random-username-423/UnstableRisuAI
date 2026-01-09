@@ -16,7 +16,8 @@
     import { type Unsubscriber } from "svelte/store"
     import { v4 as uuidv4, v4 } from 'uuid'
     import { language } from "../../lang"
-    import { alertClear, alertConfirm, alertInput, alertNormal, alertRequestData, alertWait } from "../../ts/alert.svelte"
+    import { alertClear, alertConfirm, alertInput, alertNormal, alertWait } from "../../ts/alert.svelte"
+    import { openRequestData } from "../Others/Modals/ModalRequestData.svelte"
     import { ParseMarkdown, type CbsConditions, type simpleCharacterArgument } from "../../ts/parser.svelte"
     import { getCurrentCharacter, getCurrentChat, setCurrentChat } from "../../ts/storage/database.svelte"
     import type { MessageGenerationInfo } from "../../ts/storage/types/chat"
@@ -280,7 +281,7 @@
                             DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].message[idx].generationInfo :
                             messageGenerationInfo
 
-                        alertRequestData({
+                        openRequestData({
                             genInfo: currentGenerationInfo,
                             idx: idx,
                         })

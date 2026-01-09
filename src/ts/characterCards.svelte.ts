@@ -1,5 +1,5 @@
 import { writable, type Writable } from "svelte/store"
-import { alertCardExport, alertClear, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertProgress, alertTOS, alertWait } from "./alert.svelte"
+import { alertClear, alertConfirm, alertError, alertInput, alertMd, alertNormal, alertProgress, alertTOS, alertWait } from "./alert.svelte"
 import { defaultSdDataFunc, setDatabase, setCurrentCharacter, getCurrentCharacter, getDatabase, setDatabaseLite, appVer } from "./storage/database.svelte"
 import { importPreset } from './storage/preset-manager'
 import { type triggerscript } from './storage/types/character'
@@ -24,7 +24,8 @@ import { CharXImporter, CharXSkippableChecker, CharXWriter } from "./process/pro
 import { exportModule, readModule, type RisuModule } from "./process/modules"
 import { readFile } from "@tauri-apps/plugin-fs"
 import { onOpenUrl } from '@tauri-apps/plugin-deep-link';
-import { AccountStorage } from "./storage/accountStorage"
+import { AccountStorage } from "./storage/accountStorage.svelte"
+import { requestCardExport } from "src/lib/Others/Modals/ModalCardExport.svelte"
 
 
 const EXTERNAL_HUB_URL = 'https://sv.risuai.xyz';
@@ -702,7 +703,7 @@ export async function exportChar(charaID:number):Promise<string> {
         char.image = await saveAsset(data)
     }
 
-    const option = await alertCardExport()
+    const option = await requestCardExport()
     if(option.type === ''){
         exportCharacterCard(char, option.type2 === 'json' ? 'json' : (option.type2 === 'charx' ? 'charx' : option.type2 === 'charxJpeg' ? 'charxJpeg' : 'png'), {spec: 'v3'})
     }

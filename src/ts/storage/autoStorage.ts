@@ -6,7 +6,7 @@ import { OpfsStorage } from "./opfsStorage"
 import { alertClear, alertInput, alertSelect, alertWait } from "../alert.svelte"
 import { getDatabase } from "./database.svelte"
 import { type Database } from './types/database'
-import { AccountStorage } from "./accountStorage"
+import { AccountStorage } from "./accountStorage.svelte"
 import { decodeRisuSave, encodeRisuSaveLegacy } from "./risuSave";
 import { language } from "src/lang"
 import { MobileStorage } from "./mobileStorage"

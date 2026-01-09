@@ -2,7 +2,7 @@
     import { XIcon } from "@lucide/svelte"
     import { getChatBranches } from "src/ts/gui/branches"
     import { getCurrentCharacter } from "src/ts/storage/database.svelte"
-    import { alertClear } from "src/ts/alert.svelte"
+    import { modalState } from "src/ts/stores.svelte";
 
     // Local state for hover preview
     let branchHover: null | {
@@ -35,7 +35,7 @@
     <div class="x-50 right-2 top-2 absolute">
         <button
             class="bg-darkbg border-darkborderc border p-2 rounded-md"
-            onclick={() => alertClear()}
+            onclick={() => modalState.branches = false}
         >
             <XIcon />
         </button>

@@ -1,26 +1,18 @@
 import { language } from "../lang"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
 import { getDatabase } from "./storage/database.svelte"
-import { type MessageGenerationInfo } from './storage/types/chat'
 import { alertState } from "./stores.svelte"
 
 export interface alertData {
     type: 'error' | 'normal' | 'none' | 'ask' | 'wait' | 'selectChar'
-    | 'input' | 'wait2' | 'markdown' | 'select' | 'login'
-    | 'tos' | 'cardexport' | 'requestdata' | 'addchar' | 'hypaV2' | 'selectModule'
-    | 'chatOptions' | 'branches' | 'progress' | 'pluginconfirm' | 'requestlogs',
+    | 'input' | 'wait2' | 'markdown' | 'select'
+    | 'tos' | 'addchar' | 'hypaV2' | 'selectModule'
+    | 'chatOptions' | 'progress' | 'pluginconfirm',
     msg: string,
     submsg?: string
     datalist?: [string, string][],
     stackTrace?: string;
 }
-
-type AlertGenerationInfoStateData = {
-    genInfo: MessageGenerationInfo,
-    idx: number
-}
-
-export const alertGenerationInfoState = $state({} as AlertGenerationInfoStateData)
 
 export function alertError(msg: string | Error) {
     console.error(msg)
@@ -111,14 +103,6 @@ export async function alertChatOptions() {
     return parseInt(alertState.msg)
 }
 
-export async function alertLogin() {
-    alertState.type = 'login'
-    alertState.msg = 'login'
-    await waitAlert()
-
-    return alertState.msg
-}
-
 export async function alertSelect(msg: string[], display?: string) {
     const message = display !== undefined ? `__DISPLAY__${display}||${msg.join('||')}` : msg.join('||')
     alertState.type = 'select'
@@ -186,20 +170,6 @@ export async function alertPluginConfirm(msg: string) {
     return alertState.msg === 'yes'
 }
 
-export async function alertCardExport(type: string = '') {
-
-    alertState.type = 'cardexport'
-    alertState.msg = ''
-    alertState.submsg = type
-
-    await waitAlert()
-
-    return JSON.parse(alertState.msg) as {
-        type: string,
-        type2: string,
-    }
-}
-
 export async function alertTOS() {
 
     if (localStorage.getItem('tos2') === 'true') {
@@ -240,25 +210,9 @@ export async function alertModuleSelect() {
     return alertState.msg
 }
 
-export function alertRequestData(info: AlertGenerationInfoStateData) {
-    Object.assign(alertGenerationInfoState, info)
-    alertState.type = 'requestdata'
-    alertState.msg = info.genInfo.generationId ?? 'none'
-}
-
 export function showHypaV2Alert() {
     alertState.type = 'hypaV2'
     alertState.msg = ""
-}
-
-export function alertRequestLogs() {
-    alertState.type = 'requestlogs'
-    alertState.msg = ''
-}
-
-export function alertBranches() {
-    alertState.type = 'branches'
-    alertState.msg = ''
 }
 
 export function alertProgress(msg: string = '', submsg: string = '') {

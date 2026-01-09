@@ -2,7 +2,7 @@
   import { OctagonAlert, SaveIcon } from "@lucide/svelte";
   import { alertMd } from "src/ts/alert.svelte";
   import { saving } from "src/ts/globalApi.svelte";
-  import { AccountWarning } from "src/ts/storage/accountStorage";
+  import { AccountWarning } from "src/ts/storage/accountStorage.svelte";
   import { DBState } from "src/ts/stores.svelte";
 
 </script>

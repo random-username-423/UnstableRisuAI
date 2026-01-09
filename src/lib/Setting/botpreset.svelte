@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { alertCardExport, alertConfirm, alertError } from "../../ts/alert.svelte";
+    import { alertConfirm, alertError } from "../../ts/alert.svelte";
     import { language } from "../../lang";
     import { changeToPreset, copyPreset, downloadPreset, importPreset } from "../../ts/storage/preset-manager";
     import { DBState } from 'src/ts/stores.svelte';
@@ -8,6 +8,7 @@
     import { prebuiltPresets } from "src/ts/process/templates/templates";
     import { realmState } from "src/ts/stores.svelte";
     import PromptDiffModal from "../Others/PromptDiffModal.svelte";
+    import { requestCardExport } from "../Others/Modals/ModalCardExport.svelte"
 
     let editMode = $state(false)
     let isDragging = $state(false)
@@ -205,7 +206,7 @@
                     </div>
                     <div class="text-textcolor2 hover:text-green-500 cursor-pointer mr-2" role="button" tabindex="0" onclick={async (e) => {
                         e.stopPropagation()
-                        const data = await alertCardExport('preset')
+                        const data = await requestCardExport('preset')
                         console.log(data.type)
                         if(data.type === ''){
                             downloadPreset(i, 'risupreset')

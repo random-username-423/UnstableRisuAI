@@ -29,6 +29,11 @@
     import HypaV3Progress from './lib/Others/HypaV3Progress.svelte';
     import PluginAlertModal from './lib/Others/PluginAlertModal.svelte';
     import PopupList from './lib/UI/PopupList.svelte';
+    import ModalRequestLogs from 'src/lib/Others/Modals/ModalRequestLogs.svelte'
+    import ModalBranches from './lib/Others/Modals/ModalBranches.svelte'
+    import ModalCardExport from './lib/Others/Modals/ModalCardExport.svelte'
+    import ModalRequestData from './lib/Others/Modals/ModalRequestData.svelte'
+
 
     let didFirstSetup: boolean  = $derived(DBState.db?.didFirstSetup)
     let gridOpen = $state(false)
@@ -190,6 +195,8 @@
     {#if realmState.uploadTarget}
         <RealmFrame />
     {/if}
+
+    
     {#if modalState.preset}
         <Botpreset close={() => {modalState.preset = false}} />
     {/if}
@@ -202,6 +209,16 @@
     {#if hypaV3State.open}
         <HypaV3Modal />
     {/if}
+    {#if modalState.requestLogs}
+        <ModalRequestLogs />
+    {/if}
+    {#if modalState.branches}
+        <ModalBranches />
+    {/if}
+    <ModalCardExport />
+    <ModalRequestData />
+
+
     <SavePopupIconComp />
     {#if hypaV3State.progress.open}
         <HypaV3Progress />
