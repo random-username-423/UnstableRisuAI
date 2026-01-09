@@ -112,19 +112,6 @@ export function syncDrive() {
 async function backupDrive(ACCESS_TOKEN:string) {
     alertWait("Uploading Backup...")
 
-    //check backup data is corrupted
-    const corrupted = await fetch(hubURL + '/backupcheck', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(getDatabase()),
-    })
-    if(corrupted.status === 400){
-        alertError('Failed, Backup data is corrupted')
-        return
-    }
-
     const files:DriveFile[] = await getFilesInFolder(ACCESS_TOKEN)
 
     const fileNames = files.map((d) => {

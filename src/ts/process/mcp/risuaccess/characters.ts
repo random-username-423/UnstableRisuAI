@@ -1,12 +1,12 @@
-import { type MCPTool, MCPToolHandler, type RPCToolCallContent } from '../mcplib'
-import { getCharacter } from './utils'
+import { language } from 'src/lang'
+import { alertConfirm } from 'src/ts/alert.svelte'
 import { type loreBook } from 'src/ts/storage/types/character'
 import { type groupChat } from 'src/ts/storage/types/character'
 import { type character } from 'src/ts/storage/types/character'
 import { DBState } from 'src/ts/stores.svelte'
 import { pickHashRand } from 'src/ts/util'
-import { alertConfirm } from 'src/ts/alert.svelte'
-import { language } from 'src/lang'
+import { type MCPTool, MCPToolHandler, type RPCToolCallContent } from '../mcplib'
+import { getCharacter } from './utils'
 
 export class CharacterHandler extends MCPToolHandler {
   private promptAccess(tool: string, action: string) {
@@ -51,7 +51,7 @@ export class CharacterHandler extends MCPToolHandler {
           properties: {
             count: {
               default: 100,
-              description: 'The maximum number of lorebook entries to return.',
+              description: 'The maximum number of lorebooks to return.',
               type: 'integer',
             },
             id: {
@@ -59,7 +59,7 @@ export class CharacterHandler extends MCPToolHandler {
               type: 'string',
             },
             offset: {
-              description: 'The number of entries to skip for pagination.',
+              description: 'The number of lorebooks to skip for pagination.',
               type: 'integer',
             },
           },
@@ -69,20 +69,20 @@ export class CharacterHandler extends MCPToolHandler {
         name: 'risu-list-character-lorebooks',
       },
       {
-        description: 'Get all lorebook entries with specific names from a Risuai character.',
+        description: 'Get lorebooks with specific names from a Risuai character.',
         inputSchema: {
           properties: {
-            entryNames: {
-              description: 'The names of the lorebook entries to retrieve.',
-              items: { type: 'string' },
-              type: 'array',
-            },
             id: {
               description: 'The ID or name of the character. Use an empty string for the currently selected character.',
               type: 'string',
             },
+            names: {
+              description: 'The names of the lorebooks to retrieve.',
+              items: { type: 'string' },
+              type: 'array',
+            },
           },
-          required: ['entryNames', 'id'],
+          required: ['id', 'names'],
           type: 'object',
         },
         name: 'risu-get-character-lorebook',
@@ -117,20 +117,16 @@ export class CharacterHandler extends MCPToolHandler {
         name: 'risu-set-character-info',
       },
       {
-        description:
-          'Update an existing lorebook entry of a Risuai character, or create a new one if it does not exist.',
+        description: 'Update an existing lorebook of a Risuai character, or create a new one if it does not exist.',
         inputSchema: {
           properties: {
             alwaysActive: {
-              description: 'If true, the entry is always active regardless of keywords.',
+              default: false,
+              description: 'If true, the lorebook is always active regardless of keywords.',
               type: 'boolean',
             },
             content: {
-              description: 'The new text content for the entry.',
-              type: 'string',
-            },
-            entryName: {
-              description: 'The current name of the lorebook entry to update or create.',
+              description: 'The text content to be inserted into the context.',
               type: 'string',
             },
             id: {
@@ -138,34 +134,38 @@ export class CharacterHandler extends MCPToolHandler {
               type: 'string',
             },
             keys: {
-              description: 'The new array of keywords for activation.',
+              description: 'An array of keywords that activate this lorebook.',
               items: { type: 'string' },
               type: 'array',
             },
             name: {
-              description: 'Optional new name for the entry.',
+              description: 'The name of the lorebook to update.',
+              type: 'string',
+            },
+            newName: {
+              description: 'Optional new name for the lorebook.',
               type: 'string',
             },
           },
-          required: ['entryName', 'id'],
+          required: ['id', 'name'],
           type: 'object',
         },
         name: 'risu-set-character-lorebook',
       },
       {
-        description: 'Delete a lorebook entry from a Risuai character.',
+        description: 'Delete a lorebook from a Risuai character.',
         inputSchema: {
           properties: {
-            entryName: {
-              description: 'The name of the lorebook entry to delete.',
-              type: 'string',
-            },
             id: {
               description: 'The ID or name of the character. Use an empty string for the currently selected character.',
               type: 'string',
             },
+            name: {
+              description: 'The name of the lorebook to delete.',
+              type: 'string',
+            },
           },
-          required: ['entryName', 'id'],
+          required: ['id', 'name'],
           type: 'object',
         },
         name: 'risu-delete-character-lorebook',
@@ -189,40 +189,41 @@ export class CharacterHandler extends MCPToolHandler {
         inputSchema: {
           properties: {
             ableFlag: {
+              default: false,
               description: 'Set to true to use the custom "flag" string.',
               type: 'boolean',
             },
-            comment: {
-              description: 'New unique name for the script.',
-              type: 'string',
-            },
             flag: {
-              description: 'New regex flags.',
+              description: 'Regex flags (e.g., "g", "i", "m") used when "ableFlag" is true.',
               type: 'string',
             },
             id: {
               description: 'The ID or name of the character. Use an empty string for the currently selected character.',
               type: 'string',
             },
-            regIn: {
-              description: 'New regex pattern to match.',
+            in: {
+              description: 'The regex pattern to match.',
               type: 'string',
             },
-            regOut: {
-              description: 'New replacement string.',
+            name: {
+              description: 'The name of the script to update.',
               type: 'string',
             },
-            scriptName: {
-              description: 'The current name of the regex script to update or create.',
+            newName: {
+              description: 'Optional new name for the script.',
+              type: 'string',
+            },
+            out: {
+              description: 'The string to replace matches with.',
               type: 'string',
             },
             type: {
-              description: 'New hook where the regex is applied.',
+              description: 'The hook where the regex is applied.',
               enum: ['editdisplay', 'editinput', 'editoutput', 'editprocess'],
               type: 'string',
             },
           },
-          required: ['id', 'scriptName'],
+          required: ['id', 'name'],
           type: 'object',
         },
         name: 'risu-set-character-regex-scripts',
@@ -235,12 +236,12 @@ export class CharacterHandler extends MCPToolHandler {
               description: 'The ID or name of the character. Use an empty string for the currently selected character.',
               type: 'string',
             },
-            scriptName: {
+            name: {
               description: 'The name of the regex script to delete.',
               type: 'string',
             },
           },
-          required: ['id', 'scriptName'],
+          required: ['id', 'name'],
           type: 'object',
         },
         name: 'risu-delete-character-regex-scripts',
@@ -338,35 +339,35 @@ export class CharacterHandler extends MCPToolHandler {
       case 'risu-list-character-lorebooks':
         return await this.getCharacterLorebooks(args.id, args.count, args.offset)
       case 'risu-get-character-lorebook':
-        return await this.getCharacterLorebook(args.id, args.entryNames)
+        return await this.getCharacterLorebook(args.id, args.names)
       case 'risu-set-character-info':
         return await this.setCharacterInfo(args.id, args.data)
       case 'risu-set-character-lorebook':
         return await this.setCharacterLorebook(
           args.id,
-          args.entryName,
+          args.name,
           args.content,
           args.keys,
-          args.name,
+          args.newName,
           args.alwaysActive
         )
       case 'risu-delete-character-lorebook':
-        return await this.deleteCharacterLorebook(args.id, args.entryName)
+        return await this.deleteCharacterLorebook(args.id, args.name)
       case 'risu-get-character-regex-scripts':
         return await this.getCharacterRegexScripts(args.id)
       case 'risu-set-character-regex-scripts':
         return await this.setCharacterRegexScripts(
           args.id,
-          args.scriptName,
-          args.comment,
-          args.regIn,
-          args.regOut,
+          args.name,
+          args.newName,
+          args.in,
+          args.out,
           args.type,
           args.flag,
           args.ableFlag
         )
       case 'risu-delete-character-regex-scripts':
-        return await this.deleteCharacterRegexScripts(args.id, args.scriptName)
+        return await this.deleteCharacterRegexScripts(args.id, args.name)
       case 'risu-get-character-additional-assets':
         return await this.getCharacterAdditionalAssets(args.id)
       case 'risu-get-character-lua-script':
@@ -584,10 +585,10 @@ export class CharacterHandler extends MCPToolHandler {
 
   async setCharacterLorebook(
     id: string,
-    entryName: string,
+    name: string,
     content?: string,
     keys?: string[],
-    name?: string,
+    newName?: string,
     alwaysActive?: boolean
   ): Promise<RPCToolCallContent[]> {
     const char: character | groupChat = getCharacter(id)
@@ -611,7 +612,7 @@ export class CharacterHandler extends MCPToolHandler {
     if (
       !(await this.promptAccess(
         'risu-set-character-lorebook',
-        `add/modify character (${char.name}) global lorebook (${entryName})`
+        `add/modify character (${char.name}) global lorebook (${name})`
       ))
     ) {
       return [
@@ -624,13 +625,13 @@ export class CharacterHandler extends MCPToolHandler {
 
     const entryIndex = char.globalLore.findIndex((entry) => {
       const displayName = entry.comment || 'Unnamed ' + pickHashRand(5515, entry.content)
-      return displayName === entryName
+      return displayName === name
     })
     if (entryIndex === -1) {
       const newEntry: loreBook = {
         key: alwaysActive ? '' : keys?.join(',') || '',
         content: content || '',
-        comment: name || entryName,
+        comment: newName || name,
         alwaysActive: alwaysActive || false,
         secondkey: '',
         selective: false,
@@ -641,7 +642,7 @@ export class CharacterHandler extends MCPToolHandler {
       return [
         {
           type: 'text',
-          text: `Successfully added lorebook entry "${name || entryName}" to character ${char.name || char.chaId}`,
+          text: `Successfully added lorebook entry "${newName || name}" to character ${char.name || char.chaId}`,
         },
       ]
     }
@@ -654,8 +655,8 @@ export class CharacterHandler extends MCPToolHandler {
     if (keys !== undefined) {
       entry.key = alwaysActive ? '' : keys.join(',')
     }
-    if (name !== undefined) {
-      entry.comment = name
+    if (newName !== undefined) {
+      entry.comment = newName
     }
     if (alwaysActive !== undefined) {
       entry.alwaysActive = alwaysActive
@@ -667,12 +668,12 @@ export class CharacterHandler extends MCPToolHandler {
     return [
       {
         type: 'text',
-        text: `Successfully updated lorebook entry "${entryName}" for character ${char.name || char.chaId}`,
+        text: `Successfully updated lorebook entry "${name}" for character ${char.name || char.chaId}`,
       },
     ]
   }
 
-  async deleteCharacterLorebook(id: string, entryName: string): Promise<RPCToolCallContent[]> {
+  async deleteCharacterLorebook(id: string, name: string): Promise<RPCToolCallContent[]> {
     const char: character | groupChat = getCharacter(id)
     if (!char) {
       return [
@@ -694,7 +695,7 @@ export class CharacterHandler extends MCPToolHandler {
     if (
       !(await this.promptAccess(
         'risu-delete-character-lorebook',
-        `delete character (${char.name}) global lorebook (${entryName})`
+        `delete character (${char.name}) global lorebook (${name})`
       ))
     ) {
       return [
@@ -707,13 +708,13 @@ export class CharacterHandler extends MCPToolHandler {
 
     const entryIndex = char.globalLore.findIndex((entry) => {
       const displayName = entry.comment || 'Unnamed ' + pickHashRand(5515, entry.content)
-      return displayName === entryName
+      return displayName === name
     })
     if (entryIndex === -1) {
       return [
         {
           type: 'text',
-          text: `Error: Lorebook entry with name "${entryName}" not found.`,
+          text: `Error: Lorebook entry with name "${name}" not found.`,
         },
       ]
     }
@@ -723,7 +724,7 @@ export class CharacterHandler extends MCPToolHandler {
     return [
       {
         type: 'text',
-        text: `Successfully deleted lorebook entry "${entryName}" from character ${char.name || char.chaId}`,
+        text: `Successfully deleted lorebook entry "${name}" from character ${char.name || char.chaId}`,
       },
     ]
   }
@@ -768,10 +769,10 @@ export class CharacterHandler extends MCPToolHandler {
 
   async setCharacterRegexScripts(
     id: string,
-    scriptName: string,
-    comment?: string,
-    input?: string,
-    output?: string,
+    name: string,
+    newName?: string,
+    regexIn?: string,
+    regexOut?: string,
     type?: string,
     flag?: string,
     ableFlag?: boolean
@@ -797,7 +798,7 @@ export class CharacterHandler extends MCPToolHandler {
     if (
       !(await this.promptAccess(
         'risu-set-character-regex-scripts',
-        `add/modify character (${char.name}) regex script (${scriptName})`
+        `add/modify character (${char.name}) regex script (${name})`
       ))
     ) {
       return [
@@ -814,13 +815,13 @@ export class CharacterHandler extends MCPToolHandler {
 
     const scriptIndex = char.customscript.findIndex((script) => {
       const displayName = script.comment || 'Unnamed ' + pickHashRand(5515, script.in + script.out)
-      return displayName === scriptName
+      return displayName === name
     })
     if (scriptIndex === -1) {
       const newScript = {
-        comment: comment || scriptName,
-        in: input || '',
-        out: output || '',
+        comment: newName || name,
+        in: regexIn || '',
+        out: regexOut || '',
         type: type || 'editdisplay',
         flag: flag || '',
         ableFlag: ableFlag !== undefined ? ableFlag : true,
@@ -830,16 +831,16 @@ export class CharacterHandler extends MCPToolHandler {
       return [
         {
           type: 'text',
-          text: `Successfully added regex script "${comment || scriptName}" to character ${char.name || char.chaId}`,
+          text: `Successfully added regex script "${newName || name}" to character ${char.name || char.chaId}`,
         },
       ]
     }
 
     const script = char.customscript[scriptIndex]
 
-    if (comment !== undefined) script.comment = comment
-    if (input !== undefined) script.in = input
-    if (output !== undefined) script.out = output
+    if (newName !== undefined) script.comment = newName
+    if (regexIn !== undefined) script.in = regexIn
+    if (regexOut !== undefined) script.out = regexOut
     if (type !== undefined) script.type = type
     if (flag !== undefined) script.flag = flag
     if (ableFlag !== undefined) script.ableFlag = ableFlag
@@ -847,12 +848,12 @@ export class CharacterHandler extends MCPToolHandler {
     return [
       {
         type: 'text',
-        text: `Successfully updated regex script "${scriptName}" for character ${char.name || char.chaId}`,
+        text: `Successfully updated regex script "${name}" for character ${char.name || char.chaId}`,
       },
     ]
   }
 
-  async deleteCharacterRegexScripts(id: string, scriptName: string): Promise<RPCToolCallContent[]> {
+  async deleteCharacterRegexScripts(id: string, name: string): Promise<RPCToolCallContent[]> {
     const char: character | groupChat = getCharacter(id)
     if (!char) {
       return [
@@ -874,7 +875,7 @@ export class CharacterHandler extends MCPToolHandler {
     if (
       !(await this.promptAccess(
         'risu-delete-character-regex-scripts',
-        `delete character (${char.name}) regex script (${scriptName})`
+        `delete character (${char.name}) regex script (${name})`
       ))
     ) {
       return [
@@ -891,13 +892,13 @@ export class CharacterHandler extends MCPToolHandler {
 
     const scriptIndex = char.customscript.findIndex((script) => {
       const displayName = script.comment || 'Unnamed ' + pickHashRand(5515, script.in + script.out)
-      return displayName === scriptName
+      return displayName === name
     })
     if (scriptIndex === -1) {
       return [
         {
           type: 'text',
-          text: `Error: Regex script with name "${scriptName}" not found.`,
+          text: `Error: Regex script with name "${name}" not found.`,
         },
       ]
     }
@@ -907,7 +908,7 @@ export class CharacterHandler extends MCPToolHandler {
     return [
       {
         type: 'text',
-        text: `Successfully deleted regex script "${scriptName}" from character ${char.name || char.chaId}`,
+        text: `Successfully deleted regex script "${name}" from character ${char.name || char.chaId}`,
       },
     ]
   }

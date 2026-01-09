@@ -391,9 +391,6 @@
         {:else}
             <span class="text-xs">{statusMessage}</span>
             <div class="flex items-center ml-2 gap-2">
-                {@render copyButton()}
-                {@render editButton()}
-                {@render removeButton()}
                 {@render translationButton()}
                 {#if window.innerWidth >= 640}
                     {@render majorIconButtonsBody(false)}
@@ -421,31 +418,6 @@
 
 
 {#snippet majorIconButtonsBody(showNames:boolean)}
-{#if idx > -1}
-    {#if DBState.db.characters[selIdState.selId].type !== 'group' && DBState.db.characters[selIdState.selId].ttsMode !== 'none' && (DBState.db.characters[selIdState.selId].ttsMode)}
-        <button class="flex items-center hover:text-blue-500 transition-colors button-icon-tts" onclick={()=>{
-            return sayTTS(null, message)
-        }}>
-            <Volume2Icon size={20}/>
-            {#if showNames}
-                <span class="ml-1">TTS</span>
-            {/if}
-        </button>
-    {/if}
-{/if}
-{/snippet}
-
-{#snippet translationButton()}
-    {#if DBState.db.translator !== '' && !blankMessage}
-        <button class={"flex items-center cursor-pointer hover:text-blue-500 transition-colors button-icon-translate " + (translated ? 'text-blue-400':'')} class:translating={translating} onclick={async () => {
-            translated = !translated
-        }}>
-            <LanguagesIcon />
-        </button>
-    {/if}
-{/snippet}
-
-{#snippet copyButton()}
     {#if DBState.db.useChatCopy && !blankMessage}
     <button class="flex items-center hover:text-blue-500 transition-colors button-icon-copy" onclick={async ()=>{
         if(window.navigator.clipboard.write){
@@ -673,10 +645,41 @@
         <CopyIcon size={20}/>
     </button>
 {/if}
+{#if idx > -1}
+    {#if DBState.db.characters[selIdState.selId].type !== 'group' && DBState.db.characters[selIdState.selId].ttsMode !== 'none' && (DBState.db.characters[selIdState.selId].ttsMode)}
+        <button class="flex items-center hover:text-blue-500 transition-colors button-icon-tts" onclick={()=>{
+            return sayTTS(null, message)
+        }}>
+            <Volume2Icon size={20}/>
+            {#if showNames}
+                <span class="ml-1">TTS</span>
+            {/if}
+        </button>
+    {/if}
+    {#if !$ConnectionOpenStore}
+        <button class="flex items-center hover:text-blue-500 transition-colors button-icon-remove" onclick={(e) => rm(e, false)} use:longpress={(e) => rm(e, true)}>
+            <TrashIcon size={20}/>
+
+            {#if showNames}
+                <span class="ml-1">{language.remove}</span>
+            {/if}
+        </button>
+    {/if}
+{/if}
 {/snippet}
 
-{#snippet editButton()}
-    {#if idx > -1 && !$ConnectionOpenStore}
+{#snippet translationButton(showNames = false)}
+    {#if DBState.db.translator !== '' && !blankMessage}
+        <button class={"flex items-center cursor-pointer hover:text-blue-500 transition-colors button-icon-translate " + (translated ? 'text-blue-400':'')} class:translating={translating} onclick={async () => {
+            translated = !translated
+        }}>
+            <LanguagesIcon />
+            {#if showNames}
+                <span class="ml-1">{language.translate}</span>
+            {/if}
+        </button>
+    {/if}
+    {#if idx > -1}
         <button class={"flex items-center hover:text-blue-500 transition-colors button-icon-edit "+(editMode?'text-blue-400':'')} onclick={() => {
             if(!editMode){
                 editMode = true
@@ -687,14 +690,10 @@
             }
         }}>
             <PencilIcon size={20}/>
-        </button>
-    {/if}
-{/snippet}
 
-{#snippet removeButton()}
-    {#if idx > -1 && !$ConnectionOpenStore}
-        <button class="flex items-center hover:text-blue-500 transition-colors button-icon-remove" onclick={(e) => rm(e, false)} use:longpress={(e) => rm(e, true)}>
-            <TrashIcon size={20}/>
+            {#if showNames}
+                <span class="ml-1">{language.edit}</span>
+            {/if}
         </button>
     {/if}
 {/snippet}
