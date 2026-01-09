@@ -16,7 +16,7 @@ import type { Database } from './types/database';
 import type { AINsettings, OobaSettings } from './types/settings';
 
 //APP_VERSION_POINT is to locate the app version in the database file for version bumping
-export let appVer = "2026.1.80" //<APP_VERSION_POINT>
+export let appVer = "2026.1.90" //<APP_VERSION_POINT>
 export let webAppSubVer = ''
 
 
