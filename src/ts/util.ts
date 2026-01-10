@@ -157,37 +157,39 @@ export function bufferToText(data: Uint8Array){
 
 /**
  * Encodes a multilingual string object into a formatted string.
+ *
+ * The "xx" key is treated specially: it represents untagged text and is placed
+ * at the beginning without a language header. Other keys become "# `langCode`" sections.
+ *
  * @param data - Object with language codes as keys and translations as values.
  * @returns The encoded multilingual string.
  */
-export function encodeMultilangString(data:{[code:string]:string}){
-    let result = ''
-    if(data.xx){
-        result = data.xx
-    }
-    for(const key in data){
-        result = `${result}\n# \`${key}\`\n${data[key]}`
+export function encodeMultilangString(data: Record<string, string>): string {
+    let result = data.xx ?? ''
+    for (const key in data) {
+        if (key === 'xx') continue
+        result += `\n# \`${key}\`\n${data[key]}`
     }
     return result
 }
 
 /**
  * Parses a formatted multilingual string into a language code object.
+ *
+ * Input format: Each language section starts with "# `langCode`" header followed by content.
+ * Output format: Object with language codes as keys (e.g., "en", "ko") and their content as values.
+ * The "xx" key contains any text that doesn't belong to a language section.
+ *
  * @param data - The encoded multilingual string.
  * @returns Object with language codes as keys and translations as values.
  */
-export function parseMultilangString(data:string){
-    const result:{[code:string]:string} = {}
+export function parseMultilangString(data: string): Record<string, string> {
     const regex = /# `(.+?)`\n([\s\S]+?)(?=\n# `|$)/g
-    let m:RegExpExecArray
-    while ((m = regex.exec(data)) !== null) {
-        if (m.index === regex.lastIndex) {
-            regex.lastIndex++;
-        }
-        result[m[1]] = m[2]
+    const matches = [...data.matchAll(regex)]
+    return {
+        ...Object.fromEntries(matches.map(m => [m[1], m[2]])),
+        xx: data.replace(regex, '')
     }
-    result.xx = data.replace(regex, '')
-    return result
 }
 
 /**
