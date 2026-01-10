@@ -144,7 +144,7 @@ export function getLanguageCodes(uiLanguage: string) {
             ], {
                 type: 'language',
                 fallback: 'none'
-            }).of(v.code)
+            }).of(v.code) ?? ''
         };
     }).filter((a) => {
         return a.name;
