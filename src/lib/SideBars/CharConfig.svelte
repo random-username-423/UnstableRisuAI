@@ -1,9 +1,23 @@
+<!--
+    CharConfig.svelte - Character/Group Settings Sidebar
+
+    Menu Structure ($CharConfigSubMenu):
+    - 0: Basic Info (name, description, first message, author note)
+    - 1: Display (icon, viewscreen, additional assets)
+    - 2: Advanced Settings (bias, example message, system prompt, etc.)
+    - 3: Lorebook
+    - 4: Scripts (Regex, Trigger) - character only
+    - 5: TTS Settings - character only
+    - 6: Share/Export - character only
+-->
 <script lang="ts">
+    // ===== Imports =====
     import { language } from "../../lang";
     import { tokenizeAccurate } from "../../ts/tokenizer";
     import { saveImage as saveAsset } from "../../ts/storage/database.svelte";
     import type { character, groupChat } from "../../ts/storage/types/character";
     import { DBState } from 'src/ts/stores.svelte';
+    import { untrack } from 'svelte';
     import { CharConfigSubMenu, layoutState, realmState, selectedCharID, hypaV3State } from "../../ts/stores.svelte";
     import { PlusIcon, SmileIcon, TrashIcon, UserIcon, ActivityIcon, BookIcon, User, Braces, Volume2Icon, DownloadIcon, HardDriveUploadIcon, Share2Icon, ImageIcon, ImageOffIcon, ArrowUp, ArrowDown } from '@lucide/svelte'
     import Check from "../UI/GUI/CheckInput.svelte";
@@ -28,7 +42,7 @@
     import RegexList from "./Scripts/RegexList.svelte";
     import TriggerList from "./Scripts/TriggerList.svelte";
     import CheckInput from "../UI/GUI/CheckInput.svelte";
-    import { updateInlayScreen } from "src/ts/process/inlayScreen";
+    import { getDefaultNewGenData } from "src/ts/process/inlayScreen";
     import { registerOnnxModel } from "src/ts/process/transformers";
     import MultiLangInput from "../UI/GUI/MultiLangInput.svelte";
     import { applyModule } from "src/ts/process/modules";
@@ -36,10 +50,13 @@
     import SliderInput from "../UI/GUI/SliderInput.svelte";
     import Toggles from "./Toggles.svelte";
 
-    let iconRemoveMode = $state(false)
-    let viewSubMenu = $state(0)
-    let emos:[string, string][] = $state([])
-    let iconButtonSize = window.innerWidth > 360 ? 24 as const : 20 as const
+    // ===== Local State =====
+    let iconRemoveMode = $state(false)       // Icon delete mode toggle
+    let viewSubMenu = $state(0)              // Display tab submenu (0: icon, 1: viewscreen, 2: assets)
+    let emos:[string, string][] = $state([]) // Emotion images list [name, path]
+    let iconButtonSize = window.innerWidth > 360 ? 24 as const : 20 as const // Responsive icon size
+
+    // Token count display (for description, first message, local note)
     let tokens = $state({
         desc: 0,
         firstMsg: 0,
@@ -47,6 +64,7 @@
         charaNote: 0
     })
 
+    // Cache to prevent unnecessary token recalculation (compare with previous values)
     let lasttokens = {
         desc: '',
         firstMsg: '',
@@ -54,56 +72,101 @@
         charaNote: ''
     }
 
-    async function loadTokenize(chara){
-        const cha = chara
-        if(cha.type !== 'group'){
-            if(lasttokens.desc !== cha.desc){
-                if(cha.desc){
-                    lasttokens.desc = cha.desc
-                    tokens.desc = await tokenizeAccurate(cha.desc)
-                }
-            }
-            if(lasttokens.firstMsg !==chara.firstMessage){
-                lasttokens.firstMsg = chara.firstMessage
-                tokens.firstMsg = await tokenizeAccurate(chara.firstMessage)
-            }
+    /**
+     * Calculate token count for character fields.
+     * Compares with lasttokens to only recalculate when changed (performance optimization).
+     */
+    async function loadTokenize(
+        desc: string | null,
+        firstMsg: string | null,
+        localNote: string
+    ) {
+        if (desc !== null && lasttokens.desc !== desc) {
+            lasttokens.desc = desc
+            tokens.desc = await tokenizeAccurate(desc)
         }
-        if(lasttokens.localNote !== DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].note){
-            lasttokens.localNote = DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].note
-            tokens.localNote = await tokenizeAccurate(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].note)
-        
+        if (firstMsg !== null && lasttokens.firstMsg !== firstMsg) {
+            lasttokens.firstMsg = firstMsg
+            tokens.firstMsg = await tokenizeAccurate(firstMsg)
         }
-
+        if (lasttokens.localNote !== localNote) {
+            lasttokens.localNote = localNote
+            tokens.localNote = await tokenizeAccurate(localNote)
+        }
     }
 
-
+    // Additional assets preview (extensions and file paths for rendering)
     let assetFileExtensions:string[] = $state([])
     let assetFilePath:string[] = $state([])
+
+    // Character license (restricts editing if 'private')
     let licensed = $state((DBState.db.characters[$selectedCharID].type === 'character') ? (DBState.db.characters[$selectedCharID] as character).license : '')
 
+    // ===== $effect.pre: Reactive data sync =====
+
+    /**
+     * Sync emotion images list.
+     * Triggers: $selectedCharID change, emotionImages change
+     */
     $effect.pre(() => {
         emos = DBState.db.characters[$selectedCharID].emotionImages
-        loadTokenize(DBState.db.characters[$selectedCharID])
-
-        if(DBState.db.characters[$selectedCharID].type ==='character' && DBState.db.useAdditionalAssetsPreview){
-            if((DBState.db.characters[$selectedCharID] as character).additionalAssets){
-                for(let i = 0; i < (DBState.db.characters[$selectedCharID] as character).additionalAssets.length; i++){
-                    if((DBState.db.characters[$selectedCharID] as character).additionalAssets[i].length > 2 && (DBState.db.characters[$selectedCharID] as character).additionalAssets[i][2]) {
-                        assetFileExtensions[i] = (DBState.db.characters[$selectedCharID] as character).additionalAssets[i][2]
-                    } else 
-                        assetFileExtensions[i] = (DBState.db.characters[$selectedCharID] as character).additionalAssets[i][1].split('.').pop()
-                    getFileSrc((DBState.db.characters[$selectedCharID] as character).additionalAssets[i][1]).then((filePath) => {
-                        assetFilePath[i] = filePath
-                    })
-                }
-            }
-        }
-        
     });
 
+    /**
+     * Calculate token counts for character fields.
+     * Dependencies (tracked): $selectedCharID, desc, firstMessage, note
+     * Logic (untracked): loadTokenize call with lasttokens comparison
+     */
+    $effect.pre(() => {
+        // ===== Dependencies (tracked) =====
+        const chara = DBState.db.characters[$selectedCharID]
+        const desc = chara.type !== 'group' ? (chara as character).desc : null
+        const firstMsg = chara.type !== 'group' ? chara.firstMessage : null
+        const localNote = DBState.db.characters[$selectedCharID]
+            .chats[DBState.db.characters[$selectedCharID].chatPage].note
+
+        // ===== Async work (untracked) =====
+        untrack(() => {
+            loadTokenize(desc, firstMsg, localNote)
+        })
+    });
+
+    /**
+     * Load additional assets preview (extensions and file paths).
+     * Triggers: $selectedCharID change, additionalAssets change, useAdditionalAssetsPreview change
+     */
+    $effect.pre(() => {
+        if (DBState.db.characters[$selectedCharID].type !== 'character') return
+        if (!DBState.db.useAdditionalAssetsPreview) return
+
+        const additionalAssets = (DBState.db.characters[$selectedCharID] as character).additionalAssets
+        if (!additionalAssets) return
+
+        for (let i = 0; i < additionalAssets.length; i++) {
+            // Extract extension: use [2] if exists, otherwise extract from filename
+            if (additionalAssets[i].length > 2 && additionalAssets[i][2]) {
+                assetFileExtensions[i] = additionalAssets[i][2]
+            } else {
+                assetFileExtensions[i] = additionalAssets[i][1].split('.').pop()!
+            }
+            // Load file path asynchronously
+            getFileSrc(additionalAssets[i][1]).then((filePath) => {
+                if (!filePath) throw new Error(`Asset not found: name=${additionalAssets[i][0]}, path=${additionalAssets[i][1]}, ext=${additionalAssets[i][2]}`)
+                assetFilePath[i] = filePath
+            })
+        }
+    });
+
+    /**
+     * Sync license state.
+     */
     $effect.pre(() => {
         licensed = (DBState.db.characters[$selectedCharID].type === 'character') ? (DBState.db.characters[$selectedCharID] as character).license : ''
     });
+
+    /**
+     * Initialize NovelAI TTS config with defaults if not set.
+     */
     $effect.pre(() => {
         if (DBState.db.characters[$selectedCharID].ttsMode === 'novelai' && (DBState.db.characters[$selectedCharID] as character).naittsConfig === undefined) {
             (DBState.db.characters[$selectedCharID] as character).naittsConfig = {
@@ -113,6 +176,10 @@
             };
         }
     });
+
+    /**
+     * Initialize GPT-SoVITS TTS config with defaults if not set.
+     */
     $effect.pre(() => {
         if (DBState.db.characters[$selectedCharID].ttsMode === 'gptsovits' && (DBState.db.characters[$selectedCharID] as character).gptSoVitsConfig === undefined) {
             (DBState.db.characters[$selectedCharID] as character).gptSoVitsConfig = {
@@ -122,7 +189,7 @@
                 use_long_audio: false,
                 ref_audio_data: {
                     fileName: '',
-                    assetId: ''  
+                    assetId: ''
                 },
                 volume: 1.0,
                 text_lang: 'auto',
@@ -138,12 +205,16 @@
         }
     });
 
+    // Fish Speech model list
     let fishSpeechModels:{
         _id:string,
         title:string,
         description:string
     }[] = $state([])
 
+    /**
+     * Initialize Fish Speech TTS config with defaults if not set.
+     */
     $effect.pre(() => {
         if (DBState.db.characters[$selectedCharID].ttsMode === 'fishspeech' && (DBState.db.characters[$selectedCharID] as character).fishSpeechConfig === undefined) {
             (DBState.db.characters[$selectedCharID] as character).fishSpeechConfig = {
@@ -158,6 +229,9 @@
         }
     });
 
+    /**
+     * Redirect to default menu when group selects character-only menus (Scripts, TTS).
+     */
     $effect.pre(() => {
         if(DBState.db.characters[$selectedCharID].type === 'group' && ($CharConfigSubMenu === 4 || $CharConfigSubMenu === 5)){
             $CharConfigSubMenu = 0
@@ -165,6 +239,11 @@
 
     });
 
+    // ===== Functions =====
+
+    /**
+     * Fetch model list from Fish Speech API.
+     */
     async function getFishSpeechModels() {
         try {
             const res = await fetch(`https://api.fish.audio/model?self=true`, {
@@ -177,7 +256,7 @@
             console.log(DBState.db.characters[$selectedCharID])
             
             if (Array.isArray(data.items)) {
-                fishSpeechModels = data.items.map((item) => ({
+                fishSpeechModels = data.items.map((item: { _id?: string, title?: string, description?: string }) => ({
                     _id: item._id || '',
                     title: item.title || '',
                     description: item.description || ''
@@ -192,6 +271,9 @@
         }
     }
 
+    /**
+     * Move alternate greeting up in the list (swap with previous).
+     */
     function moveAlternateGreetingUp(index: number) {
         if(index === 0) return
         if(DBState.db.characters[$selectedCharID].type === 'character'){
@@ -203,15 +285,17 @@
         }
     }
 
+    /**
+     * Move alternate greeting down in the list (swap with next).
+     */
     function moveAlternateGreetingDown(index: number) {
+        if(DBState.db.characters[$selectedCharID].type !== 'character') return
         if(index === DBState.db.characters[$selectedCharID].alternateGreetings.length - 1) return
-        if(DBState.db.characters[$selectedCharID].type === 'character'){
-            let alternateGreetings = DBState.db.characters[$selectedCharID].alternateGreetings
-            let temp = alternateGreetings[index]
-            alternateGreetings[index] = alternateGreetings[index + 1]
-            alternateGreetings[index + 1] = temp
-            DBState.db.characters[$selectedCharID].alternateGreetings = alternateGreetings
-        }
+        let alternateGreetings = DBState.db.characters[$selectedCharID].alternateGreetings
+        let temp = alternateGreetings[index]
+        alternateGreetings[index] = alternateGreetings[index + 1]
+        alternateGreetings[index + 1] = temp
+        DBState.db.characters[$selectedCharID].alternateGreetings = alternateGreetings
     }
 
 </script>
@@ -268,7 +352,7 @@
                 <div class="text-center">{language.talkness}</div>
                 <div class="text-center">{language.active}</div>
                 {#each (DBState.db.characters[$selectedCharID] as groupChat).characters as char, i}
-                    {#await getCharImage(findCharacterbyId(char).image, 'css')}
+                    {#await getCharImage(findCharacterbyId(char).image ?? "", 'css')}
                         <BarIcon onClick={() => {
                             rmCharFromGroup(i)
                         }}>
@@ -358,7 +442,7 @@
     {#if viewSubMenu === 0}
         {#if DBState.db.characters[$selectedCharID].type === 'group'}
             <button onclick={async () => {await selectCharImg($selectedCharID)}}>
-                {#await getCharImage(DBState.db.characters[$selectedCharID].image, 'css')}
+                {#await getCharImage(DBState.db.characters[$selectedCharID].image ?? "", 'css')}
                     <div class="rounded-md h-24 w-24 shadow-lg bg-textcolor2 cursor-pointer ring-3"></div>
                 {:then im}
                     <div class="rounded-md h-24 w-24 shadow-lg bg-textcolor2 cursor-pointer ring-3" style={im}></div>     
@@ -375,7 +459,7 @@
                             iconRemoveMode
                         ){
                             DBState.db.characters[$selectedCharID].image = ''
-                            if((DBState.db.characters[$selectedCharID] as character).ccAssets && (DBState.db.characters[$selectedCharID] as character).ccAssets.length > 0){
+                            if((DBState.db.characters[$selectedCharID]! as character).ccAssets?.length > 0){
                                 changeCharImage($selectedCharID, 0)
                             }
                             iconRemoveMode = false
@@ -455,7 +539,8 @@
         {#if DBState.db.characters[$selectedCharID].type !== 'group'}
             <SelectInput className="mb-2" bind:value={DBState.db.characters[$selectedCharID].viewScreen} onchange={() => {
                 if(DBState.db.characters[$selectedCharID].type === 'character'){
-                    DBState.db.characters[$selectedCharID] = updateInlayScreen((DBState.db.characters[$selectedCharID] as character))
+                    const char = DBState.db.characters[$selectedCharID] as character
+                    char.newGenData = getDefaultNewGenData(char.viewScreen, char.inlayViewScreen ?? false)
                 }
             }}>
                 <OptionInput value="none">{language.none}</OptionInput>
@@ -534,13 +619,13 @@
 
             <CheckInput bind:check={(DBState.db.characters[$selectedCharID] as character).inlayViewScreen} name={language.inlayViewScreen} onChange={() => {
                 if(DBState.db.characters[$selectedCharID].type === 'character'){
-                    if((DBState.db.characters[$selectedCharID] as character).inlayViewScreen && (DBState.db.characters[$selectedCharID] as character).additionalAssets === undefined){
-                        (DBState.db.characters[$selectedCharID] as character).additionalAssets = []
-                    }else if(!(DBState.db.characters[$selectedCharID] as character).inlayViewScreen && (DBState.db.characters[$selectedCharID] as character).additionalAssets.length === 0){
-                        (DBState.db.characters[$selectedCharID] as character).additionalAssets = undefined
+                    const char = DBState.db.characters[$selectedCharID] as character
+                    if(char.inlayViewScreen && char.additionalAssets === undefined){
+                        char.additionalAssets = []
+                    }else if(!char.inlayViewScreen && char.additionalAssets?.length === 0){
+                        char.additionalAssets = undefined
                     }
-                    
-                    DBState.db.characters[$selectedCharID] = updateInlayScreen((DBState.db.characters[$selectedCharID] as character))
+                    char.newGenData = getDefaultNewGenData(char.viewScreen, char.inlayViewScreen ?? false)
                 }
             }}/>
         {/if}
@@ -556,8 +641,9 @@
             <TextAreaInput highlight bind:value={(DBState.db.characters[$selectedCharID] as character).newGenData.instructions} />
 
             <CheckInput bind:check={(DBState.db.characters[$selectedCharID] as character).inlayViewScreen} name={language.inlayViewScreen} onChange={() => {
-                if((DBState.db.characters[$selectedCharID] as character).type === 'character'){
-                    (DBState.db.characters[$selectedCharID] as character) = updateInlayScreen((DBState.db.characters[$selectedCharID] as character))
+                if(DBState.db.characters[$selectedCharID].type === 'character'){
+                    const char = DBState.db.characters[$selectedCharID] as character
+                    char.newGenData = getDefaultNewGenData(char.viewScreen, char.inlayViewScreen ?? false)
                 }
             }}/>
         {/if}

@@ -487,7 +487,7 @@
             }}
           >
           {#if char.type === 'normal'}
-            <SidebarAvatar src={char.img ? getCharImage(char.img, "plain") : "/none.webp"} size="56" rounded={IconRounded} name={char.name} />
+            <SidebarAvatar src={getCharImage(char.img, "plain")} size="56" rounded={IconRounded} name={char.name} />
           {:else if char.type === "folder"}
             {#key char.color}
             {#key char.name}
@@ -636,7 +636,7 @@
                     }
                   }}
                 >
-                <SidebarAvatar src={char2.img ? getCharImage(char2.img, "plain") : "/none.webp"} size="56" rounded={IconRounded} name={char2.name}/>
+                <SidebarAvatar src={getCharImage(char2.img, "plain")} size="56" rounded={IconRounded} name={char2.name}/>
               </div>
             </div>
             <div class="h-4 min-h-4 w-14 relative z-20" role="listitem" ondragover={(e) => {

@@ -1,5 +1,5 @@
 import { writeInlayImage } from "./files/inlays";
-import type { character } from '../storage/types/character';
+import type { character, NewGenData } from '../storage/types/character';
 import { generateAIImage } from "./stableDiff";
 
 const imggenRegex = [/<ImgGen="(.+?)">/gi, /{{ImgGen="(.+?)"}}/gi] as const
@@ -49,49 +49,47 @@ export function runInlayScreen(char:character, data:string):{text:string, promis
     return {text: data}
 }
 
-export function updateInlayScreen(char:character):character {
-    switch(char.viewScreen){
+export function getDefaultNewGenData(
+    viewScreen: 'emotion' | 'none' | 'imggen' | 'vn',
+    inlayViewScreen: boolean
+): NewGenData {
+    switch(viewScreen){
         case 'emotion':
-            if(char.inlayViewScreen){
-                char.newGenData = {
+            if(inlayViewScreen){
+                return {
                     prompt: '',
                     negative: '',
                     instructions: '',
                     emotionInstructions: `You must always output the character's emotional image as a command at the end of a conversation. The command must be selected from a given list, and it's better to have variety than to repeat images used in previous chats. Use one image, depending on the character's emotion. See the list below. Form: <Emotion="<image command>"> Example: <Emotion="Agree"> List of commands: {{slot}}`,
                 }
-                return char
             }
-            char.newGenData = {
+            return {
                 prompt: '',
                 negative: '',
                 instructions: '',
                 emotionInstructions: `You must always output the character's emotional image as a command. The command must be selected from a given list, only output the command, depending on the character's emotion. List of commands: {{slot}}`
             }
-            return char
         case 'imggen':
-            if(char.inlayViewScreen){
-                char.newGenData = {
+            if(inlayViewScreen){
+                return {
                     prompt: 'best quality, {{slot}}',
                     negative: 'worse quality',
                     instructions: 'You must always output the character\'s image as a keyword-formatted prompts that can be used in stable diffusion  at the end of a conversation. Use one image, depending on character, place, situation, etc. keyword should be long enough. Form: <ImgGen="<keyword-formatted prompt>">',
                     emotionInstructions: ''
                 }
-                return char
             }
-            char.newGenData = {
+            return {
                 prompt: 'best quality, {{slot}}',
                 negative: 'worse quality',
                 instructions: 'You must always output the character\'s image as a keyword-formatted prompts that can be used in stable diffusion. only output the that prompt, depending on character, place, situation, etc. keyword should be long enough.',
                 emotionInstructions: ''
             }
-            return char
         default:
-            char.newGenData = {
+            return {
                 prompt: '',
                 negative: '',
                 instructions: '',
                 emotionInstructions: ''
             }
-            return char
     }
 }
