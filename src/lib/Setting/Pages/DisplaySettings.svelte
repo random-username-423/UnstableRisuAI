@@ -54,11 +54,11 @@
     <SelectInput className="mt-2" bind:value={DBState.db.theme}>
         <OptionInput value="" >Standard Risu</OptionInput>
         <OptionInput value="waifu" >Waifulike</OptionInput>
-        <!-- <OptionInput value="waifuMobile" >WaifuCut</OptionInput> -->
+        <OptionInput value="waifuMobile" >WaifuCut</OptionInput>
         <OptionInput value="mobilechat" >Mobile Chat</OptionInput>
         <OptionInput value="cardboard" >CardBoard</OptionInput>
-
         <OptionInput value="customHTML" >Custom HTML</OptionInput>
+        <OptionInput value="customLayout" >Custom Layout</OptionInput>
     </SelectInput>
 
     {#if DBState.db.theme === "custom"}
@@ -73,6 +73,27 @@
         <TextAreaInput bind:value={DBState.db.guiHTML} />
     {/if}
 
+    {#if DBState.db.theme === 'customLayout'}
+        <span class="text-textcolor mt-4">Layout HTML <Help key="layoutHTML"/></span>
+        <TextAreaInput bind:value={DBState.db.layoutHTML} placeholder={`<style>
+  .layout { display: flex; height: 100%; }
+  .char-area { width: 40%; }
+  .chat-area { width: 60%; }
+</style>
+<div class="layout">
+  <RISUSIDEBAR />
+  <RISUBACKGROUND />
+  <div class="char-area">
+    <RISUCHARIMAGE />
+  </div>
+  <div class="chat-area">
+    <RISUCHATSCREEN />
+  </div>
+</div>`} />
+        <div class="text-textcolor2 text-sm mt-2">
+            Available tags: &lt;RISUCHATSCREEN&gt;, &lt;RISUCHARIMAGE&gt;, &lt;RISUBACKGROUND&gt;, &lt;RISUSIDEBAR&gt;, &lt;RISURESIZEBOX&gt;, &lt;STYLE&gt;
+        </div>
+    {/if}
 
     {#if DBState.db.theme === "waifu"}
         <span class="text-textcolor mt-4">{language.waifuWidth}</span>

@@ -330,6 +330,7 @@ interface UISettings {
     useLegacyGUI: boolean
     customGUI: string
     guiHTML: string
+    layoutHTML: string
     customCSS: string
     settingsCloseButtonSize: number
     hideAllImages?: boolean
