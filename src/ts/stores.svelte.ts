@@ -131,8 +131,16 @@ export function createSimpleCharacter(char: character | groupChat) {
 updateSize()
 window.addEventListener("resize", updateSize);
 export const DBState = $state({
-    db: {} as any as Database
+    db: {} as any as Database,
+    get currentChar() {
+        return this.db.characters?.[selIdState.selId]
+    },
+
+    get currentChat() {
+        return DBState.currentChar.chats[DBState.currentChar.chatPage]
+    }
 });
+// 사용: DBState.currentChar
 
 export const LoadingStatusState = $state({
     text: '',
@@ -184,7 +192,7 @@ $effect.root(() => {
 
         if (DBState?.db?.characters?.[selIdState.selId]) {
             if (DBState.db.hypaV3 && DBState.db.hypaV3Presets?.[DBState.db.hypaV3PresetId]?.settings?.alwaysToggleOn) {
-                DBState.db.characters[selIdState.selId].supaMemory = true;
+                DBState.currentChar.supaMemory = true;
             }
         }
     })
