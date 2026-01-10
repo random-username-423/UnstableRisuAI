@@ -230,7 +230,13 @@ export async function sayTTS(character:character,text:string) {
                 }
             }
             case 'vits':{
-                await runVITS(text, character.vits)
+                const audioContext = new AudioContext();
+                const audioBuffer = await runVITS(text, character.vits)
+                const decodedData = await audioContext.decodeAudioData(audioBuffer)
+                const sourceNode = audioContext.createBufferSource();
+                sourceNode.buffer = decodedData;
+                sourceNode.connect(audioContext.destination);
+                sourceNode.start();
                 break;
             }
             case 'gptsovits':{

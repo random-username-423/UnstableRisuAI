@@ -4,14 +4,6 @@ import { loadAsset, saveAsset } from 'src/ts/globalApi.svelte'
 import { asBuffer } from 'src/ts/util'
 import { v4 } from 'uuid'
 
-let audioContext: AudioContext | null = null
-function getAudioContext(): AudioContext {
-    if (!audioContext) {
-        audioContext = new AudioContext()
-    }
-    return audioContext
-}
-
 let initPromise: Promise<void> | null = null
 const tfMap: { [key: string]: string } = {}
 
@@ -170,7 +162,7 @@ export interface OnnxModelFiles {
     name?: string
 }
 
-export const runVITS = async (text: string, modelData: string | OnnxModelFiles = 'Xenova/mms-tts-eng') => {
+export const runVITS = async (text: string, modelData: string | OnnxModelFiles = 'Xenova/mms-tts-eng'): Promise<ArrayBuffer> => {
     await initTransformers()
     const { WaveFile } = await import('wavefile')
     const { pipeline, env } = await import('@huggingface/transformers')
@@ -200,15 +192,7 @@ export const runVITS = async (text: string, modelData: string | OnnxModelFiles =
     const wav = new WaveFile()
     wav.fromScratch(1, out.sampling_rate, '32f', out.audio)
 
-    const ctx = getAudioContext()
-    if (ctx.state === 'suspended') {
-        await ctx.resume()
-    }
-    const decodedData = await ctx.decodeAudioData(asBuffer(wav.toBuffer().buffer))
-    const sourceNode = ctx.createBufferSource()
-    sourceNode.buffer = decodedData
-    sourceNode.connect(ctx.destination)
-    sourceNode.start()
+    return wav.toBuffer().buffer as ArrayBuffer
 }
 
 export const registerOnnxModel = async (fileData: Uint8Array, fileName: string): Promise<OnnxModelFiles> => {
