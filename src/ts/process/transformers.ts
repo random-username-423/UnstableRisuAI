@@ -1,17 +1,30 @@
-import type { SummarizationOutput, TextToAudioPipeline, FeatureExtractionPipeline, TextGenerationConfig, TextGenerationOutput, ImageToTextOutput } from '@huggingface/transformers';
-import { unzip } from 'fflate';
-import { loadAsset, saveAsset } from 'src/ts/globalApi.svelte';
-import { openFilePicker, asBuffer  } from 'src/ts/util';
-import { v4 } from 'uuid';
-let tfCache: Cache = null
-let tfLoaded = false
-const tfMap: { [key: string]: string } = {}
-async function initTransformers() {
-    if (tfLoaded) {
-        return
+import type { PipelineType, SummarizationOutput, TextToAudioPipeline, FeatureExtractionPipeline, TextGenerationConfig, TextGenerationOutput, ImageToTextOutput, SummarizationPipeline, TextGenerationPipeline, ImageToTextPipeline } from '@huggingface/transformers'
+import { unzip, type Unzipped } from 'fflate'
+import { loadAsset, saveAsset } from 'src/ts/globalApi.svelte'
+import { asBuffer } from 'src/ts/util'
+import { v4 } from 'uuid'
+
+let audioContext: AudioContext | null = null
+function getAudioContext(): AudioContext {
+    if (!audioContext) {
+        audioContext = new AudioContext()
     }
-    const { env } = await import('@huggingface/transformers');
-    tfCache = await caches.open('tfCache')
+    return audioContext
+}
+
+let initPromise: Promise<void> | null = null
+const tfMap: { [key: string]: string } = {}
+
+function initTransformers(): Promise<void> {
+    if (initPromise === null) {
+        initPromise = doInitTransformers()
+    }
+    return initPromise
+}
+
+async function doInitTransformers(): Promise<void> {
+    const { env } = await import('@huggingface/transformers')
+    const tfCache = await caches.open('tfCache')
     env.localModelPath = "https://sv.risuai.xyz/transformers/"
     env.useBrowserCache = false
     env.useFSCache = false
@@ -23,7 +36,7 @@ async function initTransformers() {
         },
         match: async (url: URL | string) => {
             if (typeof url === 'string') {
-                if (Object.keys(tfMap).includes(url)) {
+                if (url in tfMap) {
                     const assetId = tfMap[url]
                     return new Response(asBuffer(await loadAsset(assetId)))
                 }
@@ -31,77 +44,125 @@ async function initTransformers() {
             return await tfCache.match(url)
         }
     }
-    tfLoaded = true
-    console.log('transformers loaded')
 }
 
+interface Disposable {
+    dispose?: () => Promise<void>
+}
+
+type DType = 'auto' | 'fp32' | 'fp16' | 'q8' | 'int8' | 'uint8' | 'q4' | 'bnb4' | 'q4f16'
+
+interface PipelineOptions {
+    device?: 'webgpu' | 'wasm'
+    dtype?: DType
+    [key: string]: unknown
+}
+
+class PipelineManager {
+    private pipelines = new Map<PipelineType, { instance: Disposable; cacheKey: string }>()
+
+    async get<T>(
+        task: PipelineType,
+        model: string,
+        options?: PipelineOptions
+    ): Promise<T> {
+        const cacheKey = this.buildCacheKey(model, options)
+        const existing = this.pipelines.get(task)
+
+        if (existing && existing.cacheKey === cacheKey) {
+            return existing.instance as T
+        }
+
+        if (existing) {
+            await existing.instance.dispose?.()
+        }
+
+        await initTransformers()
+        const { pipeline } = await import('@huggingface/transformers')
+        const instance = await pipeline(task, model, options)
+
+        this.pipelines.set(task, { instance, cacheKey })
+        return instance as T
+    }
+
+    async dispose(task: PipelineType): Promise<void> {
+        const entry = this.pipelines.get(task)
+        if (entry) {
+            await entry.instance.dispose?.()
+            this.pipelines.delete(task)
+        }
+    }
+
+    async disposeAll(): Promise<void> {
+        for (const [, entry] of this.pipelines) {
+            await entry.instance.dispose?.()
+        }
+        this.pipelines.clear()
+    }
+
+    private buildCacheKey(model: string, options?: PipelineOptions): string {
+        const keyParts = [model]
+        if (options?.device) keyParts.push(options.device)
+        if (options?.dtype) keyParts.push(options.dtype)
+        return keyParts.join(':')
+    }
+}
+
+const pipelineManager = new PipelineManager()
+
 export const runTransformers = async (baseText: string, model: string, config: TextGenerationConfig, device: 'webgpu' | 'wasm' = 'wasm') => {
-    await initTransformers()
-    const { pipeline } = await import('@huggingface/transformers');
-    const text = baseText
-    const generator = await pipeline('text-generation', model, {
-        device
-    });
-    const output = await generator(text, config) as TextGenerationOutput
-    const outputOne = output[0]
-    return outputOne
+    const generator = await pipelineManager.get<TextGenerationPipeline>(
+        'text-generation',
+        model,
+        { device }
+    )
+
+    const output = await generator(baseText, config) as TextGenerationOutput
+    return output[0]
 }
 
 export const runSummarizer = async (text: string) => {
-    await initTransformers()
-    const { pipeline } = await import('@huggingface/transformers');
-    const classifier = await pipeline("summarization", "Xenova/distilbart-cnn-6-6")
+    const classifier = await pipelineManager.get<SummarizationPipeline>(
+        'summarization',
+        'Xenova/distilbart-cnn-6-6'
+    )
+
     const v = await classifier(text) as SummarizationOutput
     return v[0].summary_text
 }
 
-let extractor: FeatureExtractionPipeline = null
-let lastEmbeddingModelQuery: string = ''
 type EmbeddingModel = 'Xenova/all-MiniLM-L6-v2' | 'nomic-ai/nomic-embed-text-v1.5'
 export const runEmbedding = async (texts: string[], model: EmbeddingModel = 'Xenova/all-MiniLM-L6-v2', device: 'webgpu' | 'wasm'): Promise<Float32Array[]> => {
-    await initTransformers()
-    console.log('running embedding')
-    const embeddingModelQuery = model + device
-    const { pipeline } = await import('@huggingface/transformers');
-    if (!extractor || embeddingModelQuery !== lastEmbeddingModelQuery) {
-        // Dispose old extractor
-        if (extractor) {
-            await extractor.dispose()
-        }
-        extractor = await pipeline<"feature-extraction">('feature-extraction', model, {
-            // Default dtype for webgpu is fp32, so we can use q8, which is the default dtype in wasm.
+    const extractor = await pipelineManager.get<FeatureExtractionPipeline>(
+        'feature-extraction',
+        model,
+        {
             dtype: "q8",
-            device: device,
-            progress_callback: (progress) => {
-                console.log(progress)
-            }
-        });
-        lastEmbeddingModelQuery = embeddingModelQuery
-        console.log('extractor loaded')
-    }
-    const result = await extractor(texts, { pooling: 'mean', normalize: true });
-    console.log(texts, result)
+            device
+        }
+    )
+
+    const result = await extractor(texts, { pooling: 'mean', normalize: true })
     const data = result.data as Float32Array
-    console.log(data)
     const lenPerText = data.length / texts.length
     const res: Float32Array[] = []
     for (let i = 0; i < texts.length; i++) {
         res.push(data.subarray(i * lenPerText, (i + 1) * lenPerText))
     }
-    console.log(res)
-    return res ?? [];
+    return res
 }
 
 export const runImageEmbedding = async (dataurl: string) => {
-    await initTransformers()
-    const { pipeline } = await import('@huggingface/transformers');
-    const captioner = await pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning');
-    const output = await captioner(dataurl)
-    return output as ImageToTextOutput
+    const captioner = await pipelineManager.get<ImageToTextPipeline>(
+        'image-to-text',
+        'Xenova/vit-gpt2-image-captioning'
+    )
+
+    return await captioner(dataurl) as ImageToTextOutput
 }
 
-let synthesizer: TextToAudioPipeline = null
-let lastSynth: string = null
+let synthesizer: TextToAudioPipeline | null = null
+let lastSynth: string | null = null
 
 export interface OnnxModelFiles {
     files: { [key: string]: string },
@@ -112,18 +173,18 @@ export interface OnnxModelFiles {
 export const runVITS = async (text: string, modelData: string | OnnxModelFiles = 'Xenova/mms-tts-eng') => {
     await initTransformers()
     const { WaveFile } = await import('wavefile')
-    const { pipeline, env } = await import('@huggingface/transformers');
-    if (modelData === null) {
-        return
-    }
+    const { pipeline, env } = await import('@huggingface/transformers')
+
     if (typeof modelData === 'string') {
         if ((!synthesizer) || (lastSynth !== modelData)) {
+            await synthesizer?.dispose()
             lastSynth = modelData
-            synthesizer = await pipeline<"text-to-speech">('text-to-speech', modelData);
+            synthesizer = await pipeline<"text-to-speech">('text-to-speech', modelData)
         }
     }
     else {
         if ((!synthesizer) || (lastSynth !== modelData.id)) {
+            await synthesizer?.dispose()
             const files = modelData.files
             const keys = Object.keys(files)
             for (const key of keys) {
@@ -132,32 +193,29 @@ export const runVITS = async (text: string, modelData: string | OnnxModelFiles =
                 tfMap[location.origin + fileURL] = files[key]
             }
             lastSynth = modelData.id
-            synthesizer = await pipeline<"text-to-speech">('text-to-speech', modelData.id);
+            synthesizer = await pipeline<"text-to-speech">('text-to-speech', modelData.id)
         }
     }
-    const out = await synthesizer(text, {});
-    const wav = new WaveFile();
-    wav.fromScratch(1, out.sampling_rate, '32f', out.audio);
-    const audioContext = new AudioContext();
-    audioContext.decodeAudioData(asBuffer(wav.toBuffer().buffer), (decodedData) => {
-        const sourceNode = audioContext.createBufferSource();
-        sourceNode.buffer = decodedData;
-        sourceNode.connect(audioContext.destination);
-        sourceNode.start();
-    });
+    const out = await synthesizer(text, {})
+    const wav = new WaveFile()
+    wav.fromScratch(1, out.sampling_rate, '32f', out.audio)
+
+    const ctx = getAudioContext()
+    if (ctx.state === 'suspended') {
+        await ctx.resume()
+    }
+    const decodedData = await ctx.decodeAudioData(asBuffer(wav.toBuffer().buffer))
+    const sourceNode = ctx.createBufferSource()
+    sourceNode.buffer = decodedData
+    sourceNode.connect(ctx.destination)
+    sourceNode.start()
 }
 
-export const registerOnnxModel = async (): Promise<OnnxModelFiles> => {
+export const registerOnnxModel = async (fileData: Uint8Array, fileName: string): Promise<OnnxModelFiles> => {
     const id = v4().replace(/-/g, '')
 
-    const modelFile = await openFilePicker(['zip'], { readContent: true })
-
-    if (!modelFile) {
-        return
-    }
-
-    const unziped = await new Promise((res, rej) => {
-        unzip(modelFile.data, {
+    const unzipped = await new Promise<Unzipped>((res, rej) => {
+        unzip(fileData, {
             filter: (file) => {
                 return file.name.endsWith('.onnx') || file.size < 10_000_000 || file.name.includes('.git')
             }
@@ -171,14 +229,12 @@ export const registerOnnxModel = async (): Promise<OnnxModelFiles> => {
         })
     })
 
-    console.log(unziped)
-
     const fileIdMapped: { [key: string]: string } = {}
 
-    const keys = Object.keys(unziped)
+    const keys = Object.keys(unzipped)
     for (let i = 0; i < keys.length; i++) {
         const key = keys[i]
-        const file = unziped[key]
+        const file = unzipped[key]
         const fid = await saveAsset(file)
         let url = key
         if (url.startsWith('/')) {
@@ -189,7 +245,7 @@ export const registerOnnxModel = async (): Promise<OnnxModelFiles> => {
 
     return {
         files: fileIdMapped,
-        name: modelFile.name,
+        name: fileName,
         id: id,
     }
 
