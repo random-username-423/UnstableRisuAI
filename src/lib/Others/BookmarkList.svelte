@@ -69,7 +69,7 @@
         if (expandAll) {
             expandAll = false;
             const allIds = bookmarkedMessages.map(m => m.chatId);
-            const newSet = new Set(allIds);
+            const newSet = new Set<string>(allIds);
             newSet.delete(chatId);
             expandedBookmarks = newSet;
         } else {

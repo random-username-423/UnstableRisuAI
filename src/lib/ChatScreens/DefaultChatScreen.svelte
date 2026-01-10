@@ -687,7 +687,6 @@
                             role: 'char',
                             data: ''
                         })
-                        DBState.currentChat = DBState.currentChat
                     }}
                          class="peer-focus:border-textcolor mr-2 flex border-y border-r border-darkborderc justify-center items-center text-gray-100 p-3 rounded-r-md hover:bg-blue-500 transition-colors"
                          style:height={inputHeight}
@@ -840,7 +839,6 @@
                                     chat.fmIndex += 1
                                 }
                             }
-                            DBState.currentChat = chat
                         }}
                         unReroll={() => {
                             const cha = DBState.currentChar
@@ -853,7 +851,6 @@
                                     chat.fmIndex -= 1
                                 }
                             }
-                            DBState.currentChat = chat
                         }}
                         isLastMemory={false}
                         currentPage={(DBState.currentChat.fmIndex ?? -1) + 2}
@@ -871,7 +868,6 @@
                             if(cha.type !== 'group'){
                                 cha.removedQuotes = true
                             }
-                            DBState.currentChar = cha
                         }} />
                     {/if}
                 {/if}

@@ -40,7 +40,6 @@
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import RegexList from "./Scripts/RegexList.svelte";
     import TriggerList from "./Scripts/TriggerList.svelte";
-    import CheckInput from "../UI/GUI/CheckInput.svelte";
     import { getDefaultNewGenData } from "src/ts/process/inlayScreen";
     import MultiLangInput from "../UI/GUI/MultiLangInput.svelte";
     import { applyModule } from "src/ts/process/modules";
@@ -174,36 +173,6 @@
     });
 
     // ===== Functions =====
-
-    /**
-     * Fetch model list from Fish Speech API.
-     */
-    async function getFishSpeechModels() {
-        try {
-            const res = await fetch(`https://api.fish.audio/model?self=true`, {
-                headers: {
-                    'Authorization': `Bearer ${DBState.db.fishSpeechKey}`
-                }
-            });
-            const data = await res.json();
-            console.log(data.items);
-            console.log(DBState.currentChar)
-            
-            if (Array.isArray(data.items)) {
-                fishSpeechModels = data.items.map((item: { _id?: string, title?: string, description?: string }) => ({
-                    _id: item._id || '',
-                    title: item.title || '',
-                    description: item.description || ''
-                }));
-            } else {
-                console.error('Expected an array of items, but received:', data.items);
-                fishSpeechModels = [];
-            }
-        } catch (error) {
-            console.error('Error fetching fish speech models:', error);
-            fishSpeechModels = [];
-        }
-    }
 
     /**
      * Move alternate greeting up in the list (swap with previous).

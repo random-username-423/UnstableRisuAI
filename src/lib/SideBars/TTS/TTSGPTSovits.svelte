@@ -8,6 +8,7 @@
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte"
     import TextInput from "src/lib/UI/GUI/TextInput.svelte"
     import { saveAsset } from "src/ts/globalApi.svelte"
+    import type { character } from "src/ts/storage/types/character"
     import { DBState } from "src/ts/stores.svelte"
     import { openFilePicker } from "src/ts/utils/util"
 
