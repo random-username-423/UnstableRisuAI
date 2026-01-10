@@ -128,7 +128,7 @@
     async function runWhisperMode() {
         outputText = 'Loading...\n\n'
 
-        const file = openFilePicker([
+        const file = await openFilePicker([
             'mp3', 'ogg', 'wav', 'flac',
             'mp4', 'webm', 'mkv', 'avi', 'mov'  
 
