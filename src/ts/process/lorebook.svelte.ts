@@ -4,7 +4,7 @@ import { type Message } from "../storage/types/chat";
 import { type loreBook } from '../storage/types/character';
 import { DBState } from '../stores.svelte';
 import { tokenize } from "../tokenizer";
-import { pickHashRand, openFilePicker } from "../util";
+import { pickHashRand, openFilePicker } from "../utils/util";
 import { findCharacterbyId } from "../characters.svelte";
 import { alertError, alertNormal } from "../alert.svelte";
 import { language } from "../../lang";

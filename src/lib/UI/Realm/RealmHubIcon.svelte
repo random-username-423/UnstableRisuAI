@@ -3,7 +3,7 @@
     import { alertNormal } from "src/ts/alert.svelte";
     import { hubURL, type hubType } from "src/ts/characterCards.svelte";
     import { DBState } from "src/ts/stores.svelte";
-    import { parseMultilangString } from "src/ts/util";
+    import { parseMultilangString } from "src/ts/utils/util";
 
     interface Props {
         onClick?: any;

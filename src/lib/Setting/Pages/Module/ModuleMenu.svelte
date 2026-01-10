@@ -14,7 +14,7 @@
     import { getFileSrc, saveAsset, downloadFile } from "src/ts/globalApi.svelte";
     import { alertNormal, alertError } from "src/ts/alert.svelte";
     import { exportRegex, importRegex } from "src/ts/process/scripts";
-    import { openFilePicker } from "src/ts/util";
+    import { openFilePicker } from "src/ts/utils/util";
     
     import { DBState } from 'src/ts/stores.svelte';
   import { v4 } from "uuid";

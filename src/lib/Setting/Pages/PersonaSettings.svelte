@@ -10,7 +10,7 @@
     import { changeUserPersona, exportUserPersona, importUserPersona, saveUserPersona, selectUserImg } from "src/ts/persona";
     import Sortable from 'sortablejs/modular/sortable.core.esm.js';
     import { onDestroy, onMount } from "svelte";
-    import { sleep, sortableOptions } from "src/ts/util";
+    import { sleep, sortableOptions } from "src/ts/utils/util";
     import { DBState } from 'src/ts/stores.svelte';
     import { v4 } from "uuid"
 

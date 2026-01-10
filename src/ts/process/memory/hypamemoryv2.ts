@@ -4,7 +4,7 @@ import { TaskRateLimiter, TaskCanceledError } from "./taskRateLimiter";
 import { runEmbedding } from "../transformers";
 import { globalFetch } from "src/ts/fetch";
 import { getDatabase } from "src/ts/storage/database.svelte";
-import { appendLastPath } from "src/ts/util";
+import { appendLastPath } from "src/ts/utils/util";
 import { isMobile } from "src/ts/platform";
 
 export interface HypaProcessorV2Options {

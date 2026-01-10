@@ -7,7 +7,7 @@ import { pluginProcess, pluginV2 } from "../../plugins/plugins";
 import { getCurrentCharacter, getCurrentChat, getDatabase } from "../../storage/database.svelte";
 import { type character } from 'src/ts/storage/types/character';
 import { tokenizeNum } from "../../tokenizer";
-import { sleep } from "../../util";
+import { sleep } from "../../utils/util";
 import type { MultiModal, OpenAIChat } from "../index.svelte";
 import { getTools } from "../mcp/mcp";
 import type { MCPTool, RPCToolCallContent } from "../mcp/mcplib";

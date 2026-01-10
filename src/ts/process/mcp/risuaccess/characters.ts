@@ -4,7 +4,7 @@ import { type loreBook } from 'src/ts/storage/types/character'
 import { type groupChat } from 'src/ts/storage/types/character'
 import { type character } from 'src/ts/storage/types/character'
 import { DBState } from 'src/ts/stores.svelte'
-import { pickHashRand } from 'src/ts/util'
+import { pickHashRand } from 'src/ts/utils/util'
 import { type MCPTool, MCPToolHandler, type RPCToolCallContent } from '../mcplib'
 import { getCharacter } from './utils'
 

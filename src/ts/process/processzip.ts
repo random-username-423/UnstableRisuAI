@@ -1,6 +1,6 @@
 import { AppendableBuffer, saveAsset, type LocalWriter, type VirtualWriter } from "../globalApi.svelte";
 import * as fflate from "fflate";
-import { asBuffer, Semaphore, sleep} from "../util";
+import { asBuffer, Semaphore, sleep} from "../utils/util";
 import { alertWait } from "../alert.svelte";
 import { hasher } from "../parser.svelte";
 import { hubURL } from "../characterCards.svelte";

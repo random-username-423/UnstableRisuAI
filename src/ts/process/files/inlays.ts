@@ -3,7 +3,7 @@ import { v4 } from "uuid";
 import { getDatabase } from "../../storage/database.svelte";
 import { checkImageType } from "../../parser.svelte";
 import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
-import { asBuffer } from "../../util";
+import { asBuffer } from "../../utils/util";
 
 const inlayImageExts = [
     'jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'

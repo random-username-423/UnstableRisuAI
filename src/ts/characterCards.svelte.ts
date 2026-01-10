@@ -8,7 +8,7 @@ import { type loreSettings } from './storage/types/character'
 import { type loreBook } from './storage/types/character'
 import { type groupChat } from './storage/types/character'
 import { type character } from './storage/types/character'
-import { checkNullish, decryptBuffer, isKnownUri, openFilePicker, sleep } from "./util"
+import { checkNullish, decryptBuffer, isKnownUri, openFilePicker, sleep } from "./utils/util"
 import { language } from "src/lang"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { characterFormatUpdate } from "./characters.svelte"

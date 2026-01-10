@@ -1,4 +1,4 @@
-import { asBuffer } from "../util";
+import { asBuffer } from "../utils/util";
 
 export class OpfsStorage{
 

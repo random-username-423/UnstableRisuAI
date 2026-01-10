@@ -1,7 +1,7 @@
 <script lang="ts">
     import { MenuIcon } from "@lucide/svelte";
     import { popupStore } from "src/ts/stores.svelte";
-    import { sleep } from "src/ts/util";
+    import { sleep } from "src/ts/utils/util";
 
     const {
         children

@@ -5,7 +5,7 @@ import { alertNormal } from '../alert.svelte';
 import { downloadFile } from '../globalApi.svelte';
 import { LLMFormat } from '../model/modellist';
 import { decodeRPack, encodeRPack } from '../rpack/rpack_js';
-import { decryptBuffer, encryptBuffer, openFilePicker } from '../util';
+import { decryptBuffer, encryptBuffer, openFilePicker } from '../utils/util';
 import { getDatabase, presetTemplate, setDatabase } from './database.svelte';
 import type { botPreset, Database } from './types';
 import { decode as decodeMsgpack } from "msgpackr/index-no-eval";

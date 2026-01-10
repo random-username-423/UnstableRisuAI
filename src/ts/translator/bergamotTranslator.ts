@@ -1,6 +1,6 @@
 import { LatencyOptimisedTranslator, TranslatorBacking } from "@browsermt/bergamot-translator";
 import { gunzipSync } from 'fflate';
-import { asBuffer } from "../util";
+import { asBuffer } from "../utils/util";
 
 // Cache Translations Models
 class CacheDB {

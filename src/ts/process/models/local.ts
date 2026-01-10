@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { globalFetch } from "src/ts/fetch";
-import { sleep } from "src/ts/util";
+import { sleep } from "src/ts/utils/util";
 import * as path from "@tauri-apps/api/path";
 import { exists, readTextFile } from "@tauri-apps/plugin-fs";
 import { alertClear, alertError, alertWait } from "src/ts/alert.svelte";
@@ -82,7 +82,7 @@ export async function checkServerRunning() {
         const res = await fetch("http://localhost:7239/")
         console.log(res)
         return res.ok   
-    } catch (error) {
+    } catch {
         return false
     }
 }
@@ -107,7 +107,9 @@ export async function loadExllamaFull(){
                     if(res.status === 200){
                         break
                     }
-                } catch (error) {}
+                } catch {
+                    // Server not ready yet - ignore
+                }
             }
             await sleep(1000)
         }
@@ -120,6 +122,9 @@ export async function loadExllamaFull(){
         const res = await globalFetch("http://localhost:7239/load/", {
             body: body
         })
+        if (!res.ok) {
+            throw new Error("Failed to load model")
+        }
         alertClear()
     } catch (error) {
         alertError("Error when loading Exllama: " + error)     
@@ -207,27 +212,41 @@ export async function installPython(){
 
 }
 
+/**
+ * Retrieves the authentication key from the local Python server (localhost:10026).
+ *
+ * @remarks
+ * The Python server generates a UUID-based key on startup and stores it in a file.
+ * This function requests the key file path from the server, then reads the key from that file.
+ * The retrieved key is used in the `x-risu-auth` header for llama.cpp request authentication.
+ *
+ * @param retry - Whether to reinstall the Python server and retry on failure (default: true)
+ * @returns The authentication key string
+ * @throws When the Python server connection fails or the key file cannot be read
+ */
 export async function getLocalKey(retry = true) {
     try {
         const ft = await fetch("http://localhost:10026/")
-        const keyJson = await ft.json()
+        const keyJson: { dir: string } = await ft.json()
         const keyPath = keyJson.dir
         const key = await readTextFile(keyPath)
         return key
     } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
+
         if(!retry){
-            throw `Error when getting local key: ${error}`
+            throw new Error(`Error when getting local key: ${message}`)
         }
         //if is cors error
         if(
-            error.message.includes("NetworkError when attempting to fetch resource.")
-            || error.message.includes("Failed to fetch")
+            message.includes("NetworkError when attempting to fetch resource.")
+            || message.includes("Failed to fetch")
         ){
             await installPython()
             return await getLocalKey(false)
         }
         else{
-            throw `Error when getting local key: ${error}`
+            throw new Error(`Error when getting local key: ${message}`)
         }
     }
 }
@@ -287,5 +306,9 @@ export async function tokenizeGGUFModel(prompt:string):Promise<number[]> {
         })
     })
 
-    return await b.json()
+    const result: number[] | { error: string } = await b.json()
+    if ('error' in result) {
+        throw new Error(result.error)
+    }
+    return result
 }

@@ -1,22 +1,22 @@
-import { get, writable } from "svelte/store";
-import { saveImage, setDatabase, defaultSdDataFunc, getDatabase, getCharacterByIndex, setCharacterByIndex } from "./storage/database.svelte";
-import { type Chat } from './storage/types/chat';
-import { type loreBook } from './storage/types/character';
-import { type character } from './storage/types/character';
-import { alertAddCharacter, alertClear, alertConfirm, alertError, alertNormal, alertSelect, alertWait } from "./alert.svelte";
-import { language } from "../lang";
-import { checkNullish, openFilePicker } from "./util";
-import { getUserName } from "./persona";
-import { v4 as uuidv4, v4 } from 'uuid';
-import { layoutState, realmState, selectedCharID } from "./stores.svelte";
-import { AppendableBuffer, changeChatTo, checkCharOrder, downloadFile, getFileSrc, requiresFullEncoderReload } from "./globalApi.svelte";
-import { updateInlayScreen } from "./process/inlayScreen";
-import { checkImageType, parseMarkdownSafe } from "./parser.svelte";
-import { translateHTML } from "./translator/translator";
-import { doingChat } from "./process/index.svelte";
-import { importCharacter } from "./characterCards.svelte";
-import { PngChunk } from "./pngChunk";
-import type { Database } from "./storage/types";
+import { get, writable } from "svelte/store"
+import { saveImage, setDatabase, defaultSdDataFunc, getDatabase, getCharacterByIndex, setCharacterByIndex } from "./storage/database.svelte"
+import { type Chat } from './storage/types/chat'
+import { type loreBook } from './storage/types/character'
+import { type character } from './storage/types/character'
+import { alertAddCharacter, alertClear, alertConfirm, alertError, alertNormal, alertSelect, alertWait } from "./alert.svelte"
+import { language } from "../lang"
+import { checkNullish, openFilePicker } from "./utils/util"
+import { getUserName } from "./persona"
+import { v4 as uuidv4, v4 } from 'uuid'
+import { layoutState, realmState, selectedCharID } from "./stores.svelte"
+import { AppendableBuffer, changeChatTo, checkCharOrder, downloadFile, getFileSrc, requiresFullEncoderReload } from "./globalApi.svelte"
+import { getDefaultNewGenData } from "./process/inlayScreen"
+import { checkImageType, parseMarkdownSafe } from "./parser.svelte"
+import { translateHTML } from "./translator/translator"
+import { doingChat } from "./process/index.svelte"
+import { importCharacter } from "./characterCards.svelte"
+import { PngChunk } from "./pngChunk"
+import type { Database } from "./storage/types"
 
 export function createNewCharacter() {
     const db = getDatabase()
@@ -26,7 +26,7 @@ export function createNewCharacter() {
     return db.characters.length - 1
 }
 
-export function createNewGroup(){
+export function createNewGroup() {
     const db = getDatabase()
     db.characters.push({
         type: 'group',
@@ -58,43 +58,50 @@ export function createNewGroup(){
     return db.characters.length - 1
 }
 
-export async function getCharImage(loc:string, type:'plain'|'css'|'contain'|'lgcss') {
+/**
+ * Returns the URL or CSS style string for a character image.
+ *
+ * @param loc - Storage path of the image file (e.g., 'assets/xxx.png')
+ * @param type - Return format:
+ *   - `plain`: Returns only the image URL (fallback: '/none.webp')
+ *   - `css`: CSS background style (background-size: cover) (fallback: '')
+ *   - `contain`: CSS background style (background-size: contain, centered, no-repeat) (fallback: '')
+ *   - `lgcss`: CSS background style (cover + height: 10.66rem, for large portraits) (fallback: '')
+ * @returns Image URL or CSS style string. Returns fallback if loc is empty, hideAllImages is enabled, or file source fails
+ */
+export async function getCharImage(loc: string, type: 'plain' | 'css' | 'contain' | 'lgcss'): Promise<string> {
     const db = getDatabase()
-    
-    // Return placeholder when hideAllImages is enabled
-    if(db.hideAllImages){
-        if(type === 'plain'){
-            return '/none.webp'
-        }
-        return ''  // For CSS types, return empty to show default ? icon
-    }
-    
-    if(!loc || loc === ''){
-        if(type ==='css'){
-            return ''
-        }
-        return null
-    }
+    if (!loc || db.hideAllImages) return getFallback()
+
     const filesrc = await getFileSrc(loc)
-    if(type === 'plain'){
+    if (!filesrc) return getFallback()
+
+    if (type === 'plain') {
         return filesrc
     }
-    else if(type ==='css'){
+    else if (type === 'css') {
         return `background: url("${filesrc}");background-size: cover;`
     }
-    else if(type === 'lgcss'){
+    else if (type === 'lgcss') {
         return `background: url("${filesrc}");background-size: cover;height: 10.66rem;`
 
     }
 
-    else{
+    else {
         return `background: url("${filesrc}");background-size: contain;background-repeat: no-repeat;background-position: center;`
+    }
+
+    function getFallback() {
+        if (type === 'plain') {
+            return '/none.webp'
+        }
+        return ''
     }
 }
 
-export async function selectCharImg(charIndex:number) {
+export async function selectCharImg(charIndex: number) {
     const selected = await openFilePicker(['png', 'webp', 'gif', 'jpg', 'jpeg'], { readContent: true })
-    if(!selected){
+    if (!selected) {
         return
     }
     const img = selected.data
@@ -104,22 +111,22 @@ export async function selectCharImg(charIndex:number) {
     console.log(type)
 
     try {
-        if(type === 'PNG' && db.characters[charIndex].type === 'character'){
+        if (type === 'PNG' && db.characters[charIndex].type === 'character') {
             const gen = PngChunk.readGenerator(img)
             const allowedChunk = [
                 'parameters', 'Comment', 'Title', 'Description', 'Author', 'Software', 'Source', 'Disclaimer', 'Warning', 'Copyright',
             ]
-            for await (const chunk of gen){
-                if(chunk instanceof AppendableBuffer){
+            for await (const chunk of gen) {
+                if (chunk instanceof AppendableBuffer) {
                     continue
                 }
-                if(!chunk){
+                if (!chunk) {
                     continue
                 }
-                if(chunk.value.length > 20_000){
+                if (chunk.value.length > 20_000) {
                     continue
                 }
-                if(allowedChunk.includes(chunk.key)){
+                if (allowedChunk.includes(chunk.key)) {
                     console.log(chunk.key, chunk.value)
                     db.characters[charIndex].extentions ??= {}
                     db.characters[charIndex].extentions.pngExif ??= {}
@@ -127,7 +134,7 @@ export async function selectCharImg(charIndex:number) {
                 }
             }
             console.log(db.characters[charIndex].extentions)
-        }   
+        }
     } catch (error) {
         console.error(error)
     }
@@ -140,10 +147,10 @@ export async function selectCharImg(charIndex:number) {
     setDatabase(db)
 }
 
-export function dumpCharImage(charIndex:number) {
+export function dumpCharImage(charIndex: number) {
     const db = getDatabase()
     const char = db.characters[charIndex] as character
-    if(!char.image || char.image === ''){
+    if (!char.image || char.image === '') {
         return
     }
     char.ccAssets ??= []
@@ -158,7 +165,7 @@ export function dumpCharImage(charIndex:number) {
     setDatabase(db)
 }
 
-export function changeCharImage(charIndex:number,changeIndex:number) {
+export function changeCharImage(charIndex: number, changeIndex: number) {
     const db = getDatabase()
     const char = db.characters[charIndex] as character
     const image = char.ccAssets[changeIndex].uri
@@ -172,21 +179,21 @@ export function changeCharImage(charIndex:number,changeIndex:number) {
 
 export const addingEmotion = writable(false)
 
-export async function addCharEmotion(charId:number) {
+export async function addCharEmotion(charId: number) {
     addingEmotion.set(true)
     const selected = await openFilePicker(['png', 'webp', 'gif'], { multiple: true, readContent: true })
-    if(!selected){
+    if (!selected) {
         addingEmotion.set(false)
         return
     }
     const db = getDatabase()
-    for(const f of selected){
+    for (const f of selected) {
         const img = f.data
         const imgp = await saveImage(img)
-        const name = f.name.replace('.png','').replace('.webp','')
+        const name = f.name.replace('.png', '').replace('.webp', '')
         const dbChar = db.characters[charId]
-        if(dbChar.type !== 'group'){
-            dbChar.emotionImages.push([name,imgp])
+        if (dbChar.type !== 'group') {
+            dbChar.emotionImages.push([name, imgp])
             db.characters[charId] = dbChar
         }
         setDatabase(db)
@@ -194,10 +201,10 @@ export async function addCharEmotion(charId:number) {
     addingEmotion.set(false)
 }
 
-export function rmCharEmotion(charId:number, emotionId:number) {
+export function rmCharEmotion(charId: number, emotionId: number) {
     const db = getDatabase()
     const dbChar = db.characters[charId]
-    if(dbChar.type !== 'group'){
+    if (dbChar.type !== 'group') {
         dbChar.emotionImages.splice(emotionId, 1)
         db.characters[charId] = dbChar
     }
@@ -205,7 +212,7 @@ export function rmCharEmotion(charId:number, emotionId:number) {
 }
 
 
-export async function exportChat(page:number){
+export async function exportChat(page: number) {
     try {
 
         const mode = await alertSelect(['Export as JSON', "Export as TXT", "Export as HTML File", "Export as HTML Embed"])
@@ -215,15 +222,15 @@ export async function exportChat(page:number){
         const db = getDatabase()
         const chat = db.characters[selectedID].chats[page]
         const char = db.characters[selectedID]
-        const date = new Date().toJSON();
-        const htmlChatParse = async (v:string) => {
+        const date = new Date().toJSON()
+        const htmlChatParse = async (v: string) => {
             v = parseMarkdownSafe(v)
 
-            if(doTranslate){
+            if (doTranslate) {
                 v = await translateHTML(v, false, '', -1)
             }
 
-            if(anonymous){
+            if (anonymous) {
                 //case insensitive match, replace all
                 const excapedName = char.name.replace(/[-\/\\^$*+\?\.()|[\]{}]/g, '\\$&')
 
@@ -233,9 +240,9 @@ export async function exportChat(page:number){
             return v
         }
 
-        if(mode === '0'){
+        if (mode === '0') {
             let folders = []
-            if(chat.folderId) {
+            if (chat.folderId) {
                 folders = db.characters[selectedID].chatFolders?.filter(f => f.id === chat.folderId)
             }
             const stringl = Buffer.from(JSON.stringify({
@@ -244,16 +251,16 @@ export async function exportChat(page:number){
                 data: chat,
                 folders: folders
             }), 'utf-8')
-    
+
             await downloadFile(`${char.name}_${date}_chat`.replace(/[<>:"/\\|?*\.\,]/g, "") + '.json', stringl)
-    
+
         }
-        else if(mode === '2'){
+        else if (mode === '2') {
 
             let chatContentHTML = ''
 
             let i = 0
-            for(const v of chat.message){
+            for (const v of chat.message) {
                 alertWait(`Translating... ${i++}/${chat.message.length}`)
                 const name = v.saying ? findCharacterbyId(v.saying).name : v.role === 'char' ? char.name : anonymous ? '×××' : getUserName()
                 chatContentHTML += `<div class="chat">
@@ -305,26 +312,25 @@ export async function exportChat(page:number){
                             <div class="chat">
                                 <h2>${char.name}</h2>
                                 <div>${await htmlChatParse(
-                                    chat.fmIndex === -1 ? char.firstMessage : char.alternateGreetings?.[chat.fmIndex ?? 0]
-                                )}</div>
+                chat.fmIndex === -1 ? char.firstMessage : char.alternateGreetings?.[chat.fmIndex ?? 0]
+            )}</div>
                             </div>
                             ${chatContentHTML}
                         </div>
-                        <div class="idat">${
-                            JSON.stringify(chat).replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                        }</div>
+                        <div class="idat">${JSON.stringify(chat).replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                }</div>
                     </body>
             `
 
 
             await downloadFile(`${char.name}_${date}_chat`.replace(/[<>:"/\\|?*\.\,]/g, "") + '.html', Buffer.from(doc, 'utf-8'))
         }
-        else if(mode === '3'){
+        else if (mode === '3') {
             //create a html table
             let chatContentHTML = ''
 
             let i = 0
-            for(const v of chat.message){
+            for (const v of chat.message) {
                 alertWait(`Translating... ${i++}/${chat.message.length}`)
                 const name = v.saying ? findCharacterbyId(v.saying).name : v.role === 'char' ? char.name : anonymous ? '×××' : getUserName()
                 chatContentHTML += `<tr>
@@ -360,18 +366,18 @@ export async function exportChat(page:number){
             return
 
         }
-        else{
-            
+        else {
+
             let stringl = chat.message.map((v) => {
-                if(v.saying){
+                if (v.saying) {
                     return `--${findCharacterbyId(v.saying).name}\n${v.data}`
                 }
-                else{
+                else {
                     return `--${v.role === 'char' ? char.name : getUserName()}\n${v.data}`
                 }
             }).join('\n\n')
 
-            if(char.type !== 'group'){
+            if (char.type !== 'group') {
                 stringl = `--${char.name}\n${char.firstMessage}\n\n` + stringl
             }
 
@@ -384,18 +390,18 @@ export async function exportChat(page:number){
     }
 }
 
-export async function importChat(){
-    const dat = await openFilePicker(['json','jsonl','txt','html'], { readContent: true })
-    if(!dat){
+export async function importChat() {
+    const dat = await openFilePicker(['json', 'jsonl', 'txt', 'html'], { readContent: true })
+    if (!dat) {
         return
     }
     try {
         const selectedID = get(selectedCharID)
         const db = getDatabase()
 
-        if(dat.name.endsWith('jsonl')){
+        if (dat.name.endsWith('jsonl')) {
             const lines = Buffer.from(dat.data).toString('utf-8').split('\n')
-            const newChat:Chat = {
+            const newChat: Chat = {
                 message: [],
                 note: "",
                 name: "Imported Chat",
@@ -405,11 +411,11 @@ export async function importChat(){
             }
 
             let isFirst = true
-            for(const line of lines){
-                
+            for (const line of lines) {
+
                 const presedLine = JSON.parse(line)
-                if(presedLine.name && presedLine.is_user, presedLine.mes){
-                    if(!isFirst){
+                if (presedLine.name && presedLine.is_user, presedLine.mes) {
+                    if (!isFirst) {
                         newChat.message.push({
                             role: presedLine.is_user ? "user" : 'char',
                             data: formatTavernChat(presedLine.mes, db.characters[selectedID].name)
@@ -420,12 +426,12 @@ export async function importChat(){
                 isFirst = false
             }
 
-            if(newChat.message.length === 0){
+            if (newChat.message.length === 0) {
                 alertError(language.errors.noData)
                 return
             }
 
-            if(db.characters[selectedID].chatFolders
+            if (db.characters[selectedID].chatFolders
                 .filter(folder => folder.id === newChat.folderId).length === 0) {
                 newChat.folderId = null
             }
@@ -435,16 +441,16 @@ export async function importChat(){
             setDatabase(db)
             alertNormal(language.successImport)
         }
-        else if(dat.name.endsWith('json')){
+        else if (dat.name.endsWith('json')) {
             const json = JSON.parse(Buffer.from(dat.data).toString('utf-8'))
-            if((json.type === 'risuAllChats' || json.type === 'risuChat') && json.ver === 2){
+            if ((json.type === 'risuAllChats' || json.type === 'risuChat') && json.ver === 2) {
                 const folders = json.folders || []
                 const chats = Array.isArray(json.data) ? json.data : [json.data]
                 const selectedID = get(selectedCharID)
                 const db = getDatabase()
                 const folderIdMap = {}
                 folders.forEach(folder => {
-                    if(db.characters[selectedID].chatFolders?.some(f => f.id === folder.id)){
+                    if (db.characters[selectedID].chatFolders?.some(f => f.id === folder.id)) {
                         const newId = uuidv4()
                         folderIdMap[folder.id] = newId
                         folder.id = newId
@@ -452,12 +458,12 @@ export async function importChat(){
                         folderIdMap[folder.id] = folder.id
                     }
                 })
-                if(db.characters[selectedID].chatFolders === undefined){
+                if (db.characters[selectedID].chatFolders === undefined) {
                     db.characters[selectedID].chatFolders = []
                 }
                 db.characters[selectedID].chatFolders.push(...folders)
                 chats.forEach(chat => {
-                    if(chat.folderId && folderIdMap[chat.folderId]){
+                    if (chat.folderId && folderIdMap[chat.folderId]) {
                         chat.folderId = folderIdMap[chat.folderId]
                     }
                     chat.id = v4()
@@ -467,14 +473,14 @@ export async function importChat(){
                 alertNormal(language.successImport)
                 return
             }
-            if(json.type === 'risuAllChats' && json.ver === 1){
+            if (json.type === 'risuAllChats' && json.ver === 1) {
                 const chats = json.data
-                if(Array.isArray(chats) && chats.length > 0){
+                if (Array.isArray(chats) && chats.length > 0) {
                     db.characters[selectedID].chats.unshift(...(chats.map((v) => {
-                        if(!v.id){
+                        if (!v.id) {
                             v.id = uuidv4()
                         }
-                        if(!v.localLore){
+                        if (!v.localLore) {
                             v.localLore = []
                         }
                         v.fmIndex ??= -1
@@ -488,9 +494,9 @@ export async function importChat(){
                     return
                 }
             }
-            if(json.type === 'risuChat' && json.ver === 1){
-                const das:Chat = json.data
-                if(!(checkNullish(das.message) || checkNullish(das.note) || checkNullish(das.name) || checkNullish(das.localLore))){
+            if (json.type === 'risuChat' && json.ver === 1) {
+                const das: Chat = json.data
+                if (!(checkNullish(das.message) || checkNullish(das.note) || checkNullish(das.name) || checkNullish(das.localLore))) {
                     das.fmIndex ??= -1
                     das.id = v4()
                     db.characters[selectedID].chats.unshift(das)
@@ -498,26 +504,26 @@ export async function importChat(){
                     alertNormal(language.successImport)
                     return
                 }
-                else{
+                else {
                     alertError(language.errors.noData)
-                    return   
+                    return
                 }
             }
-            else{
+            else {
                 alertError(language.errors.noData)
                 return
             }
         }
-        else if(dat.name.endsWith('html')){
+        else if (dat.name.endsWith('html')) {
             const doc = new DOMParser().parseFromString(Buffer.from(dat.data).toString('utf-8'), 'text/html')
             const chat = doc.querySelector('.idat').textContent
             const json = JSON.parse(chat)
-            if(json.message && json.note && json.name && json.localLore){
+            if (json.message && json.note && json.name && json.localLore) {
                 db.characters[selectedID].chats.unshift(json)
                 setDatabase(db)
                 alertNormal(language.successImport)
             }
-            else{
+            else {
                 alertError(language.errors.noData)
             }
         }
@@ -547,16 +553,16 @@ export async function exportAllChats() {
     }
 }
 
-function formatTavernChat(chat:string, charName:string){
+function formatTavernChat(chat: string, charName: string) {
     const db = getDatabase()
     return chat.replace(/<([Uu]ser)>|\{\{([Uu]ser)\}\}/g, getUserName()).replace(/((\{\{)|<)([Cc]har)(=.+)?((\}\})|>)/g, charName)
 }
 
-export function characterFormatUpdate(indexOrCharacter:number|character, arg:{
-    updateInteraction?:boolean,
-} = {}){
-    let cha = typeof(indexOrCharacter) === 'number' ? getCharacterByIndex(indexOrCharacter) : indexOrCharacter
-    if(cha.chats.length === 0){
+export function characterFormatUpdate(indexOrCharacter: number | character, arg: {
+    updateInteraction?: boolean,
+} = {}) {
+    let cha = typeof (indexOrCharacter) === 'number' ? getCharacterByIndex(indexOrCharacter) : indexOrCharacter
+    if (cha.chats.length === 0) {
         cha.chats = [{
             message: [],
             note: '',
@@ -564,23 +570,23 @@ export function characterFormatUpdate(indexOrCharacter:number|character, arg:{
             localLore: []
         }]
     }
-    if(!cha.chats[cha.chatPage]){
+    if (!cha.chats[cha.chatPage]) {
         cha.chatPage = 0
     }
-    if(!cha.chats[cha.chatPage].message){
+    if (!cha.chats[cha.chatPage].message) {
         cha.chats[cha.chatPage].message = []
     }
-    if(!cha.type){
+    if (!cha.type) {
         cha.type = 'character'
     }
-    if(!cha.chaId){
+    if (!cha.chaId) {
         cha.chaId = uuidv4()
     }
-    if(cha.type !== 'group'){
-        if(checkNullish(cha.sdData)){
+    if (cha.type !== 'group') {
+        if (checkNullish(cha.sdData)) {
             cha.sdData = defaultSdDataFunc()
         }
-        if(checkNullish(cha.utilityBot)){
+        if (checkNullish(cha.utilityBot)) {
             cha.utilityBot = false
         }
         cha.triggerscript = cha.triggerscript ?? []
@@ -605,7 +611,7 @@ export function characterFormatUpdate(indexOrCharacter:number|character, arg:{
             INTONATION_SCALE: 1,
             VOLUME_SCALE: 1
         }
-        if(cha.postHistoryInstructions){
+        if (cha.postHistoryInstructions) {
             cha.chats[cha.chatPage].note += "\n" + cha.postHistoryInstructions
             cha.chats[cha.chatPage].note = cha.chats[cha.chatPage].note.trim()
             cha.postHistoryInstructions = null
@@ -623,8 +629,8 @@ export function characterFormatUpdate(indexOrCharacter:number|character, arg:{
         cha.backgroundCSS ??= ''
         cha.creation_date ??= Date.now()
         cha.globalLore = updateLorebooks(cha.globalLore)
-        if(!cha.newGenData){
-            cha = updateInlayScreen(cha)
+        if (!cha.newGenData) {
+            cha.newGenData = getDefaultNewGenData(cha.viewScreen, cha.inlayViewScreen ?? false)
         }
         // Migrate legacy 'none' value to '' for UI dropdown compatibility
         // Using '' because it's falsy, so `if (ttsMode)` correctly detects enabled TTS
@@ -633,47 +639,47 @@ export function characterFormatUpdate(indexOrCharacter:number|character, arg:{
         }
         cha.ttsMode ??= ''
     }
-    else{
-        if((!cha.characterTalks) || cha.characterTalks.length !== cha.characters.length){
+    else {
+        if ((!cha.characterTalks) || cha.characterTalks.length !== cha.characters.length) {
             cha.characterTalks = []
-            for(let i=0;i<cha.characters.length;i++){
+            for (let i = 0; i < cha.characters.length; i++) {
                 cha.characterTalks.push(1 / 6 * 4)
             }
         }
-        if((!cha.characterActive) || cha.characterActive.length !== cha.characters.length){
+        if ((!cha.characterActive) || cha.characterActive.length !== cha.characters.length) {
             cha.characterActive = []
-            for(let i=0;i<cha.characters.length;i++){
+            for (let i = 0; i < cha.characters.length; i++) {
                 cha.characterActive.push(true)
             }
         }
     }
-    if(checkNullish(cha.customscript)){
+    if (checkNullish(cha.customscript)) {
         cha.customscript = []
     }
     cha.lastInteraction = Date.now()
-    if(typeof(indexOrCharacter) === 'number'){
+    if (typeof (indexOrCharacter) === 'number') {
         setCharacterByIndex(indexOrCharacter, cha)
     }
-    for(let i = 0; i < cha.chats.length; i++){
+    for (let i = 0; i < cha.chats.length; i++) {
         const chat = cha.chats[i]
         chat.fmIndex ??= cha.firstMsgIndex ?? -1
-        if(!chat.id){
+        if (!chat.id) {
             chat.id = uuidv4()
         }
-        if(!chat.localLore){
+        if (!chat.localLore) {
             chat.localLore = []
         }
     }
     return cha
 }
 
-export function updateLorebooks(book:loreBook[]){
+export function updateLorebooks(book: loreBook[]) {
     return book.map((v) => {
         v.bookVersion ??= 1
-        if(v.bookVersion >= 2){
+        if (v.bookVersion >= 2) {
             return v
         }
-        if(v.activationPercent){
+        if (v.activationPercent) {
             const perc = v.activationPercent
             v.activationPercent = null
 
@@ -686,7 +692,7 @@ export function updateLorebooks(book:loreBook[]){
 
 }
 
-export function createBlankChar():character{
+export function createBlankChar(): character {
     return {
         name: '',
         firstMessage: '',
@@ -710,15 +716,15 @@ export function createBlankChar():character{
         utilityBot: false,
         customscript: [],
         exampleMessage: '',
-        creatorNotes:'',
-        systemPrompt:'',
-        postHistoryInstructions:'',
-        alternateGreetings:[],
-        tags:[],
-        creator:"",
+        creatorNotes: '',
+        systemPrompt: '',
+        postHistoryInstructions: '',
+        alternateGreetings: [],
+        tags: [],
+        creator: "",
         characterVersion: '',
-        personality:"",
-        scenario:"",
+        personality: "",
+        scenario: "",
         firstMsgIndex: -1,
         replaceGlobalNote: "",
         triggerscript: [{
@@ -747,66 +753,66 @@ export async function makeGroupImage() {
         const db = getDatabase()
         const charID = get(selectedCharID)
         const group = db.characters[charID]
-        if(group.type !== 'group'){
+        if (group.type !== 'group') {
             return
         }
-    
+
         const imageUrls = await Promise.all(group.characters.map((v) => {
             return getCharImage(findCharacterbyId(v).image, 'plain')
         }))
-    
-        
-    
-        const canvas = document.createElement("canvas");
+
+
+
+        const canvas = document.createElement("canvas")
         canvas.width = 256
         canvas.height = 256
-        const ctx = canvas.getContext("2d");
-      
+        const ctx = canvas.getContext("2d")
+
         // Load the images
-        const images = [];
-        const loadedImages = 0;
-      
+        const images = []
+        const loadedImages = 0
+
         await Promise.all(
             imageUrls.map(
-            (url) =>
-                new Promise<void>((resolve) => {
-                    const img = new Image();
-                    img.crossOrigin="anonymous"
-                    img.onload = () => {
-                        images.push(img);
-                        resolve();
-                    };
-                    img.src = url;
-                })
+                (url) =>
+                    new Promise<void>((resolve) => {
+                        const img = new Image()
+                        img.crossOrigin = "anonymous"
+                        img.onload = () => {
+                            images.push(img)
+                            resolve()
+                        }
+                        img.src = url
+                    })
             )
-        );
-      
+        )
+
         // Calculate dimensions and draw the grid
-        const numImages = images.length;
-        const numCols = Math.ceil(Math.sqrt(images.length));
-        const numRows = Math.ceil(images.length / numCols);
-        const cellWidth = canvas.width / numCols;
-        const cellHeight = canvas.height / numRows;
-      
+        const numImages = images.length
+        const numCols = Math.ceil(Math.sqrt(images.length))
+        const numRows = Math.ceil(images.length / numCols)
+        const cellWidth = canvas.width / numCols
+        const cellHeight = canvas.height / numRows
+
         for (let row = 0; row < numRows; row++) {
-          for (let col = 0; col < numCols; col++) {
-            const index = row * numCols + col;
-            if (index >= numImages) break;
-            ctx.drawImage(
-              images[index],
-              col * cellWidth,
-              row * cellHeight,
-              cellWidth,
-              cellHeight
-            );
-          }
+            for (let col = 0; col < numCols; col++) {
+                const index = row * numCols + col
+                if (index >= numImages) break
+                ctx.drawImage(
+                    images[index],
+                    col * cellWidth,
+                    row * cellHeight,
+                    cellWidth,
+                    cellHeight
+                )
+            }
         }
-      
+
         // Return the image URI
-    
+
         const uri = canvas.toDataURL()
         canvas.remove()
-        db.characters[charID].image = await saveImage(dataURLtoBuffer(uri));
+        db.characters[charID].image = await saveImage(dataURLtoBuffer(uri))
         setDatabase(db)
         alertClear()
     } catch (error) {
@@ -814,32 +820,32 @@ export async function makeGroupImage() {
     }
 }
 
-function dataURLtoBuffer(string:string){
-    const regex = /^data:.+\/(.+);base64,(.*)$/;
+function dataURLtoBuffer(string: string) {
+    const regex = /^data:.+\/(.+);base64,(.*)$/
 
-    const matches = string.match(regex);
-    const ext = matches[1];
-    const data = matches[2];
-    return Buffer.from(data, 'base64');
+    const matches = string.match(regex)
+    const ext = matches[1]
+    const data = matches[2]
+    return Buffer.from(data, 'base64')
 }
 
-export async function removeChar(index:number,name:string, type:'normal'|'permanent'|'permanentForce' = 'normal'){
+export async function removeChar(index: number, name: string, type: 'normal' | 'permanent' | 'permanentForce' = 'normal') {
     const db = getDatabase()
-    if(type !== 'permanentForce'){
+    if (type !== 'permanentForce') {
         const conf = await alertConfirm(language.removeConfirm + name)
-        if(!conf){
+        if (!conf) {
             return
         }
         const conf2 = await alertConfirm(language.removeConfirm2 + name)
-        if(!conf2){
+        if (!conf2) {
             return
         }
     }
     const chars = db.characters
-    if(type === 'normal'){
+    if (type === 'normal') {
         chars[index].trashTime = Date.now()
     }
-    else{
+    else {
         chars.splice(index, 1)
     }
     checkCharOrder()
@@ -849,20 +855,20 @@ export async function removeChar(index:number,name:string, type:'normal'|'perman
     selectedCharID.set(-1)
 }
 
-export async function addCharacter(arg:{
-    reseter?:()=>any,
-} = {}){
+export async function addCharacter(arg: {
+    reseter?: () => any,
+} = {}) {
     layoutState.betaMobile.stack = 100
-    const reseter = arg.reseter ?? (() => {})
+    const reseter = arg.reseter ?? (() => { })
     const r = await alertAddCharacter()
-    if(r === 'importFromRealm'){
+    if (r === 'importFromRealm') {
         selectedCharID.set(-1)
         realmState.expanded = true
         layoutState.betaMobile.stack = 0
         return
     }
-    reseter();
-    switch(r){
+    reseter()
+    switch (r) {
         case 'createfromScratch':
             createNewCharacter()
             break
@@ -877,25 +883,25 @@ export async function addCharacter(arg:{
             return
     }
     const db = getDatabase()
-    if(db.characters[db.characters.length-1]){
-        changeChar(db.characters.length-1)
+    if (db.characters[db.characters.length - 1]) {
+        changeChar(db.characters.length - 1)
     }
     layoutState.betaMobile.stack = 1
 }
 
-export function changeChar(index: number, arg:{
-    reseter?:()=>any,
+export function changeChar(index: number, arg: {
+    reseter?: () => any,
 } = {}) {
-    const reseter = arg.reseter ?? (() => {})
-    if(get(doingChat)){
-      return
+    const reseter = arg.reseter ?? (() => { })
+    if (get(doingChat)) {
+        return
     }
-    reseter();
+    reseter()
     characterFormatUpdate(index, {
-      updateInteraction: true,
-    });
-    selectedCharID.set(index);
-}export async function getCustomBackground(db: string) {
+        updateInteraction: true,
+    })
+    selectedCharID.set(index)
+} export async function getCustomBackground(db: string) {
     if (db.length < 2) {
         return ''
     }
@@ -931,7 +937,7 @@ export function findCharacterIndexbyId(id: string) {
 export function getCharacterIndexObject() {
     const db = getDatabase()
     let i = 0
-    const result: { [key: string]: number}  = {}
+    const result: { [key: string]: number } = {}
     for (const char of db.characters) {
         result[char.chaId] = i
         i += 1
@@ -949,7 +955,7 @@ export function defaultEmotion(em: [string, string][]) {
     }
     return ''
 }
-export async function getEmotion(db: Database, chaEmotion: { [key: string]: [string, string, number][]} , type: 'contain' | 'plain' | 'css') {
+export async function getEmotion(db: Database, chaEmotion: { [key: string]: [string, string, number][] }, type: 'contain' | 'plain' | 'css') {
     const selectedChar = get(selectedCharID)
     const currentDat = db.characters[selectedChar]
     if (!currentDat) {

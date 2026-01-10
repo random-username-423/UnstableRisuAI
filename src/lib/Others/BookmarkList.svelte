@@ -9,7 +9,7 @@
     import { alertInput } from "src/ts/alert.svelte";
 
     const close = () => modalState.bookmark = false;
-    let chara = $derived(DBState.db.characters[$selectedCharID]);
+    let chara = $derived(DBState.currentChar);
     const simpleChar = $derived(createSimpleCharacter(chara));
 
     const messageMap = $derived.by(() => {

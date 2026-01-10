@@ -1,4 +1,4 @@
-import { getDatabase } from "./storage/database.svelte"
+import { getDatabase } from "src/ts/storage/database.svelte"
 import { isIOS } from "src/ts/platform"
 import type { MoveEvent } from "sortablejs"
 

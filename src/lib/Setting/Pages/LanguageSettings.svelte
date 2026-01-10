@@ -3,7 +3,7 @@
     import { changeLanguage, language } from "src/lang";
     
     import { DBState } from 'src/ts/stores.svelte';
-    import { sleep } from "src/ts/util";
+    import { sleep } from "src/ts/utils/util";
     import OptionInput from "src/lib/UI/GUI/OptionInput.svelte";
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
     import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";

@@ -7,14 +7,15 @@
     import { DBState } from "src/ts/stores.svelte";
     import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
     import { requestChatData } from "src/ts/process/request/request";
-    import { asBuffer, openFilePicker, sleep } from "src/ts/util";
+    import { asBuffer, openFilePicker, sleep } from "src/ts/utils/util";
     import { alertError, alertSelect } from "src/ts/alert.svelte";
     import { risuChatParser } from "src/ts/parser.svelte";
     import { AppendableBuffer, downloadFile } from "src/ts/globalApi.svelte";
-    import { getLanguageCodes } from "src/ts/util";
+    import { getLanguageCodes } from "src/ts/utils/util";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import sendSound from '../../etc/send.mp3'
+    import { getPlayableAudioContext } from "src/ts/utils/audio"
 
 
 
@@ -167,7 +168,7 @@
             }
 
             outputText = 'Converting video to audio...\n\n'
-            const audioContext = new AudioContext()
+            const audioContext = await getPlayableAudioContext()
             const audioBuffer = await audioContext.decodeAudioData(await file.arrayBuffer())
 
             const [left, right] =  [audioBuffer.getChannelData(0), audioBuffer.getChannelData(1)]
@@ -234,7 +235,7 @@
                     },
                 );
 
-                const audioContext = new AudioContext()
+                const audioContext = await getPlayableAudioContext()
                 const audioBuffer = await audioContext.decodeAudioData(await requestFile.arrayBuffer())
                 const combined = new Float32Array(audioBuffer.getChannelData(0).length)
                 for(let j = 0; j < audioBuffer.getChannelData(0).length; j++){

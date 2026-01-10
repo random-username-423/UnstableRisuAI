@@ -5,7 +5,7 @@ import {
     readDir,
     remove
 } from "@tauri-apps/plugin-fs"
-import { sleep, getBasename } from "./util"
+import { sleep, getBasename } from "./utils/util"
 import { convertFileSrc } from "@tauri-apps/api/core"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { appDataDir, join } from "@tauri-apps/api/path";
@@ -1311,7 +1311,7 @@ $effect.root(() => {
         if(!chatFoldedState.data){
             return
         }
-        const char = DBState.db.characters[selIdState.selId]
+        const char = DBState.currentChar
         const chat = char.chats[char.chatPage]
         if(chatFoldedState.data.targetCharacterId !== char.chaId){
             chatFoldedState.data = null
@@ -1326,7 +1326,7 @@ $effect.root(() => {
             chatFoldedStateMessageIndex.index = -1
             return
         }
-        const char = DBState.db.characters[selIdState.selId]
+        const char = DBState.currentChar
         const chat = char.chats[char.chatPage]
         const messageIndex = chat.message.findIndex((v) => {
             return chatFoldedState.data?.targetMessageId === v.chatId
@@ -1377,7 +1377,7 @@ export function changeChatTo(IdOrIndex: string | number) {
         return
     }
 
-    DBState.db.characters[selIdState.selId].chatPage = index
+    DBState.currentChar.chatPage = index
     ReloadGUIPointer.set(Math.random())
 }
 

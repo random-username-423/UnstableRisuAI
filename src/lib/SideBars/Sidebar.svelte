@@ -41,7 +41,7 @@
     import { isEqual } from "lodash";
     import SidebarAvatar from "./SidebarAvatar.svelte";
     import BaseRoundedButton from "../UI/BaseRoundedButton.svelte";
-    import { openFilePicker } from "src/ts/util";
+    import { openFilePicker } from "src/ts/utils/util";
     import { getCharacterIndexObject } from "src/ts/characters.svelte";
     import { v4 } from "uuid";
     import { checkCharOrder, getFileSrc, saveAsset } from "src/ts/globalApi.svelte";
@@ -487,7 +487,7 @@
             }}
           >
           {#if char.type === 'normal'}
-            <SidebarAvatar src={char.img ? getCharImage(char.img, "plain") : "/none.webp"} size="56" rounded={IconRounded} name={char.name} />
+            <SidebarAvatar src={getCharImage(char.img, "plain")} size="56" rounded={IconRounded} name={char.name} />
           {:else if char.type === "folder"}
             {#key char.color}
             {#key char.name}
@@ -636,7 +636,7 @@
                     }
                   }}
                 >
-                <SidebarAvatar src={char2.img ? getCharImage(char2.img, "plain") : "/none.webp"} size="56" rounded={IconRounded} name={char2.name}/>
+                <SidebarAvatar src={getCharImage(char2.img, "plain")} size="56" rounded={IconRounded} name={char2.name}/>
               </div>
             </div>
             <div class="h-4 min-h-4 w-14 relative z-20" role="listitem" ondragover={(e) => {
@@ -733,8 +733,8 @@
         <h1 class="text-xl">Welcome to RisuAI!</h1>
         <span class="text-xs text-textcolor2">Select a bot to start chatting</span>
       </div>
-    {:else if DBState.db.characters[$selectedCharID]?.chaId === '§playground'}
-      <SideChatList bind:chara={ DBState.db.characters[$selectedCharID]} />
+    {:else if DBState.currentChar?.chaId === '§playground'}
+      <SideChatList bind:chara={ DBState.currentChar} />
     {:else if $ConnectionOpenStore}
       <div class="flex flex-col">
         <h1 class="text-xl">{language.connectionOpen}</h1>
@@ -776,7 +776,7 @@
       {:else if $botMakerMode}
         <CharConfig />
       {:else}
-        <SideChatList bind:chara={ DBState.db.characters[$selectedCharID]} />
+        <SideChatList bind:chara={ DBState.currentChar} />
       {/if}
     {/if}
   {/if}

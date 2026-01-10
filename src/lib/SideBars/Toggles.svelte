@@ -1,7 +1,7 @@
 <script lang="ts">
     import { getModuleToggles } from "src/ts/process/modules";
     import { DBState, layoutState } from "src/ts/stores.svelte";
-    import { parseToggleSyntax, type sidebarToggle, type sidebarToggleGroup } from "src/ts/util";
+    import { parseToggleSyntax, type sidebarToggle, type sidebarToggleGroup } from "src/ts/utils/util";
     import { language } from "src/lang";
     import type { PromptItem } from "src/ts/process/prompt";
     import type { character, groupChat } from "src/ts/storage/types/character";

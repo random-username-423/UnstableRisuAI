@@ -1,5 +1,5 @@
 import { getDatabase, saveImage, setDatabase } from "./storage/database.svelte"
-import { openFilePicker, sleep } from "./util"
+import { openFilePicker, sleep } from "./utils/util"
 import { alertError, alertNormal, alertWait } from "./alert.svelte"
 import { AppendableBuffer, downloadFile, readImage } from "./globalApi.svelte"
 import { language } from "src/lang"

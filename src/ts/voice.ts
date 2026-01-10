@@ -1,3 +1,4 @@
+import { getPlayableAudioContext } from "./utils/audio";
 
 class voiceDetector{
 
@@ -14,7 +15,7 @@ class voiceDetector{
 
     async init() {
         this.userMedia = await navigator.mediaDevices.getUserMedia({ audio: true });
-        this.audioContext = new AudioContext();
+        this.audioContext = await getPlayableAudioContext();
         this.mediaRecorder = new MediaRecorder(this.userMedia);
         this.analyser = this.audioContext.createAnalyser();
         const source = this.audioContext.createMediaStreamSource(this.userMedia);

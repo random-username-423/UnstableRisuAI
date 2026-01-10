@@ -8,7 +8,7 @@ import { tokenize } from "../tokenizer";
 import { createBlankChar } from "../characters.svelte";
 import { getDatabase, setDatabase } from "../storage/database.svelte";
 import { type character } from '../storage/types/character';
-import { sleep } from "../util";
+import { sleep } from "../utils/util";
 
 
 type creationResult = { ok: false; data:string }|{ok:"creation";data:character}

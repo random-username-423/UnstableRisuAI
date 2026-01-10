@@ -6,7 +6,7 @@ import { isTauri, isNodeServer, isCapacitor } from "./platform";
 import { DBState } from "./stores.svelte";
 import { listen } from '@tauri-apps/api/event'
 import { getDatabase } from "./storage/database.svelte";
-import { sleep } from "./util"
+import { sleep } from "./utils/util"
 import { invoke } from "@tauri-apps/api/core";
 
 /**

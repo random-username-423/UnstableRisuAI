@@ -18,8 +18,8 @@
   }: Props = $props();
 
   const hypaV3Data = $derived(
-    DBState.db.characters[$selectedCharID].chats[
-      DBState.db.characters[$selectedCharID].chatPage
+    DBState.currentChar.chats[
+      DBState.currentChar.chatPage
     ].hypaV3Data
   );
 

@@ -6,7 +6,7 @@ import { isTauri } from "src/ts/platform"
 import { BaseDirectory, exists, readFile, readDir, writeFile } from "@tauri-apps/plugin-fs";
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
-import { sleep, getBasename } from "../util";
+import { sleep, getBasename } from "../utils/util";
 import { hubURL } from "../characterCards.svelte";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 

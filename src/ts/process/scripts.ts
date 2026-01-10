@@ -7,7 +7,7 @@ import { type character } from '../storage/types/character';
 import { downloadFile } from "../globalApi.svelte";
 import { alertError, alertNormal } from "../alert.svelte";
 import { language } from "src/lang";
-import { openFilePicker } from "../util";
+import { openFilePicker } from "../utils/util";
 import { assetRegex, type CbsConditions, risuChatParser as risuChatParserOrg, type simpleCharacterArgument } from "../parser.svelte";
 import { getModuleAssets, getModuleRegexScripts } from "./modules";
 import { HypaProcesser } from "./memory/hypamemory";

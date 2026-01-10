@@ -1,4 +1,4 @@
-import { sleep } from "./util";
+import { sleep } from "./utils/util";
 import { globalFetch } from "./fetch";
 
 let bgmElement:HTMLAudioElement|null = null;

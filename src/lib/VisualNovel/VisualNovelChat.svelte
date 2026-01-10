@@ -3,7 +3,7 @@
     import { DBState } from 'src/ts/stores.svelte';
     import { getFileSrc } from "src/ts/globalApi.svelte";
     import { selectedCharID } from "src/ts/stores.svelte";
-    import { sleep } from "src/ts/util";
+    import { sleep } from "src/ts/utils/util";
     import { onDestroy, onMount } from "svelte";
 
     const style:number = 1
@@ -42,8 +42,8 @@
     })
 </script>
 
-{#if DBState.db.characters[$selectedCharID].type === 'character' && DBState.db.characters[$selectedCharID].emotionImages[0]}
-    {#await getFileSrc(DBState.db.characters[$selectedCharID].emotionImages[0][1]) then imglink}
+{#if DBState.currentChar.type === 'character' && DBState.currentChar.emotionImages[0]}
+    {#await getFileSrc(DBState.currentChar.emotionImages[0][1]) then imglink}
         <div class="w-full absolute top-0 h-full bottom-0 justify-center flex">
             <img src={imglink} alt="character">
         </div>
@@ -54,7 +54,7 @@
         <div class="w-3xl max-w-full flex flex-col">
 
             <div class="bg-slate-700/90 h-12 rounded-lg border-slate-500 border-1 w-40 mb-2 text-center flex items-center justify-center">
-                <span class="font-bold p-2">{DBState.db.characters[$selectedCharID].name}</span>
+                <span class="font-bold p-2">{DBState.currentChar.name}</span>
             </div>
             <div class="bg-slate-700/90 h-40 rounded-lg border-slate-500 border-1 w-full text-justify p-4">
                 Test
@@ -68,7 +68,7 @@
             <div class="bg-neutral-200 h-12 rounded-lg border-pink-900 border-1 w-48 mb-2 text-center relative top-6 left-4 text-lg">
                 <div class="border-pink-300 border-4 h-full rounded-lg">
                     <div class="border-pink-900 border-1 text-justify h-full rounded-lg flex items-center justify-center">
-                        <span class="font-bold p-2">{DBState.db.characters[$selectedCharID].name}</span>
+                        <span class="font-bold p-2">{DBState.currentChar.name}</span>
                     </div>
                 </div>
             </div>

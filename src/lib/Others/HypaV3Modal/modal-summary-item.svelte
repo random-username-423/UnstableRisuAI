@@ -144,8 +144,8 @@
   }
 
   function isOrphan(): boolean {
-    const char = DBState.db.characters[$selectedCharID];
-    const chat = char.chats[DBState.db.characters[$selectedCharID].chatPage];
+    const char = DBState.currentChar;
+    const chat = char.chats[DBState.currentChar.chatPage];
 
     for (const chatMemo of summary.chatMemos) {
       if (chatMemo == null) {
@@ -194,8 +194,8 @@
   async function getMessageFromChatMemo(
     chatMemo: string | null
   ): Promise<Message | null> {
-    const char = DBState.db.characters[$selectedCharID];
-    const chat = char.chats[DBState.db.characters[$selectedCharID].chatPage];
+    const char = DBState.currentChar;
+    const chat = char.chats[DBState.currentChar.chatPage];
     const shouldProcess = getCurrentHypaV3Preset().settings.processRegexScript;
 
     let msg = null;

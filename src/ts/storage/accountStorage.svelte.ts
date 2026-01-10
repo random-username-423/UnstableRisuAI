@@ -6,7 +6,7 @@ import { forageStorage, getUnpargeables } from "../globalApi.svelte"
 import { encodeRisuSaveLegacy } from "./risuSave"
 import { v4 } from "uuid"
 import { language } from "src/lang"
-import { sleep } from "../util"
+import { sleep } from "../utils/util"
 import { fetchProtectedResource } from "../sionyw"
 import { requestLogin } from "src/lib/Others/Modals/ModalLogin.svelte"
 

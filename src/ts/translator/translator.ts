@@ -11,7 +11,7 @@ import { doingChat, type OpenAIChat } from "../process/index.svelte"
 import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../parser.svelte"
 import { selectedCharID } from "../stores.svelte"
 import { getModuleRegexScripts } from "../process/modules"
-import { getNodetextToSentence, sleep } from "../util"
+import { getNodetextToSentence, sleep } from "../utils/util"
 import { processScriptFull } from "../process/scripts"
 import localforage from "localforage"
 import sendSound from '../../etc/send.mp3'

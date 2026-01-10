@@ -12,7 +12,7 @@
     import { DBState } from 'src/ts/stores.svelte';
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import { HardDriveUploadIcon, PlusIcon, TrashIcon } from "@lucide/svelte";
-    import { openFilePicker } from "src/ts/util";
+    import { openFilePicker } from "src/ts/utils/util";
     import { doingChat, previewFormated, previewBody, sendChat } from "src/ts/process/index.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import { applyChatTemplate, chatTemplates } from "src/ts/process/templates/chatTemplate";
@@ -110,15 +110,15 @@
 
 <Accordion styled name={"Variables"}>
     <div class="rounded-md border border-darkborderc grid grid-cols-2 gap-2 p-2">
-        {#if DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate &&  Object.keys(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate).length > 0}
-            {#each Object.keys(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate) as key}
+        {#if DBState.currentChat.scriptstate &&  Object.keys(DBState.currentChat.scriptstate).length > 0}
+            {#each Object.keys(DBState.currentChat.scriptstate) as key}
                 <span>{key}</span>
-                {#if typeof DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate[key] === "object"}
+                {#if typeof DBState.currentChat.scriptstate[key] === "object"}
                     <div class="p-2 text-center">Object</div>
-                {:else if typeof DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate[key] === "string"}
-                    <TextInput bind:value={DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate[key] as string} />
-                {:else if typeof DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate[key] === "number"}
-                    <NumberInput bind:value={DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].scriptstate[key] as number} />
+                {:else if typeof DBState.currentChat.scriptstate[key] === "string"}
+                    <TextInput bind:value={DBState.currentChat.scriptstate[key] as string} />
+                {:else if typeof DBState.currentChat.scriptstate[key] === "number"}
+                    <NumberInput bind:value={DBState.currentChat.scriptstate[key] as number} />
                 {/if}
             {/each}
         {:else}
@@ -129,7 +129,7 @@
 
 <Accordion styled name={"Tokens"}>
     <div class="rounded-md border border-darkborderc grid grid-cols-2 gap-2 p-2">
-        {#await getCharToken(DBState.db.characters[$selectedCharID])}
+        {#await getCharToken(DBState.currentChar)}
             <span>Character Persistant</span>
             <div class="p-2 text-center">Loading...</div>
             <span>Character Dynamic</span>
@@ -140,7 +140,7 @@
             <span>Character Dynamic</span>
             <div class="p-2 text-center">{token.dynamic} Tokens</div>
         {/await}
-        {#await getChatToken(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage])}
+        {#await getChatToken(DBState.currentChat)}
             <span>Current Chat</span>
             <div class="p-2 text-center">Loading...</div>
         {:then token}

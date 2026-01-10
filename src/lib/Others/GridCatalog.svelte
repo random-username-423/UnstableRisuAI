@@ -8,7 +8,7 @@
     import TextInput from "../UI/GUI/TextInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
     import { language } from "src/lang";
-    import { parseMultilangString } from "src/ts/util";
+    import { parseMultilangString } from "src/ts/utils/util";
     import { checkCharOrder } from "src/ts/globalApi.svelte";
   import MobileCharacters from "../Mobile/MobileCharacters.svelte";
     interface Props {

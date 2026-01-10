@@ -7,7 +7,7 @@ import { getModuleTriggers } from "./modules";
 import { get } from "svelte/store";
 import { ReloadChatPointer, ReloadGUIPointer, selectedCharID, CurrentTriggerIdStore } from "../stores.svelte";
 import { processMultiCommand } from "./command";
-import { parseKeyValue, sleep, toGraphemes } from "../util";
+import { parseKeyValue, sleep, toGraphemes } from "../utils/util";
 import { alertError, alertInput, alertNormal, alertSelect } from "../alert.svelte";
 import type { OpenAIChat } from "./index.svelte";
 import { HypaProcesser } from "./memory/hypamemory";

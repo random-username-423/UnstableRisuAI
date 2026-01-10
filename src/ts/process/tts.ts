@@ -5,8 +5,9 @@ import { runTranslator, translateVox } from "../translator/translator";
 import { loadAsset } from "../globalApi.svelte";
 import { globalFetch } from "../fetch";
 import { language } from "src/lang";
-import { sleep } from "../util";
+import { sleep } from "../utils/util";
 import { runVITS } from "./transformers";
+import { getPlayableAudioContext } from "../utils/audio"
 
 let sourceNode:AudioBufferSourceNode = null
 
@@ -54,7 +55,7 @@ export async function sayTTS(character:character,text:string) {
                 break
             }
             case "elevenlab": {
-                const audioContext = new AudioContext();
+                const audioContext = await getPlayableAudioContext();
                 const da = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${character.ttsSpeech}`, {
                     body: JSON.stringify({
                         text: text,
@@ -80,7 +81,7 @@ export async function sayTTS(character:character,text:string) {
             }
             case "VOICEVOX": {
                 const jpText = await translateVox(text)
-                const audioContext = new AudioContext();
+                const audioContext = await getPlayableAudioContext();
                 const query = await fetch(`${db.voicevoxUrl}/audio_query?text=${jpText}&speaker=${character.ttsSpeech}`, {
                     method: 'POST',
                     headers: { "Content-Type": "application/json"},
@@ -135,7 +136,7 @@ export async function sayTTS(character:character,text:string) {
                 if(res.ok){
                     try {
                         const audio = Buffer.from(dat).buffer
-                        const audioContext = new AudioContext();
+                        const audioContext = await getPlayableAudioContext();
                         const audioBuffer = await audioContext.decodeAudioData(audio)
                         sourceNode = audioContext.createBufferSource();
                         sourceNode.buffer = audioBuffer;
@@ -157,7 +158,7 @@ export async function sayTTS(character:character,text:string) {
     
             }
             case 'novelai': {
-                const audioContext = new AudioContext();
+                const audioContext = await getPlayableAudioContext();
                 if(text === ''){
                     break;
                 }
@@ -192,7 +193,7 @@ export async function sayTTS(character:character,text:string) {
                     if(character.hfTTS.language !== 'en'){
                         text = await runTranslator(text, false, 'en', character.hfTTS.language)
                     }
-                    const audioContext = new AudioContext();
+                    const audioContext = await getPlayableAudioContext();
                     const response = await fetch(`https://api-inference.huggingface.co/models/${character.hfTTS.model}`, {
                         method: 'POST',
                         headers: {
@@ -230,11 +231,17 @@ export async function sayTTS(character:character,text:string) {
                 }
             }
             case 'vits':{
-                await runVITS(text, character.vits)
+                const audioContext = await getPlayableAudioContext();
+                const audioBuffer = await runVITS(text, character.vits)
+                const decodedData = await audioContext.decodeAudioData(audioBuffer)
+                const sourceNode = audioContext.createBufferSource();
+                sourceNode.buffer = decodedData;
+                sourceNode.connect(audioContext.destination);
+                sourceNode.start();
                 break;
             }
             case 'gptsovits':{
-                const audioContext = new AudioContext();
+                const audioContext = await getPlayableAudioContext();
 
                 const audio: Uint8Array = await loadAsset(character.gptSoVitsConfig.ref_audio_data.assetId);
                 const base64Audio = btoa(new Uint8Array(audio).reduce((data, byte) => data + String.fromCharCode(byte), ''));
@@ -318,7 +325,7 @@ export async function sayTTS(character:character,text:string) {
                 if (character.fishSpeechConfig.model._id === ''){
                     throw new Error('FishSpeech Model is not selected')
                 }
-                const audioContext = new AudioContext();
+                const audioContext = await getPlayableAudioContext();
 
                 const body = {
                     text: text,

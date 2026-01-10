@@ -7,7 +7,7 @@ import { type customscript } from '../storage/types/character'
 import { type loreBook } from '../storage/types/character'
 import { AppendableBuffer, downloadFile, forageStorage, readImage, saveAsset } from "../globalApi.svelte"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
-import { openFilePicker, sleep } from "../util"
+import { openFilePicker, sleep } from "../utils/util"
 import { v4 } from "uuid"
 import { convertExternalLorebook } from "./lorebook.svelte"
 import { decodeRPack, encodeRPack } from "../rpack/rpack_js"

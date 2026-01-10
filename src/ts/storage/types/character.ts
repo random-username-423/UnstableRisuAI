@@ -3,6 +3,12 @@ import type { ChatFolder } from './chat';
 import type { Chat } from './chat';
 import type { triggerscript as triggerscriptMain } from 'src/ts/process/triggers';
 
+export interface NewGenData {
+    prompt: string;
+    negative: string;
+    instructions: string;
+    emotionInstructions: string;
+}
 
 export interface character {
     type?: "character";
@@ -20,12 +26,7 @@ export interface character {
     globalLore: loreBook[];
     chaId: string;
     sdData: [string, string][];
-    newGenData?: {
-        prompt: string;
-        negative: string;
-        instructions: string;
-        emotionInstructions: string;
-    };
+    newGenData?: NewGenData;
     customscript: customscript[];
     triggerscript: triggerscript[];
     utilityBot: boolean;
