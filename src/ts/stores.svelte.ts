@@ -137,7 +137,7 @@ export const DBState = $state({
     },
 
     get currentChat() {
-        return DBState.currentChar.chats[DBState.currentChar.chatPage]
+        return this.currentChar.chats[this.currentChar.chatPage]
     }
 });
 // 사용: DBState.currentChar
