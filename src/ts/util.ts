@@ -4,6 +4,12 @@ import { readFile } from "@tauri-apps/plugin-fs"
 import { basename } from "@tauri-apps/api/path"
 import { isIOS, isTauri } from "src/ts/platform"
 
+
+/**
+ * Delays execution for a specified number of milliseconds.
+ * @param ms - The number of milliseconds to sleep.
+ * @returns A promise that resolves after the specified delay.
+ */
 export function sleep(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
 }
@@ -12,9 +18,8 @@ const baseNameRegex = /\\/g
 
 /**
  * Gets the basename of a given path.
- *
- * @param {string} data - The path to get the basename from.
- * @returns {string} - The basename of the path.
+ * @param data - The path to get the basename from.
+ * @returns The basename of the path.
  */
 export function getBasename(data: string) {
     const splited = data.replace(baseNameRegex, '/').split('/')
@@ -22,11 +27,22 @@ export function getBasename(data: string) {
     return lasts
 }
 
+/**
+ * Checks if a value is null or undefined.
+ * @param data - The value to check.
+ * @returns True if the value is null or undefined, false otherwise.
+ */
 export function checkNullish(data:any){
     return data === undefined || data === null
 }
 
 const domSelect = true
+
+/**
+ * Opens a file picker dialog and returns a single selected file.
+ * @param ext - Array of allowed file extensions.
+ * @returns The selected file with name and data, or null if cancelled.
+ */
 export async function selectSingleFile(ext:string[]){
     if(domSelect){
         const v = await selectFileByDom(ext, 'single')
@@ -49,6 +65,11 @@ export async function selectSingleFile(ext:string[]){
     }
 }
 
+/**
+ * Opens a file picker dialog and returns multiple selected files.
+ * @param ext - Array of allowed file extensions.
+ * @returns Array of selected files with name and data, or null if cancelled.
+ */
 export async function selectMultipleFile(ext:string[]){
     if(!isTauri){
         const v = await selectFileByDom(ext, 'multiple')
@@ -79,6 +100,12 @@ export async function selectMultipleFile(ext:string[]){
     }
 }
 
+/**
+ * Creates a hidden file input element to select files via DOM.
+ * @param allowedExtensions - Array of allowed file extensions.
+ * @param multiple - Whether to allow multiple file selection.
+ * @returns A promise that resolves to an array of selected File objects.
+ */
 export function selectFileByDom(allowedExtensions:string[], multiple:'multiple'|'single' = 'single') {
     return new Promise<null|File[]>((resolve) => {
         const fileInput = document.createElement('input');
@@ -116,6 +143,11 @@ export function selectFileByDom(allowedExtensions:string[], multiple:'multiple'|
     });
 }
 
+/**
+ * Reads a File object and returns its contents as a Uint8Array.
+ * @param file - The File object to read.
+ * @returns A promise that resolves to the file contents as Uint8Array.
+ */
 function readFileAsUint8Array(file: File) {
     return new Promise<Uint8Array>((resolve, reject) => {
       const reader = new FileReader();
@@ -134,6 +166,12 @@ function readFileAsUint8Array(file: File) {
     });
 }
 
+/**
+ * Encrypts a buffer using AES-GCM with a SHA-256 hashed key.
+ * @param data - The data to encrypt.
+ * @param keys - The encryption key string.
+ * @returns A promise that resolves to the encrypted ArrayBuffer.
+ */
 export async function encryptBuffer(data:Uint8Array, keys:string){
     // hash the key to get a fixed length key value
     const keyArray = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(keys))
@@ -159,6 +197,12 @@ export async function encryptBuffer(data:Uint8Array, keys:string){
     return result
 }
 
+/**
+ * Decrypts a buffer using AES-GCM with a SHA-256 hashed key.
+ * @param data - The data to decrypt.
+ * @param keys - The decryption key string.
+ * @returns A promise that resolves to the decrypted ArrayBuffer.
+ */
 export async function decryptBuffer(data:Uint8Array, keys:string){
     // hash the key to get a fixed length key value
     const keyArray = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(keys))
@@ -184,6 +228,11 @@ export async function decryptBuffer(data:Uint8Array, keys:string){
     return result
 }
 
+/**
+ * Converts a Uint8Array buffer to a UTF-8 text string.
+ * @param data - The buffer to convert.
+ * @returns The decoded text string.
+ */
 export function BufferToText(data:Uint8Array){
     if(!TextDecoder){
         return Buffer.from(data).toString('utf-8')
@@ -191,6 +240,11 @@ export function BufferToText(data:Uint8Array){
     return new TextDecoder().decode(data)
 }
 
+/**
+ * Encodes a multilingual string object into a formatted string.
+ * @param data - Object with language codes as keys and translations as values.
+ * @returns The encoded multilingual string.
+ */
 export function encodeMultilangString(data:{[code:string]:string}){
     let result = ''
     if(data.xx){
@@ -202,6 +256,11 @@ export function encodeMultilangString(data:{[code:string]:string}){
     return result
 }
 
+/**
+ * Parses a formatted multilingual string into a language code object.
+ * @param data - The encoded multilingual string.
+ * @returns Object with language codes as keys and translations as values.
+ */
 export function parseMultilangString(data:string){
     const result:{[code:string]:string} = {}
     const regex = /# `(.+?)`\n([\s\S]+?)(?=\n# `|$)/g
@@ -216,6 +275,11 @@ export function parseMultilangString(data:string){
     return result
 }
 
+/**
+ * Converts a language code to its display name.
+ * @param code - The ISO language code.
+ * @returns The localized language name.
+ */
 export const toLangName = (code:string) => {
     try {
         switch(code){
@@ -231,10 +295,20 @@ export const toLangName = (code:string) => {
     }
 }
 
+/**
+ * Capitalizes the first character of a string.
+ * @param s - The string to capitalize.
+ * @returns The string with the first character capitalized.
+ */
 export const capitalize = (s:string) => {
     return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
+/**
+ * Converts a Blob to a Uint8Array.
+ * @param data - The Blob to convert.
+ * @returns A promise that resolves to the Uint8Array.
+ */
 export function blobToUint8Array(data:Blob){
     return new Promise<Uint8Array>((resolve,reject) => {
         const reader = new FileReader()
@@ -255,6 +329,14 @@ export function blobToUint8Array(data:Blob){
 
 export const languageCodes = ["af","ak","am","an","ar","as","ay","az","be","bg","bh","bm","bn","br","bs","ca","co","cs","cy","da","de","dv","ee","el","en","eo","es","et","eu","fa","fi","fo","fr","fy","ga","gd","gl","gn","gu","ha","he","hi","hr","ht","hu","hy","ia","id","ig","is","it","iu","ja","jv","ka","kk","km","kn","ko","ku","ky","la","lb","lg","ln","lo","lt","lv","mg","mi","mk","ml","mn","mr","ms","mt","my","nb","ne","nl","nn","no","ny","oc","om","or","pa","pl","ps","pt","qu","rm","ro","ru","rw","sa","sd","si","sk","sl","sm","sn","so","sq","sr","st","su","sv","sw","ta","te","tg","th","ti","tk","tl","tn","to","tr","ts","tt","tw","ug","uk","ur","uz","vi","wa","wo","xh","yi","yo","zh","zu"]
 
+/**
+ * Simple Fast Counter 32-bit PRNG (pseudo-random number generator).
+ * @param a - First seed value.
+ * @param b - Second seed value.
+ * @param c - Third seed value.
+ * @param d - Fourth seed value.
+ * @returns A function that generates random numbers between 0 and 1.
+ */
 export function sfc32(a:number, b:number, c:number, d:number) {
     return function() {
       a |= 0; b |= 0; c |= 0; d |= 0;
@@ -268,6 +350,11 @@ export function sfc32(a:number, b:number, c:number, d:number) {
     }
 }
 
+/**
+ * Converts a UUID string to a numeric hash.
+ * @param uuid - The UUID string.
+ * @returns A numeric representation of the UUID.
+ */
 export function uuidtoNumber(uuid:string){
     let result = 0
     for(let i=0;i<uuid.length;i++){
@@ -276,6 +363,11 @@ export function uuidtoNumber(uuid:string){
     return result
 }
 
+/**
+ * Checks if the last character of a string is a punctuation mark.
+ * @param s - The string to check.
+ * @returns True if the last character is punctuation, false otherwise.
+ */
 export function isLastCharPunctuation(s:string){
     const lastChar = s.trim().at(-1)
     const punctuation = [
@@ -297,6 +389,11 @@ export function isLastCharPunctuation(s:string){
     return true
 }
 
+/**
+ * Trims characters from the end of a string until a punctuation mark is reached.
+ * @param s - The string to trim.
+ * @returns The trimmed string ending with punctuation.
+ */
 export function trimUntilPunctuation(s:string){
     let result = s
     while(result.length > 0 && !isLastCharPunctuation(result)){
@@ -307,22 +404,18 @@ export function trimUntilPunctuation(s:string){
 
 /**
  * Appends the given last path to the provided URL.
- *
- * @param {string} url - The base URL to which the last path will be appended.
- * @param {string} lastPath - The path to be appended to the URL.
- * @returns {string} The modified URL with the last path appended.
- * 
+ * @param url - The base URL to which the last path will be appended.
+ * @param lastPath - The path to be appended to the URL.
+ * @returns The modified URL with the last path appended.
  * @example
- * appendLastPath("https://github.com/kwaroran/Risuai","/commits/main")
- * return 'https://github.com/kwaroran/Risuai/commits/main'
- * 
+ * appendLastPath("https://github.com/kwaroran/Risuai", "/commits/main")
+ * // returns 'https://github.com/kwaroran/Risuai/commits/main'
  * @example
- * appendLastPath("https://github.com/kwaroran/Risuai/","/commits/main")
- * return 'https://github.com/kwaroran/Risuai/commits/main
- * 
+ * appendLastPath("https://github.com/kwaroran/Risuai/", "/commits/main")
+ * // returns 'https://github.com/kwaroran/Risuai/commits/main'
  * @example
- * appendLastPath("http://127.0.0.1:7997","embeddings")
- * return 'http://127.0.0.1:7997/embeddings'
+ * appendLastPath("http://127.0.0.1:7997", "embeddings")
+ * // returns 'http://127.0.0.1:7997/embeddings'
  */
 export function appendLastPath(url, lastPath) {
     // Remove trailing slash from url if exists
@@ -337,15 +430,13 @@ export function appendLastPath(url, lastPath) {
 
 /**
  * Converts the text content of a given Node object, including HTML elements, into a plain text sentence.
- *
- * @param {Node} node - The Node object from which the text content will be extracted.
- * @returns {string} The plain text sentence representing the content of the Node object.
- *
+ * Converts HTML formatting elements to markdown equivalents.
+ * @param node - The Node object from which the text content will be extracted.
+ * @returns The plain text sentence representing the content of the Node object.
  * @example
  * const div = document.createElement('div');
  * div.innerHTML = 'Hello<br>World<del>Deleted</del>';
- * const sentence = getNodetextToSentence(div);
- * console.log(sentence); // Output: "Hello\nWorld~Deleted~"
+ * getNodetextToSentence(div); // returns "Hello\nWorld~Deleted~"
  */
 export function getNodetextToSentence(node: Node): string {
     let result = '';
@@ -382,6 +473,11 @@ export function getNodetextToSentence(node: Node): string {
 }
 
 
+/**
+ * Checks if a URI has a known/supported protocol.
+ * @param uri - The URI to check.
+ * @returns True if the URI has a known protocol (http, https, ccdefault, embeded).
+ */
 export const isKnownUri = (uri:string) => {
     return uri.startsWith('http://')
             || uri.startsWith('https://')
@@ -389,6 +485,11 @@ export const isKnownUri = (uri:string) => {
             || uri.startsWith('embeded://')
 }
 
+/**
+ * Parses a key=value formatted string into an array of tuples.
+ * @param template - The template string with key=value pairs separated by newlines.
+ * @returns An array of [key, value] tuples.
+ */
 export function parseKeyValue(template:string){
     try {
         if(!template){
@@ -444,6 +545,11 @@ export type sidebarToggle =
         options?:string[]
     }
 
+/**
+ * Parses a toggle syntax formatted string into sidebar toggle configuration.
+ * @param template - The template string with toggle definitions.
+ * @returns An array of sidebar toggle configurations.
+ */
 export function parseToggleSyntax(template:string){
     try {
         if(!template){
@@ -480,6 +586,7 @@ export function parseToggleSyntax(template:string){
     }
 }
 
+/** Default options for sortable drag-and-drop functionality. */
 export const sortableOptions = {
 	delay: 300, // time in milliseconds to define when the sorting should start
 	delayOnTouchOnly: true,
@@ -490,6 +597,12 @@ export const sortableOptions = {
 } as const
 
 
+/**
+ * Generates a deterministic random number based on a character ID and word.
+ * @param cid - The character ID used for seeding.
+ * @param word - The word used for hashing.
+ * @returns A random number between 0 and 1.
+ */
 export function pickHashRand(cid:number,word:string) {
     let hashAddress = 5515
     const rand = (word:string) => {
@@ -506,6 +619,13 @@ export function pickHashRand(cid:number,word:string) {
     return randF()
 }
 
+/**
+ * Performs string replacement with an async replacer function.
+ * @param string - The string to perform replacements on.
+ * @param regexp - The regular expression pattern to match.
+ * @param replacerFunction - Async function that returns the replacement string.
+ * @returns A promise that resolves to the string with replacements applied.
+ */
 export async function replaceAsync(string:string, regexp:RegExp, replacerFunction: (...args: string[]) => Promise<string>) {
     const replacements = await Promise.all(
         Array.from(string.matchAll(regexp),
@@ -514,6 +634,12 @@ export async function replaceAsync(string:string, regexp:RegExp, replacerFunctio
     return string.replace(regexp, () => replacements[i++])
 }
 
+/**
+ * Simplifies a JSON schema by removing unnecessary properties and normalizing types.
+ * @param schema - The JSON schema to simplify.
+ * @param args - Optional configuration arguments.
+ * @returns The simplified schema object.
+ */
 export function simplifySchema(schema:any, args:{
     upperType?:boolean,
 } = {}){
@@ -591,6 +717,11 @@ export function simplifySchema(schema:any, args:{
 
 }
 
+/**
+ * Trims JSON output by removing thought tags and markdown code block wrappers.
+ * @param data - The raw string data to trim.
+ * @returns The cleaned JSON string.
+ */
 export const jsonOutputTrimmer = (data:string) => {
     
     data = data.replace(/<Thoughts>(.+?)<\/Thoughts>/gms, '').trim()
@@ -600,9 +731,13 @@ export const jsonOutputTrimmer = (data:string) => {
     return data.trim()
 }
 
+/**
+ * Casts a buffer to ensure proper ArrayBuffer typing.
+ * @param arr - The array or buffer to cast.
+ * @returns The properly typed buffer.
+ */
 export function asBuffer(arr: Uint8Array<ArrayBufferLike>): Uint8Array<ArrayBuffer>;
 export function asBuffer(arr: ArrayBufferLike): ArrayBuffer;
-
 export function asBuffer(arr: Uint8Array<ArrayBufferLike> | ArrayBufferLike): Uint8Array<ArrayBuffer> | ArrayBuffer {
     if (arr instanceof Uint8Array) {
         return arr as unknown as Uint8Array<ArrayBuffer>;
@@ -614,32 +749,32 @@ export function asBuffer(arr: Uint8Array<ArrayBufferLike> | ArrayBufferLike): Ui
 
 const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' })
 
+/**
+ * Splits a string into an array of grapheme clusters.
+ * @param str - The string to split.
+ * @returns An array of grapheme clusters.
+ */
 export function toGraphemes(str: string): string[] {
     return [...graphemeSegmenter.segment(str)].map(s => s.segment)
 }
 
 /**
  * Converts a ReadableStream of Uint8Array to a text string.
- *
- * @param {ReadableStream<Uint8Array>} stream - The readable stream to convert.
- * @returns {Promise<string>} A promise that resolves to the text content of the stream.
+ * @param stream - The readable stream to convert.
+ * @returns A promise that resolves to the text content of the stream.
  */
-
 export function textifyReadableStream(stream: ReadableStream<Uint8Array>) {
     return new Response(stream).text();
 }
 
 /**
  * Generates a list of valid ISO 639-1 language codes with localized display names.
- *
- * This function iterates through all possible two-letter combinations (AA-ZZ),
+ * Iterates through all possible two-letter combinations (AA-ZZ),
  * uses the browser's Intl.DisplayNames API to filter only valid language codes,
  * and returns them with names displayed in the specified UI language.
- *
- * @param {string} uiLanguage - The UI language code to display language names in (e.g., 'en', 'ko', 'cn').
- * @returns {Array<{code: string, name: string}>} An array of language objects sorted by localized name.
+ * @param uiLanguage - The UI language code to display language names in (e.g., 'en', 'ko', 'cn').
+ * @returns An array of language objects sorted by localized name.
  */
-
 export function getLanguageCodes(uiLanguage: string) {
     let languageCodes: {
         code: string;
@@ -673,13 +808,10 @@ export function getLanguageCodes(uiLanguage: string) {
 }
 
 /**
- * Semaphore: Concurrency control mechanism
- *
- * Limits the number of operations that can run simultaneously.
+ * Concurrency control mechanism that limits simultaneous operations.
  * When max concurrent operations are running, new operations wait in queue.
- *
- * Example: If max=3, only 3 asset saves can run at once.
- * The 4th save waits until one of the first 3 completes.
+ * For example, if max=3, only 3 operations can run at once.
+ * The 4th operation waits until one of the first 3 completes.
  */
 export class Semaphore {
     private available: number
