@@ -1,7 +1,7 @@
 import type { PipelineType, SummarizationOutput, TextToAudioPipeline, FeatureExtractionPipeline, TextGenerationConfig, TextGenerationOutput, ImageToTextOutput, SummarizationPipeline, TextGenerationPipeline, ImageToTextPipeline } from '@huggingface/transformers'
 import { unzip, type Unzipped } from 'fflate'
 import { loadAsset, saveAsset } from 'src/ts/globalApi.svelte'
-import { asBuffer } from 'src/ts/util'
+import { asBuffer } from 'src/ts/utils/util'
 import { v4 } from 'uuid'
 
 let initPromise: Promise<void> | null = null

@@ -5,7 +5,7 @@ import {
     readDir,
     remove
 } from "@tauri-apps/plugin-fs"
-import { sleep, getBasename } from "./util"
+import { sleep, getBasename } from "./utils/util"
 import { convertFileSrc } from "@tauri-apps/api/core"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { appDataDir, join } from "@tauri-apps/api/path";

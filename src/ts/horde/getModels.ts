@@ -1,4 +1,4 @@
-import { sleep } from "../util"
+import { sleep } from "../utils/util"
 
 interface HordeModel {
     "performance": number,

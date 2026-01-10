@@ -14,7 +14,7 @@ import { get } from 'svelte/store';
 import css, { type CssAtRuleAST } from '@adobe/css-tools'
 import { selectedCharID } from './stores.svelte';
 import { calcString } from './process/infunctions';
-import { parseKeyValue, pickHashRand, replaceAsync} from './util';
+import { parseKeyValue, pickHashRand, replaceAsync} from './utils/util';
 import { findCharacterbyId } from "./characters.svelte";
 import { getPersonaPrompt } from "./persona";
 import { getUserIcon } from "./persona";

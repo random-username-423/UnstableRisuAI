@@ -5,7 +5,7 @@ import { tagWhitelist } from "../pluginSafeClass";
 import DOMPurify from 'dompurify';
 import { additionalChatMenu, additionalFloatingActionButtons, additionalHamburgerMenu, additionalSettingsMenu, type MenuDef } from "src/ts/stores.svelte";
 import { v4 } from "uuid";
-import { sleep } from "src/ts/util";
+import { sleep } from "src/ts/utils/util";
 import { alertConfirm, alertError, alertNormal } from "src/ts/alert.svelte";
 import { language } from "src/lang";
 import { checkCharOrder, forageStorage } from "src/ts/globalApi.svelte";

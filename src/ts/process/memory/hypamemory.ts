@@ -1,7 +1,7 @@
 import localforage from "localforage";
 import { globalFetch } from "src/ts/fetch";
 import { runEmbedding } from "../transformers";
-import { appendLastPath } from "src/ts/util";
+import { appendLastPath } from "src/ts/utils/util";
 import { getDatabase } from "src/ts/storage/database.svelte";
 
 export type HypaModel = 'custom'|'ada'|'openai3small'|'openai3large'|'MiniLM'|'MiniLMGPU'|'nomic'|'nomicGPU'|'bgeSmallEn'|'bgeSmallEnGPU'|'bgem3'|'bgem3GPU'|'multiMiniLM'|'multiMiniLMGPU'

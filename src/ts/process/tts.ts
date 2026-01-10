@@ -5,7 +5,7 @@ import { runTranslator, translateVox } from "../translator/translator";
 import { loadAsset } from "../globalApi.svelte";
 import { globalFetch } from "../fetch";
 import { language } from "src/lang";
-import { sleep } from "../util";
+import { sleep } from "../utils/util";
 import { runVITS } from "./transformers";
 
 let sourceNode:AudioBufferSourceNode = null

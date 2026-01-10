@@ -7,7 +7,7 @@ import { v4 } from "uuid";
 import type { MCPClientLike } from "./internalmcp";
 import localforage from "localforage";
 import { isTauri } from "src/ts/platform"
-import { sleep } from "src/ts/util";
+import { sleep } from "src/ts/utils/util";
 
 export type MCPToolWithURL = MCPTool & {
     mcpURL: string;

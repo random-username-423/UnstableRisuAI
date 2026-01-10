@@ -7,7 +7,7 @@ import {
     readDir,
     remove
 } from "@tauri-apps/plugin-fs"
-import { checkNullish, sleep, getBasename } from "./util"
+import { checkNullish, sleep, getBasename } from "./utils/util"
 import { changeFullscreen, maximizeWindow } from "./gui/window"
 import { v4 as uuidv4 } from 'uuid';
 import { setDatabase, defaultSdDataFunc, getDatabase } from "./storage/database.svelte";

@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { globalFetch } from "src/ts/fetch";
-import { sleep } from "src/ts/util";
+import { sleep } from "src/ts/utils/util";
 import * as path from "@tauri-apps/api/path";
 import { exists, readTextFile } from "@tauri-apps/plugin-fs";
 import { alertClear, alertError, alertWait } from "src/ts/alert.svelte";

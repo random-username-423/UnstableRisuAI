@@ -5,7 +5,7 @@ import { type loreBook } from './storage/types/character';
 import { type character } from './storage/types/character';
 import { alertAddCharacter, alertClear, alertConfirm, alertError, alertNormal, alertSelect, alertWait } from "./alert.svelte";
 import { language } from "../lang";
-import { checkNullish, openFilePicker } from "./util";
+import { checkNullish, openFilePicker } from "./utils/util";
 import { getUserName } from "./persona";
 import { v4 as uuidv4, v4 } from 'uuid';
 import { layoutState, realmState, selectedCharID } from "./stores.svelte";

@@ -2,7 +2,7 @@ import { v4 } from "uuid"
 import { openURL } from "../../globalApi.svelte"
 import { fetchNative } from "../../fetch"
 import { alertInput } from "../../alert.svelte";
-import type { JSONSchema } from "../../util"
+import type { JSONSchema } from "../../utils/util"
 
 export type MCPPrompt = {
     name: string;              // Unique identifier for the prompt

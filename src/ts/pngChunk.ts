@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 import crc32 from 'crc/crc32';
 import { AppendableBuffer, VirtualWriter, type LocalWriter } from './globalApi.svelte';
-import { blobToUint8Array } from './util';
+import { blobToUint8Array } from './utils/util';
 
 class StreamChunkWriter{
     constructor(private data:Uint8Array, private writer:LocalWriter|WritableStreamDefaultWriter<Uint8Array>|VirtualWriter){
