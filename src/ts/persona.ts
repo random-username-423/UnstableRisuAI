@@ -1,5 +1,5 @@
 import { getDatabase, saveImage, setDatabase } from "./storage/database.svelte"
-import { selectSingleFile, sleep } from "./util"
+import { openFilePicker, sleep } from "./util"
 import { alertError, alertNormal, alertWait } from "./alert.svelte"
 import { AppendableBuffer, downloadFile, readImage } from "./globalApi.svelte"
 import { language } from "src/lang"
@@ -10,7 +10,7 @@ import { get } from "svelte/store"
 import { selectedCharID } from "./stores.svelte"
 
 export async function selectUserImg() {
-    const selected = await selectSingleFile(['png'])
+    const selected = await openFilePicker(['png'], { readContent: true })
     if (!selected) {
         return
     }
@@ -104,7 +104,7 @@ export async function exportUserPersona() {
 
 export async function importUserPersona() {
     try {
-        const v = await selectSingleFile(['png'])
+        const v = await openFilePicker(['png'], { readContent: true })
         if (!v) {
             return
         }

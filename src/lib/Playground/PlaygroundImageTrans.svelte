@@ -3,7 +3,7 @@
     import TextInput from "../UI/GUI/TextInput.svelte";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
-    import { jsonOutputTrimmer, selectSingleFile } from "src/ts/util";
+    import { jsonOutputTrimmer, openFilePicker } from "src/ts/util";
     import { requestChatData } from "src/ts/process/request/request";
     import { alertError } from "src/ts/alert.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
@@ -25,7 +25,7 @@
     let fontFamily = $state('Arial');
 
     async function selectFile(){
-        const file = await selectSingleFile(['png', 'jpg', 'jpeg','gif','webp','avif']);
+        const file = await openFilePicker(['png', 'jpg', 'jpeg','gif','webp','avif'], { readContent: true });
         if (!file){
             loading = false;
             return;

@@ -7,7 +7,7 @@ import { type customscript } from '../storage/types/character'
 import { type loreBook } from '../storage/types/character'
 import { AppendableBuffer, downloadFile, forageStorage, readImage, saveAsset } from "../globalApi.svelte"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
-import { selectSingleFile, sleep } from "../util"
+import { openFilePicker, sleep } from "../util"
 import { v4 } from "uuid"
 import { convertExternalLorebook } from "./lorebook.svelte"
 import { decodeRPack, encodeRPack } from "../rpack/rpack_js"
@@ -236,7 +236,7 @@ export async function importModuleFromData(data: Uint8Array) {
 }
 
 export async function importModule(){
-    const f = await selectSingleFile(['json', 'lorebook', 'risum'])
+    const f = await openFilePicker(['json', 'lorebook', 'risum'], { readContent: true })
     if(!f){
         return
     }

@@ -7,7 +7,7 @@
     import { DBState } from "src/ts/stores.svelte";
     import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
     import { requestChatData } from "src/ts/process/request/request";
-    import { asBuffer, selectFileByDom, selectSingleFile, sleep } from "src/ts/util";
+    import { asBuffer, openFilePicker, sleep } from "src/ts/util";
     import { alertError, alertSelect } from "src/ts/alert.svelte";
     import { risuChatParser } from "src/ts/parser.svelte";
     import { AppendableBuffer, downloadFile } from "src/ts/globalApi.svelte";
@@ -34,10 +34,10 @@
     async function runLLMMode() {
         outputText = 'Loading...\n\n'
 
-        const file = await selectSingleFile([
+        const file = await openFilePicker([
             'mp3', 'ogg', 'wav', 'flac',
-            'mp4', 'webm', 'mkv', 'avi', 'mov'  
-        ])
+            'mp4', 'webm', 'mkv', 'avi', 'mov'
+        ], { readContent: true })
 
         if(!file){
             outputText = ''
@@ -128,15 +128,13 @@
     async function runWhisperMode() {
         outputText = 'Loading...\n\n'
 
-        const files = await selectFileByDom([
+        const file = await openFilePicker([
             'mp3', 'ogg', 'wav', 'flac',
             'mp4', 'webm', 'mkv', 'avi', 'mov'  
 
         ])
 
-        const file = files?.[0]
-
-        let requestFile:File = null
+        let requestFile: File | null = null
 
         if(!file){
             outputText = ''

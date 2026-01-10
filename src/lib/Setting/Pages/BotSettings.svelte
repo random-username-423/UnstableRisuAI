@@ -26,7 +26,7 @@
     import ChatFormatSettings from "./ChatFormatSettings.svelte";
     import PromptSettings from "./PromptSettings.svelte";
     import { modalState } from "src/ts/stores.svelte";
-    import { selectSingleFile } from "src/ts/util";
+    import { openFilePicker } from "src/ts/util";
   import { getModelInfo, LLMFlags, LLMFormat, LLMProvider } from "src/ts/model/modellist";
   import RegexList from "src/lib/SideBars/Scripts/RegexList.svelte";
     import SettingRenderer from "../SettingRenderer.svelte";
@@ -519,7 +519,8 @@ let tokens = $state({
                 downloadFile('bias.json', data)
             }}><DownloadIcon /></button>
             <button class="font-medium cursor-pointer hover:text-textcolor" onclick={async () => {
-                const sel = await selectSingleFile(['json'])
+                const sel = await openFilePicker(['json'], { readContent: true })
+                if(!sel) return
                 const utf8 = new TextDecoder().decode(sel.data)
                 if(Array.isArray(JSON.parse(utf8))){
                     DBState.db.bias = JSON.parse(utf8)
@@ -658,7 +659,8 @@ let tokens = $state({
             </div>
         </div>
         <button class="mt-2 text-textcolor2 hover:text-textcolor focus-within:text-textcolor" onclick={async () => {
-            const sel = await selectSingleFile(['png', 'jpg', 'jpeg', 'webp'])
+            const sel = await openFilePicker(['png', 'jpg', 'jpeg', 'webp'], { readContent: true })
+            if(!sel) return
             const canvas = document.createElement('canvas')
             const ctx = canvas.getContext('2d')
             const img = new Image()

@@ -1,7 +1,7 @@
 import { get, writable } from "svelte/store";
 import { getDatabase, setDatabase } from "../storage/database.svelte";
 import { downloadFile } from "../globalApi.svelte";
-import { BufferToText, selectSingleFile } from "../util";
+import { bufferToText, openFilePicker } from "../util";
 import { alertError } from "../alert.svelte";
 import { isLite } from "../lite";
 import { CustomCSSStore, SafeModeStore } from "../stores.svelte";
@@ -207,11 +207,11 @@ export function exportColorScheme(){
 }
 
 export async function importColorScheme(){
-    const uarray = await selectSingleFile(['json'])
+    const uarray = await openFilePicker(['json'], { readContent: true })
     if(uarray == null){
         return
     }
-    const string = BufferToText(uarray.data)
+    const string = bufferToText(uarray.data)
     let colorScheme: ColorScheme
     try{
         colorScheme = JSON.parse(string)

@@ -14,7 +14,7 @@
     import { getFileSrc, saveAsset, downloadFile } from "src/ts/globalApi.svelte";
     import { alertNormal, alertError } from "src/ts/alert.svelte";
     import { exportRegex, importRegex } from "src/ts/process/scripts";
-    import { selectMultipleFile } from "src/ts/util";
+    import { openFilePicker } from "src/ts/util";
     
     import { DBState } from 'src/ts/stores.svelte';
   import { v4 } from "uuid";
@@ -98,7 +98,7 @@
 
     async function importLoreBook(){
         let lore = currentModule.lorebook
-        const lorebook = (await selectMultipleFile(['json', 'lorebook']))
+        const lorebook = (await openFilePicker(['json', 'lorebook'], { multiple: true, readContent: true }))
         if(!lorebook){
             return
         }
@@ -251,7 +251,7 @@
                 <th class="font-medium">{language.value}</th>
                 <th class="font-medium cursor-pointer w-10">
                     <button class="hover:text-green-500" onclick={async () => {
-                        const da = await selectMultipleFile(['png', 'webp', 'mp4', 'mp3', 'gif', 'jpeg', 'jpg', 'ttf', 'otf', 'css', 'webm', 'woff', 'woff2', 'svg', 'avif'])
+                        const da = await openFilePicker(['png', 'webp', 'mp4', 'mp3', 'gif', 'jpeg', 'jpg', 'ttf', 'otf', 'css', 'webm', 'woff', 'woff2', 'svg', 'avif'], { multiple: true, readContent: true })
                         currentModule.assets = currentModule.assets ?? []
                         if(!da){
                             return

@@ -5,7 +5,7 @@ import { type loreBook } from './storage/types/character';
 import { type character } from './storage/types/character';
 import { alertAddCharacter, alertClear, alertConfirm, alertError, alertNormal, alertSelect, alertWait } from "./alert.svelte";
 import { language } from "../lang";
-import { checkNullish, selectMultipleFile, selectSingleFile } from "./util";
+import { checkNullish, openFilePicker } from "./util";
 import { getUserName } from "./persona";
 import { v4 as uuidv4, v4 } from 'uuid';
 import { layoutState, realmState, selectedCharID } from "./stores.svelte";
@@ -93,7 +93,7 @@ export async function getCharImage(loc:string, type:'plain'|'css'|'contain'|'lgc
 }
 
 export async function selectCharImg(charIndex:number) {
-    const selected = await selectSingleFile(['png', 'webp', 'gif', 'jpg', 'jpeg'])
+    const selected = await openFilePicker(['png', 'webp', 'gif', 'jpg', 'jpeg'], { readContent: true })
     if(!selected){
         return
     }
@@ -174,7 +174,7 @@ export const addingEmotion = writable(false)
 
 export async function addCharEmotion(charId:number) {
     addingEmotion.set(true)
-    const selected = await selectMultipleFile(['png', 'webp', 'gif'])
+    const selected = await openFilePicker(['png', 'webp', 'gif'], { multiple: true, readContent: true })
     if(!selected){
         addingEmotion.set(false)
         return
@@ -385,7 +385,7 @@ export async function exportChat(page:number){
 }
 
 export async function importChat(){
-    const dat =await selectSingleFile(['json','jsonl','txt','html'])
+    const dat = await openFilePicker(['json','jsonl','txt','html'], { readContent: true })
     if(!dat){
         return
     }

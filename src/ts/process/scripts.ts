@@ -7,7 +7,7 @@ import { type character } from '../storage/types/character';
 import { downloadFile } from "../globalApi.svelte";
 import { alertError, alertNormal } from "../alert.svelte";
 import { language } from "src/lang";
-import { selectSingleFile } from "../util";
+import { openFilePicker } from "../util";
 import { assetRegex, type CbsConditions, risuChatParser as risuChatParserOrg, type simpleCharacterArgument } from "../parser.svelte";
 import { getModuleAssets, getModuleRegexScripts } from "./modules";
 import { HypaProcesser } from "./memory/hypamemory";
@@ -43,7 +43,7 @@ export function exportRegex(s?:customscript[]){
 
 export async function importRegex(o?:customscript[]):Promise<customscript[]>{
     o = o ?? []
-    const filedata = (await selectSingleFile(['json'])).data
+    const filedata = (await openFilePicker(['json'], { readContent: true }))?.data
     if(!filedata){
         return o
     }
