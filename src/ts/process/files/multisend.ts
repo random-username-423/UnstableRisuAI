@@ -5,7 +5,7 @@ import { doingChat, sendChat } from '../index.svelte';
 import { downloadFile } from 'src/ts/globalApi.svelte';
 import { isTauri } from "src/ts/platform"
 import { HypaProcesser } from '../memory/hypamemory';
-import { BufferToText as BufferToText, openFilePicker } from 'src/ts/util';
+import { bufferToText, openFilePicker } from 'src/ts/util';
 import { postInlayAsset } from './inlays';
 
 type sendFileArg = {
@@ -240,7 +240,7 @@ export async function postChatFile(query:string|{
         switch(extention){
             case 'po':{
                 await sendPofile({
-                    file: BufferToText(file.data),
+                    file: bufferToText(file.data),
                     query: xquery
                 })
                 results.push({
@@ -252,7 +252,7 @@ export async function postChatFile(query:string|{
                 results.push({
                     type: 'text',
                     data: await sendPDFFile({
-                        file: BufferToText(file.data),
+                        file: bufferToText(file.data),
                         query: xquery
                     }),
                     name: file.name
@@ -263,7 +263,7 @@ export async function postChatFile(query:string|{
                 results.push({
                     type: 'text',
                     data: await sendXMLFile({
-                        file: BufferToText(file.data),
+                        file: bufferToText(file.data),
                         query: xquery
                     }),
                     name: file.name
@@ -304,7 +304,7 @@ export async function postChatFile(query:string|{
                 results.push({
                     type: 'text',
                     data: await sendTxtFile({
-                        file: BufferToText(file.data),
+                        file: bufferToText(file.data),
                         query: xquery
                     }),
                     name: file.name

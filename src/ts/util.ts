@@ -151,10 +151,7 @@ async function deriveObfuscationKey(keys: string, usage: KeyUsage[]): Promise<Cr
  * @param data - The buffer to convert.
  * @returns The decoded text string.
  */
-export function BufferToText(data:Uint8Array){
-    if(!TextDecoder){
-        return Buffer.from(data).toString('utf-8')
-    }
+export function bufferToText(data: Uint8Array){
     return new TextDecoder().decode(data)
 }
 
