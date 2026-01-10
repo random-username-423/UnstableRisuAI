@@ -861,7 +861,11 @@
                 <span class="text-textcolor">No Model</span>
             {/if}
             <Button onclick={async () => {
-                const model = await registerOnnxModel()
+                const modelFile = await openFilePicker(['zip'], { readContent: true })
+                if(modelFile == null){
+                    return;
+                }
+                const model = await registerOnnxModel(modelFile.data, modelFile.name)
                 if(model && DBState.db.characters[$selectedCharID].type === 'character'){
                     DBState.db.characters[$selectedCharID].vits = model
                 }
