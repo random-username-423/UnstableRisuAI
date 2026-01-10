@@ -34,21 +34,6 @@ export function checkNullish(data: unknown): data is null | undefined {
 }
 
 /**
- * Opens a file picker dialog and returns multiple selected files.
- * @param ext - Array of allowed file extensions.
- * @returns Array of selected files with name and data, or null if cancelled.
- */
-export async function selectMultipleFile(ext:string[]){
-    const v = await selectFileByDom(ext, 'multiple')
-    if(!v) return null
-    const arr:{name:string, data:Uint8Array}[] = []
-    for(const file of v){
-        arr.push({name: file.name, data: await readFileAsUint8Array(file)})
-    }
-    return arr
-}
-
-/**
  * Creates a hidden file input element to select files via DOM.
  * @param allowedExtensions - Array of allowed file extensions.
  * @param multiple - Whether to allow multiple file selection.
@@ -124,35 +109,12 @@ export async function openFilePicker(ext: string[], options: FilePickerOptions =
     if (readContent) {
         const results = await Promise.all(files.map(async file => ({
             name: file.name,
-            data: await readFileAsUint8Array(file)
+            data: new Uint8Array(await file.arrayBuffer())
         })))
         return multiple ? results : results[0]
     }
 
     return multiple ? files : files[0]
-}
-
-/**
- * Reads a File object and returns its contents as a Uint8Array.
- * @param file - The File object to read.
- * @returns A promise that resolves to the file contents as Uint8Array.
- */
-function readFileAsUint8Array(file: File) {
-    return new Promise<Uint8Array>((resolve, reject) => {
-      const reader = new FileReader();
-  
-      reader.onload = (event) => {
-        const buffer = event.target.result;
-        const uint8Array = new Uint8Array(buffer as ArrayBuffer);
-        resolve(uint8Array);
-      };
-  
-      reader.onerror = () => {
-        reject(new Error('Failed to read file', { cause: reader.error }));
-      };
-  
-      reader.readAsArrayBuffer(file);
-    });
 }
 
 /**
