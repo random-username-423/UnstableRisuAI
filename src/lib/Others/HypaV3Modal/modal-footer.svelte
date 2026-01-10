@@ -15,8 +15,8 @@
   let { hypaV3Data }: Props = $props();
 
   async function getNextSummarizationTarget(): Promise<Message | null> {
-    const char = DBState.db.characters[$selectedCharID];
-    const chat = char.chats[DBState.db.characters[$selectedCharID].chatPage];
+    const char = DBState.currentChar;
+    const chat = char.chats[DBState.currentChar.chatPage];
     const shouldProcess = getCurrentHypaV3Preset().settings.processRegexScript;
 
     // Summaries exist

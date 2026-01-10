@@ -80,34 +80,34 @@
                                 <button class="mr-2 text-textcolor2 cursor-not-allowed"aria-labelledby="disabled">
                                 </button>
                             {:else}
-                                <button class={(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules.includes(rmodule.id)) ?
+                                <button class={(DBState.currentChat.modules.includes(rmodule.id)) ?
                                         "mr-2 cursor-pointer text-blue-500" :
-                                        (DBState.db.characters[$selectedCharID]?.modules?.includes(rmodule.id)) ?
+                                        (DBState.currentChar?.modules?.includes(rmodule.id)) ?
                                         "mr-2 cursor-pointer text-violet-500" :
                                         "text-textcolor2 hover:text-blue-400 mr-2 cursor-pointer"
                                 } onclick={async (e) => {
                                     e.stopPropagation()
-                                    if(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules.includes(rmodule.id)){
-                                        DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules.splice(DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules.indexOf(rmodule.id), 1)
+                                    if(DBState.currentChat.modules.includes(rmodule.id)){
+                                        DBState.currentChat.modules.splice(DBState.currentChat.modules.indexOf(rmodule.id), 1)
 
                                     }
                                     else{
-                                        DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules.push(rmodule.id)
+                                        DBState.currentChat.modules.push(rmodule.id)
                                     }
-                                    DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules = DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].modules
+                                    DBState.currentChat.modules = DBState.currentChat.modules
                                     $ReloadGUIPointer += 1
                                 }}
                                 oncontextmenu={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
-                                    if(!DBState.db.characters[$selectedCharID].modules){
-                                        DBState.db.characters[$selectedCharID].modules = []
+                                    if(!DBState.currentChar.modules){
+                                        DBState.currentChar.modules = []
                                     }
-                                    if(DBState.db.characters[$selectedCharID].modules.includes(rmodule.id)){
-                                        DBState.db.characters[$selectedCharID].modules.splice(DBState.db.characters[$selectedCharID].modules.indexOf(rmodule.id), 1)
+                                    if(DBState.currentChar.modules.includes(rmodule.id)){
+                                        DBState.currentChar.modules.splice(DBState.currentChar.modules.indexOf(rmodule.id), 1)
                                     }
                                     else{
-                                        DBState.db.characters[$selectedCharID].modules.push(rmodule.id)
+                                        DBState.currentChar.modules.push(rmodule.id)
                                     }
                                     $ReloadGUIPointer += 1
                                 }}>

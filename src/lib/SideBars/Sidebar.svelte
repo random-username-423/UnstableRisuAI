@@ -733,8 +733,8 @@
         <h1 class="text-xl">Welcome to RisuAI!</h1>
         <span class="text-xs text-textcolor2">Select a bot to start chatting</span>
       </div>
-    {:else if DBState.db.characters[$selectedCharID]?.chaId === '§playground'}
-      <SideChatList bind:chara={ DBState.db.characters[$selectedCharID]} />
+    {:else if DBState.currentChar?.chaId === '§playground'}
+      <SideChatList bind:chara={ DBState.currentChar} />
     {:else if $ConnectionOpenStore}
       <div class="flex flex-col">
         <h1 class="text-xl">{language.connectionOpen}</h1>
@@ -776,7 +776,7 @@
       {:else if $botMakerMode}
         <CharConfig />
       {:else}
-        <SideChatList bind:chara={ DBState.db.characters[$selectedCharID]} />
+        <SideChatList bind:chara={ DBState.currentChar} />
       {/if}
     {/if}
   {/if}

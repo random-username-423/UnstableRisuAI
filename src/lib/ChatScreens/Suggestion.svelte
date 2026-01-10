@@ -22,7 +22,7 @@
     }
 
     let { send, messageInput }: Props = $props();
-    let suggestMessages:string[] = $state(DBState.db.characters[$selectedCharID]?.chats[DBState.db.characters[$selectedCharID].chatPage]?.suggestMessages)
+    let suggestMessages:string[] = $state(DBState.currentChar?.chats[DBState.currentChar.chatPage]?.suggestMessages)
     let suggestMessagesTranslated:string[] = $state()
     let toggleTranslate:boolean = $state(DBState.db.autoTranslate)
     let progress:boolean = $state();
@@ -36,7 +36,7 @@
                 progress=false
                 abortController?.abort()
             }
-            let currentChar = DBState.db.characters[$selectedCharID];
+            let currentChar = DBState.currentChar;
             suggestMessages = currentChar?.chats[currentChar.chatPage].suggestMessages
         }
     }
@@ -49,7 +49,7 @@
             suggestMessages = []
         }
         if(!v && $selectedCharID > -1 && (!suggestMessages || suggestMessages.length === 0) && !progress){
-            let currentChar:character|groupChat = DBState.db.characters[$selectedCharID];
+            let currentChar:character|groupChat = DBState.currentChar;
             let messages:Message[] = []
             
             messages = [...messages, ...currentChar.chats[currentChar.chatPage].message];
@@ -117,7 +117,7 @@
     $effect.pre(() => {
         $selectedCharID
         //FIXME add selectedChatPage for optimize render
-        chatPage = DBState.db.characters[$selectedCharID].chatPage
+        chatPage = DBState.currentChar.chatPage
         updateSuggestions()
     });
     $effect.pre(() => {translateSuggest(toggleTranslate, suggestMessages)});

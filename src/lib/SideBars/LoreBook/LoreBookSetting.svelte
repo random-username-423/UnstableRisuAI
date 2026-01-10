@@ -18,17 +18,17 @@
     let { globalMode = $bindable(false) }: Props = $props();
 
     function isAllCharacterLoreAlwaysActive() {
-        const globalLore = DBState.db.characters[$selectedCharID].globalLore;
+        const globalLore = DBState.currentChar.globalLore;
         return globalLore && globalLore.every((book) => book.alwaysActive);
     }
 
     function isAllChatLoreAlwaysActive() {
-        const localLore = DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore;
+        const localLore = DBState.currentChat.localLore;
         return localLore && localLore.every((book) => book.alwaysActive);
     }
 
     function toggleCharacterLoreAlwaysActive() {
-        const globalLore = DBState.db.characters[$selectedCharID].globalLore;
+        const globalLore = DBState.currentChar.globalLore;
 
         if (!globalLore) return;
         
@@ -40,7 +40,7 @@
     }
 
     function toggleChatLoreAlwaysActive() {
-        const localLore = DBState.db.characters[$selectedCharID].chats[DBState.db.characters[$selectedCharID].chatPage].localLore;
+        const localLore = DBState.currentChat.localLore;
 
         if (!localLore) return;
 
@@ -57,7 +57,7 @@
         <button onclick={() => {
             submenu = 0
         }} class="p-2 flex-1" class:bg-selected={submenu === 0}>
-            <span>{DBState.db.characters[$selectedCharID].type === 'group' ? language.group : language.character}</span>
+            <span>{DBState.currentChar.type === 'group' ? language.group : language.character}</span>
         </button>
         <button onclick={() => {
             submenu = 1
@@ -73,32 +73,32 @@
 {/if}
 {#if submenu !== 2}
     {#if !globalMode}
-        <span class="text-textcolor2 mt-2 mb-6 text-sm">{submenu === 0 ? DBState.db.characters[$selectedCharID].type === 'group' ? language.groupLoreInfo : language.globalLoreInfo : language.localLoreInfo}</span>
+        <span class="text-textcolor2 mt-2 mb-6 text-sm">{submenu === 0 ? DBState.currentChar.type === 'group' ? language.groupLoreInfo : language.globalLoreInfo : language.localLoreInfo}</span>
     {/if}
-    <LoreBookList globalMode={globalMode} submenu={submenu} lorePlus={(!globalMode) && DBState.db.characters[$selectedCharID]?.lorePlus} />
+    <LoreBookList globalMode={globalMode} submenu={submenu} lorePlus={(!globalMode) && DBState.currentChar?.lorePlus} />
 {:else}
-    {#if DBState.db.characters[$selectedCharID].loreSettings}
+    {#if DBState.currentChar.loreSettings}
         <div class="flex items-center mt-4">
             <Check check={false} onChange={() => {
-                DBState.db.characters[$selectedCharID].loreSettings = undefined
+                DBState.currentChar.loreSettings = undefined
             }}
             name={language.useGlobalSettings}
             />
         </div>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.characters[$selectedCharID].loreSettings.recursiveScanning} name={language.recursiveScanning}/>
+            <Check bind:check={DBState.currentChar.loreSettings.recursiveScanning} name={language.recursiveScanning}/>
         </div>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.characters[$selectedCharID].loreSettings.fullWordMatching} name={language.fullWordMatching}/>
+            <Check bind:check={DBState.currentChar.loreSettings.fullWordMatching} name={language.fullWordMatching}/>
         </div>
         <span class="text-textcolor mt-4 mb-2">{language.loreBookDepth}</span>
-        <NumberInput size="sm" min={0} max={20} bind:value={DBState.db.characters[$selectedCharID].loreSettings.scanDepth} />
+        <NumberInput size="sm" min={0} max={20} bind:value={DBState.currentChar.loreSettings.scanDepth} />
         <span class="text-textcolor">{language.loreBookToken}</span>
-        <NumberInput size="sm" min={0} max={4096} bind:value={DBState.db.characters[$selectedCharID].loreSettings.tokenBudget} />
+        <NumberInput size="sm" min={0} max={4096} bind:value={DBState.currentChar.loreSettings.tokenBudget} />
     {:else}
         <div class="flex items-center mt-4">
             <Check check={true} onChange={() => {
-                DBState.db.characters[$selectedCharID].loreSettings = {
+                DBState.currentChar.loreSettings = {
                     tokenBudget: DBState.db.loreBookToken,
                     scanDepth:DBState.db.loreBookDepth,
                     recursiveScanning: false
@@ -110,7 +110,7 @@
     {/if}
     <div class="flex items-center mt-4">
         {#if DBState.db.useExperimental}
-            <Check bind:check={DBState.db.characters[$selectedCharID].lorePlus}
+            <Check bind:check={DBState.currentChar.lorePlus}
                 name={language.lorePlus}
             ><Help key="lorePlus"></Help><Help key="experimental"></Help></Check>
         {/if}

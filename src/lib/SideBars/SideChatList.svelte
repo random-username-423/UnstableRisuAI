@@ -508,7 +508,7 @@
             </button>
         </div>
 
-        {#if DBState.db.characters[$selectedCharID]?.chaId !== '§playground'}            
+        {#if DBState.currentChar?.chaId !== '§playground'}            
             <Toggles bind:chara={chara} />
         {/if}
     </div>

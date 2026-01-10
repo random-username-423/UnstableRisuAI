@@ -31,9 +31,9 @@
             if(realmState.uploadTarget.startsWith('preset') || realmState.uploadTarget.startsWith('module')){
                 //TODO, add preset edit
             }
-            else if(DBState.db.characters[$selectedCharID].type === 'character'){
+            else if(DBState.currentChar.type === 'character'){
                 loadingStage = 0
-                DBState.db.characters[$selectedCharID].realmId = e.data.id
+                DBState.currentChar.realmId = e.data.id
             }
             close()
         }
@@ -97,8 +97,8 @@
         if(realmState.uploadTarget.startsWith('preset') || realmState.uploadTarget.startsWith('module')){
             //TODO, add preset edit
         }
-        else if(DBState.db.characters[$selectedCharID].type === 'character' && DBState.db.characters[$selectedCharID].realmId){
-            url += `&edit=${DBState.db.characters[$selectedCharID].realmId}&edit-type=normal`
+        else if(DBState.currentChar.type === 'character' && DBState.currentChar.realmId){
+            url += `&edit=${DBState.currentChar.realmId}&edit-type=normal`
         }
         url += '#noLayout'
         return url

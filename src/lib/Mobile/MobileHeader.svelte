@@ -21,7 +21,7 @@
         }}>
             <ArrowLeft />
         </button>
-        <span class="font-bold text-lg w-2/3 truncate">{DBState.db.characters[$selectedCharID].name}</span>
+        <span class="font-bold text-lg w-2/3 truncate">{DBState.currentChar.name}</span>
         <div class="flex-1 flex justify-end">
             <button onclick={() => {
                 layoutState.betaMobile.sideBar = 1

@@ -90,7 +90,7 @@
                     {/if}
                 {:else}
                     <span class="text-textcolor2 text-sm">{language.ccv3Desc}</span>
-                    {#if cardExportType2 !== "charx" && cardExportType2 !== "charxJpeg" && isCharacterHasAssets(DBState.db.characters[$selectedCharID])}
+                    {#if cardExportType2 !== "charx" && cardExportType2 !== "charxJpeg" && isCharacterHasAssets(DBState.currentChar)}
                         <span class="text-red-500 text-sm">{language.notCharxWarn}</span>
                     {/if}
                 {/if}

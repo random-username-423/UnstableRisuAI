@@ -39,7 +39,7 @@
     {#if layoutState.betaMobile.sideBar > 0}
         <div class="w-full flex flex-col p-2 mt-2 h-full">
             {#if layoutState.betaMobile.sideBar === 1}
-                <SideChatList bind:chara={DBState.db.characters[$selectedCharID]} />
+                <SideChatList bind:chara={DBState.currentChar} />
             {:else if layoutState.betaMobile.sideBar === 2}
                 <CharConfig />
             {:else if layoutState.betaMobile.sideBar === 3}
