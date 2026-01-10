@@ -29,20 +29,8 @@ export function getBasename(data: string) {
  * @param data - The value to check.
  * @returns True if the value is null or undefined, false otherwise.
  */
-export function checkNullish(data:any){
+export function checkNullish(data: unknown): data is null | undefined {
     return data === undefined || data === null
-}
-
-/**
- * Opens a file picker dialog and returns a single selected file.
- * @param ext - Array of allowed file extensions.
- * @returns The selected file with name and data, or null if cancelled or no file selected.
- */
-export async function selectSingleFile(ext:string[]){
-    const v = await selectFileByDom(ext, 'single')
-    if(!v || v.length === 0) return null
-    const file = v[0]
-    return {name: file.name, data: await readFileAsUint8Array(file)}
 }
 
 /**
