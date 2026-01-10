@@ -3,7 +3,7 @@ import type { ChatFolder } from './chat'
 import type { Chat } from './chat'
 import type { triggerscript as triggerscriptMain } from 'src/ts/process/triggers'
 
-export interface character extends TTSSettings {
+export interface character extends character_TTS {
     type?: "character"
     name: string
     image?: string
@@ -92,7 +92,7 @@ export interface NewGenData {
     emotionInstructions: string
 }
 
-interface TTSSettings {
+interface character_TTS {
     ttsMode?: string
     ttsSpeech?: string
     ttsReadOnlyQuoted?: boolean
