@@ -1,6 +1,27 @@
 import { getDatabase } from "./storage/database.svelte"
 import { isIOS } from "src/ts/platform"
+import type { MoveEvent } from "sortablejs"
 
+/**
+ * JSON Schema type definition for tool input validation.
+ * Based on JSON Schema draft-2020-12 specification.
+ */
+export type JSONSchema = {
+    type?: string | string[]
+    properties?: Record<string, JSONSchema>
+    items?: JSONSchema
+    anyOf?: JSONSchema[]
+    required?: string[]
+    enum?: string[]
+    format?: string
+    description?: string
+    nullable?: boolean
+    maxLength?: number
+    minLength?: number
+    minProperties?: number
+    maxProperties?: number
+    [key: string]: unknown
+}
 
 /**
  * Delays execution for a specified number of milliseconds.
@@ -228,7 +249,7 @@ export function uuidtoNumber(uuid:string){
  * appendLastPath("http://127.0.0.1:7997", "embeddings")
  * // returns 'http://127.0.0.1:7997/embeddings'
  */
-export function appendLastPath(url, lastPath) {
+export function appendLastPath(url:string, lastPath:string) {
     // Remove trailing slash from url if exists
     url = url.replace(/\/$/, '');
     
@@ -317,7 +338,7 @@ export function parseKeyValue(template:string){
         }
     
         return keyValue   
-    } catch (error) {
+    } catch {
         return []
     }
 }
@@ -402,7 +423,7 @@ export const sortableOptions = {
 	delay: 300, // time in milliseconds to define when the sorting should start
 	delayOnTouchOnly: true,
     filter: '.no-sort',
-    onMove: (event) => {
+    onMove: (event: MoveEvent) => {
         return event.related.className.indexOf('no-sort') === -1
     }
 } as const
@@ -451,9 +472,9 @@ export async function replaceAsync(string:string, regexp:RegExp, replacerFunctio
  * @param args - Optional configuration arguments.
  * @returns The simplified schema object.
  */
-export function simplifySchema(schema:any, args:{
+export function simplifySchema(schema: JSONSchema, args:{
     upperType?:boolean,
-} = {}){
+} = {}): JSONSchema{
     if(!schema || typeof schema !== 'object'){
         console.error('Schema is not an object', schema)
         return schema
@@ -464,15 +485,15 @@ export function simplifySchema(schema:any, args:{
         if(schema.type.includes('null')){
             schema.nullable = true
         }
-        schema.type = (schema.type as string[]).filter(v => v !== 'null')[0]
+        schema.type = schema.type.filter(v => v !== 'null')[0]
     }
-    
+
     console.log('schema',schema)
-    const result:any = {
+    const result: JSONSchema = {
     }
 
     if(schema.type){
-        result.type = (schema.type as string)?.toLowerCase()
+        result.type = typeof schema.type === 'string' ? schema.type.toLowerCase() : schema.type
     }
     if(schema.type === 'object'){
         result.properties = {}
@@ -483,7 +504,7 @@ export function simplifySchema(schema:any, args:{
             result.required = schema.required
         }
     }
-    if(schema.type === 'array'){
+    if(schema.type === 'array' && schema.items){
         result.items = simplifySchema(schema.items, args)
     }
 
@@ -521,7 +542,7 @@ export function simplifySchema(schema:any, args:{
 
     if(schema.anyOf && schema.anyOf.length > 0){
         console.log('anyOf', schema.anyOf)
-        result.anyOf = schema.anyOf.map((v:any) => simplifySchema(v, args))
+        result.anyOf = schema.anyOf.map((v) => simplifySchema(v, args))
     }
 
     return result

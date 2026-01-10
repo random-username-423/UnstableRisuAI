@@ -2,6 +2,7 @@ import { v4 } from "uuid"
 import { openURL } from "../../globalApi.svelte"
 import { fetchNative } from "../../fetch"
 import { alertInput } from "../../alert.svelte";
+import type { JSONSchema } from "../../util"
 
 export type MCPPrompt = {
     name: string;              // Unique identifier for the prompt
@@ -17,8 +18,8 @@ export type MCPPrompt = {
 export type MCPTool ={
     name: string
     description: string
-    inputSchema: any // JSON schema for input validation
-    annotations?: any // Annotations for the tool, can be used for documentation or metadata
+    inputSchema: JSONSchema
+    annotations?: Record<string, unknown>
 }
 
 export type JsonRPC = {
