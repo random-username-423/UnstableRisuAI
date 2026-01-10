@@ -471,6 +471,13 @@ export async function replaceAsync(string:string, regexp:RegExp, replacerFunctio
  * @param schema - The JSON schema to simplify.
  * @param args - Optional configuration arguments.
  * @returns The simplified schema object.
+ *
+ * TODO: Refactoring needed
+ * - Remove console.log statements
+ * - Fix mutation of original schema object (side effect)
+ * - Remove unused parameter `upperType`
+ * - Consider provider-specific functions (nullable handling is Google-only; OpenAI/Anthropic use type: ["string", "null"])
+ * - Missing keywords: oneOf, allOf, additionalProperties, minimum, maximum, default, etc.
  */
 export function simplifySchema(schema: JSONSchema, args:{
     upperType?:boolean,
