@@ -197,17 +197,14 @@ export function parseMultilangString(data: string): Record<string, string> {
  * @param code - The ISO language code.
  * @returns The localized language name.
  */
-export const toLangName = (code:string) => {
+export const toLangName = (code: string): string => {
+    if (code === 'xx') {
+        return 'Unknown Language'
+    }
+
     try {
-        switch(code){
-            case 'xx':{ //Special case for unknown language
-                return 'Unknown Language'
-            }
-            default:{
-                return new Intl.DisplayNames([code, 'en'], {type: 'language'}).of(code)
-            }
-        }   
-    } catch (error) {
+        return new Intl.DisplayNames([code, 'en'], { type: 'language' }).of(code) ?? code
+    } catch {
         return code
     }
 }
