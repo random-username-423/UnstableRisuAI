@@ -8,7 +8,7 @@ import { type loreSettings } from './storage/types/character'
 import { type loreBook } from './storage/types/character'
 import { type groupChat } from './storage/types/character'
 import { type character } from './storage/types/character'
-import { checkNullish, decryptBuffer, isKnownUri, selectFileByDom, sleep } from "./util"
+import { checkNullish, decryptBuffer, isKnownUri, openFilePicker, sleep } from "./util"
 import { language } from "src/lang"
 import { v4 as uuidv4, v4 } from 'uuid';
 import { characterFormatUpdate } from "./characters.svelte"
@@ -38,7 +38,7 @@ export const hubURL = isNodeServer
 
 export async function importCharacter() {
     try {
-        const files = await selectFileByDom(["*"], 'multiple')
+        const files = await openFilePicker(["*"], {multiple:true, readContent: false})
         if(!files){
             return
         }

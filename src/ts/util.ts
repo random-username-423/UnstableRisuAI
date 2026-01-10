@@ -1,8 +1,5 @@
 import { getDatabase } from "./storage/database.svelte"
-import { open } from '@tauri-apps/plugin-dialog'
-import { readFile } from "@tauri-apps/plugin-fs"
-import { basename } from "@tauri-apps/api/path"
-import { isIOS, isTauri } from "src/ts/platform"
+import { isIOS } from "src/ts/platform"
 
 
 /**
@@ -36,33 +33,16 @@ export function checkNullish(data:any){
     return data === undefined || data === null
 }
 
-const domSelect = true
-
 /**
  * Opens a file picker dialog and returns a single selected file.
  * @param ext - Array of allowed file extensions.
- * @returns The selected file with name and data, or null if cancelled.
+ * @returns The selected file with name and data, or null if cancelled or no file selected.
  */
 export async function selectSingleFile(ext:string[]){
-    if(domSelect){
-        const v = await selectFileByDom(ext, 'single')
-        const file = v[0]
-        return {name: file.name,data:await readFileAsUint8Array(file)}
-    }
-
-    const selected = await open({
-        filters: [{
-            name: ext.join(', '),
-            extensions: ext
-        }]
-    });
-    if (Array.isArray(selected)) {
-        return null
-    } else if (selected === null) {
-        return null
-    } else {
-        return {name: await basename(selected),data:await readFile(selected)}
-    }
+    const v = await selectFileByDom(ext, 'single')
+    if(!v || v.length === 0) return null
+    const file = v[0]
+    return {name: file.name, data: await readFileAsUint8Array(file)}
 }
 
 /**
@@ -71,43 +51,23 @@ export async function selectSingleFile(ext:string[]){
  * @returns Array of selected files with name and data, or null if cancelled.
  */
 export async function selectMultipleFile(ext:string[]){
-    if(!isTauri){
-        const v = await selectFileByDom(ext, 'multiple')
-        const arr:{name:string, data:Uint8Array}[] = []
-        for(const file of v){
-            arr.push({name: file.name,data:await readFileAsUint8Array(file)})
-        }
-        return arr
+    const v = await selectFileByDom(ext, 'multiple')
+    if(!v) return null
+    const arr:{name:string, data:Uint8Array}[] = []
+    for(const file of v){
+        arr.push({name: file.name, data: await readFileAsUint8Array(file)})
     }
-
-    const selected = await open({
-        filters: [{
-            name: ext.join(', '),
-            extensions: ext,
-        }],
-        multiple: true
-    });
-    if (Array.isArray(selected)) {
-        const arr:{name:string, data:Uint8Array}[] = []
-        for(const file of selected){
-            arr.push({name: await basename(file),data:await readFile(file)})
-        }
-        return arr
-    } else if (selected === null) {
-        return null
-    } else {
-        return [{name: await basename(selected),data:await readFile(selected)}]
-    }
+    return arr
 }
 
 /**
  * Creates a hidden file input element to select files via DOM.
  * @param allowedExtensions - Array of allowed file extensions.
  * @param multiple - Whether to allow multiple file selection.
- * @returns A promise that resolves to an array of selected File objects.
+ * @returns A promise that resolves to an array of selected File objects, or null if cancelled.
  */
-export function selectFileByDom(allowedExtensions:string[], multiple:'multiple'|'single' = 'single') {
-    return new Promise<null|File[]>((resolve) => {
+function selectFileByDom(allowedExtensions:string[], multiple:'multiple'|'single' = 'single') {
+    return new Promise<File[] | null>((resolve) => {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.multiple = multiple === 'multiple';
@@ -121,26 +81,67 @@ export function selectFileByDom(allowedExtensions:string[], multiple:'multiple'|
             fileInput.accept = '*'
         }
 
-    
-        fileInput.addEventListener('change', (event) => {
-            if (fileInput.files.length === 0) {
+        fileInput.addEventListener('change', () => {
+            if (!fileInput.files || fileInput.files.length === 0) {
+                fileInput.remove()
                 resolve([]);
                 return;
             }
-    
-            const files = acceptAll ? Array.from(fileInput.files) :(Array.from(fileInput.files).filter(file => {
-                const fileExtension = file.name.split('.').pop().toLowerCase();
-                return !allowedExtensions || allowedExtensions.includes(fileExtension);
-            })) 
-    
+
+            const files = acceptAll ? Array.from(fileInput.files) : Array.from(fileInput.files).filter(file => {
+                const fileExtension = file.name.split('.').pop()?.toLowerCase();
+                return !allowedExtensions || allowedExtensions.includes(fileExtension ?? '');
+            })
+
             fileInput.remove()
             resolve(files);
         });
-    
+
+        fileInput.addEventListener('cancel', () => {
+            fileInput.remove()
+            resolve(null);
+        });
+
         document.body.appendChild(fileInput);
         fileInput.click();
-        fileInput.style.display = 'none'; // Hide the file input element
+        fileInput.style.display = 'none';
     });
+}
+
+export type FilePickerResult = { name: string, data: Uint8Array }
+
+export interface FilePickerOptions {
+    multiple?: boolean
+    readContent?: boolean
+}
+
+/**
+ * Opens a file picker dialog with flexible options.
+ * @param ext - Array of allowed file extensions.
+ * @param options - Configuration options.
+ * @param options.multiple - Whether to allow multiple file selection. Defaults to false.
+ * @param options.readContent - Whether to read file contents as Uint8Array. Defaults to false.
+ * @returns Selected file(s) or null if cancelled.
+ */
+export async function openFilePicker(ext: string[], options: { multiple: true, readContent: true }): Promise<FilePickerResult[] | null>
+export async function openFilePicker(ext: string[], options: { multiple: true, readContent?: false }): Promise<File[] | null>
+export async function openFilePicker(ext: string[], options: { multiple?: false, readContent: true }): Promise<FilePickerResult | null>
+export async function openFilePicker(ext: string[], options?: { multiple?: false, readContent?: false }): Promise<File | null>
+export async function openFilePicker(ext: string[], options: FilePickerOptions = {}): Promise<File | File[] | FilePickerResult | FilePickerResult[] | null> {
+    const { multiple = false, readContent = false } = options
+    const files = await selectFileByDom(ext, multiple ? 'multiple' : 'single')
+
+    if (!files || files.length === 0) return null
+
+    if (readContent) {
+        const results = await Promise.all(files.map(async file => ({
+            name: file.name,
+            data: await readFileAsUint8Array(file)
+        })))
+        return multiple ? results : results[0]
+    }
+
+    return multiple ? files : files[0]
 }
 
 /**

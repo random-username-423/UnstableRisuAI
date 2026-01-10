@@ -5,7 +5,7 @@ import { alertNormal } from '../alert.svelte';
 import { downloadFile } from '../globalApi.svelte';
 import { LLMFormat } from '../model/modellist';
 import { decodeRPack, encodeRPack } from '../rpack/rpack_js';
-import { decryptBuffer, encryptBuffer, selectSingleFile } from '../util';
+import { decryptBuffer, encryptBuffer, openFilePicker } from '../util';
 import { getDatabase, presetTemplate, setDatabase } from './database.svelte';
 import type { botPreset, Database } from './types';
 import { decode as decodeMsgpack } from "msgpackr/index-no-eval";
@@ -285,7 +285,7 @@ export async function importPreset(f: {
     data: Uint8Array;
 } | null = null) {
     if (!f) {
-        f = await selectSingleFile(["json", "preset", "risupreset", "risup"]);
+        f = await openFilePicker(["json", "preset", "risupreset", "risup"], { readContent: true });
     }
     if (!f) {
         return;

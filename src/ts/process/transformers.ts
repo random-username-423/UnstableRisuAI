@@ -1,7 +1,7 @@
 import type { SummarizationOutput, TextToAudioPipeline, FeatureExtractionPipeline, TextGenerationConfig, TextGenerationOutput, ImageToTextOutput } from '@huggingface/transformers';
 import { unzip } from 'fflate';
 import { loadAsset, saveAsset } from 'src/ts/globalApi.svelte';
-import { selectSingleFile, asBuffer  } from 'src/ts/util';
+import { openFilePicker, asBuffer  } from 'src/ts/util';
 import { v4 } from 'uuid';
 let tfCache: Cache = null
 let tfLoaded = false
@@ -150,7 +150,7 @@ export const runVITS = async (text: string, modelData: string | OnnxModelFiles =
 export const registerOnnxModel = async (): Promise<OnnxModelFiles> => {
     const id = v4().replace(/-/g, '')
 
-    const modelFile = await selectSingleFile(['zip'])
+    const modelFile = await openFilePicker(['zip'], { readContent: true })
 
     if (!modelFile) {
         return

@@ -1,13 +1,14 @@
 <script lang="ts">
     import { language } from "src/lang";
     import Button from "../UI/GUI/Button.svelte";
-    import { selectMultipleFile } from "src/ts/util";
+    import { openFilePicker } from "src/ts/util";
     import { detectPromptJSONType, promptConvertion } from "src/ts/process/prompt";
 
     let files: { name: string, content: string, type:string }[] = $state([])
 
     const addFile = async () => {
-        const selFiles = await selectMultipleFile(['json'])
+        const selFiles = await openFilePicker(['json'], { multiple: true, readContent: true })
+        if(!selFiles) return
 
         for(let i = 0; i < selFiles.length; i++) {
             const file = selFiles[i]

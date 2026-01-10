@@ -2,7 +2,7 @@
     import Check from "src/lib/UI/GUI/CheckInput.svelte";
     import { language } from "src/lang";
     import Help from "src/lib/Others/Help.svelte";
-    import { selectSingleFile } from "src/ts/util";
+    import { openFilePicker } from "src/ts/util";
     import { DBState, selectedCharID } from 'src/ts/stores.svelte';
     import { saveAsset, downloadFile } from "src/ts/globalApi.svelte";
     import { isTauri } from "src/ts/platform"
@@ -235,7 +235,7 @@
             {#if DBState.db.NAIImgConfig.reference_mode === 'vibe'}
                 <div class="relative">
                 <button class="mb-4" onclick={async () => {
-                    const file = await selectSingleFile(['naiv4vibe'])
+                    const file = await openFilePicker(['naiv4vibe'], { readContent: true })
                     if(!file){
                         return null
                     }
@@ -355,18 +355,18 @@
                 
                 <div class="relative">
                     <button class="mb-2" onclick={async () => {
-                        const img = await selectSingleFile([
+                        const img = await openFilePicker([
                             'jpg',
                             'jpeg',
                             'png',
                             'webp'
-                        ])
+                        ], { readContent: true })
                         if(!img){
                             return null
                         }
-                        
+
                         const imageData = img.data;
-                        
+
                         DBState.db.NAIImgConfig.character_base64image = Buffer.from(imageData).toString('base64');
                         const saveId = await saveAsset(imageData)
                         DBState.db.NAIImgConfig.character_image = saveId
@@ -438,12 +438,12 @@
             {#if DBState.db.NAII2I}
                 <div class="relative">
                     <button class="mb-2" onclick={async () => {
-                        const img = await selectSingleFile([
+                        const img = await openFilePicker([
                             'jpg',
                             'jpeg',
                             'png',
                             'webp'
-                        ])
+                        ], { readContent: true })
                         if(!img){
                             return null
                         }
@@ -876,7 +876,7 @@
 
                 <button class="mr-2 text-textcolor2 hover:text-green-500 cursor-pointer" onclick={async() => {
                     try {
-                        const bytesImport = (await selectSingleFile(['json'])).data
+                        const bytesImport = (await openFilePicker(['json'], { readContent: true }))?.data
 
                         if(!bytesImport) return
 

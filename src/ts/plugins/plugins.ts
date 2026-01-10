@@ -2,7 +2,7 @@ import { get, writable } from "svelte/store";
 import { language } from "../../lang";
 import { getCurrentCharacter, getDatabase, setDatabase, setDatabaseLite } from "../storage/database.svelte";
 import { alertConfirm, alertError, alertPluginConfirm } from "../alert.svelte";
-import { selectSingleFile, sleep } from "../util";
+import { openFilePicker, sleep } from "../util";
 import type { OpenAIChat } from "../process/index.svelte";
 import { readImage, saveAsset, toGetter } from "../globalApi.svelte";
 import { globalFetch, fetchNative } from "../fetch";
@@ -141,7 +141,7 @@ export async function importPlugin(code:string|null = null, argu:{
         let isTypescript = argu.isTypescript || false
         
         if(!code){
-            const f = await selectSingleFile(['js','ts'])
+            const f = await openFilePicker(['js','ts'], { readContent: true })
             if (!f) {
                 return
             }

@@ -4,7 +4,7 @@ import { type Message } from "../storage/types/chat";
 import { type loreBook } from '../storage/types/character';
 import { DBState } from '../stores.svelte';
 import { tokenize } from "../tokenizer";
-import { pickHashRand, selectSingleFile } from "../util";
+import { pickHashRand, openFilePicker } from "../util";
 import { findCharacterbyId } from "../characters.svelte";
 import { alertError, alertNormal } from "../alert.svelte";
 import { language } from "../../lang";
@@ -661,7 +661,7 @@ export async function importLoreBook(mode:'global'|'local'|'sglobal'){
     const lore = 
         mode === 'global' ? DBState.db.characters[selectedID].globalLore : 
         DBState.db.characters[selectedID].chats[page].localLore
-    const lorebook = (await selectSingleFile(['json', 'lorebook'])).data
+    const lorebook = (await openFilePicker(['json', 'lorebook'], { readContent: true }))?.data
     if(!lorebook){
         return
     }

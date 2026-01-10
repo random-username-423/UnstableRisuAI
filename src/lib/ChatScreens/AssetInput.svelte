@@ -2,7 +2,7 @@
     import { FileMusicIcon, PlusIcon } from "@lucide/svelte";
     import type { character, groupChat } from "src/ts/storage/types/character";
     import { getFileSrc, saveAsset } from "src/ts/globalApi.svelte";
-    import { selectMultipleFile } from "src/ts/util";
+    import { openFilePicker } from "src/ts/util";
     interface Props {
         currentCharacter: character|groupChat;
         onSelect: (additionalAsset:[string,string,string])=>void;
@@ -34,7 +34,7 @@
 {#if currentCharacter.type ==='character'}
     <button class="hover:text-green-500 bg-textcolor2 flex justify-center items-center w-16 h-16 m-1 rounded-md" onclick={async () => {
         if(currentCharacter.type === 'character'){
-            const da = await selectMultipleFile(['png', 'webp', 'mp4', 'mp3', 'gif'])
+            const da = await openFilePicker(['png', 'webp', 'mp4', 'mp3', 'gif'], { multiple: true, readContent: true })
             currentCharacter.additionalAssets = currentCharacter.additionalAssets ?? []
             if(!da){
                 return

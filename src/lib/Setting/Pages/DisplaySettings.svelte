@@ -2,7 +2,7 @@
     import { language } from "src/lang";
     import { saveImage } from "src/ts/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
-    import { selectSingleFile } from "src/ts/util";
+    import { openFilePicker } from "src/ts/util";
     import { changeFullscreen } from "src/ts/gui/window";
     import Check from "src/lib/UI/GUI/CheckInput.svelte";
     import Help from "src/lib/Others/Help.svelte";
@@ -268,7 +268,7 @@
         <Check check={DBState.db.customBackground !== ''} onChange={async (check) => {
             if(check){
                 DBState.db.customBackground = '-'
-                const d = await selectSingleFile(['png', 'webp', 'gif'])
+                const d = await openFilePicker(['png', 'webp', 'gif'], { readContent: true })
                 if(!d){
                     DBState.db.customBackground = ''
                     return

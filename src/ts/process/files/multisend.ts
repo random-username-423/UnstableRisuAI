@@ -5,7 +5,7 @@ import { doingChat, sendChat } from '../index.svelte';
 import { downloadFile } from 'src/ts/globalApi.svelte';
 import { isTauri } from "src/ts/platform"
 import { HypaProcesser } from '../memory/hypamemory';
-import { BufferToText as BufferToText, selectMultipleFile } from 'src/ts/util';
+import { BufferToText as BufferToText, openFilePicker } from 'src/ts/util';
 import { postInlayAsset } from './inlays';
 
 type sendFileArg = {
@@ -199,7 +199,7 @@ export async function postChatFile(query:string|{
     name:string,
     data:Uint8Array
 }):Promise<postFileResult[]>{
-    const files = typeof(query) === 'string' ? (await selectMultipleFile([
+    const files = typeof(query) === 'string' ? (await openFilePicker([
         //image format
         'jpg',
         'jpeg',
@@ -224,7 +224,7 @@ export async function postChatFile(query:string|{
         'po',
         // 'pdf',
         'txt'
-    ])) : [query]
+    ], { multiple: true, readContent: true })) : [query]
 
     if(!files){
         return null

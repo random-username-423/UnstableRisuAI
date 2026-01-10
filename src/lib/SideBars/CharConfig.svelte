@@ -11,7 +11,7 @@
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
     import { alertTOS, showHypaV2Alert } from "../../ts/alert.svelte";
     import BarIcon from "./BarIcon.svelte";
-    import { selectMultipleFile, selectSingleFile } from "../../ts/util";
+    import { openFilePicker } from "../../ts/util";
     import { getAuthorNoteDefaultText } from "src/ts/process/prompt"
     import { findCharacterbyId } from "../../ts/characters.svelte";
     import Help from "../Others/Help.svelte";
@@ -583,7 +583,7 @@
                         <th class="font-medium cursor-pointer w-10">
                             <button class="hover:text-green-500" onclick={async () => {
                                 if(DBState.db.characters[$selectedCharID].type === 'character'){
-                                    const da = await selectMultipleFile(['png', 'webp', 'mp4', 'mp3', 'gif', 'jpeg', 'jpg', 'ttf', 'otf', 'css', 'webm', 'woff', 'woff2', 'svg', 'avif'])
+                                    const da = await openFilePicker(['png', 'webp', 'mp4', 'mp3', 'gif', 'jpeg', 'jpg', 'ttf', 'otf', 'css', 'webm', 'woff', 'woff2', 'svg', 'avif'], { multiple: true, readContent: true })
                                     DBState.db.characters[$selectedCharID].additionalAssets = DBState.db.characters[$selectedCharID].additionalAssets ?? []
                                     if(!da){
                                         return
@@ -885,12 +885,12 @@
 
             <span class="text-textcolor">Reference Audio Data (3~10s audio file)</span>
             <Button onclick={async () => {
-                const audio = await selectSingleFile([
+                const audio = await openFilePicker([
                     'wav',
                     'ogg',
                     'aac',
                     'mp3'
-                ])
+                ], { readContent: true })
                 if(!audio){
                     return null
                 }
