@@ -2,7 +2,7 @@
     import { language } from "src/lang";
     import { saveImage } from "src/ts/storage/database.svelte";
     import { DBState } from 'src/ts/stores.svelte';
-    import { openFilePicker } from "src/ts/util";
+    import { openFilePicker } from "src/ts/utils/util";
     import { changeFullscreen } from "src/ts/gui/window";
     import Check from "src/lib/UI/GUI/CheckInput.svelte";
     import Help from "src/lib/Others/Help.svelte";

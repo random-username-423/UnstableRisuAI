@@ -1,6 +1,6 @@
 <script lang="ts">
     import { popupStore } from "src/ts/stores.svelte";
-    import { sleep } from "src/ts/util";
+    import { sleep } from "src/ts/utils/util";
     import { onDestroy, onMount } from "svelte";
 
     let styleString = $derived.by(() => {

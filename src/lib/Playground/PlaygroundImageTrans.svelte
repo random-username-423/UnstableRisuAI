@@ -3,7 +3,7 @@
     import TextInput from "../UI/GUI/TextInput.svelte";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
-    import { jsonOutputTrimmer, openFilePicker } from "src/ts/util";
+    import { jsonOutputTrimmer, openFilePicker } from "src/ts/utils/util";
     import { requestChatData } from "src/ts/process/request/request";
     import { alertError } from "src/ts/alert.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";

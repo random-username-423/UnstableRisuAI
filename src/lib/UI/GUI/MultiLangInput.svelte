@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { encodeMultilangString, languageCodes, parseMultilangString, toLangName } from "src/ts/util";
+    import { encodeMultilangString, languageCodes, parseMultilangString, toLangName } from "src/ts/utils/util";
     import TextAreaInput from "./TextAreaInput.svelte";
     let addingLang = $state(false)
     let selectedLang = $state("en")

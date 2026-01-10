@@ -11,7 +11,7 @@
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
     import { alertTOS, showHypaV2Alert } from "../../ts/alert.svelte";
     import BarIcon from "./BarIcon.svelte";
-    import { openFilePicker } from "../../ts/util";
+    import { openFilePicker } from "../../ts/utils/util";
     import { getAuthorNoteDefaultText } from "src/ts/process/prompt"
     import { findCharacterbyId } from "../../ts/characters.svelte";
     import Help from "../Others/Help.svelte";

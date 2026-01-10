@@ -2,7 +2,7 @@
     import { FileMusicIcon, PlusIcon } from "@lucide/svelte";
     import type { character, groupChat } from "src/ts/storage/types/character";
     import { getFileSrc, saveAsset } from "src/ts/globalApi.svelte";
-    import { openFilePicker } from "src/ts/util";
+    import { openFilePicker } from "src/ts/utils/util";
     interface Props {
         currentCharacter: character|groupChat;
         onSelect: (additionalAsset:[string,string,string])=>void;

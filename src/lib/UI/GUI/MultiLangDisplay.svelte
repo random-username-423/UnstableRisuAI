@@ -1,7 +1,7 @@
 <script lang="ts">
     import { ColorSchemeTypeStore } from "src/ts/gui/colorscheme";
     import { ParseMarkdown } from "src/ts/parser.svelte";
-    import { parseMultilangString, toLangName } from "src/ts/util";
+    import { parseMultilangString, toLangName } from "src/ts/utils/util";
 
     interface Props {
         value: string;

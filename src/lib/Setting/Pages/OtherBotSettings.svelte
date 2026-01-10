@@ -2,7 +2,7 @@
     import Check from "src/lib/UI/GUI/CheckInput.svelte";
     import { language } from "src/lang";
     import Help from "src/lib/Others/Help.svelte";
-    import { openFilePicker } from "src/ts/util";
+    import { openFilePicker } from "src/ts/utils/util";
     import { DBState, selectedCharID } from 'src/ts/stores.svelte';
     import { saveAsset, downloadFile } from "src/ts/globalApi.svelte";
     import { isTauri } from "src/ts/platform"

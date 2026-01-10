@@ -4,7 +4,7 @@
     import { downloadPreset } from "src/ts/storage/preset-manager";
     import { DBState } from 'src/ts/stores.svelte';
     import { selectedCharID, realmState } from "src/ts/stores.svelte";
-    import { asBuffer, sleep } from "src/ts/util";
+    import { asBuffer, sleep } from "src/ts/utils/util";
     import { onDestroy, onMount } from "svelte";
 
     const close =  () => {

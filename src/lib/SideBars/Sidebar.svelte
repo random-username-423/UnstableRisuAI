@@ -41,7 +41,7 @@
     import { isEqual } from "lodash";
     import SidebarAvatar from "./SidebarAvatar.svelte";
     import BaseRoundedButton from "../UI/BaseRoundedButton.svelte";
-    import { openFilePicker } from "src/ts/util";
+    import { openFilePicker } from "src/ts/utils/util";
     import { getCharacterIndexObject } from "src/ts/characters.svelte";
     import { v4 } from "uuid";
     import { checkCharOrder, getFileSrc, saveAsset } from "src/ts/globalApi.svelte";

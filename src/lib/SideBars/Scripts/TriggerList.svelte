@@ -3,7 +3,7 @@
     import type { triggerscript } from "src/ts/storage/types/character";
     import TriggerData from "./TriggerData.svelte";
     import Sortable from "sortablejs";
-    import { sleep, sortableOptions } from "src/ts/util";
+    import { sleep, sortableOptions } from "src/ts/utils/util";
     import { onDestroy, onMount } from "svelte";
     import { language } from "src/lang";
     import { alertConfirm } from "src/ts/alert.svelte";

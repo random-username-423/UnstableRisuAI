@@ -5,7 +5,7 @@
     import { LLMCacheStorage, runTranslator } from "src/ts/translator/translator";
     import Button from "../UI/GUI/Button.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
-    import { getLanguageCodes } from "src/ts/util";
+    import { getLanguageCodes } from "src/ts/utils/util";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import CheckInput from "../UI/GUI/CheckInput.svelte";
     import { tokenize } from "src/ts/tokenizer";

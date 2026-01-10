@@ -7,11 +7,11 @@
     import { DBState } from "src/ts/stores.svelte";
     import { getModelInfo, LLMFlags } from "src/ts/model/modellist";
     import { requestChatData } from "src/ts/process/request/request";
-    import { asBuffer, openFilePicker, sleep } from "src/ts/util";
+    import { asBuffer, openFilePicker, sleep } from "src/ts/utils/util";
     import { alertError, alertSelect } from "src/ts/alert.svelte";
     import { risuChatParser } from "src/ts/parser.svelte";
     import { AppendableBuffer, downloadFile } from "src/ts/globalApi.svelte";
-    import { getLanguageCodes } from "src/ts/util";
+    import { getLanguageCodes } from "src/ts/utils/util";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import sendSound from '../../etc/send.mp3'

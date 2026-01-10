@@ -5,7 +5,7 @@
     import { selectedCharID } from "src/ts/stores.svelte";
     import Sortable from 'sortablejs/modular/sortable.core.esm.js';
     import { onDestroy, onMount, tick } from "svelte";
-    import { sleep, sortableOptions } from "src/ts/util";
+    import { sleep, sortableOptions } from "src/ts/utils/util";
     import { v4 } from "uuid";
     import { alertError } from "src/ts/alert.svelte";
 

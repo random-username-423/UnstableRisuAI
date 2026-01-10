@@ -10,7 +10,7 @@
     import { sayTTS } from "src/ts/process/tts"
     import { DBState, ReloadChatPointer, CurrentTriggerIdStore } from 'src/ts/stores.svelte'
     import { ConnectionOpenStore } from "src/ts/sync/multiuser"
-    import { sleep } from "src/ts/util"
+    import { sleep } from "src/ts/utils/util"
     import { getUserIcon, getUserName } from "src/ts/persona"
     import { onDestroy, onMount } from "svelte"
     import { type Unsubscriber } from "svelte/store"
