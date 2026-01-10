@@ -11,17 +11,13 @@ export function sleep(ms: number): Promise<void> {
     return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const baseNameRegex = /\\/g
-
 /**
  * Gets the basename of a given path.
  * @param data - The path to get the basename from.
  * @returns The basename of the path.
  */
-export function getBasename(data: string) {
-    const splited = data.replace(baseNameRegex, '/').split('/')
-    const lasts = splited[splited.length - 1]
-    return lasts
+export function getBasename(data: string): string {
+    return data.split(/[/\\]/).at(-1) ?? ''
 }
 
 /**
