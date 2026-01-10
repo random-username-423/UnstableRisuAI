@@ -1,6 +1,6 @@
 <script lang="ts">
 
-    import Check from "src/lib/UI/GUI/CheckInput.svelte";
+    import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import { language } from "src/lang";
     import Help from "src/lib/Others/Help.svelte";
     
@@ -272,20 +272,20 @@ let tokens = $state({
 
     <div class="py-2 flex flex-col gap-2 mb-4">
         {#if modelInfo.flags.includes(LLMFlags.hasStreaming) || subModelInfo.flags.includes(LLMFlags.hasStreaming)}
-            <Check bind:check={DBState.db.useStreaming} name={`Response ${language.streaming}`}/>
+            <CheckInput bind:check={DBState.db.useStreaming} name={`Response ${language.streaming}`}/>
             
             {#if DBState.db.useStreaming && (modelInfo.flags.includes(LLMFlags.geminiThinking) || subModelInfo.flags.includes(LLMFlags.geminiThinking))}
-                <Check bind:check={DBState.db.streamGeminiThoughts} name={`Stream Gemini Thoughts`}/>
+                <CheckInput bind:check={DBState.db.streamGeminiThoughts} name={`Stream Gemini Thoughts`}/>
             {/if}
         {/if}
 
         {#if DBState.db.aiModel === 'reverse_proxy' || DBState.db.subModel === 'reverse_proxy'}
-            <Check bind:check={DBState.db.reverseProxyOobaMode} name={`${language.reverseProxyOobaMode}`}/>
+            <CheckInput bind:check={DBState.db.reverseProxyOobaMode} name={`${language.reverseProxyOobaMode}`}/>
         {/if}
         {#if modelInfo.provider === LLMProvider.NovelAI || subModelInfo.provider === LLMProvider.NovelAI}
-            <Check bind:check={DBState.db.NAIadventure} name={language.textAdventureNAI}/>
+            <CheckInput bind:check={DBState.db.NAIadventure} name={language.textAdventureNAI}/>
 
-            <Check bind:check={DBState.db.NAIappendName} name={language.appendNameNAI}/>
+            <CheckInput bind:check={DBState.db.NAIappendName} name={language.appendNameNAI}/>
         {/if}
     </div>
 
@@ -357,19 +357,19 @@ let tokens = $state({
         <span class="text-textcolor">No Repeat n-gram Size</span>
         <SliderInput min={0} max={20} step={1} marginBottom bind:value={DBState.db.ooba.no_repeat_ngram_size}/>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.ooba.do_sample} name={'Do Sample'}/>
+            <CheckInput bind:check={DBState.db.ooba.do_sample} name={'Do Sample'}/>
         </div>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.ooba.add_bos_token} name={'Add BOS Token'}/>
+            <CheckInput bind:check={DBState.db.ooba.add_bos_token} name={'Add BOS Token'}/>
         </div>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.ooba.ban_eos_token} name={'Ban EOS Token'}/>
+            <CheckInput bind:check={DBState.db.ooba.ban_eos_token} name={'Ban EOS Token'}/>
         </div>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.ooba.skip_special_tokens} name={'Skip Special Tokens'}/>
+            <CheckInput bind:check={DBState.db.ooba.skip_special_tokens} name={'Skip Special Tokens'}/>
         </div>
         <div class="flex items-center mt-4">
-            <Check check={!!DBState.db.localStopStrings} name={language.customStopWords} onChange={() => {
+            <CheckInput check={!!DBState.db.localStopStrings} name={language.customStopWords} onChange={() => {
                 if(!DBState.db.localStopStrings){
                     DBState.db.localStopStrings = []
                 }
@@ -406,7 +406,7 @@ let tokens = $state({
         <div class="flex flex-col p-3 rounded-md border-selected border mt-4">
             <ChatFormatSettings />
         </div>
-        <Check bind:check={DBState.db.ooba.formating.useName} name={language.useNamePrefix}/>
+        <CheckInput bind:check={DBState.db.ooba.formating.useName} name={language.useNamePrefix}/>
     
     {:else if modelInfo.format === LLMFormat.NovelAI}
         <div class="flex flex-col p-3 bg-darkbg mt-4">
@@ -578,7 +578,7 @@ let tokens = $state({
                 <PromptSettings mode='inline' subMenu={1} />
             {/if}
         {:else}
-            <Check check={false} name={language.usePromptTemplate} onChange={() => {
+            <CheckInput check={false} name={language.usePromptTemplate} onChange={() => {
                 DBState.db.promptTemplate = []
             }}/>
         {/if}
@@ -598,7 +598,7 @@ let tokens = $state({
     {/snippet}
 
     <Accordion styled name={language.customFlags}>
-        <Check bind:check={DBState.db.enableCustomFlags} name={language.enableCustomFlags}/>
+        <CheckInput bind:check={DBState.db.enableCustomFlags} name={language.enableCustomFlags}/>
 
 
         {#if DBState.db.enableCustomFlags}
@@ -630,7 +630,7 @@ let tokens = $state({
     </Accordion>
 
     <Accordion styled name={language.tools}>
-        <Check name={language.search} check={DBState.db.modelTools.includes('search')} onChange={() => {
+        <CheckInput name={language.search} check={DBState.db.modelTools.includes('search')} onChange={() => {
             if(DBState.db.modelTools.includes('search')){
                 DBState.db.modelTools = DBState.db.modelTools.filter((tool) => tool !== 'search')
             }
@@ -696,7 +696,7 @@ let tokens = $state({
         <span class="text-textcolor mb-2 mt-4">{language.formatingOrder} <Help key="formatOrder"/></span>
         <DropList bind:list={DBState.db.formatingOrder} />
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.promptPreprocess} name={language.promptPreprocess}/>
+            <CheckInput bind:check={DBState.db.promptPreprocess} name={language.promptPreprocess}/>
         </div>
     {:else if submenu === 2}
         <PromptSettings mode='inline' />

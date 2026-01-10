@@ -4,7 +4,7 @@
     import { ReloadGUIPointer } from "src/ts/stores.svelte";
     import { alertConfirm } from "src/ts/alert.svelte";
     import type { customscript } from "src/ts/storage/types/character";
-    import Check from "../../UI/GUI/CheckInput.svelte";
+    import CheckInput from "../../UI/GUI/CheckInput.svelte";
     import TextInput from "../../UI/GUI/TextInput.svelte";
     import TextAreaInput from "../../UI/GUI/TextAreaInput.svelte";
     import SelectInput from "../../UI/GUI/SelectInput.svelte";
@@ -158,7 +158,7 @@ interface Props {
                 </Accordion>
             {/if}
             <div class="flex items-center mt-4">
-                <Check bind:check={value.ableFlag} onChange={() => {
+                <CheckInput bind:check={value.ableFlag} onChange={() => {
                     if(!value.flag){
                         value.flag = 'g'
                     }

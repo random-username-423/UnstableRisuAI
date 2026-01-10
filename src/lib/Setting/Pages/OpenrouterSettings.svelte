@@ -1,7 +1,7 @@
 <script lang="ts">
     import { language } from "src/lang";
     import Accordion from "src/lib/UI/Accordion.svelte";
-    import Check from "src/lib/UI/GUI/CheckInput.svelte";
+    import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     
     import { DBState } from 'src/ts/stores.svelte';
     import ChatFormatSettings from "./ChatFormatSettings.svelte";
@@ -80,13 +80,13 @@
 
 <Accordion name="Openrouter Settings" styled>
     <div class="flex items-center mb-4">
-        <Check bind:check={DBState.db.openrouterFallback} name={language.openrouterFallback}/>
+        <CheckInput bind:check={DBState.db.openrouterFallback} name={language.openrouterFallback}/>
     </div>
     <div class="flex items-center mb-4">
-        <Check bind:check={DBState.db.openrouterMiddleOut} name={language.openrouterMiddleOut}/>
+        <CheckInput bind:check={DBState.db.openrouterMiddleOut} name={language.openrouterMiddleOut}/>
     </div>
     <div class="flex items-center mb-4">
-        <Check bind:check={DBState.db.useInstructPrompt} name={language.useInstructPrompt}/>
+        <CheckInput bind:check={DBState.db.useInstructPrompt} name={language.useInstructPrompt}/>
     </div>
 
     <Accordion name={language.openrouterProviderOrder} help="openrouterProviderOrder" styled>

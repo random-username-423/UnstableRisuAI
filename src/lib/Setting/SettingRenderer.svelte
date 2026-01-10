@@ -5,7 +5,7 @@
     import { language } from 'src/lang';
     import { DBState } from 'src/ts/stores.svelte';
     import { getModelInfo } from 'src/ts/model/modellist';
-    import Check from 'src/lib/UI/GUI/CheckInput.svelte';
+    import CheckInput from 'src/lib/UI/GUI/CheckInput.svelte';
     import TextInput from 'src/lib/UI/GUI/TextInput.svelte';
     import NumberInput from 'src/lib/UI/GUI/NumberInput.svelte';
     import TextAreaInput from 'src/lib/UI/GUI/TextAreaInput.svelte';
@@ -98,10 +98,10 @@
             {/if}
         {:else if item.type === 'check'}
             <div class="flex items-center {item.classes ?? 'mt-2'}">
-                <Check bind:check={(DBState.db as any)[item.bindKey]} name={getLabel(item)}>
+                <CheckInput bind:check={(DBState.db as any)[item.bindKey]} name={getLabel(item)}>
                     {#if item.showExperimental}<Help key="experimental"/>{/if}
                     {#if item.helpKey}<Help key={item.helpKey as any} unrecommended={item.helpUnrecommended ?? false}/>{/if}
-                </Check>
+                </CheckInput>
             </div>
         {:else if item.type === 'text'}
             <span class="text-textcolor {item.classes ?? ''}">{getLabel(item)}

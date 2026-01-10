@@ -4,9 +4,8 @@
     import PromptDataItem from "src/lib/UI/PromptDataItem.svelte";
     import { tokenizePreset, type PromptItem } from "src/ts/process/prompt";
     import { templateCheck } from "src/ts/process/templates/templateCheck";
-    
     import { DBState } from 'src/ts/stores.svelte';
-    import Check from "src/lib/UI/GUI/CheckInput.svelte";
+    import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import NumberInput from "src/lib/UI/GUI/NumberInput.svelte";
     import Help from "src/lib/Others/Help.svelte";
@@ -259,19 +258,19 @@
     <span class="text-textcolor mt-4">{language.postEndInnerFormat}</span>
     <TextInput bind:value={DBState.db.promptSettings.postEndInnerFormat}/>
 
-    <Check bind:check={DBState.db.promptSettings.sendChatAsSystem} name={language.sendChatAsSystem} className="mt-4"/>
-    <Check bind:check={DBState.db.promptSettings.sendName} name={language.formatGroupInSingle} className="mt-4"/>
-    <Check bind:check={DBState.db.promptSettings.trimStartNewChat} name={language.trimStartNewChat} className="mt-4"/>
-    <Check bind:check={DBState.db.promptSettings.utilOverride} name={language.utilOverride} className="mt-4"/>
-    <Check bind:check={DBState.db.jsonSchemaEnabled} name={language.enableJsonSchema} className="mt-4"/>
-    <Check bind:check={DBState.db.outputImageModal} name={language.outputImageModal} className="mt-4"/>
+    <CheckInput bind:check={DBState.db.promptSettings.sendChatAsSystem} name={language.sendChatAsSystem} className="mt-4"/>
+    <CheckInput bind:check={DBState.db.promptSettings.sendName} name={language.formatGroupInSingle} className="mt-4"/>
+    <CheckInput bind:check={DBState.db.promptSettings.trimStartNewChat} name={language.trimStartNewChat} className="mt-4"/>
+    <CheckInput bind:check={DBState.db.promptSettings.utilOverride} name={language.utilOverride} className="mt-4"/>
+    <CheckInput bind:check={DBState.db.jsonSchemaEnabled} name={language.enableJsonSchema} className="mt-4"/>
+    <CheckInput bind:check={DBState.db.outputImageModal} name={language.outputImageModal} className="mt-4"/>
 
-    <Check bind:check={DBState.db.strictJsonSchema} name={language.strictJsonSchema} className="mt-4"/>
+    <CheckInput bind:check={DBState.db.strictJsonSchema} name={language.strictJsonSchema} className="mt-4"/>
 
     {#if DBState.db.showUnrecommended}
-        <Check bind:check={DBState.db.promptSettings.customChainOfThought} name={language.customChainOfThought} className="mt-4">
+        <CheckInput bind:check={DBState.db.promptSettings.customChainOfThought} name={language.customChainOfThought} className="mt-4">
             <Help unrecommended key='customChainOfThought' />
-        </Check>
+        </CheckInput>
     {/if}
     <span class="text-textcolor mt-4">{language.maxThoughtTagDepth}</span>
     <NumberInput bind:value={DBState.db.promptSettings.maxThoughtTagDepth}/>
@@ -307,12 +306,12 @@
 
     
     <div class="flex items-center mt-4">
-        <Check bind:check={DBState.db.seperateModelsForAxModels} name={language.seperateModelsForAxModels}>
-        </Check>
+        <CheckInput bind:check={DBState.db.seperateModelsForAxModels} name={language.seperateModelsForAxModels}>
+        </CheckInput>
     </div>
 
     {#if DBState.db.seperateModelsForAxModels}
-        <Check bind:check={DBState.db.doNotChangeSeperateModels} name={language.doNotChangeSeperateModels}></Check>
+        <CheckInput bind:check={DBState.db.doNotChangeSeperateModels} name={language.doNotChangeSeperateModels}></CheckInput>
         <Accordion name={language.axModelsDef} styled>
             <span class="text-textcolor mt-4">
                 Memory
@@ -361,8 +360,8 @@
     {/snippet}
 
     <Accordion name={language.fallbackModel} styled>
-        <Check bind:check={DBState.db.fallbackWhenBlankResponse} name={language.fallbackWhenBlankResponse} className="mt-4"/>
-        <Check bind:check={DBState.db.doNotChangeFallbackModels} name={language.doNotChangeFallbackModels} className="mt-4"/>
+        <CheckInput bind:check={DBState.db.fallbackWhenBlankResponse} name={language.fallbackWhenBlankResponse} className="mt-4"/>
+        <CheckInput bind:check={DBState.db.doNotChangeFallbackModels} name={language.doNotChangeFallbackModels} className="mt-4"/>
 
         <Accordion name={language.model} styled>
             {@render fallbackModelList('model')}

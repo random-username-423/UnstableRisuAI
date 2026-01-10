@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Check from "src/lib/UI/GUI/CheckInput.svelte"
+    import CheckInput from "src/lib/UI/GUI/CheckInput.svelte"
     import { language } from "src/lang"
     import Button from "src/lib/UI/GUI/Button.svelte"
     import NumberInput from "src/lib/UI/GUI/NumberInput.svelte"
@@ -146,7 +146,7 @@
         >
     {:else if DBState.currentChar.ttsMode === "novelai"}
         <span class="text-textcolor">Custom Voice Seed</span>
-        <Check bind:check={DBState.currentChar.naittsConfig.customvoice} />
+        <CheckInput bind:check={DBState.currentChar.naittsConfig.customvoice} />
         {#if !DBState.currentChar.naittsConfig.customvoice}
             <span class="text-textcolor">Voice</span>
             <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.naittsConfig.voice}>
@@ -226,11 +226,11 @@
         <NumberInput className="mb-4 mt-2" bind:value={DBState.currentChar.fishSpeechConfig.chunk_length} />
 
         <span class="mt-2 text-textcolor">Normalize</span>
-        <Check className="mb-4 mt-2" bind:check={DBState.currentChar.fishSpeechConfig.normalize} />
+        <CheckInput className="mb-4 mt-2" bind:check={DBState.currentChar.fishSpeechConfig.normalize} />
     {/if}
     {#if DBState.currentChar.ttsMode}
         <div class="flex items-center mt-2">
-            <Check bind:check={DBState.currentChar.ttsReadOnlyQuoted} name={language.ttsReadOnlyQuoted} />
+            <CheckInput bind:check={DBState.currentChar.ttsReadOnlyQuoted} name={language.ttsReadOnlyQuoted} />
         </div>
     {/if}
 {/if}

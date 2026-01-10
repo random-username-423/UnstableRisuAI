@@ -20,7 +20,7 @@
     import { untrack } from 'svelte';
     import { CharConfigSubMenu, layoutState, realmState, selectedCharID, hypaV3State } from "../../ts/stores.svelte";
     import { PlusIcon, SmileIcon, TrashIcon, UserIcon, ActivityIcon, BookIcon, User, Braces, Volume2Icon, DownloadIcon, HardDriveUploadIcon, Share2Icon, ImageIcon, ImageOffIcon, ArrowUp, ArrowDown } from '@lucide/svelte'
-    import Check from "../UI/GUI/CheckInput.svelte";
+    import CheckInput from "../UI/GUI/CheckInput.svelte";
     import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/characters.svelte";
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
     import { alertTOS, showHypaV2Alert } from "../../ts/alert.svelte";
@@ -314,7 +314,7 @@
                         {/each}
                     </div>
                     <div class="flex items-center justify-center">
-                        <Check margin={false} bind:check={(DBState.currentChar as groupChat).characterActive[i]} />
+                        <CheckInput margin={false} bind:check={(DBState.currentChar as groupChat).characterActive[i]} />
                     </div>
                 {/each}
             {/if}
@@ -341,7 +341,7 @@
 
         {#if DBState.currentChar.type === 'group'}
             <div class="flex mt-2 items-center">
-                <Check bind:check={(DBState.currentChar as groupChat).orderByOrder} name={language.orderByOrder}/>
+                <CheckInput bind:check={(DBState.currentChar as groupChat).orderByOrder} name={language.orderByOrder}/>
             </div>
         {/if}
     {/if}
@@ -458,7 +458,7 @@
 
         {#if DBState.currentChar.type === 'character' && DBState.currentChar.image !== ''}
             <div class="flex items-center mt-4">
-                <Check bind:check={(DBState.currentChar as character).largePortrait} name={language.largePortrait}/>
+                <CheckInput bind:check={(DBState.currentChar as character).largePortrait} name={language.largePortrait}/>
             </div>
         {/if}
 
@@ -910,21 +910,21 @@
         </div>
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.lowLevelAccess} name={language.lowLevelAccess}/>
+            <CheckInput bind:check={DBState.currentChar.lowLevelAccess} name={language.lowLevelAccess}/>
             <span> <Help key="lowLevelAccess" name={language.lowLevelAccess}/></span>
         </div>
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.hideChatIcon} name={language.hideChatIcon}/>
+            <CheckInput bind:check={DBState.currentChar.hideChatIcon} name={language.hideChatIcon}/>
         </div>
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.utilityBot} name={language.utilityBot}/>
+            <CheckInput bind:check={DBState.currentChar.utilityBot} name={language.utilityBot}/>
             <span> <Help key="utilityBot" name={language.utilityBot}/></span>
         </div>
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.escapeOutput} name={language.escapeOutput}/>
+            <CheckInput bind:check={DBState.currentChar.escapeOutput} name={language.escapeOutput}/>
         </div>
 
         {#if DBState.db.supaModelType !== 'none' && DBState.db.hypav2}
@@ -969,7 +969,7 @@
         {/if}
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.lowLevelAccess} name={language.lowLevelAccess}/>
+            <CheckInput bind:check={DBState.currentChar.lowLevelAccess} name={language.lowLevelAccess}/>
             <span> <Help key="lowLevelAccess" name={language.lowLevelAccess}/></span>
         </div>
     {/if}
