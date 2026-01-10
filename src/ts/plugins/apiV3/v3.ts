@@ -8,8 +8,9 @@ import { v4 } from "uuid";
 import { sleep } from "src/ts/util";
 import { alertConfirm, alertError, alertNormal } from "src/ts/alert.svelte";
 import { language } from "src/lang";
+import { checkCharOrder, forageStorage } from "src/ts/globalApi.svelte";
+import { isNodeServer, isTauri } from "src/ts/platform";
 import { getFetchLogs } from "src/ts/fetch";
-import { checkCharOrder } from "src/ts/globalApi.svelte";
 
 /*
     V3 API for RisuAI Plugins
@@ -755,6 +756,19 @@ const makeRisuaiAPIV3 = (iframe:HTMLIFrameElement,plugin:RisuPlugin) => {
         },
         alertError: (msg:string) => {
             return alertError(msg)
+        },
+        getRuntimeInfo: () => {
+            return {
+                apiVersion: "3.0",
+                platform: 
+                    isNodeServer ? 'node' :
+                    isTauri ? 'tauri' :
+                    'web',
+                saveMethod:
+                    isTauri ? 'tauri' :
+                    forageStorage.isAccount ? 'account' :
+                    'local',
+            }
         },
         checkCharOrder: checkCharOrder,
         //Internal use APIs
