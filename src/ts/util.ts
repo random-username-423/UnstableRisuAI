@@ -119,29 +119,9 @@ export async function openFilePicker(ext: string[], options: FilePickerOptions =
  * @param keys - The encryption key string.
  * @returns A promise that resolves to the encrypted ArrayBuffer.
  */
-export async function encryptBuffer(data:Uint8Array, keys:string){
-    // hash the key to get a fixed length key value
-    const keyArray = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(keys))
-
-    const key = await window.crypto.subtle.importKey(
-        "raw",
-        keyArray,
-        "AES-GCM",
-        false,
-        ["encrypt", "decrypt"]
-    )
-
-    // use web crypto api to encrypt the data
-    const result = await window.crypto.subtle.encrypt(
-        {
-            name: "AES-GCM",
-            iv: new Uint8Array(12),
-        },
-        key,
-        asBuffer(data)
-    )
-
-    return result
+export async function encryptBuffer(data: Uint8Array, keys: string): Promise<ArrayBuffer> {
+    const key = await deriveObfuscationKey(keys, ["encrypt"])
+    return window.crypto.subtle.encrypt({ name: "AES-GCM", iv: new Uint8Array(12) }, key, asBuffer(data))
 }
 
 /**
@@ -150,29 +130,20 @@ export async function encryptBuffer(data:Uint8Array, keys:string){
  * @param keys - The decryption key string.
  * @returns A promise that resolves to the decrypted ArrayBuffer.
  */
-export async function decryptBuffer(data:Uint8Array, keys:string){
-    // hash the key to get a fixed length key value
+export async function decryptBuffer(data: Uint8Array, keys: string): Promise<ArrayBuffer> {
+    const key = await deriveObfuscationKey(keys, ["decrypt"])
+    return window.crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(12) }, key, asBuffer(data))
+}
+
+/**
+ * Derives a CryptoKey from a string using SHA-256 hash.
+ * @param keys - The key string to derive from.
+ * @param usage - The allowed key usages (encrypt/decrypt).
+ * @returns A promise that resolves to the derived CryptoKey.
+ */
+async function deriveObfuscationKey(keys: string, usage: KeyUsage[]): Promise<CryptoKey> {
     const keyArray = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(keys))
-
-    const key = await window.crypto.subtle.importKey(
-        "raw",
-        keyArray,
-        "AES-GCM",
-        false,
-        ["encrypt", "decrypt"]
-    )
-
-    // use web crypto api to encrypt the data
-    const result = await window.crypto.subtle.decrypt(
-        {
-            name: "AES-GCM",
-            iv: new Uint8Array(12),
-        },
-        key,
-        asBuffer(data)
-    )
-
-    return result
+    return window.crypto.subtle.importKey("raw", keyArray, "AES-GCM", false, usage)
 }
 
 /**
