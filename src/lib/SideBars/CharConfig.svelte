@@ -459,7 +459,7 @@
                             iconRemoveMode
                         ){
                             DBState.db.characters[$selectedCharID].image = ''
-                            if((DBState.db.characters[$selectedCharID]! as character).ccAssets?.length > 0){
+                            if(((DBState.db.characters[$selectedCharID]! as character).ccAssets?.length ?? 0) > 0){
                                 changeCharImage($selectedCharID, 0)
                             }
                             iconRemoveMode = false
@@ -486,7 +486,7 @@
                                 changeCharImage($selectedCharID, i)
                             }
                             else if(DBState.db.characters[$selectedCharID].type === 'character'){
-                                (DBState.db.characters[$selectedCharID] as character).ccAssets.splice(i, 1)
+                                (DBState.db.characters[$selectedCharID] as character).ccAssets?.splice(i, 1)
                                 iconRemoveMode = false
                             }
                         }}>
@@ -612,7 +612,7 @@
                 {/if}
             </div>
 
-            {#if (DBState.db.characters[$selectedCharID] as character).inlayViewScreen}
+            {#if (DBState.db.characters[$selectedCharID] as character).inlayViewScreen && (DBState.db.characters[$selectedCharID] as character).newGenData}
                 <span class="text-textcolor mt-2">{language.imgGenInstructions}</span>
                 <TextAreaInput highlight bind:value={(DBState.db.characters[$selectedCharID] as character).newGenData.emotionInstructions} />
             {/if}
