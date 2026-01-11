@@ -5,7 +5,6 @@
     // ============================================================
 
     // Child components for chat UI
-    import Suggestion from './Suggestion.svelte';
     import Chat from "./Chat.svelte";
     import CreatorQuote from "./CreatorQuote.svelte";
     import MainMenu from '../UI/MainMenu.svelte';
@@ -1071,19 +1070,6 @@
             {/if}
 
             <!-- ======================================================== -->
-            <!-- AUTO-SUGGESTIONS                                         -->
-            <!-- AI-powered response suggestions for user                 -->
-            <!-- ======================================================== -->
-            {#if DBState.db.useAutoSuggestions}
-                <Suggestion messageInput={(msg)=>messageInput=(
-                    // Clean up suggestions for certain model types
-                    (DBState.db.subModel === "textgen_webui" || DBState.db.subModel === "mancer" || DBState.db.subModel.startsWith('local_')) && DBState.db.autoSuggestClean
-                    ? msg.replace(/ +\(.+?\) *$| - [^"'*]*?$/, '')
-                    : msg
-                )} {send}/>
-            {/if}
-
-            <!-- ======================================================== -->
             <!-- CHAT MESSAGES SECTION                                    -->
             <!-- Displays all chat messages and handles cold storage      -->
             <!-- ======================================================== -->
@@ -1318,14 +1304,6 @@
 
                         <ImagePlusIcon />
                         <span class="ml-2">{language.postFile}</span>
-                    </div>
-
-                    <!-- Auto-suggestions toggle -->
-                    <div class={"flex items-center cursor-pointer "+ (DBState.db.useAutoSuggestions ? 'text-green-500':'lg:hover:text-green-500')} onclick={async () => {
-                        DBState.db.useAutoSuggestions = !DBState.db.useAutoSuggestions
-                    }}>
-                        <ReplyIcon />
-                        <span class="ml-2">{language.autoSuggest}</span>
                     </div>
 
                     <!-- Modules button -->
