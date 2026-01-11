@@ -214,6 +214,8 @@
     // Cleanup hooks on component destroy
     onDestroy(() => {
         unsubscribeMenuClose()
+        debouncedTranslate.api.cancel()
+        debouncedTranslate.standard.cancel()
     })
 
     // Watch for character changes to reset runtime state
