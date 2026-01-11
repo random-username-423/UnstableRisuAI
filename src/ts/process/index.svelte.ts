@@ -3,8 +3,8 @@ import { setCurrentChat } from "../storage/database.svelte"
 import { changeToPreset } from '../storage/preset-manager'
 import { type Message, type MessagePresetInfo, type MessageGenerationInfo, type Chat } from '../storage/types/chat'
 import { type character } from '../storage/types/character'
-import { DBState } from '../stores.svelte'
-import { CharEmotion, selectedCharID } from "../stores.svelte"
+import { DBState, selIdState } from '../stores.svelte'
+import { CharEmotion } from "../stores.svelte"
 import { ChatTokenizer, tokenize, tokenizeNum } from "../tokenizer"
 import { language } from "../../lang"
 import { alertError } from "../alert.svelte"
@@ -110,7 +110,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     const findCharCache: { [key: string]: character } = {}
     function findCharacterbyIdwithCache(id: string) {
         const d = findCharCache[id]
-        if (!!d) {
+        if (d) {
             return d
         }
         else {
@@ -137,11 +137,11 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
     function throwError(error: string) {
         if (DBState.db.inlayErrorResponse) {
-            if (DBState.db.characters[selectedChar].chats[selectedChat].message[DBState.db.characters[selectedChar].chats[selectedChat].message.length - 1].role === 'char') {
-                DBState.db.characters[selectedChar].chats[selectedChat].message[DBState.db.characters[selectedChar].chats[selectedChat].message.length - 1].data += `\n\`\`\`risuerror\n${error}\n\`\`\``
+            if (DBState.currentMessages[DBState.currentMessages.length - 1].role === 'char') {
+                DBState.currentMessages[DBState.currentMessages.length - 1].data += `\n\`\`\`risuerror\n${error}\n\`\`\``
             }
             else {
-                DBState.db.characters[selectedChar].chats[selectedChat].message.push({
+                DBState.currentMessages.push({
                     role: 'char',
                     data: `\`\`\`risuerror\n${error}\n\`\`\``,
                     saying: currentChar.chaId,
@@ -157,6 +157,9 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return
     }
 
+    // Block new generation requests while already generating.
+    // However, allow group chat member calls (chatProcessIndex >= 0) to proceed,
+    // since the orchestrator (chatProcessIndex === -1) sequentially invokes each character.
     if (chatGenState.generating) {
         if (chatProcessIndex === -1) {
             return false
@@ -164,6 +167,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
     chatGenState.generating = true
 
+    // Preset chain: randomly select one preset from a comma-separated list each generation.
+    // Only runs on orchestrator/single chat calls, not individual group member calls.
     if (chatProcessIndex === -1 && DBState.db.presetChain) {
         const names = DBState.db.presetChain.split(',').map((v) => v.trim())
         const randomSelect = Math.floor(Math.random() * names.length)
@@ -195,11 +200,10 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     DBState.db.statics.messages += 1
-    const selectedChar = get(selectedCharID)
-    const nowChatroom = DBState.db.characters[selectedChar]
+    const nowChatroom = DBState.currentChar
     nowChatroom.lastInteraction = Date.now()
-    const selectedChat = nowChatroom.chatPage
-    nowChatroom.chats[nowChatroom.chatPage].message = nowChatroom.chats[nowChatroom.chatPage].message.map((v) => {
+    const selectedChatPage = nowChatroom.chatPage
+    DBState.currentChat.message = DBState.currentChat.message.map((v) => {
         v.chatId = v.chatId ?? v4()
         return v
     })
@@ -243,7 +247,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         if (chatProcessIndex === -1) {
             const charNames = nowChatroom.characters.map((v) => findCharacterbyIdwithCache(v).name)
 
-            const messages = nowChatroom.chats[nowChatroom.chatPage].message
+            const messages = DBState.currentMessages
             const lastMessage = messages[messages.length - 1]
             let order = nowChatroom.characters.map((v, i) => {
                 return {
@@ -287,8 +291,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
     const chatAdditonalTokens = arg.chatAdditonalTokens ?? caculatedChatTokens
     const tokenizer = new ChatTokenizer(chatAdditonalTokens, DBState.db.aiModel.startsWith('gpt') ? 'noName' : 'name')
-    let currentChat = parseChatTemplates(nowChatroom.chats[selectedChat])
-    nowChatroom.chats[selectedChat] = currentChat
+    let currentChat = parseChatTemplates(nowChatroom.chats[selectedChatPage])
+    nowChatroom.chats[selectedChatPage] = currentChat
     const maxContextTokens = DBState.db.maxContext
 
     chatGenState.stage = 1
@@ -982,9 +986,9 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             chats = sp.chats
             currentTokens = sp.currentTokens
             currentChat.hypaV2Data = sp.memory ?? currentChat.hypaV2Data
-            DBState.db.characters[selectedChar].chats[selectedChat].hypaV2Data = currentChat.hypaV2Data
+            DBState.currentChat.hypaV2Data = currentChat.hypaV2Data
 
-            currentChat = DBState.db.characters[selectedChar].chats[selectedChat]
+            currentChat = DBState.currentChat
             console.log("[Expected to be updated] chat's HypaV2Data: ", currentChat.hypaV2Data)
         }
         else if (DBState.db.hypaV3) {
@@ -994,7 +998,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 // Save new summary
                 if (sp.memory) {
                     currentChat.hypaV3Data = sp.memory
-                    DBState.db.characters[selectedChar].chats[selectedChat].hypaV3Data = currentChat.hypaV3Data
+                    DBState.currentChat.hypaV3Data = currentChat.hypaV3Data
                 }
                 console.log(sp)
                 throwError(sp.error)
@@ -1003,9 +1007,9 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             chats = sp.chats
             currentTokens = sp.currentTokens
             currentChat.hypaV3Data = sp.memory ?? currentChat.hypaV3Data
-            DBState.db.characters[selectedChar].chats[selectedChat].hypaV3Data = currentChat.hypaV3Data
+            DBState.currentChat.hypaV3Data = currentChat.hypaV3Data
 
-            currentChat = DBState.db.characters[selectedChar].chats[selectedChat]
+            currentChat = DBState.currentChat
             console.log("[Expected to be updated] chat's HypaV3Data: ", currentChat.hypaV3Data)
         }
         else {
@@ -1019,7 +1023,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             chats = sp.chats
             currentTokens = sp.currentTokens
             currentChat.supaMemoryData = sp.memory ?? currentChat.supaMemoryData
-            DBState.db.characters[selectedChar].chats[selectedChat].supaMemoryData = currentChat.supaMemoryData
+            DBState.currentChat.supaMemoryData = currentChat.supaMemoryData
             console.log(currentChat.supaMemoryData)
             currentChat.lastMemory = sp.lastId ?? currentChat.lastMemory
         }
@@ -1483,14 +1487,14 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
     else if (req.type === 'streaming') {
         const reader = req.result.getReader()
-        let msgIndex = DBState.db.characters[selectedChar].chats[selectedChat].message.length
+        let msgIndex = DBState.currentMessages.length
         let prefix = ''
         if (arg.continue) {
             msgIndex -= 1
-            prefix = DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].data
+            prefix = DBState.currentMessages[msgIndex].data
         }
         else {
-            DBState.db.characters[selectedChar].chats[selectedChat].message.push({
+            DBState.currentMessages.push({
                 role: 'char',
                 data: "",
                 saying: currentChar.chaId,
@@ -1500,7 +1504,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 chatId: generationId,
             })
         }
-        DBState.db.characters[selectedChar].chats[selectedChat].isStreaming = true
+        DBState.currentChat.isStreaming = true
         let lastResponseChunk: { [key: string]: string } = {}
         while (abortSignal.aborted === false) {
             const readed = (await reader.read())
@@ -1515,21 +1519,21 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     result = trimUntilPunctuation(result)
                 }
                 const result2 = await processScriptFull(nowChatroom, reformatContent(prefix + result), 'editoutput', msgIndex)
-                DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].data = result2.data
+                DBState.currentMessages[msgIndex].data = result2.data
                 emoChanged = result2.emoChanged
-                DBState.db.characters[selectedChar].reloadKeys += 1
+                DBState.currentChar.reloadKeys += 1
             }
             if (readed.done) {
-                DBState.db.characters[selectedChar].chats[selectedChat].isStreaming = false
-                DBState.db.characters[selectedChar].reloadKeys += 1
+                DBState.currentChat.isStreaming = false
+                DBState.currentChar.reloadKeys += 1
                 break
             }
         }
 
         addRerolls(generationId, Object.values(lastResponseChunk))
 
-        DBState.db.characters[selectedChar].chats[selectedChat] = parseChatTemplates(DBState.db.characters[selectedChar].chats[selectedChat])
-        currentChat = DBState.db.characters[selectedChar].chats[selectedChat]
+        DBState.currentChar.chats[selectedChatPage] = parseChatTemplates(DBState.currentChat)
+        currentChat = DBState.currentChat
         const triggerResult = await runTrigger(currentChar, 'output', { chat: currentChat })
         if (triggerResult && triggerResult.chat) {
             currentChat = triggerResult.chat
@@ -1539,11 +1543,11 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         }
         const inlayr = runInlayScreen(currentChar, currentChat.message[msgIndex].data)
         currentChat.message[msgIndex].data = inlayr.text
-        DBState.db.characters[selectedChar].chats[selectedChat] = currentChat
+        DBState.currentChar.chats[selectedChatPage] = currentChat
         if (inlayr.promise) {
             const t = await inlayr.promise
             currentChat.message[msgIndex].data = t
-            DBState.db.characters[selectedChar].chats[selectedChat] = currentChat
+            DBState.currentChar.chats[selectedChatPage] = currentChat
         }
         if (DBState.db.ttsAutoSpeech) {
             await sayTTS(currentChar, result)
@@ -1557,11 +1561,11 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         for (let i = 0; i < msgs.length; i++) {
             const msg = msgs[i]
             const mess = msg[1]
-            let msgIndex = DBState.db.characters[selectedChar].chats[selectedChat].message.length
+            let msgIndex = DBState.currentMessages.length
             let result2 = await processScriptFull(nowChatroom, reformatContent(mess), 'editoutput', msgIndex)
             if (i === 0 && arg.continue) {
                 msgIndex -= 1
-                const beforeChat = DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex]
+                const beforeChat = DBState.currentMessages[msgIndex]
                 result2 = await processScriptFull(nowChatroom, reformatContent(beforeChat.data + mess), 'editoutput', msgIndex)
             }
             if (DBState.db.removeIncompleteResponse) {
@@ -1572,7 +1576,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             result = inlayResult.text
             emoChanged = result2.emoChanged
             if (i === 0 && arg.continue) {
-                DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex] = {
+                DBState.currentMessages[msgIndex] = {
                     role: 'char',
                     data: result,
                     saying: currentChar.chaId,
@@ -1583,11 +1587,11 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 }
                 if (inlayResult.promise) {
                     const p = await inlayResult.promise
-                    DBState.db.characters[selectedChar].chats[selectedChat].message[msgIndex].data = p
+                    DBState.currentMessages[msgIndex].data = p
                 }
             }
             else if (i === 0) {
-                DBState.db.characters[selectedChar].chats[selectedChat].message.push({
+                DBState.currentMessages.push({
                     role: msg[0],
                     data: result,
                     saying: currentChar.chaId,
@@ -1596,17 +1600,17 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     promptInfo,
                     chatId: generationId,
                 })
-                const ind = DBState.db.characters[selectedChar].chats[selectedChat].message.length - 1
+                const ind = DBState.currentMessages.length - 1
                 if (inlayResult.promise) {
                     const p = await inlayResult.promise
-                    DBState.db.characters[selectedChar].chats[selectedChat].message[ind].data = p
+                    DBState.currentMessages[ind].data = p
                 }
                 mrerolls.push(result)
             }
             else {
                 mrerolls.push(result)
             }
-            DBState.db.characters[selectedChar].reloadKeys += 1
+            DBState.currentChar.reloadKeys += 1
             if (DBState.db.ttsAutoSpeech) {
                 await sayTTS(currentChar, result)
             }
@@ -1616,12 +1620,12 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             addRerolls(generationId, mrerolls)
         }
 
-        DBState.db.characters[selectedChar].chats[selectedChat] = parseChatTemplates(DBState.db.characters[selectedChar].chats[selectedChat])
-        currentChat = DBState.db.characters[selectedChar].chats[selectedChat]
+        DBState.currentChar.chats[selectedChatPage] = parseChatTemplates(DBState.currentChat)
+        currentChat = DBState.currentChat
 
         const triggerResult = await runTrigger(currentChar, 'output', { chat: currentChat })
         if (triggerResult && triggerResult.chat) {
-            DBState.db.characters[selectedChar].chats[selectedChat] = triggerResult.chat
+            DBState.currentChar.chats[selectedChatPage] = triggerResult.chat
         }
         if (triggerResult && triggerResult.sendAIprompt) {
             resendChat = true
@@ -1658,7 +1662,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             bias: {}
         }, 'emotion', abortSignal)
 
-        DBState.db.characters[selectedChar].chats[selectedChat].message[DBState.db.characters[selectedChar].chats[selectedChat].message.length - 1].data += rq
+        DBState.currentMessages[DBState.currentMessages.length - 1].data += rq
     }
 
     stageTimings.stage3Duration = Date.now() - stageTimings.stage3Start
@@ -1682,9 +1686,9 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             generationInfo.stageTiming.stage4 = stageTimings.stage4Duration
         }
 
-        const lastMessageIndex = DBState.db.characters[selectedChar].chats[selectedChat].message.length - 1
-        if (lastMessageIndex >= 0 && DBState.db.characters[selectedChar].chats[selectedChat].message[lastMessageIndex].generationInfo) {
-            DBState.db.characters[selectedChar].chats[selectedChat].message[lastMessageIndex].generationInfo = generationInfo
+        const lastMessageIndex = DBState.currentMessages.length - 1
+        if (lastMessageIndex >= 0 && DBState.currentMessages[lastMessageIndex].generationInfo) {
+            DBState.currentMessages[lastMessageIndex].generationInfo = generationInfo
         }
 
         chatGenState.generating = false
@@ -1922,7 +1926,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 throwError("Stable diffusion in group chat is not supported")
             }
 
-            const msgs = DBState.db.characters[selectedChar].chats[selectedChat].message
+            const msgs = DBState.currentMessages
             let msgStr = ''
             for (let i = (msgs.length - 1); i >= 0; i--) {
                 if (msgs[i].role === 'char') {
@@ -1948,9 +1952,9 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         generationInfo.stageTiming.stage4 = stageTimings.stage4Duration
     }
 
-    const lastMessageIndex = DBState.db.characters[selectedChar].chats[selectedChat].message.length - 1
-    if (lastMessageIndex >= 0 && DBState.db.characters[selectedChar].chats[selectedChat].message[lastMessageIndex].generationInfo) {
-        DBState.db.characters[selectedChar].chats[selectedChat].message[lastMessageIndex].generationInfo = generationInfo
+    const lastMessageIndex = DBState.currentMessages.length - 1
+    if (lastMessageIndex >= 0 && DBState.currentMessages[lastMessageIndex].generationInfo) {
+        DBState.currentMessages[lastMessageIndex].generationInfo = generationInfo
     }
 
     return true
