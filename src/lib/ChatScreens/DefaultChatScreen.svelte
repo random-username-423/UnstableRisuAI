@@ -802,8 +802,8 @@
                     bind:this={chatsInstance}
                     messages={currentChat}
                     {loadPages}
-                    onReroll={chatRuntime.reroll}
-                    unReroll={chatRuntime.unReroll}
+                    onReroll={() => chatRuntime.reroll()}
+                    unReroll={() => chatRuntime.unReroll()}
                     {currentCharacter}
                     {currentUsername}
                     {userIcon}
@@ -1019,7 +1019,7 @@
 
                     <!-- Reroll button (optional) -->
                     {#if DBState.db.sideMenuRerollButton}
-                        <ActionMenuItem label={language.reroll} onclick={chatRuntime.reroll}>
+                        <ActionMenuItem label={language.reroll} onclick={() => chatRuntime.reroll()}>
                             {#snippet icon()}<RefreshCcwIcon />{/snippet}
                         </ActionMenuItem>
                     {/if}
