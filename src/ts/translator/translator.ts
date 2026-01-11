@@ -242,7 +242,12 @@ async function jaTrans(text:string) {
     return await runTranslator(text, true, 'en','ja')
 }
 
-export function isExpTranslator(){
+/**
+ * Checks if the current translator requires API calls (LLM, DeepL, DeepLX).
+ * API-based translators are "heavy" - they have cost/latency, so input sync uses debounce.
+ * @returns true if using an API-based translator, false for local/free translators
+ */
+export function isAPIBasedTranslator(){
     const db = getDatabase()
     return db.translatorType === 'llm' || db.translatorType === 'deepl' || db.translatorType === 'deeplX'
 }
@@ -270,7 +275,7 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
     const db = getDatabase()
     const DoingChat = get(doingChat)
     if(DoingChat){
-        if(isExpTranslator()){
+        if(isAPIBasedTranslator()){
             if(!(db.translatorType === 'llm' && await getLLMCache(html) !== null)){
                 return html
             }

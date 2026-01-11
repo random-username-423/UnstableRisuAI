@@ -64,9 +64,9 @@
     import { coldStorageHeader, preLoadChat } from "src/ts/process/coldstorage.svelte"
 
     // General utilities
-    import { sleep } from "../../ts/utils/util"
+    import { debounce, sleep } from "../../ts/utils/util"
     import { language } from "../../lang"
-    import { isExpTranslator, translate } from "../../ts/translator/translator"
+    import { isAPIBasedTranslator, translate } from "../../ts/translator/translator"
     import { alertError, alertNormal, alertWait, showHypaV2Alert } from "../../ts/alert.svelte"
     import { stopTTS } from "src/ts/process/tts"
     import { aiLawApplies, chatFoldedState, chatFoldedStateMessageIndex, downloadFile } from "src/ts/globalApi.svelte"
@@ -305,58 +305,42 @@
     // Automatically translates user input between languages
     // ============================================================
 
+    const DEBOUNCE_API = 1500
+    const DEBOUNCE_STANDARD = 400
+
+    const debouncedTranslate = {
+        api: debounce(translateToMainInput, DEBOUNCE_API),
+        standard: debounce(translateToMainInput, DEBOUNCE_STANDARD),
+    }
+
+    async function translateToMainInput(text: string) {
+        const result = await translate(text, true)
+        if (result && chatRuntime.messageInputTranslate === text) {
+            chatRuntime.messageInput = result
+        }
+    }
+
     /**
-     * Handles auto-translation between main input and translate input
-     * - Experimental translator has debounce (1.5s delay)
-     * - Standard translator translates immediately
-     *
-     * @param reverse - If true, translate from native to English; if false, from English to native
+     * Syncs translation between main input and translate input.
+     * - Typing in main input clears translate input
+     * - Typing in translate input triggers translation to main input
      */
-    async function updateInputTransateMessage(reverse: boolean) {
-        // Skip if auto-translate is disabled
+    function syncTranslatedInput(fromTranslateInput: boolean) {
         if (!DBState.db.useAutoTranslateInput) {
             return
         }
 
-        // Handle experimental translator (with debounce)
-        if (isExpTranslator()) {
-            if (!reverse) {
-                chatRuntime.messageInputTranslate = ""
-                return
-            }
-            if (chatRuntime.messageInputTranslate === "") {
-                chatRuntime.messageInput = ""
-                return
-            }
-            // Debounce: wait 1.5s after user stops typing
-            const lastMessageInputTranslate = chatRuntime.messageInputTranslate
-            await sleep(1500)
-            if (lastMessageInputTranslate === chatRuntime.messageInputTranslate) {
-                translate(reverse ? chatRuntime.messageInputTranslate : chatRuntime.messageInput, reverse).then((translatedMessage) => {
-                    if (translatedMessage) {
-                        if (reverse) chatRuntime.messageInput = translatedMessage
-                        else chatRuntime.messageInputTranslate = translatedMessage
-                    }
-                })
-            }
-            return
-        }
-
-        // Standard translator (immediate)
-        if (reverse && chatRuntime.messageInputTranslate === "") {
-            chatRuntime.messageInput = ""
-            return
-        }
-        if (!reverse && chatRuntime.messageInput === "") {
+        if (!fromTranslateInput) {
             chatRuntime.messageInputTranslate = ""
             return
         }
-        translate(reverse ? chatRuntime.messageInputTranslate : chatRuntime.messageInput, reverse).then((translatedMessage) => {
-            if (translatedMessage) {
-                if (reverse) chatRuntime.messageInput = translatedMessage
-                else chatRuntime.messageInputTranslate = translatedMessage
-            }
-        })
+
+        if (chatRuntime.messageInputTranslate.trim() === "") {
+            return
+        }
+
+        const debounced = isAPIBasedTranslator() ? debouncedTranslate.api : debouncedTranslate.standard
+        debounced(chatRuntime.messageInputTranslate)
     }
 
     // ============================================================
@@ -645,7 +629,7 @@
                     }}
                     oninput={() => {
                         updateInputSizeAll()
-                        updateInputTransateMessage(false)
+                        syncTranslatedInput(false)
                     }}
                     style:height={inputHeight}
                 ></textarea>
@@ -727,7 +711,7 @@
                         }}
                         oninput={() => {
                             updateInputSizeAll()
-                            updateInputTransateMessage(true)
+                            syncTranslatedInput(true)
                         }}
                         placeholder={language.enterMessageForTranslateToEnglish}
                         style:height={inputTranslateHeight}
