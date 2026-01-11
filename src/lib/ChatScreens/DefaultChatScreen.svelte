@@ -12,6 +12,7 @@
     import PlaygroundMenu from '../Playground/PlaygroundMenu.svelte';
     import Chats from './Chats.svelte';
     import Button from '../UI/GUI/Button.svelte';
+    import ActionMenuItem from '../UI/GUI/ActionMenuItem.svelte';
     import PluginDefinedIcon from '../Others/PluginDefinedIcon.svelte';
 
     // Lucide icons for UI elements
@@ -1190,105 +1191,84 @@
                 }}>
                     <!-- Auto Mode (Group chats only) -->
                     {#if DBState.currentChar.type === 'group'}
-                        <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors" onclick={runAutoMode}>
-                            <DicesIcon />
-                            <span class="ml-2">{language.autoMode}</span>
-                        </div>
+                        <ActionMenuItem label={language.autoMode} onclick={runAutoMode}>
+                            {#snippet icon()}<DicesIcon />{/snippet}
+                        </ActionMenuItem>
                     {/if}
 
                     <!-- Stop TTS button (when TTS is enabled) -->
                     {#if DBState.currentChar.ttsMode === 'webspeech' || DBState.currentChar.ttsMode === 'elevenlab'}
-                        <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors" onclick={() => {
-                            stopTTS()
-                        }}>
-                            <MicOffIcon />
-                            <span class="ml-2">{language.ttsStop}</span>
-                        </div>
+                        <ActionMenuItem label={language.ttsStop} onclick={() => stopTTS()}>
+                            {#snippet icon()}<MicOffIcon />{/snippet}
+                        </ActionMenuItem>
                     {/if}
 
                     <!-- Continue Response (ask AI to continue last message) -->
-                    <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors"
-                        class:text-textcolor2={(DBState.currentChat.message.length < 2) || (DBState.currentChat.message[DBState.currentChat.message.length - 1].role !== 'char')}
-                        onclick={() => {
-                            if((DBState.currentChat.message.length < 2) || (DBState.currentChat.message[DBState.currentChat.message.length - 1].role !== 'char')){
-                                return
-                            }
-                            sendContinue();
-                        }}
+                    <ActionMenuItem
+                        label={language.continueResponse}
+                        onclick={sendContinue}
+                        disabled={(DBState.currentChat.message.length < 2) || (DBState.currentChat.message[DBState.currentChat.message.length - 1].role !== 'char')}
                     >
-                        <StepForwardIcon />
-                        <span class="ml-2">{language.continueResponse}</span>
-                    </div>
+                        {#snippet icon()}<StepForwardIcon />{/snippet}
+                    </ActionMenuItem>
 
                     <!-- Chat List button -->
                     {#if DBState.db.showMenuChatList}
-                        <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors" onclick={() => {
-                            openChatList = true
-                            openMenu = false
-                        }}>
-                            <DatabaseIcon />
-                            <span class="ml-2">{language.chatList}</span>
-                        </div>
+                        <ActionMenuItem label={language.chatList} onclick={() => { openChatList = true; openMenu = false; }}>
+                            {#snippet icon()}<DatabaseIcon />{/snippet}
+                        </ActionMenuItem>
                     {/if}
 
                     <!-- Plugin-defined additional menu items -->
                     {#each additionalChatMenu as menu}
                         <div class="mt-2"></div>
-                        <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors" onclick={() => {
-                            menu.callback()
-                            openMenu = false
-                        }}>
-                            <PluginDefinedIcon ico={menu} />
-                            <span class="ml-2">{menu.name}</span>
-                        </div>
+                        <ActionMenuItem label={menu.name} onclick={() => { menu.callback(); openMenu = false; }}>
+                            {#snippet icon()}<PluginDefinedIcon ico={menu} />{/snippet}
+                        </ActionMenuItem>
                     {/each}
 
                     <!-- Hypa Memory modal (V2/V3) -->
                     {#if DBState.db.showMenuHypaMemoryModal}
                         {#if (DBState.db.supaModelType !== 'none' && DBState.db.hypav2) || DBState.db.hypaV3}
-                            <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors" onclick={() => {
-                                if (DBState.db.hypav2) {
-                                    DBState.currentChat.hypaV2Data ??= {
-                                        lastMainChunkID: 0,
-                                        mainChunks: [],
-                                        chunks: [],
+                            <ActionMenuItem
+                                label={DBState.db.hypav2 ? language.hypaMemoryV2Modal : language.hypaMemoryV3Modal}
+                                onclick={() => {
+                                    if (DBState.db.hypav2) {
+                                        DBState.currentChat.hypaV2Data ??= {
+                                            lastMainChunkID: 0,
+                                            mainChunks: [],
+                                            chunks: [],
+                                        }
+                                        showHypaV2Alert();
+                                    } else if (DBState.db.hypaV3) {
+                                        hypaV3State.open = true
                                     }
-                                    showHypaV2Alert();
-                                } else if (DBState.db.hypaV3) {
-                                    hypaV3State.open = true
-                                }
-
-                                openMenu = false
-                            }}>
-                                <BrainIcon />
-                                <span class="ml-2">
-                                    {DBState.db.hypav2 ? language.hypaMemoryV2Modal : language.hypaMemoryV3Modal}
-                                </span>
-                            </div>
+                                    openMenu = false
+                                }}
+                            >
+                                {#snippet icon()}<BrainIcon />{/snippet}
+                            </ActionMenuItem>
                         {/if}
                     {/if}
 
                     <!-- Auto-translate toggle -->
                     {#if DBState.db.translator !== ''}
-                        <div class={"flex items-center cursor-pointer "+ (DBState.db.useAutoTranslateInput ? 'text-green-500':'lg:hover:text-green-500')} onclick={() => {
-                            DBState.db.useAutoTranslateInput = !DBState.db.useAutoTranslateInput
-                        }}>
-                            <GlobeIcon />
-                            <span class="ml-2">{language.autoTranslateInput}</span>
-                        </div>
-
+                        <ActionMenuItem
+                            label={language.autoTranslateInput}
+                            onclick={() => { DBState.db.useAutoTranslateInput = !DBState.db.useAutoTranslateInput }}
+                            isActive={DBState.db.useAutoTranslateInput}
+                        >
+                            {#snippet icon()}<GlobeIcon />{/snippet}
+                        </ActionMenuItem>
                     {/if}
 
                     <!-- Screenshot button -->
-                    <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors" onclick={() => {
-                        screenShot()
-                    }}>
-                        <CameraIcon />
-                        <span class="ml-2">{language.screenshot}</span>
-                    </div>
+                    <ActionMenuItem label={language.screenshot} onclick={() => screenShot()}>
+                        {#snippet icon()}<CameraIcon />{/snippet}
+                    </ActionMenuItem>
 
                     <!-- Post/Attach file button -->
-                    <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors" onclick={async () => {
+                    <ActionMenuItem label={language.postFile} onclick={async () => {
                         const results = await postChatFile(messageInput)
                         if(!results) return
                         for(const res of results){
@@ -1301,27 +1281,23 @@
                         }
                         updateInputSizeAll()
                     }}>
-
-                        <ImagePlusIcon />
-                        <span class="ml-2">{language.postFile}</span>
-                    </div>
+                        {#snippet icon()}<ImagePlusIcon />{/snippet}
+                    </ActionMenuItem>
 
                     <!-- Modules button -->
-                    <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors" onclick={() => {
+                    <ActionMenuItem label={language.modules} onclick={() => {
                         DBState.currentChat.modules ??= []
                         openModuleList = true
                         openMenu = false
                     }}>
-                        <PackageIcon />
-                        <span class="ml-2">{language.modules}</span>
-                    </div>
+                        {#snippet icon()}<PackageIcon />{/snippet}
+                    </ActionMenuItem>
 
                     <!-- Reroll button (optional) -->
                     {#if DBState.db.sideMenuRerollButton}
-                        <div class="flex items-center cursor-pointer hover:text-green-500 transition-colors" onclick={reroll}>
-                            <RefreshCcwIcon />
-                            <span class="ml-2">{language.reroll}</span>
-                        </div>
+                        <ActionMenuItem label={language.reroll} onclick={reroll}>
+                            {#snippet icon()}<RefreshCcwIcon />{/snippet}
+                        </ActionMenuItem>
                     {/if}
                 </div>
 
