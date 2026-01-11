@@ -1,5 +1,5 @@
 import { Template } from '@huggingface/jinja';
-import type { OpenAIChat } from '../index.svelte';
+import type { OpenAIChat } from '../types';
 import { getCurrentCharacter, getDatabase } from 'src/ts/storage/database.svelte';
 import { getUserName } from "src/ts/persona";
 

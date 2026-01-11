@@ -1,4 +1,4 @@
-import type { OpenAIChat } from "../index.svelte";
+import type { OpenAIChat } from "../types";
 import { getDatabase } from "../../storage/database.svelte";
 import { type Chat } from 'src/ts/storage/types/chat';
 import { type groupChat } from 'src/ts/storage/types/character';

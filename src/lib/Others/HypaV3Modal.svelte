@@ -36,7 +36,7 @@
     isGuidLike,
     parseSelectionInput,
   } from "./HypaV3Modal/utils";
-    import type { OpenAIChat } from "src/ts/process/index.svelte";
+    import type { OpenAIChat } from "src/ts/process/types";
 
   const hypaV3Data = $derived(
     DBState.currentChar.chats[

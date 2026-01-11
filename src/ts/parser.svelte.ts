@@ -21,7 +21,7 @@ import { getUserIcon } from "./persona";
 import { getUserName } from "./persona";
 import { getInlayAssetBlob } from './process/files/inlays';
 import { getModuleAssets, getModuleLorebooks, getModules } from './process/modules';
-import type { OpenAIChat } from './process/index.svelte';
+import type { OpenAIChat } from './process/types';
 import hljs from 'highlight.js/lib/core'
 import 'highlight.js/styles/atom-one-dark.min.css'
 import { language } from 'src/lang';

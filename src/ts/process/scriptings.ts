@@ -12,7 +12,7 @@ import { alertSelect, alertError, alertInput, alertNormal, alertConfirm } from "
 import { HypaProcesser } from "./memory/hypamemory";
 import { generateAIImage } from "./stableDiff";
 import { writeInlayImage, getInlayAsset } from "./files/inlays";
-import type { OpenAIChat, MultiModal } from "./index.svelte";
+import type { OpenAIChat, MultiModal } from "./types";
 import { requestChatData } from "./request/request";
 import { v4 } from "uuid";
 import { getModuleLorebooks, getModuleTriggers } from "./modules";
