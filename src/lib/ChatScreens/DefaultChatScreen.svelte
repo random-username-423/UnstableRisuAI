@@ -24,7 +24,10 @@
     import { ConnectionOpenStore } from 'src/ts/sync/multiuser';
 
     // Svelte utilities
-    import { tick } from 'svelte';
+    import { tick, onDestroy } from 'svelte';
+
+    // Chat runtime controller
+    import { chatRuntime } from '../../ts/chat/chatRuntimeController.svelte';
 
     // Type definitions
     import { type Message } from "../../ts/storage/types/chat";
@@ -65,14 +68,9 @@
     }
 
     // ============================================================
-    // LOCAL STATE VARIABLES
-    // Reactive state for managing component behavior
+    // LOCAL STATE VARIABLES (UI State only)
+    // Runtime state (messageInput, fileInput, etc.) is in chatRuntime
     // ============================================================
-
-    // User input states
-    let messageInput:string = $state('')              // Main message input field value
-    let messageInputTranslate:string = $state('')     // Translated message input (for auto-translate feature)
-    let fileInput:string[] = $state([])               // Array of attached file IDs (images, videos, audio)
 
     // UI toggle states
     let openMenu = $state(false)                      // Controls visibility of the chat action menu
@@ -82,17 +80,6 @@
 
     // Pagination and loading
     let loadPages = $state(30)                        // Number of messages to render (for virtual scrolling)
-
-    // Auto mode (for group chats - continuous AI responses)
-    let autoMode = $state(false)
-
-    // Reroll history management (stores previous AI responses for undo/redo)
-    let rerolls:Message[][] = []                      // History of rerolled message groups
-    let rerollid = -1                                 // Current position in reroll history
-    let lastCharId = -1                               // Tracks character ID to reset reroll history on char switch
-
-    // Input translation state
-    let doingChatInputTranslate = false               // Flag to prevent concurrent translations
 
     // Component instance reference
     let chatsInstance: any = $state()                 // Reference to Chats component for scroll control
@@ -203,331 +190,28 @@
     }
 
     // ============================================================
-    // MESSAGE SENDING FUNCTIONS
-    // Handles user message submission and AI response generation
+    // CHAT RUNTIME HOOKS
+    // Register callbacks for chatRuntime events
     // ============================================================
 
-    /**
-     * Wrapper for sending a new message (not continuing previous response)
-     */
-    async function send(){
-        return sendMain(false)
-    }
+    // Register hook for input cleared event (to resize textarea)
+    const unsubscribeInputCleared = chatRuntime.registerOnInputCleared(updateInputSizeAll)
 
-    /**
-     * Wrapper for continuing the AI's previous response
-     */
-    async function sendContinue(){
-        return sendMain(true)
-    }
-
-    /**
-     * Main message sending logic
-     * - Handles slash commands (/command)
-     * - Processes file attachments (inlays)
-     * - Runs input triggers and scripts
-     * - Manages "say nothing" feature for empty input
-     *
-     * @param continueResponse - If true, asks AI to continue its last message
-     */
-    async function sendMain(continueResponse:boolean) {
-        let selectedChar = $selectedCharID
-
-        // Prevent sending while AI is generating
-        if($doingChat){
-            return
-        }
-
-        // Reset reroll history when switching characters
-        if(lastCharId !== $selectedCharID){
-            rerolls = []
-            rerollid = -1
-        }
-
-        let cha = DBState.db.characters[selectedChar].chats[DBState.db.characters[selectedChar].chatPage].message
-
-        // Check for slash commands (e.g., /reset, /clear, etc.)
-        if(messageInput.startsWith('/')){
-            const commandProcessed = await processMultiCommand(messageInput)
-            if(commandProcessed !== false){
-                messageInput = ''
-                return
-            }
-        }
-
-        // Append inlay tags for attached files (images, videos, audio)
-        if(fileInput.length > 0){
-            for(const file of fileInput){
-                messageInput += `{{inlayed::${file}}}`
-            }
-            fileInput = []
-        }
-
-        // Handle empty message input
-        if(messageInput === ''){
-            if(DBState.db.characters[selectedChar].type !== 'group'){
-                // If last message wasn't from user, optionally add "says nothing"
-                if(cha.length === 0 || cha[cha.length - 1].role !== 'user'){
-                    if(DBState.db.useSayNothing){
-                        cha.push({
-                            role: 'user',
-                            data: '*says nothing*',
-                            name: $ConnectionOpenStore ? DBState.db.username : null
-                        })
-                    }
-                }
-            }
-        }
-        else{
-            // Process and add user message
-            const char = DBState.db.characters[selectedChar]
-            if(char.type === 'character'){
-                // Run input trigger (custom automation)
-                let triggerResult = await runTrigger(char,'input', {chat: char.chats[char.chatPage]})
-                if(triggerResult){
-                    cha = triggerResult.chat.message
-                }
-
-                // Process through editinput script and add message
-                cha.push({
-                    role: 'user',
-                    data: await processScript(char,messageInput,'editinput'),
-                    time: Date.now(),
-                    name: $ConnectionOpenStore ? DBState.db.username : null
-                })
-            }
-            else{
-                // Group chat - no script processing
-                cha.push({
-                    role: 'user',
-                    data: messageInput,
-                    time: Date.now(),
-                    name: $ConnectionOpenStore ? DBState.db.username : null
-                })
-            }
-        }
-
-        // Clear input fields and save message
-        messageInput = ''
-        messageInputTranslate = ''
-        DBState.db.characters[selectedChar].chats[DBState.db.characters[selectedChar].chatPage].message = cha
-        rerolls = []
-        await sleep(10)
-        updateInputSizeAll()
-
-        // Trigger AI response generation
-        await sendChatMain(continueResponse)
-    }
-
-    // ============================================================
-    // REROLL FUNCTIONS
-    // Allows regenerating AI responses and navigating between versions
-    // ============================================================
-
-    /**
-     * Regenerate the AI's last response (reroll forward)
-     * - First checks for prereroll cache (streaming chunks)
-     * - Then checks if already-generated rerolls exist in history
-     * - Finally generates a new response if no cached versions available
-     */
-    async function reroll() {
-        // Prevent reroll while generating
-        if($doingChat){
-            return
-        }
-
-        // Reset reroll history when switching characters
-        if(lastCharId !== $selectedCharID){
-            rerolls = []
-            rerollid = -1
-        }
-
-        // Check for prereroll (cached streaming chunks)
-        const genId = DBState.currentChat.message.at(-1)?.generationInfo?.generationId
-        if(genId){
-            const r = Prereroll(genId)
-            if(r){
-                DBState.currentChat.message[DBState.currentChat.message.length - 1].data = r
-                return
-            }
-        }
-
-        // Navigate forward in existing reroll history
-        if(rerollid < rerolls.length - 1){
-            if(Array.isArray(rerolls[rerollid + 1])){
-                rerollid += 1
-                let rerollData = safeStructuredClone(rerolls[rerollid])
-                let msgs = DBState.currentChat.message
-                for(let i = 0; i < rerollData.length; i++){
-                    msgs[msgs.length - rerollData.length + i] = rerollData[i]
-                }
-                DBState.currentChat.message = msgs
-            }
-            return
-        }
-
-        // Save current response to history before generating new one
-        if(rerolls.length === 0){
-            rerolls.push(safeStructuredClone([DBState.currentChat.message.at(-1)]))
-            rerollid = rerolls.length - 1
-        }
-
-        let cha = safeStructuredClone(DBState.currentChat.message)
-        if(cha.length === 0 ){
-            return
-        }
+    // Register hook for menu close event (from reroll)
+    const unsubscribeMenuClose = chatRuntime.registerOnMenuClose(() => {
         openMenu = false
+    })
 
-        // Remove the last AI message(s) to regenerate
-        // For group chats, may remove multiple messages from same "saying" context
-        const saying = cha[cha.length - 1].saying
-        let sayingQu = 2
-        while(cha[cha.length - 1].role !== 'user'){
-            if(cha[cha.length - 1].saying === saying){
-                sayingQu -= 1
-                if(sayingQu === 0){
-                    break
-                }
-            }
-            let msg = cha.pop()
-            if(!msg){
-                return
-            }
-        }
-        DBState.currentChat.message = cha
+    // Cleanup hooks on component destroy
+    onDestroy(() => {
+        unsubscribeInputCleared()
+        unsubscribeMenuClose()
+    })
 
-        // Generate new response
-        await sendChatMain()
-    }
-
-    /**
-     * Navigate backward in reroll history (undo reroll)
-     * Restores a previously generated response
-     */
-    async function unReroll() {
-        // Prevent unreroll while generating
-        if($doingChat){
-            return
-        }
-
-        // Reset reroll history when switching characters
-        if(lastCharId !== $selectedCharID){
-            rerolls = []
-            rerollid = -1
-        }
-
-        // Check for pre-unreroll cache
-        const genId = DBState.currentChat.message.at(-1)?.generationInfo?.generationId
-        if(genId){
-            const r = PreUnreroll(genId)
-            if(r){
-                DBState.currentChat.message[DBState.currentChat.message.length - 1].data = r
-                return
-            }
-        }
-
-        // Can't go back past first version
-        if(rerollid <= 0){
-            return
-        }
-
-        // Restore previous version from history
-        if(Array.isArray(rerolls[rerollid - 1])){
-            rerollid -= 1
-            let rerollData = safeStructuredClone(rerolls[rerollid])
-            let msgs = DBState.currentChat.message
-            for(let i = 0; i < rerollData.length; i++){
-                msgs[msgs.length - rerollData.length + i] = rerollData[i]
-            }
-            DBState.currentChat.message = msgs
-        }
-    }
-
-    // ============================================================
-    // CHAT GENERATION CORE
-    // Low-level AI response generation and abort control
-    // ============================================================
-
-    // Controller for cancelling ongoing AI generation
-    let abortController:null|AbortController = null
-
-    /**
-     * Core function that triggers AI response generation
-     * - Manages abort controller for cancellation
-     * - Saves new responses to reroll history
-     * - Plays notification sound on completion
-     *
-     * @param continued - If true, continues previous response instead of new one
-     */
-    async function sendChatMain(continued:boolean = false) {
-        let previousLength = DBState.currentChat.message.length
-        messageInput = ''
-        abortController = new AbortController()
-
-        try {
-            // Call the main chat processing function
-            await sendChat(-1, {
-                signal:abortController.signal,
-                continue:continued
-            })
-
-            // Save new messages to reroll history
-            if(previousLength < DBState.currentChat.message.length){
-                rerolls.push(safeStructuredClone(DBState.currentChat.message).slice(previousLength))
-                rerollid = rerolls.length - 1
-            }
-        } catch (error) {
-            console.error(error)
-            alertError(error)
-        }
-
-        // Cleanup after generation
-        lastCharId = $selectedCharID
-        $doingChat = false
-
-        // Play notification sound if enabled
-        if(DBState.db.playMessage){
-            const audio = new Audio(sendSound);
-            audio.play();
-        }
-    }
-
-    /**
-     * Cancels the current AI generation
-     */
-    function abortChat(){
-        if(abortController){
-            abortController.abort()
-        }
-    }
-
-    // ============================================================
-    // AUTO MODE (Group Chats)
-    // Continuously generates AI responses without user input
-    // ============================================================
-
-    /**
-     * Toggles auto mode for group chats
-     * When enabled, continuously generates responses until stopped or character changes
-     */
-    async function runAutoMode() {
-        // Toggle off if already running
-        if(autoMode){
-            autoMode = false
-            return
-        }
-
-        const selectedChar = $selectedCharID
-        autoMode = true
-
-        // Keep generating until stopped or character changes
-        while(autoMode){
-            await sendChatMain()
-            if(selectedChar !== $selectedCharID){
-                autoMode = false
-            }
-        }
-    }
+    // Watch for character changes to reset runtime state
+    $effect(() => {
+        chatRuntime.checkCharChange($selectedCharID)
+    })
 
     // ============================================================
     // USER PERSONA DERIVED STATE
@@ -625,23 +309,23 @@
         // Handle experimental translator (with debounce)
         if(isExpTranslator()){
             if(!reverse){
-                messageInputTranslate = ''
+                chatRuntime.messageInputTranslate = ''
                 return
             }
-            if(messageInputTranslate === '') {
-                messageInput = ''
+            if(chatRuntime.messageInputTranslate === '') {
+                chatRuntime.messageInput = ''
                 return
             }
             // Debounce: wait 1.5s after user stops typing
-            const lastMessageInputTranslate = messageInputTranslate
+            const lastMessageInputTranslate = chatRuntime.messageInputTranslate
             await sleep(1500)
-            if(lastMessageInputTranslate === messageInputTranslate){
-                translate(reverse ? messageInputTranslate : messageInput, reverse).then((translatedMessage) => {
+            if(lastMessageInputTranslate === chatRuntime.messageInputTranslate){
+                translate(reverse ? chatRuntime.messageInputTranslate : chatRuntime.messageInput, reverse).then((translatedMessage) => {
                     if(translatedMessage){
                         if(reverse)
-                            messageInput = translatedMessage
+                            chatRuntime.messageInput = translatedMessage
                         else
-                            messageInputTranslate = translatedMessage
+                            chatRuntime.messageInputTranslate = translatedMessage
                     }
                 })
             }
@@ -649,20 +333,20 @@
         }
 
         // Standard translator (immediate)
-        if(reverse && messageInputTranslate === '') {
-            messageInput = ''
+        if(reverse && chatRuntime.messageInputTranslate === '') {
+            chatRuntime.messageInput = ''
             return
         }
-        if(!reverse && messageInput === '') {
-            messageInputTranslate = ''
+        if(!reverse && chatRuntime.messageInput === '') {
+            chatRuntime.messageInputTranslate = ''
             return
         }
-        translate(reverse ? messageInputTranslate : messageInput, reverse).then((translatedMessage) => {
+        translate(reverse ? chatRuntime.messageInputTranslate : chatRuntime.messageInput, reverse).then((translatedMessage) => {
             if(translatedMessage){
                 if(reverse)
-                    messageInput = translatedMessage
+                    chatRuntime.messageInput = translatedMessage
                 else
-                    messageInputTranslate = translatedMessage
+                    chatRuntime.messageInputTranslate = translatedMessage
             }
         })
     }
@@ -866,22 +550,22 @@
                 <!-- Main message input textarea -->
                 <!-- Supports: Enter to send, Ctrl+M to reroll, paste images -->
                 <textarea class="peer text-input-area focus:border-textcolor transition-colors outline-hidden text-textcolor p-2 min-w-0 border border-r-0 bg-transparent rounded-md rounded-r-none input-text text-xl grow ml-4 border-darkborderc resize-none overflow-y-hidden overflow-x-hidden max-w-full placeholder:text-sm"
-                          bind:value={messageInput}
+                          bind:value={chatRuntime.messageInput}
                           bind:this={inputEle}
                           onkeydown={(e) => {
                         // Send message on Enter (configurable)
                         if(e.key.toLocaleLowerCase() === "enter" && !e.isComposing){
                             if(DBState.db.sendWithEnter && (!e.shiftKey)){
-                                send()
+                                chatRuntime.send()
                                 e.preventDefault()
                             }else if(!DBState.db.sendWithEnter && e.shiftKey){
-                                send()
+                                chatRuntime.send()
                                 e.preventDefault()
                             }
                         }
                         // Ctrl+M shortcut for reroll
                         if(e.key.toLocaleLowerCase() === "m" && (e.ctrlKey)){
-                            reroll()
+                            chatRuntime.reroll()
                             e.preventDefault()
                         }
                     }}
@@ -912,10 +596,10 @@
                                         if(!results) return
                                         for(const res of results){
                                             if(res?.type === 'asset'){
-                                                fileInput.push(res.data)
+                                                chatRuntime.fileInput.push(res.data)
                                             }
                                             if(res?.type === 'text'){
-                                                messageInput += `{{file::${res.name}::${res.data}}}`
+                                                chatRuntime.messageInput += `{{file::${res.name}::${res.data}}}`
                                             }
                                         }
                                         updateInputSizeAll()
@@ -930,18 +614,18 @@
                 ></textarea>
 
                 <!-- Send/Cancel button - shows spinner when generating -->
-                {#if $doingChat || doingChatInputTranslate}
+                {#if $doingChat}
                     <button
                             aria-labelledby="cancel"
-                            class="peer-focus:border-textcolor  flex justify-center border-y border-darkborderc items-center text-gray-100 p-3 hover:bg-blue-500 transition-colors" onclick={abortChat}
+                            class="peer-focus:border-textcolor  flex justify-center border-y border-darkborderc items-center text-gray-100 p-3 hover:bg-blue-500 transition-colors" onclick={chatRuntime.abortChat}
                             style:height={inputHeight}
                     >
                         <!-- Animated loading spinner with stage-based colors -->
-                        <div class="loadmove chat-process-stage-{$chatProcessStage}" class:autoload={autoMode}></div>
+                        <div class="loadmove chat-process-stage-{$chatProcessStage}" class:autoload={chatRuntime.autoMode}></div>
                     </button>
                 {:else}
                     <button
-                            onclick={send}
+                            onclick={chatRuntime.send}
                             class="flex justify-center border-y border-darkborderc items-center text-gray-100 p-3 peer-focus:border-textcolor hover:bg-blue-500 transition-colors button-icon-send"
                             style:height={inputHeight}
                     >
@@ -986,17 +670,17 @@
                         <LanguagesIcon />
                     </label>
                     <textarea id = 'messageInputTranslate' class="text-textcolor rounded-md p-2 min-w-0 bg-transparent input-text text-xl grow ml-4 mr-2 border-darkbutton resize-none focus:bg-selected overflow-y-hidden overflow-x-hidden max-w-full"
-                              bind:value={messageInputTranslate}
+                              bind:value={chatRuntime.messageInputTranslate}
                               bind:this={inputTranslateEle}
                               onkeydown={(e) => {
                             if(e.key.toLocaleLowerCase() === "enter" && (!e.shiftKey)){
                                 if(DBState.db.sendWithEnter){
-                                    send()
+                                    chatRuntime.send()
                                     e.preventDefault()
                                 }
                             }
                             if(e.key.toLocaleLowerCase() === "m" && (e.ctrlKey)){
-                                reroll()
+                                chatRuntime.reroll()
                                 e.preventDefault()
                             }
                         }}
@@ -1011,9 +695,9 @@
             <!-- FILE ATTACHMENT PREVIEW                                  -->
             <!-- Shows thumbnails of attached images/videos/audio         -->
             <!-- ======================================================== -->
-            {#if fileInput.length > 0}
+            {#if chatRuntime.fileInput.length > 0}
                 <div class="flex items-center ml-4 flex-wrap p-2 m-2 border-darkborderc border rounded-md">
-                    {#each fileInput as file, i}
+                    {#each chatRuntime.fileInput as file, i}
                         {#await getInlayAsset(file) then inlayAsset}
                             <div class="relative">
                                 <!-- Render preview based on file type -->
@@ -1035,7 +719,7 @@
                                 {/if}
                                 <!-- Remove attachment button -->
                                 <button class="absolute -right-1 -top-1 p-1 bg-darkbg text-textcolor rounded-md transition-colors hover:text-draculared focus:text-draculared" onclick={() => {
-                                    fileInput.splice(i, 1)
+                                    chatRuntime.fileInput.splice(i, 1)
                                     updateInputSizeAll()
                                 }}>
                                     <XIcon size={18} />
@@ -1064,7 +748,7 @@
                                 fileType = 'audio'
                         }
                         // Insert sticker tag into message
-                        messageInput += `<span class='notranslate' translate='no'>{{${fileType}::${additionalAsset[0]}}}</span> *${additionalAsset[0]} added*`
+                        chatRuntime.messageInput += `<span class='notranslate' translate='no'>{{${fileType}::${additionalAsset[0]}}}</span> *${additionalAsset[0]} added*`
                         updateInputSizeAll()
                     }}/>
                 </div>
@@ -1103,8 +787,8 @@
                 bind:this={chatsInstance}
                 messages={currentChat}
                 loadPages={loadPages}
-                onReroll={reroll}
-                unReroll={unReroll}
+                onReroll={chatRuntime.reroll}
+                unReroll={chatRuntime.unReroll}
                 currentCharacter={currentCharacter}
                 currentUsername={currentUsername}
                 userIcon={userIcon}
@@ -1191,7 +875,7 @@
                 }}>
                     <!-- Auto Mode (Group chats only) -->
                     {#if DBState.currentChar.type === 'group'}
-                        <ActionMenuItem label={language.autoMode} onclick={runAutoMode}>
+                        <ActionMenuItem label={language.autoMode} onclick={chatRuntime.runAutoMode}>
                             {#snippet icon()}<DicesIcon />{/snippet}
                         </ActionMenuItem>
                     {/if}
@@ -1206,7 +890,7 @@
                     <!-- Continue Response (ask AI to continue last message) -->
                     <ActionMenuItem
                         label={language.continueResponse}
-                        onclick={sendContinue}
+                        onclick={chatRuntime.sendContinue}
                         disabled={(DBState.currentChat.message.length < 2) || (DBState.currentChat.message[DBState.currentChat.message.length - 1].role !== 'char')}
                     >
                         {#snippet icon()}<StepForwardIcon />{/snippet}
@@ -1269,14 +953,14 @@
 
                     <!-- Post/Attach file button -->
                     <ActionMenuItem label={language.postFile} onclick={async () => {
-                        const results = await postChatFile(messageInput)
+                        const results = await postChatFile(chatRuntime.messageInput)
                         if(!results) return
                         for(const res of results){
                             if(res?.type === 'asset'){
-                                fileInput.push(res.data)
+                                chatRuntime.fileInput.push(res.data)
                             }
                             if(res?.type === 'text'){
-                                messageInput += `{{file::${res.name}::${res.data}}}`
+                                chatRuntime.messageInput += `{{file::${res.name}::${res.data}}}`
                             }
                         }
                         updateInputSizeAll()
@@ -1295,7 +979,7 @@
 
                     <!-- Reroll button (optional) -->
                     {#if DBState.db.sideMenuRerollButton}
-                        <ActionMenuItem label={language.reroll} onclick={reroll}>
+                        <ActionMenuItem label={language.reroll} onclick={chatRuntime.reroll}>
                             {#snippet icon()}<RefreshCcwIcon />{/snippet}
                         </ActionMenuItem>
                     {/if}
