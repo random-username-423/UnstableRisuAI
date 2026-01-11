@@ -4,11 +4,10 @@
     import { language } from "../../../lang";
     import { DownloadIcon, HardDriveUploadIcon, PlusIcon, SunIcon, LinkIcon, FolderPlusIcon } from "@lucide/svelte";
     import { addLorebook, addLorebookFolder, exportLoreBook, importLoreBook } from "../../../ts/process/lorebook.svelte";
-    import Check from "../../UI/GUI/CheckInput.svelte";
+    import CheckInput from "../../UI/GUI/CheckInput.svelte";
     import NumberInput from "../../UI/GUI/NumberInput.svelte";
     import LoreBookList from "./LoreBookList.svelte";
     import Help from "src/lib/Others/Help.svelte";
-    import { selectedCharID } from "src/ts/stores.svelte";
 
     let submenu = $state(0)
     interface Props {
@@ -79,17 +78,17 @@
 {:else}
     {#if DBState.currentChar.loreSettings}
         <div class="flex items-center mt-4">
-            <Check check={false} onChange={() => {
+            <CheckInput check={false} onChange={() => {
                 DBState.currentChar.loreSettings = undefined
             }}
             name={language.useGlobalSettings}
             />
         </div>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.loreSettings.recursiveScanning} name={language.recursiveScanning}/>
+            <CheckInput bind:check={DBState.currentChar.loreSettings.recursiveScanning} name={language.recursiveScanning}/>
         </div>
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.loreSettings.fullWordMatching} name={language.fullWordMatching}/>
+            <CheckInput bind:check={DBState.currentChar.loreSettings.fullWordMatching} name={language.fullWordMatching}/>
         </div>
         <span class="text-textcolor mt-4 mb-2">{language.loreBookDepth}</span>
         <NumberInput size="sm" min={0} max={20} bind:value={DBState.currentChar.loreSettings.scanDepth} />
@@ -97,7 +96,7 @@
         <NumberInput size="sm" min={0} max={4096} bind:value={DBState.currentChar.loreSettings.tokenBudget} />
     {:else}
         <div class="flex items-center mt-4">
-            <Check check={true} onChange={() => {
+            <CheckInput check={true} onChange={() => {
                 DBState.currentChar.loreSettings = {
                     tokenBudget: DBState.db.loreBookToken,
                     scanDepth:DBState.db.loreBookDepth,
@@ -110,9 +109,9 @@
     {/if}
     <div class="flex items-center mt-4">
         {#if DBState.db.useExperimental}
-            <Check bind:check={DBState.currentChar.lorePlus}
+            <CheckInput bind:check={DBState.currentChar.lorePlus}
                 name={language.lorePlus}
-            ><Help key="lorePlus"></Help><Help key="experimental"></Help></Check>
+            ><Help key="lorePlus"></Help><Help key="experimental"></Help></CheckInput>
         {/if}
 
     </div>

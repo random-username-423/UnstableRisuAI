@@ -9,7 +9,7 @@ import { ReloadChatPointer, ReloadGUIPointer, selectedCharID, CurrentTriggerIdSt
 import { processMultiCommand } from "./command";
 import { parseKeyValue, sleep, toGraphemes } from "../utils/util";
 import { alertError, alertInput, alertNormal, alertSelect } from "../alert.svelte";
-import type { OpenAIChat } from "./index.svelte";
+import type { OpenAIChat } from "./types";
 import { HypaProcesser } from "./memory/hypamemory";
 import { requestChatData } from "./request/request";
 import { generateAIImage } from "./stableDiff";

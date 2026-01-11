@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { requestChatData } from "src/ts/process/request/request";
-    import { doingChat, type OpenAIChat } from "../../ts/process/index.svelte";
+    import { doingChat } from "src/ts/process/index.svelte"
+    import { type OpenAIChat } from "../../ts/process/types";
     import { setDatabase } from "../../ts/storage/database.svelte";
     import type { Database } from "../../ts/storage/types/database";
     import type { Message } from "../../ts/storage/types/chat";

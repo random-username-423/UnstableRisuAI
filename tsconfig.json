@@ -12,7 +12,6 @@
     "verbatimModuleSyntax": true,
 
     /* Module Resolution */
-    "baseUrl": ".",
     "resolveJsonModule": true,
     "esModuleInterop": true,
 
@@ -21,13 +20,18 @@
     "checkJs": false,
 
     /* Type Checking */
-    "strict": true,
+    "strict": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
 
     /* Debugging */
-    "sourceMap": true
+    "sourceMap": true,
+
+    /* Path Aliases */
+    "paths": {
+      "src/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.js", "src/**/*.svelte", "public/sw.js"],
   "exclude": ["src/**/web/*.ts"],

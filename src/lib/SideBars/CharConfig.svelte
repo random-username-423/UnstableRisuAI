@@ -1,7 +1,7 @@
 <!--
     CharConfig.svelte - Character/Group Settings Sidebar
 
-    Menu Structure ($CharConfigSubMenu):
+    Menu Structure (viewState.charConfigSubMenu):
     - 0: Basic Info (name, description, first message, author note)
     - 1: Display (icon, viewscreen, additional assets)
     - 2: Advanced Settings (bias, example message, system prompt, etc.)
@@ -16,11 +16,11 @@
     import { tokenizeAccurate } from "../../ts/tokenizer";
     import { saveImage as saveAsset } from "../../ts/storage/database.svelte";
     import type { character, groupChat } from "../../ts/storage/types/character";
-    import { DBState } from 'src/ts/stores.svelte';
+    import { DBState, viewState } from 'src/ts/stores.svelte';
     import { untrack } from 'svelte';
-    import { CharConfigSubMenu, layoutState, realmState, selectedCharID, hypaV3State } from "../../ts/stores.svelte";
+    import { layoutState, realmState, selectedCharID, hypaV3State } from "../../ts/stores.svelte";
     import { PlusIcon, SmileIcon, TrashIcon, UserIcon, ActivityIcon, BookIcon, User, Braces, Volume2Icon, DownloadIcon, HardDriveUploadIcon, Share2Icon, ImageIcon, ImageOffIcon, ArrowUp, ArrowDown } from '@lucide/svelte'
-    import Check from "../UI/GUI/CheckInput.svelte";
+    import CheckInput from "../UI/GUI/CheckInput.svelte";
     import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/characters.svelte";
     import LoreBook from "./LoreBook/LoreBookSetting.svelte";
     import { alertTOS, showHypaV2Alert } from "../../ts/alert.svelte";
@@ -30,7 +30,6 @@
     import { findCharacterbyId } from "../../ts/characters.svelte";
     import Help from "../Others/Help.svelte";
     import { exportChar } from "src/ts/characterCards.svelte";
-    import { getElevenTTSVoices, getWebSpeechTTSVoices, getVOICEVOXVoices, oaiVoices, getNovelAIVoices } from "src/ts/process/tts";
     import { getFileSrc } from "src/ts/globalApi.svelte";
     import { addGroupChar, rmCharFromGroup } from "src/ts/process/group.svelte";
     import TextInput from "../UI/GUI/TextInput.svelte";
@@ -41,14 +40,12 @@
     import OptionInput from "../UI/GUI/OptionInput.svelte";
     import RegexList from "./Scripts/RegexList.svelte";
     import TriggerList from "./Scripts/TriggerList.svelte";
-    import CheckInput from "../UI/GUI/CheckInput.svelte";
     import { getDefaultNewGenData } from "src/ts/process/inlayScreen";
-    import { registerOnnxModel } from "src/ts/process/transformers";
     import MultiLangInput from "../UI/GUI/MultiLangInput.svelte";
     import { applyModule } from "src/ts/process/modules";
     import { exportRegex, importRegex } from "src/ts/process/scripts";
-    import SliderInput from "../UI/GUI/SliderInput.svelte";
     import Toggles from "./Toggles.svelte";
+    import TTSSettings from "./TTS/TTSSettings.svelte"
 
     // ===== Local State =====
     let iconRemoveMode = $state(false)       // Icon delete mode toggle
@@ -164,112 +161,18 @@
         licensed = (DBState.currentChar.type === 'character') ? (DBState.currentChar as character).license : ''
     });
 
-    /**
-     * Initialize NovelAI TTS config with defaults if not set.
-     */
-    $effect.pre(() => {
-        if (DBState.currentChar.ttsMode === 'novelai' && (DBState.currentChar as character).naittsConfig === undefined) {
-            (DBState.currentChar as character).naittsConfig = {
-                customvoice: false,
-                voice: 'Aini',
-                version: 'v2'
-            };
-        }
-    });
-
-    /**
-     * Initialize GPT-SoVITS TTS config with defaults if not set.
-     */
-    $effect.pre(() => {
-        if (DBState.currentChar.ttsMode === 'gptsovits' && (DBState.currentChar as character).gptSoVitsConfig === undefined) {
-            (DBState.currentChar as character).gptSoVitsConfig = {
-                url: '',
-                use_auto_path: false,
-                ref_audio_path: '',
-                use_long_audio: false,
-                ref_audio_data: {
-                    fileName: '',
-                    assetId: ''
-                },
-                volume: 1.0,
-                text_lang: 'auto',
-                text: 'en',
-                use_prompt: false,
-                prompt_lang: 'en',
-                top_p: 1,
-                temperature: 0.7,
-                speed: 1,
-                top_k: 5,
-                text_split_method: 'cut0',
-            };
-        }
-    });
-
-    // Fish Speech model list
-    let fishSpeechModels:{
-        _id:string,
-        title:string,
-        description:string
-    }[] = $state([])
-
-    /**
-     * Initialize Fish Speech TTS config with defaults if not set.
-     */
-    $effect.pre(() => {
-        if (DBState.currentChar.ttsMode === 'fishspeech' && (DBState.currentChar as character).fishSpeechConfig === undefined) {
-            (DBState.currentChar as character).fishSpeechConfig = {
-                model: {
-                    _id: '',
-                    title: '',
-                    description: ''
-                },
-                chunk_length: 200,
-                normalize: false,
-            };
-        }
-    });
-
+    
     /**
      * Redirect to default menu when group selects character-only menus (Scripts, TTS).
      */
     $effect.pre(() => {
-        if(DBState.currentChar.type === 'group' && ($CharConfigSubMenu === 4 || $CharConfigSubMenu === 5)){
-            $CharConfigSubMenu = 0
+        if(DBState.currentChar.type === 'group' && (viewState.charConfigSubMenu === 4 || viewState.charConfigSubMenu === 5)){
+            viewState.charConfigSubMenu = 0
         }
 
     });
 
     // ===== Functions =====
-
-    /**
-     * Fetch model list from Fish Speech API.
-     */
-    async function getFishSpeechModels() {
-        try {
-            const res = await fetch(`https://api.fish.audio/model?self=true`, {
-                headers: {
-                    'Authorization': `Bearer ${DBState.db.fishSpeechKey}`
-                }
-            });
-            const data = await res.json();
-            console.log(data.items);
-            console.log(DBState.currentChar)
-            
-            if (Array.isArray(data.items)) {
-                fishSpeechModels = data.items.map((item: { _id?: string, title?: string, description?: string }) => ({
-                    _id: item._id || '',
-                    title: item.title || '',
-                    description: item.description || ''
-                }));
-            } else {
-                console.error('Expected an array of items, but received:', data.items);
-                fishSpeechModels = [];
-            }
-        } catch (error) {
-            console.error('Error fetching fish speech models:', error);
-            fishSpeechModels = [];
-        }
-    }
 
     /**
      * Move alternate greeting up in the list (swap with previous).
@@ -302,28 +205,28 @@
 
 {#if licensed !== 'private' && !layoutState.betaMobile.enabled}
     <div class="flex mb-2" class:gap-2={iconButtonSize === 24} class:gap-1={iconButtonSize < 24}>
-        <button class={$CharConfigSubMenu === 0 ? 'text-textcolor ' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 0}}>
+        <button class={viewState.charConfigSubMenu === 0 ? 'text-textcolor ' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 0}}>
             <UserIcon size={iconButtonSize} />
         </button>
-        <button class={$CharConfigSubMenu === 1 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 1}}>
+        <button class={viewState.charConfigSubMenu === 1 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 1}}>
             <SmileIcon size={iconButtonSize} />
         </button>
-        <button class={$CharConfigSubMenu === 3 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 3}}>
+        <button class={viewState.charConfigSubMenu === 3 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 3}}>
             <BookIcon size={iconButtonSize} />
         </button>
         {#if DBState.currentChar.type === 'character'}
-            <button class={$CharConfigSubMenu === 5 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 5}}>
+            <button class={viewState.charConfigSubMenu === 5 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 5}}>
                 <Volume2Icon size={iconButtonSize} />
             </button>
-            <button class={$CharConfigSubMenu === 4 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 4}}>
+            <button class={viewState.charConfigSubMenu === 4 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 4}}>
                 <Braces size={iconButtonSize} />
             </button>
         {/if}
-        <button class={$CharConfigSubMenu === 2 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 2}}>
+        <button class={viewState.charConfigSubMenu === 2 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 2}}>
             <ActivityIcon size={iconButtonSize} />
         </button>
         {#if DBState.currentChar.type === 'character'}
-            <button class={$CharConfigSubMenu === 6 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 6}}>
+            <button class={viewState.charConfigSubMenu === 6 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 6}}>
                 <Share2Icon size={iconButtonSize} />
             </button>
         {/if}
@@ -331,7 +234,7 @@
 {/if}
 
 
-{#if $CharConfigSubMenu === 0}
+{#if viewState.charConfigSubMenu === 0}
     {#if DBState.currentChar.type !== 'group' && licensed !== 'private'}
         <TextInput size="xl" marginBottom placeholder="Character Name" bind:value={DBState.currentChar.name} />
         <span class="text-textcolor">{language.description} <Help key="charDesc"/></span>
@@ -380,7 +283,7 @@
                         {/each}
                     </div>
                     <div class="flex items-center justify-center">
-                        <Check margin={false} bind:check={(DBState.currentChar as groupChat).characterActive[i]} />
+                        <CheckInput margin={false} bind:check={(DBState.currentChar as groupChat).characterActive[i]} />
                     </div>
                 {/each}
             {/if}
@@ -407,16 +310,16 @@
 
         {#if DBState.currentChar.type === 'group'}
             <div class="flex mt-2 items-center">
-                <Check bind:check={(DBState.currentChar as groupChat).orderByOrder} name={language.orderByOrder}/>
+                <CheckInput bind:check={(DBState.currentChar as groupChat).orderByOrder} name={language.orderByOrder}/>
             </div>
         {/if}
     {/if}
 {:else if licensed === 'private'}
     <span>You are not allowed</span>
     {(() => {
-        $CharConfigSubMenu = 0
+        viewState.charConfigSubMenu = 0
     })()}
-{:else if $CharConfigSubMenu === 1}
+{:else if viewState.charConfigSubMenu === 1}
     {#if !layoutState.betaMobile.enabled}
         <h2 class="mb-2 text-2xl font-bold mt-2">{language.characterDisplay}</h2>
     {/if}
@@ -524,7 +427,7 @@
 
         {#if DBState.currentChar.type === 'character' && DBState.currentChar.image !== ''}
             <div class="flex items-center mt-4">
-                <Check bind:check={(DBState.currentChar as character).largePortrait} name={language.largePortrait}/>
+                <CheckInput bind:check={(DBState.currentChar as character).largePortrait} name={language.largePortrait}/>
             </div>
         {/if}
 
@@ -614,7 +517,7 @@
 
             {#if (DBState.currentChar as character).inlayViewScreen && (DBState.currentChar as character).newGenData}
                 <span class="text-textcolor mt-2">{language.imgGenInstructions}</span>
-                <TextAreaInput highlight bind:value={(DBState.currentChar as character).newGenData.emotionInstructions} />
+                <TextAreaInput highlight bind:value={(DBState.currentChar as character).newGenData!.emotionInstructions} />
             {/if}
 
             <CheckInput bind:check={(DBState.currentChar as character).inlayViewScreen} name={language.inlayViewScreen} onChange={() => {
@@ -744,12 +647,12 @@
                 </table>
             </div>
     {/if}
-{:else if $CharConfigSubMenu === 3}
+{:else if viewState.charConfigSubMenu === 3}
     {#if !layoutState.betaMobile.enabled}
         <h2 class="mb-2 text-2xl font-bold mt-2">{language.loreBook} <Help key="lorebook"/></h2>
     {/if}
     <LoreBook />
-{:else if $CharConfigSubMenu === 4}
+{:else if viewState.charConfigSubMenu === 4}
     {#if DBState.currentChar.type === 'character'}
         {#if !layoutState.betaMobile.enabled}
             <h2 class="mb-2 text-2xl font-bold mt-2">{language.scripts}</h2>
@@ -790,7 +693,7 @@
             <TextAreaInput margin="both" autocomplete="off" bind:value={DBState.currentChar.virtualscript}></TextAreaInput>
         {/if}
     {/if}
-{:else if $CharConfigSubMenu === 6}
+{:else if viewState.charConfigSubMenu === 6}
 
     {#if DBState.currentChar.license !== 'CC BY-NC-SA 4.0'
     && DBState.currentChar.license !== 'CC BY-SA 4.0'
@@ -823,275 +726,9 @@
         removeChar($selectedCharID, DBState.currentChar.name)
     }} className="mt-2" size="sm">{ DBState.currentChar.type === 'group' ? language.removeGroup : language.removeCharacter}</Button>
     
-{:else if $CharConfigSubMenu === 5}
-    {#if DBState.currentChar.type === 'character'}
-        {#if !layoutState.betaMobile.enabled}
-            <h2 class="mb-2 text-2xl font-bold mt-2">TTS</h2>
-        {/if}
-        <span class="text-textcolor">{language.provider}</span>
-        <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.ttsMode} onchange={(e) => {
-            if(DBState.currentChar.type === 'character'){
-                (DBState.currentChar as character).ttsSpeech = ''
-            }
-        }}>
-            <OptionInput value="">{language.disabled}</OptionInput>
-            <OptionInput value="elevenlab">ElevenLabs</OptionInput>
-            <OptionInput value="webspeech">Web Speech</OptionInput>
-            <OptionInput value="VOICEVOX">VOICEVOX</OptionInput>
-            <OptionInput value="openai">OpenAI</OptionInput>
-            <OptionInput value="novelai">NovelAI</OptionInput>
-            <OptionInput value="huggingface">Huggingface</OptionInput>
-            <OptionInput value="vits">VITS</OptionInput>
-            <OptionInput value="gptsovits">GPT-SoVITS</OptionInput>
-            <OptionInput value="fishspeech">fish-speech</OptionInput>
-        </SelectInput>
-        
-
-        {#if DBState.currentChar.ttsMode === 'webspeech'}
-            {#if !speechSynthesis}
-                <span class="text-textcolor">Web Speech isn't supported in your browser or OS</span>
-            {:else}
-                <span class="text-textcolor">{language.Speech}</span>
-                <SelectInput className="mb-4 mt-2" bind:value={(DBState.currentChar as character).ttsSpeech}>
-                    <OptionInput value="">Auto</OptionInput>
-                    {#each getWebSpeechTTSVoices() as voice}
-                        <OptionInput value={voice}>{voice}</OptionInput>
-                    {/each}
-                </SelectInput>
-                {#if (DBState.currentChar as character).ttsSpeech !== ''}
-                    <span class="text-red-400 text-sm">If you do not set it to Auto, it may not work properly when importing from another OS or browser.</span>
-                {/if}
-            {/if}
-        {:else if DBState.currentChar.ttsMode === 'elevenlab'}
-            <span class="text-sm mb-2 text-textcolor2">Please set the ElevenLabs API key in "global Settings → Bot Settings → Others → ElevenLabs API key"</span>
-            {#await getElevenTTSVoices() then voices}
-                <span class="text-textcolor">{language.Speech}</span>
-                <SelectInput className="mb-4 mt-2" bind:value={(DBState.currentChar as character).ttsSpeech}>
-                    <OptionInput value="">Unset</OptionInput>
-                        {#each voices as voice}
-                            <OptionInput value={voice.voice_id}>{voice.name}</OptionInput>
-                        {/each}
-                </SelectInput>
-            {/await}
-         {:else if DBState.currentChar.ttsMode === 'VOICEVOX'}
-                <span class="text-textcolor">Speaker</span>
-                <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.voicevoxConfig.speaker}>
-                    {#await getVOICEVOXVoices() then voices}
-                        {#each voices as voice}
-                            <OptionInput value={voice.list}  selected={DBState.currentChar.voicevoxConfig.speaker === voice.list}>{voice.name}</OptionInput>
-                        {/each}
-                    {/await}
-                </SelectInput>
-                {#if DBState.currentChar.voicevoxConfig.speaker}
-                <span class="text=neutral-200">Style</span>
-                <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.ttsSpeech}>
-                {#each JSON.parse(DBState.currentChar.voicevoxConfig.speaker) as styles}
-                        <OptionInput value={styles.id} selected={DBState.currentChar.ttsSpeech === styles.id}>{styles.name}</OptionInput>
-                {/each}
-                </SelectInput>
-                {/if}
-                <span class="text-textcolor">Speed scale</span>
-                <NumberInput size={"sm"} marginBottom bind:value={DBState.currentChar.voicevoxConfig.SPEED_SCALE}/>
-
-                <span class="text-textcolor">Pitch scale</span>
-                <NumberInput size={"sm"} marginBottom bind:value={DBState.currentChar.voicevoxConfig.PITCH_SCALE}/>
-
-                <span class="text-textcolor">Volume scale</span>
-                <NumberInput size={"sm"} marginBottom bind:value={DBState.currentChar.voicevoxConfig.VOLUME_SCALE}/>
-
-                <span class="text-textcolor">Intonation scale</span>
-                <NumberInput size={"sm"} marginBottom bind:value={DBState.currentChar.voicevoxConfig.INTONATION_SCALE}/>
-                <span class="text-sm mb-2 text-textcolor2">To use VOICEVOX, you need to run a colab and put the localtunnel URL in "Settings → Other Bots". https://colab.research.google.com/drive/1tyeXJSklNfjW-aZJAib1JfgOMFarAwze</span>
-        {:else if DBState.currentChar.ttsMode === 'novelai'}
-            <span class="text-textcolor">Custom Voice Seed</span>
-            <Check bind:check={DBState.currentChar.naittsConfig.customvoice}/>
-            {#if !DBState.currentChar.naittsConfig.customvoice}
-                <span class="text-textcolor">Voice</span>
-                <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.naittsConfig.voice}>
-                    {#await getNovelAIVoices() then voices}
-                        {#each voices as voiceGroup}
-                            <optgroup label={voiceGroup.gender} class="bg-darkbg appearance-none">
-                                {#each voiceGroup.voices as voice}
-                                    <OptionInput value={voice} selected={DBState.currentChar.naittsConfig.voice === voice}>{voice}</OptionInput>
-                                {/each}
-                            </optgroup>
-                        {/each}
-                    {/await}
-                </SelectInput>
-            {:else}
-                <span class="text-textcolor">Voice</span>
-                <TextInput size={"sm"} bind:value={DBState.currentChar.naittsConfig.voice}/>
-            {/if}
-            <span class="text-textcolor">Version</span>
-            <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.naittsConfig.version}>
-                <OptionInput value="v1">v1</OptionInput>
-                <OptionInput value="v2">v2</OptionInput>
-            </SelectInput>
-        {:else if DBState.currentChar.ttsMode === 'openai'}
-            <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.oaiVoice}>
-                <OptionInput value="">Unset</OptionInput>
-                {#each oaiVoices as voice}
-                    <OptionInput value={voice}>{voice}</OptionInput>
-                {/each}
-            </SelectInput>
-        {:else if DBState.currentChar.ttsMode === 'huggingface'}
-            <span class="text-textcolor">Model</span>
-            <TextInput className="mb-4 mt-2" bind:value={DBState.currentChar.hfTTS.model} />
-
-            <span class="text-textcolor">Language</span>
-            <TextInput className="mb-4 mt-2" bind:value={DBState.currentChar.hfTTS.language} placeholder="en" />
-        {:else if DBState.currentChar.ttsMode === 'vits'}
-            {#if DBState.currentChar.vits}
-                <span class="text-textcolor">{DBState.currentChar.vits.name ?? 'Unnamed VitsModel'}</span>
-            {:else}
-                <span class="text-textcolor">No Model</span>
-            {/if}
-            <Button onclick={async () => {
-                const modelFile = await openFilePicker(['zip'], { readContent: true })
-                if(modelFile == null){
-                    return;
-                }
-                const model = await registerOnnxModel(modelFile.data, modelFile.name)
-                if(model && DBState.currentChar.type === 'character'){
-                    DBState.currentChar.vits = model
-                }
-            }}>{language.selectModel}</Button>
-        {:else if DBState.currentChar.ttsMode === 'gptsovits'}
-            <span class="text-textcolor">Volume</span>
-            <SliderInput min={0.0} max={1.0} step={0.01} fixed={2} bind:value={DBState.currentChar.gptSoVitsConfig.volume}/>
-            <span class="text-textcolor">URL</span>
-            <TextInput className="mb-4 mt-2" bind:value={DBState.currentChar.gptSoVitsConfig.url}/>
-
-            <span class="text-textcolor">Use Auto Path</span>
-            <Check bind:check={DBState.currentChar.gptSoVitsConfig.use_auto_path}/>
-
-            {#if !DBState.currentChar.gptSoVitsConfig.use_auto_path}
-                <span class="text-textcolor">Reference Audio Path (e.g. C:/Users/user/Downloads/GPT-SoVITS-v2-240821)</span>
-                <TextInput className="mb-4 mt-2" bind:value={DBState.currentChar.gptSoVitsConfig.ref_audio_path}/>
-            {/if}
-
-            <span class="text-textcolor">Use Long Audio</span>
-            <Check bind:check={DBState.currentChar.gptSoVitsConfig.use_long_audio}/>
-
-            <span class="text-textcolor">Reference Audio Data (3~10s audio file)</span>
-            <Button onclick={async () => {
-                const audio = await openFilePicker([
-                    'wav',
-                    'ogg',
-                    'aac',
-                    'mp3'
-                ], { readContent: true })
-                if(!audio){
-                    return null
-                }
-                const saveId = await saveAsset(audio.data)
-                DBState.currentChar.gptSoVitsConfig.ref_audio_data = {
-                    fileName: audio.name,
-                    assetId: saveId
-                }
-
-            }}
-            className="h-10">
-                
-                {#if DBState.currentChar.gptSoVitsConfig.ref_audio_data.assetId === '' || DBState.currentChar.gptSoVitsConfig.ref_audio_data.assetId === undefined}
-                    {language.selectFile}
-                {:else}
-                    {DBState.currentChar.gptSoVitsConfig.ref_audio_data.fileName}
-                {/if}
-            </Button>
-            <span class="text-textcolor">Text Language</span>
-            <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.gptSoVitsConfig.text_lang}>
-                <OptionInput value="auto">Multi-language Mixed</OptionInput>
-                <OptionInput value="auto_yue">Multi-language Mixed (Cantonese)</OptionInput>
-                <OptionInput value="en">English</OptionInput>
-                <OptionInput value="zh">Chinese-English Mixed</OptionInput>
-                <OptionInput value="ja">Japanese-English Mixed</OptionInput>
-                <OptionInput value="yue">Cantonese-English Mixed</OptionInput>
-                <OptionInput value="ko">Korean-English Mixed</OptionInput>
-                <OptionInput value="all_zh">Chinese</OptionInput>
-                <OptionInput value="all_ja">Japanese</OptionInput>
-                <OptionInput value="all_yue">Cantonese</OptionInput>
-                <OptionInput value="all_ko">Korean</OptionInput>
-            </SelectInput>
-
-            {#if !DBState.currentChar.gptSoVitsConfig.use_long_audio}
-                <span class="text-textcolor">Use Reference Audio Script</span>
-                <Check bind:check={DBState.currentChar.gptSoVitsConfig.use_prompt}/>
-            {/if}
-
-            {#if DBState.currentChar.gptSoVitsConfig.use_prompt && !DBState.currentChar.gptSoVitsConfig.use_long_audio}
-                <span class="text-textcolor">Reference Audio Script</span>
-                <TextAreaInput className="mb-4 mt-2" bind:value={DBState.currentChar.gptSoVitsConfig.prompt}/>
-            {/if}
-
-            <span class="text-textcolor">Reference Audio Language</span>
-            <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.gptSoVitsConfig.prompt_lang}>
-                <OptionInput value="auto">Multi-language Mixed</OptionInput>
-                <OptionInput value="auto_yue">Multi-language Mixed (Cantonese)</OptionInput>
-                <OptionInput value="en">English</OptionInput>
-                <OptionInput value="zh">Chinese-English Mixed</OptionInput>
-                <OptionInput value="ja">Japanese-English Mixed</OptionInput>
-                <OptionInput value="yue">Cantonese-English Mixed</OptionInput>
-                <OptionInput value="ko">Korean-English Mixed</OptionInput>
-                <OptionInput value="all_zh">Chinese</OptionInput>
-                <OptionInput value="all_ja">Japanese</OptionInput>
-                <OptionInput value="all_yue">Cantonese</OptionInput>
-                <OptionInput value="all_ko">Korean</OptionInput>
-            </SelectInput>
-            <span class="text-textcolor">Top P</span>
-            <SliderInput min={0.0} max={1.0} step={0.05} fixed={2} bind:value={DBState.currentChar.gptSoVitsConfig.top_p}/>
-
-            <span class="text-textcolor">Temperature</span>
-            <SliderInput min={0.0} max={1.0} step={0.05} fixed={2} bind:value={DBState.currentChar.gptSoVitsConfig.temperature}/>
-
-            <span class="text-textcolor">Speed</span>
-            <SliderInput min={0.6} max={1.65} step={0.05} fixed={2} bind:value={DBState.currentChar.gptSoVitsConfig.speed}/>
-
-            <span class="text-textcolor">Top K</span>
-            <SliderInput min={1} max={100} step={1} bind:value={DBState.currentChar.gptSoVitsConfig.top_k}/>
-
-            <span class="text-textcolor">Text Split Method</span>
-            <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.gptSoVitsConfig.text_split_method}>
-                <OptionInput value="cut0">Cut 0 (No splitting)</OptionInput>
-                <OptionInput value="cut1">Cut 1 (Split every 4 sentences)</OptionInput>
-                <OptionInput value="cut2">Cut 2 (Split every 50 characters)</OptionInput>
-                <OptionInput value="cut3">Cut 3 (Split by Chinese periods)</OptionInput>
-                <OptionInput value="cut4">Cut 4 (Split by English periods)</OptionInput>
-                <OptionInput value="cut5">Cut 5 (Split by various punctuation marks)</OptionInput>
-            </SelectInput>        
-        {:else if DBState.currentChar.ttsMode === 'fishspeech'}
-            {#await getFishSpeechModels()}
-                <span class="text-textcolor">Loading...</span>
-            {:then}
-                <span class="text-textcolor">Model</span>
-                <SelectInput className="mb-4 mt-2" bind:value={DBState.currentChar.fishSpeechConfig.model._id}>
-                    <OptionInput value="">Not selected</OptionInput>
-                    {#each fishSpeechModels as model}
-                        <OptionInput value={model._id}>
-                            <div class="flex items-center">
-                                <span>{model.title}</span>
-                                <span class="text-sm text-textcolor2">{model.description}</span>
-                            </div>
-                        </OptionInput>
-                    {/each}
-                </SelectInput>
-            {:catch}
-                <span class="text-textcolor">An error occurred while fetching the models.</span>
-            {/await}
-
-            <span class="text-textcolor">Chunk Length</span>
-            <NumberInput className="mb-4 mt-2" bind:value={DBState.currentChar.fishSpeechConfig.chunk_length}/>
-
-            <span class="mt-2 text-textcolor">Normalize</span>
-            <Check className="mb-4 mt-2" bind:check={DBState.currentChar.fishSpeechConfig.normalize}/>
-        {/if}
-        {#if DBState.currentChar.ttsMode}
-            <div class="flex items-center mt-2">
-                <Check bind:check={DBState.currentChar.ttsReadOnlyQuoted} name={language.ttsReadOnlyQuoted}/>
-            </div>
-        {/if}
-    {/if}
-{:else if $CharConfigSubMenu === 2}
+{:else if viewState.charConfigSubMenu === 5}
+    <TTSSettings/>
+{:else if viewState.charConfigSubMenu === 2}
     {#if !layoutState.betaMobile.enabled}
         <h2 class="mb-2 text-2xl font-bold mt-2">{language.advancedSettings}</h2>
     {/if}
@@ -1242,21 +879,21 @@
         </div>
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.lowLevelAccess} name={language.lowLevelAccess}/>
+            <CheckInput bind:check={DBState.currentChar.lowLevelAccess} name={language.lowLevelAccess}/>
             <span> <Help key="lowLevelAccess" name={language.lowLevelAccess}/></span>
         </div>
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.hideChatIcon} name={language.hideChatIcon}/>
+            <CheckInput bind:check={DBState.currentChar.hideChatIcon} name={language.hideChatIcon}/>
         </div>
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.utilityBot} name={language.utilityBot}/>
+            <CheckInput bind:check={DBState.currentChar.utilityBot} name={language.utilityBot}/>
             <span> <Help key="utilityBot" name={language.utilityBot}/></span>
         </div>
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.escapeOutput} name={language.escapeOutput}/>
+            <CheckInput bind:check={DBState.currentChar.escapeOutput} name={language.escapeOutput}/>
         </div>
 
         {#if DBState.db.supaModelType !== 'none' && DBState.db.hypav2}
@@ -1301,7 +938,7 @@
         {/if}
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.currentChar.lowLevelAccess} name={language.lowLevelAccess}/>
+            <CheckInput bind:check={DBState.currentChar.lowLevelAccess} name={language.lowLevelAccess}/>
             <span> <Help key="lowLevelAccess" name={language.lowLevelAccess}/></span>
         </div>
     {/if}

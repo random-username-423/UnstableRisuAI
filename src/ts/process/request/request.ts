@@ -8,7 +8,7 @@ import { getCurrentCharacter, getCurrentChat, getDatabase } from "../../storage/
 import { type character } from 'src/ts/storage/types/character';
 import { tokenizeNum } from "../../tokenizer";
 import { sleep } from "../../utils/util";
-import type { MultiModal, OpenAIChat } from "../index.svelte";
+import type { MultiModal, OpenAIChat } from "../types";
 import { getTools } from "../mcp/mcp";
 import type { MCPTool, RPCToolCallContent } from "../mcp/mcplib";
 import { NovelAIBadWordIds, stringlizeNAIChat } from "../models/nai";

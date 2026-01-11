@@ -45,11 +45,13 @@
     // Drag and drop handlers
     function handleDragOver(e: DragEvent) {
         e.preventDefault()
+        if (!e.dataTransfer) return
         e.dataTransfer.dropEffect = 'link'
     }
 
     async function handleFileDrop(e: DragEvent) {
         e.preventDefault()
+        if (!e.dataTransfer) return
         if (e.dataTransfer.types.includes('application/x-risu-internal')) return
 
         const file = e.dataTransfer.files[0]

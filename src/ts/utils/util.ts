@@ -33,6 +33,30 @@ export function sleep(ms: number): Promise<void> {
 }
 
 /**
+ * Creates a debounced version of a function.
+ * The debounced function delays invoking fn until after ms milliseconds have elapsed
+ * since the last time the debounced function was invoked.
+ * @param fn - The function to debounce
+ * @param ms - The number of milliseconds to delay
+ * @returns Debounced function with cancel method
+ */
+export function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
+    let timer: number | null = null
+
+    const debounced = (...args: Parameters<T>) => {
+        if (timer) clearTimeout(timer)
+        timer = setTimeout(() => fn(...args), ms) as unknown as number
+    }
+
+    debounced.cancel = () => {
+        if (timer) clearTimeout(timer)
+        timer = null
+    }
+
+    return debounced
+}
+
+/**
  * Gets the basename of a given path.
  * @param data - The path to get the basename from.
  * @returns The basename of the path.

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Check from "src/lib/UI/GUI/CheckInput.svelte";
+    import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import { changeLanguage, language } from "src/lang";
     
     import { DBState } from 'src/ts/stores.svelte';
@@ -103,7 +103,7 @@
         <TextInput bind:value={DBState.db.deeplOptions.key} />
 
         <div class="flex items-center mt-2">
-            <Check bind:check={DBState.db.deeplOptions.freeApi} name={language.deeplFreeKey}/>
+            <CheckInput bind:check={DBState.db.deeplOptions.freeApi} name={language.deeplFreeKey}/>
         </div>
     {/if}
 
@@ -140,37 +140,37 @@
 
     {#if DBState.db.translatorType === 'bergamot'}
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.htmlTranslation} name={language.htmlTranslation}/>
+            <CheckInput bind:check={DBState.db.htmlTranslation} name={language.htmlTranslation}/>
         </div>
     {/if}
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.autoTranslate} name={language.autoTranslation}/>
+        <CheckInput bind:check={DBState.db.autoTranslate} name={language.autoTranslation}/>
     </div>
 
     <div class="flex items-center mt-4">
-        <Check bind:check={DBState.db.combineTranslation} name={language.combineTranslation}>
+        <CheckInput bind:check={DBState.db.combineTranslation} name={language.combineTranslation}>
             <Help key="combineTranslation"/>
-        </Check>
+        </CheckInput>
     </div>
 
     <div class="flex items-center mt-4">
-        <Check bind:check={DBState.db.legacyTranslation} name={language.legacyTranslation}>
+        <CheckInput bind:check={DBState.db.legacyTranslation} name={language.legacyTranslation}>
             <Help key="legacyTranslation"/>
-        </Check>
+        </CheckInput>
     </div>
 
     {#if DBState.db.translatorType === 'llm'}
         <div class="flex items-center mt-4">
-        <Check bind:check={DBState.db.translateBeforeHTMLFormatting} name={language.translateBeforeHTMLFormatting}>
+        <CheckInput bind:check={DBState.db.translateBeforeHTMLFormatting} name={language.translateBeforeHTMLFormatting}>
                 <Help key="translateBeforeHTMLFormatting"/>
-            </Check>
+            </CheckInput>
         </div>
 
         <div class="flex items-center mt-4">
-            <Check bind:check={DBState.db.autoTranslateCachedOnly} name={language.autoTranslateCachedOnly}>
+            <CheckInput bind:check={DBState.db.autoTranslateCachedOnly} name={language.autoTranslateCachedOnly}>
                     <Help key="autoTranslateCachedOnly"/>
-                </Check>
+                </CheckInput>
         </div>        
     {/if}
 {/if}

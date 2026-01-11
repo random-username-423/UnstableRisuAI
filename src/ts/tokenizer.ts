@@ -4,7 +4,7 @@ import { getCurrentCharacter, getDatabase } from "./storage/database.svelte";
 import { type Chat } from './storage/types/chat';
 import { type groupChat } from './storage/types/character';
 import { type character } from './storage/types/character';
-import type { MultiModal, OpenAIChat } from "./process/index.svelte";
+import type { MultiModal, OpenAIChat } from "./process/types";
 import { supportsInlayImage } from "./process/files/inlays";
 import { risuChatParser } from "./parser.svelte";
 import { tokenizeGGUFModel } from "./process/models/local";

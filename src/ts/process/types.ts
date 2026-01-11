@@ -16,3 +16,18 @@ export interface OpenAIChat{
     thoughts?: string[]
     cachePoint?: boolean
 }
+
+export interface OpenAIChatFull extends OpenAIChat{
+    function_call?: {
+        name: string
+        arguments:string
+    }
+    tool_calls?:{
+        function: {
+            name: string
+            arguments:string
+        }
+        id:string
+        type:'function'
+    }[]
+}

@@ -4,7 +4,7 @@
     import { DBState } from 'src/ts/stores.svelte';
     import { openFilePicker } from "src/ts/utils/util";
     import { changeFullscreen } from "src/ts/gui/window";
-    import Check from "src/lib/UI/GUI/CheckInput.svelte";
+    import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import Help from "src/lib/Others/Help.svelte";
     import SliderInput from "src/lib/UI/GUI/SliderInput.svelte";
     import SelectInput from "src/lib/UI/GUI/SelectInput.svelte";
@@ -54,11 +54,11 @@
     <SelectInput className="mt-2" bind:value={DBState.db.theme}>
         <OptionInput value="" >Standard Risu</OptionInput>
         <OptionInput value="waifu" >Waifulike</OptionInput>
-        <!-- <OptionInput value="waifuMobile" >WaifuCut</OptionInput> -->
+        <OptionInput value="waifuMobile" >WaifuCut</OptionInput>
         <OptionInput value="mobilechat" >Mobile Chat</OptionInput>
         <OptionInput value="cardboard" >CardBoard</OptionInput>
-
         <OptionInput value="customHTML" >Custom HTML</OptionInput>
+        <OptionInput value="customLayout" >Custom Layout</OptionInput>
     </SelectInput>
 
     {#if DBState.db.theme === "custom"}
@@ -73,6 +73,27 @@
         <TextAreaInput bind:value={DBState.db.guiHTML} />
     {/if}
 
+    {#if DBState.db.theme === 'customLayout'}
+        <span class="text-textcolor mt-4">Layout HTML <Help key="layoutHTML"/></span>
+        <TextAreaInput bind:value={DBState.db.layoutHTML} placeholder={`<style>
+  .layout { display: flex; height: 100%; }
+  .char-area { width: 40%; }
+  .chat-area { width: 60%; }
+</style>
+<div class="layout">
+  <RISUSIDEBAR />
+  <RISUBACKGROUND />
+  <div class="char-area">
+    <RISUCHARIMAGE />
+  </div>
+  <div class="chat-area">
+    <RISUCHATSCREEN />
+  </div>
+</div>`} />
+        <div class="text-textcolor2 text-sm mt-2">
+            Available tags: &lt;RISUCHATSCREEN&gt;, &lt;RISUCHARIMAGE&gt;, &lt;RISUBACKGROUND&gt;, &lt;RISUSIDEBAR&gt;, &lt;RISURESIZEBOX&gt;, &lt;STYLE&gt;
+        </div>
+    {/if}
 
     {#if DBState.db.theme === "waifu"}
         <span class="text-textcolor mt-4">{language.waifuWidth}</span>
@@ -240,32 +261,32 @@
 {#if submenu === 2 || submenu === -1}
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.fullScreen} onChange={changeFullscreen} name={language.fullscreen}/>
+        <CheckInput bind:check={DBState.db.fullScreen} onChange={changeFullscreen} name={language.fullscreen}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.showMemoryLimit} name={language.showMemoryLimit}/>
+        <CheckInput bind:check={DBState.db.showMemoryLimit} name={language.showMemoryLimit}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.showFirstMessagePages} name={language.showFirstMessagePages}/>
+        <CheckInput bind:check={DBState.db.showFirstMessagePages} name={language.showFirstMessagePages}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.hideRealm} name={language.hideRealm}/>
+        <CheckInput bind:check={DBState.db.hideRealm} name={language.hideRealm}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.hideAllImages} name={language.hideAllImages}/>
+        <CheckInput bind:check={DBState.db.hideAllImages} name={language.hideAllImages}/>
         <Help key="hideAllImagesDesc"/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.showFolderName} name={language.showFolderNameInIcon}/>
+        <CheckInput bind:check={DBState.db.showFolderName} name={language.showFolderNameInIcon}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check check={DBState.db.customBackground !== ''} onChange={async (check) => {
+        <CheckInput check={DBState.db.customBackground !== ''} onChange={async (check) => {
             if(check){
                 DBState.db.customBackground = '-'
                 const d = await openFilePicker(['png', 'webp', 'gif'], { readContent: true })
@@ -279,25 +300,25 @@
             else{
                 DBState.db.customBackground = ''
             }
-        }} name={language.useCustomBackground}></Check>
+        }} name={language.useCustomBackground}></CheckInput>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.playMessage} name={language.playMessage}/>
+        <CheckInput bind:check={DBState.db.playMessage} name={language.playMessage}/>
         <span> <Help key="msgSound" name={language.playMessage}/></span>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.playMessageOnTranslateEnd } name={language.playMessageOnTranslateEnd}/>
+        <CheckInput bind:check={DBState.db.playMessageOnTranslateEnd } name={language.playMessageOnTranslateEnd}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.roundIcons} name={language.roundIcons}/>
+        <CheckInput bind:check={DBState.db.roundIcons} name={language.roundIcons}/>
     </div>
 
     {#if DBState.db.textScreenColor}
         <div class="flex items-center mt-2">
-            <Check check={true} onChange={() => {
+            <CheckInput check={true} onChange={() => {
                 DBState.db.textScreenColor = null
             }} name={language.textBackgrounds} hiddenName/>
             <input type="color" class="style2 text-sm mr-2" bind:value={DBState.db.textScreenColor} >
@@ -305,7 +326,7 @@
         </div>
     {:else}
         <div class="flex items-center mt-2">
-            <Check check={false} onChange={() => {
+            <CheckInput check={false} onChange={() => {
                 DBState.db.textScreenColor = "#121212"
             }} name={language.textBackgrounds}/>
         </div>
@@ -314,25 +335,25 @@
     {/if}
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.textBorder} name={language.textBorder}/>
+        <CheckInput bind:check={DBState.db.textBorder} name={language.textBorder}/>
     </div>
 
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.textScreenRounded} name={language.textScreenRound}/>
+        <CheckInput bind:check={DBState.db.textScreenRounded} name={language.textScreenRound}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.showSavingIcon} name={language.showSavingIcon}/>
+        <CheckInput bind:check={DBState.db.showSavingIcon} name={language.showSavingIcon}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.showPromptComparison} name={language.showPromptComparison}/>
+        <CheckInput bind:check={DBState.db.showPromptComparison} name={language.showPromptComparison}/>
     </div>
 
     {#if DBState.db.textScreenBorder}
         <div class="flex items-center mt-2">
-            <Check check={true} onChange={() => {
+            <CheckInput check={true} onChange={() => {
                 DBState.db.textScreenBorder = null
             }} name={language.textScreenBorder} hiddenName/>
             <input type="color" class="style2 text-sm mr-2" bind:value={DBState.db.textScreenBorder} >
@@ -340,14 +361,14 @@
         </div>
     {:else}
         <div class="flex items-center mt-2">
-            <Check check={false} onChange={() => {
+            <CheckInput check={false} onChange={() => {
                 DBState.db.textScreenBorder = "#121212"
             }} name={language.textScreenBorder}/>
         </div>
     {/if}
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.useChatCopy} name={language.useChatCopy}/>
+        <CheckInput bind:check={DBState.db.useChatCopy} name={language.useChatCopy}/>
     </div>
 
     <!-- <div class="flex items-center mt-2">
@@ -355,23 +376,23 @@
     </div> -->
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.useAdditionalAssetsPreview} name={language.useAdditionalAssetsPreview}/>
+        <CheckInput bind:check={DBState.db.useAdditionalAssetsPreview} name={language.useAdditionalAssetsPreview}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.useLegacyGUI} name={language.useLegacyGUI}/>
+        <CheckInput bind:check={DBState.db.useLegacyGUI} name={language.useLegacyGUI}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.hideApiKey} name={language.hideApiKeys}/>
+        <CheckInput bind:check={DBState.db.hideApiKey} name={language.hideApiKeys}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.unformatQuotes} name={language.unformatQuotes}/>
+        <CheckInput bind:check={DBState.db.unformatQuotes} name={language.unformatQuotes}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.customQuotes} name={language.customQuotes}/>
+        <CheckInput bind:check={DBState.db.customQuotes} name={language.customQuotes}/>
     </div>
 
     {#if DBState.db.customQuotes}
@@ -389,16 +410,16 @@
     {/if}
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.betaMobileGUI} name={language.betaMobileGUI}/>
+        <CheckInput bind:check={DBState.db.betaMobileGUI} name={language.betaMobileGUI}/>
         <Help key="betaMobileGUI"/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.menuSideBar} name={language.menuSideBar}/>
+        <CheckInput bind:check={DBState.db.menuSideBar} name={language.menuSideBar}/>
     </div>
 
     <div class="flex items-center mt-2">
-        <Check bind:check={DBState.db.notification} name={language.notification} onChange={async (e) => {
+        <CheckInput bind:check={DBState.db.notification} name={language.notification} onChange={async (e) => {
             let hasPermission = {state: 'denied'}
             try {
                 hasPermission = await navigator.permissions.query({name: 'notifications'})                
@@ -420,7 +441,7 @@
 
     {#if DBState.db.showUnrecommended}
         <div class="flex items-center mt-2">
-            <Check bind:check={DBState.db.useChatSticker} name={language.useChatSticker}/>
+            <CheckInput bind:check={DBState.db.useChatSticker} name={language.useChatSticker}/>
             <Help key="unrecommended" name={language.useChatSticker} unrecommended/>
         </div>
     {/if}

@@ -8,7 +8,7 @@
     import PluginSettings from "./Pages/PluginSettings.svelte";
     import FilesSettings from "./Pages/FilesSettings.svelte";
     import AdvancedSettings from "./Pages/AdvancedSettings.svelte";
-    import { additionalSettingsMenu, layoutState, SettingsMenuIndex, settingsOpen } from "src/ts/stores.svelte";
+    import { additionalSettingsMenu, layoutState, settingsOpen, viewState } from "src/ts/stores.svelte";
     import { DBState } from "src/ts/stores.svelte";
     import Communities from "./Pages/Communities.svelte";
     import GlobalLoreBookSettings from "./Pages/GlobalLoreBookSettings.svelte";
@@ -25,14 +25,14 @@
     import PluginDefinedIcon from "../Others/PluginDefinedIcon.svelte";
 
     let openLoreList = $state(false)
-    if(window.innerWidth >= 900 && $SettingsMenuIndex === -1 && !layoutState.betaMobile.enabled){
-        $SettingsMenuIndex = 1
+    if(window.innerWidth >= 900 && viewState.settingsMenu === -1 && !layoutState.betaMobile.enabled){
+        viewState.settingsMenu = 1
     }
 
 </script>
 <div class="h-full w-full flex justify-center rs-setting-cont" class:bg-bgcolor={layoutState.betaMobile.enabled} class:setting-bg={!layoutState.betaMobile.enabled}>
     <div class="h-full max-w-(--breakpoint-lg) w-full flex relative rs-setting-cont-2">
-        {#if (window.innerWidth >= 700 && !layoutState.betaMobile.enabled) || $SettingsMenuIndex === -1}
+        {#if (window.innerWidth >= 700 && !layoutState.betaMobile.enabled) || viewState.settingsMenu === -1}
             <div class="flex h-full flex-col p-4 pt-8 gap-2 overflow-y-auto relative rs-setting-cont-3 shrink-0"
                 class:w-full={window.innerWidth < 700 || layoutState.betaMobile.enabled}
                 class:bg-darkbg={!layoutState.betaMobile.enabled} class:bg-bgcolor={layoutState.betaMobile.enabled}
@@ -40,114 +40,114 @@
                 
                 {#if !$isLite}
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 1 || $SettingsMenuIndex === 13}
-                        class:text-textcolor2={$SettingsMenuIndex !== 1 && $SettingsMenuIndex !== 13}
+                        class:text-textcolor={viewState.settingsMenu === 1 || viewState.settingsMenu === 13}
+                        class:text-textcolor2={viewState.settingsMenu !== 1 && viewState.settingsMenu !== 13}
                         onclick={() => {
-                            $SettingsMenuIndex = 1
+                            viewState.settingsMenu = 1
                             
                     }}>
                         <BotIcon />
                         <span>{language.chatBot}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 12}
-                        class:text-textcolor2={$SettingsMenuIndex !== 12}
+                        class:text-textcolor={viewState.settingsMenu === 12}
+                        class:text-textcolor2={viewState.settingsMenu !== 12}
                         onclick={() => {
-                            $SettingsMenuIndex = 12
+                            viewState.settingsMenu = 12
                     }}>
                         <ContactIcon />
                         <span>{language.persona}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 2}
-                        class:text-textcolor2={$SettingsMenuIndex !== 2}
+                        class:text-textcolor={viewState.settingsMenu === 2}
+                        class:text-textcolor2={viewState.settingsMenu !== 2}
                         onclick={() => {
-                            $SettingsMenuIndex = 2
+                            viewState.settingsMenu = 2
                     }}>
                         <Sailboat />
                         <span>{language.otherBots}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 3}
-                        class:text-textcolor2={$SettingsMenuIndex !== 3}
+                        class:text-textcolor={viewState.settingsMenu === 3}
+                        class:text-textcolor2={viewState.settingsMenu !== 3}
                         onclick={() => {
-                            $SettingsMenuIndex = 3
+                            viewState.settingsMenu = 3
                     }}>
                         <MonitorIcon />
                         <span>{language.display}</span>
                     </button>
                 {/if}
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                    class:text-textcolor={$SettingsMenuIndex === 10}
-                    class:text-textcolor2={$SettingsMenuIndex !== 10}
+                    class:text-textcolor={viewState.settingsMenu === 10}
+                    class:text-textcolor2={viewState.settingsMenu !== 10}
                     onclick={() => {
-                        $SettingsMenuIndex = 10
+                        viewState.settingsMenu = 10
                 }}>
                     <LanguagesIcon />
                     <span>{language.language}</span>
                 </button>
                 {#if !$isLite}
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 11}
-                        class:text-textcolor2={$SettingsMenuIndex !== 11}
+                        class:text-textcolor={viewState.settingsMenu === 11}
+                        class:text-textcolor2={viewState.settingsMenu !== 11}
                         onclick={() => {
-                            $SettingsMenuIndex = 11
+                            viewState.settingsMenu = 11
                     }}>
                         <AccessibilityIcon />
                         <span>{language.accessibility}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 14}
-                        class:text-textcolor2={$SettingsMenuIndex !== 14}
+                        class:text-textcolor={viewState.settingsMenu === 14}
+                        class:text-textcolor2={viewState.settingsMenu !== 14}
                         onclick={() => {
-                            $SettingsMenuIndex = 14
+                            viewState.settingsMenu = 14
                     }}>
                         <PackageIcon />
                         <span>{language.modules}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 4}
-                        class:text-textcolor2={$SettingsMenuIndex !== 4}
+                        class:text-textcolor={viewState.settingsMenu === 4}
+                        class:text-textcolor2={viewState.settingsMenu !== 4}
                         onclick={() => {
-                        $SettingsMenuIndex = 4
+                        viewState.settingsMenu = 4
                     }}>
                         <CodeIcon />
                         <span>{language.plugin}</span>
                     </button>
                 {/if}
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                    class:text-textcolor={$SettingsMenuIndex === 0}
-                    class:text-textcolor2={$SettingsMenuIndex !== 0}
+                    class:text-textcolor={viewState.settingsMenu === 0}
+                    class:text-textcolor2={viewState.settingsMenu !== 0}
                     onclick={() => {
-                        $SettingsMenuIndex = 0
+                        viewState.settingsMenu = 0
                 }}>
                     <UserIcon />
                     <span>{language.account} & {language.files}</span>
                 </button>
                 <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 15}
-                        class:text-textcolor2={$SettingsMenuIndex !== 15}
+                        class:text-textcolor={viewState.settingsMenu === 15}
+                        class:text-textcolor2={viewState.settingsMenu !== 15}
                         onclick={() => {
-                        $SettingsMenuIndex = 15
+                        viewState.settingsMenu = 15
                     }}>
                         <KeyboardIcon />
                         <span>{language.hotkey}</span>
                     </button>
                 {#if !$isLite}
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 6}
-                        class:text-textcolor2={$SettingsMenuIndex !== 6}
+                        class:text-textcolor={viewState.settingsMenu === 6}
+                        class:text-textcolor2={viewState.settingsMenu !== 6}
                         onclick={() => {
-                        $SettingsMenuIndex = 6
+                        viewState.settingsMenu = 6
                     }}>
                         <ActivityIcon />
                         <span>{language.advancedSettings}</span>
                     </button>
                     <button class="flex gap-2 items-center hover:text-textcolor"
-                        class:text-textcolor={$SettingsMenuIndex === 77}
-                        class:text-textcolor2={$SettingsMenuIndex !== 77}
+                        class:text-textcolor={viewState.settingsMenu === 77}
+                        class:text-textcolor2={viewState.settingsMenu !== 77}
                         onclick={() => {
-                        $SettingsMenuIndex = 77
+                        viewState.settingsMenu = 77
                     }}>
                         <BoxIcon />
                         <span>{language.supporterThanks}</span>
@@ -169,46 +169,46 @@
                 {/if}
             </div>
         {/if}
-        {#if (window.innerWidth >= 700 && !layoutState.betaMobile.enabled) || $SettingsMenuIndex !== -1}
-            {#key $SettingsMenuIndex}
+        {#if (window.innerWidth >= 700 && !layoutState.betaMobile.enabled) || viewState.settingsMenu !== -1}
+            {#key viewState.settingsMenu}
                 <div class="grow py-6 px-4 bg-bgcolor flex flex-col text-textcolor overflow-y-auto relative rs-setting-cont-4 min-w-0">
-                    {#if $SettingsMenuIndex === 0}
+                    {#if viewState.settingsMenu === 0}
                         <UserSettings />
-                    {:else if $SettingsMenuIndex === 1}
+                    {:else if viewState.settingsMenu === 1}
                         <BotSettings goPromptTemplate={() => {
-                            $SettingsMenuIndex = 13
+                            viewState.settingsMenu = 13
                         }} />
-                    {:else if $SettingsMenuIndex === 2}
+                    {:else if viewState.settingsMenu === 2}
                         <OtherBotSettings />
-                    {:else if $SettingsMenuIndex === 3}
+                    {:else if viewState.settingsMenu === 3}
                         <DisplaySettings />
-                    {:else if $SettingsMenuIndex === 4}
+                    {:else if viewState.settingsMenu === 4}
                         <PluginSettings />
-                    {:else if $SettingsMenuIndex === 5}
+                    {:else if viewState.settingsMenu === 5}
                         <FilesSettings />
-                    {:else if $SettingsMenuIndex === 6}
+                    {:else if viewState.settingsMenu === 6}
                         <AdvancedSettings />
-                    {:else if $SettingsMenuIndex === 7}
+                    {:else if viewState.settingsMenu === 7}
                         <Communities />
-                    {:else if $SettingsMenuIndex === 8}
+                    {:else if viewState.settingsMenu === 8}
                         <GlobalLoreBookSettings bind:openLoreList />
-                    {:else if $SettingsMenuIndex === 9}
+                    {:else if viewState.settingsMenu === 9}
                         <GlobalRegex/>
-                    {:else if $SettingsMenuIndex === 10}
+                    {:else if viewState.settingsMenu === 10}
                         <LanguageSettings/>
-                    {:else if $SettingsMenuIndex === 11}
+                    {:else if viewState.settingsMenu === 11}
                         <AccessibilitySettings/>
-                    {:else if $SettingsMenuIndex === 12}
+                    {:else if viewState.settingsMenu === 12}
                         <PersonaSettings/>
-                    {:else if $SettingsMenuIndex === 14}
+                    {:else if viewState.settingsMenu === 14}
                         <ModuleSettings/>
-                    {:else if $SettingsMenuIndex === 13}
+                    {:else if viewState.settingsMenu === 13}
                         <PromptSettings onGoBack={() => {
-                            $SettingsMenuIndex = 1
+                            viewState.settingsMenu = 1
                         }}/>
-                    {:else if $SettingsMenuIndex === 15 && window.innerWidth >= 768}
+                    {:else if viewState.settingsMenu === 15 && window.innerWidth >= 768}
                         <HotkeySettings/>
-                    {:else if $SettingsMenuIndex === 77}
+                    {:else if viewState.settingsMenu === 77}
                         <ThanksPage/>
                     {/if}
             </div>
@@ -219,7 +219,7 @@
                         settingsOpen.set(false)
                     }
                     else{
-                        $SettingsMenuIndex = -1
+                        viewState.settingsMenu = -1
                     }
                 }}>
                     <CircleXIcon size={DBState.db.settingsCloseButtonSize} />

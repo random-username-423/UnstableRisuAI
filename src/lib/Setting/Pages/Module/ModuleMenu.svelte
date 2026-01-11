@@ -8,7 +8,7 @@
     import { DownloadIcon, FolderPlusIcon, HardDriveUploadIcon, PlusIcon, TrashIcon } from "@lucide/svelte";
     import RegexList from "src/lib/SideBars/Scripts/RegexList.svelte";
     import TriggerList from "src/lib/SideBars/Scripts/TriggerList.svelte";
-    import Check from "src/lib/UI/GUI/CheckInput.svelte";
+    import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import Help from "src/lib/Others/Help.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import { getFileSrc, saveAsset, downloadFile } from "src/ts/globalApi.svelte";
@@ -202,7 +202,7 @@
     <span class="mt-4">{language.namespace} <Help key="namespace" /></span>
     <TextInput bind:value={currentModule.namespace} className="mt-1" size="sm"/>
     <div class="flex items-center mt-4">
-        <Check bind:check={currentModule.hideIcon} name={language.hideChatIcon}/>
+        <CheckInput bind:check={currentModule.hideIcon} name={language.hideChatIcon}/>
     </div>
     <span class="mt-4">{language.customPromptTemplateToggle} <Help key='customPromptTemplateToggle' /></span>
     <TextAreaInput bind:value={currentModule.customModuleToggle}/>
@@ -310,7 +310,7 @@
     <TriggerList bind:value={currentModule.trigger} lowLevelAble={currentModule.lowLevelAccess} />
 
     <div class="flex items-center mt-4">
-        <Check bind:check={currentModule.lowLevelAccess} name={language.lowLevelAccess}/>
+        <CheckInput bind:check={currentModule.lowLevelAccess} name={language.lowLevelAccess}/>
         <span> <Help key="lowLevelAccess" name={language.lowLevelAccess}/></span>
     </div>
 {/if}

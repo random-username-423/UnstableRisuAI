@@ -5,7 +5,7 @@
     import { getCurrentCharacter, getCurrentChat } from "../../../ts/storage/database.svelte";
     import type { loreBook } from "../../../ts/storage/types/character";
     import { alertConfirm, alertMd } from "../../../ts/alert.svelte";
-    import Check from "../../UI/GUI/CheckInput.svelte";
+    import CheckInput from "../../UI/GUI/CheckInput.svelte";
     import Help from "../../Others/Help.svelte";
     import TextInput from "../../UI/GUI/TextInput.svelte";
     import NumberInput from "../../UI/GUI/NumberInput.svelte";
@@ -263,22 +263,22 @@
                 <span class="text-textcolor2 mt-2 mb-2 text-sm">{e} {language.tokens}</span>
             {/await}
             <div class="flex items-center mt-4">
-                <Check bind:check={value.alwaysActive} name={language.alwaysActive}/>
+                <CheckInput bind:check={value.alwaysActive} name={language.alwaysActive}/>
             </div>
             {#if !value.alwaysActive && getCurrentCharacter()?.globalLore?.includes(value) && DBState.db.localActivationInGlobalLorebook}
                 <div class="flex items-center mt-2">
-                    <Check check={isLocallyActivated(value)} onChange={(check: boolean) => toggleLocalActive(check, value)} name={language.alwaysActiveInChat}/>
+                    <CheckInput check={isLocallyActivated(value)} onChange={(check: boolean) => toggleLocalActive(check, value)} name={language.alwaysActiveInChat}/>
                 </div>
             {/if}
             {#if !lorePlus && !value.useRegex}
                 <div class="flex items-center mt-2">
-                    <Check bind:check={value.selective} name={language.selective}/>
+                    <CheckInput bind:check={value.selective} name={language.selective}/>
                     <Help key="loreSelective" name={language.selective}/>
                 </div>
             {/if}
             {#if !lorePlus && !value.alwaysActive}
                 <div class="flex items-center mt-2">
-                    <Check bind:check={value.useRegex} name={language.useRegexLorebook}/>
+                    <CheckInput bind:check={value.useRegex} name={language.useRegexLorebook}/>
                     <Help key="useRegexLorebook" name={language.useRegexLorebook}/>
                 </div>
             {/if}

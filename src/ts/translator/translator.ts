@@ -7,7 +7,8 @@ import { globalFetch } from "../fetch"
 import { isTauri, isNodeServer } from "src/ts/platform"
 import { alertError } from "../alert.svelte"
 import { requestChatData } from "../process/request/request"
-import { doingChat, type OpenAIChat } from "../process/index.svelte"
+import { doingChat } from "../process/index.svelte"
+import { type OpenAIChat } from "../process/types"
 import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../parser.svelte"
 import { selectedCharID } from "../stores.svelte"
 import { getModuleRegexScripts } from "../process/modules"
@@ -242,7 +243,12 @@ async function jaTrans(text:string) {
     return await runTranslator(text, true, 'en','ja')
 }
 
-export function isExpTranslator(){
+/**
+ * Checks if the current translator requires API calls (LLM, DeepL, DeepLX).
+ * API-based translators are "heavy" - they have cost/latency, so input sync uses debounce.
+ * @returns true if using an API-based translator, false for local/free translators
+ */
+export function isAPIBasedTranslator(){
     const db = getDatabase()
     return db.translatorType === 'llm' || db.translatorType === 'deepl' || db.translatorType === 'deeplX'
 }
@@ -270,7 +276,7 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
     const db = getDatabase()
     const DoingChat = get(doingChat)
     if(DoingChat){
-        if(isExpTranslator()){
+        if(isAPIBasedTranslator()){
             if(!(db.translatorType === 'llm' && await getLLMCache(html) !== null)){
                 return html
             }

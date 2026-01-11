@@ -5,9 +5,8 @@
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import type { RisuModule } from "src/ts/process/modules";
     
-    import { DBState, ReloadGUIPointer } from 'src/ts/stores.svelte';
-    import { selectedCharID } from "src/ts/stores.svelte";
-    import { SettingsMenuIndex, settingsOpen } from "src/ts/stores.svelte";
+    import { DBState, ReloadGUIPointer, viewState } from 'src/ts/stores.svelte';
+    import { settingsOpen } from "src/ts/stores.svelte";
 
     interface Props {
         close?: any;
@@ -122,7 +121,7 @@
         </div>
         <div>
             <Button className="mt-4 grow-0" size="sm" onclick={() => {
-                $SettingsMenuIndex = 14
+                viewState.settingsMenu = 14
                 $settingsOpen = true
                 close('')
             }}>{language.edit}</Button>

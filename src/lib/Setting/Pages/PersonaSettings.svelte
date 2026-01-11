@@ -2,7 +2,7 @@
     import { language } from "src/lang";
     import BaseRoundedButton from "src/lib/UI/BaseRoundedButton.svelte";
     import Button from "src/lib/UI/GUI/Button.svelte";
-    import Check from "src/lib/UI/GUI/CheckInput.svelte";
+    import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import TextInput from "src/lib/UI/GUI/TextInput.svelte";
     import { alertConfirm, alertSelect } from "src/ts/alert.svelte";
@@ -155,7 +155,7 @@
                     changeUserPersona(0, 'noSave')
                 }
             }}>{language.remove}</Button>
-            <Check bind:check={DBState.db.personas[DBState.db.selectedPersona].largePortrait}>{language.largePortrait}</Check>
+            <CheckInput bind:check={DBState.db.personas[DBState.db.selectedPersona].largePortrait}>{language.largePortrait}</CheckInput>
         </div>
     </div>
 </div>

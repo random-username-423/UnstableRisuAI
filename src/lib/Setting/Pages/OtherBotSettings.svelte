@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Check from "src/lib/UI/GUI/CheckInput.svelte";
+    import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import { language } from "src/lang";
     import Help from "src/lib/Others/Help.svelte";
     import { openFilePicker } from "src/ts/utils/util";
@@ -13,7 +13,6 @@
     import SliderInput from "src/lib/UI/GUI/SliderInput.svelte";
     import { getCharImage } from "src/ts/characters.svelte";
     import Accordion from "src/lib/UI/Accordion.svelte";
-    import CheckInput from "src/lib/UI/GUI/CheckInput.svelte";
     import TextAreaInput from "src/lib/UI/GUI/TextAreaInput.svelte";
     import { untrack } from "svelte";
     import { tokenizePreset } from "src/ts/process/prompt";
@@ -148,7 +147,7 @@
             <TextInput size="sm" marginBottom bind:value={DBState.db.sdConfig.sampler_name}/>
 
             <div class="flex items-center mt-2">
-                <Check bind:check={DBState.db.sdConfig.enable_hr} name='Enable Hires'/>
+                <CheckInput bind:check={DBState.db.sdConfig.enable_hr} name='Enable Hires'/>
             </div>
             {#if DBState.db.sdConfig.enable_hr === true}
                 <span class="text-textcolor">denoising_strength</span>
@@ -402,7 +401,7 @@
                 
                 <span class="text-textcolor2 text-xs mb-2 block">Leave blank to use the character's default image.</span>
 
-                <Check className="mb-4" bind:check={DBState.db.NAIImgConfig.style_aware} name="Style Aware"/>
+                <CheckInput className="mb-4" bind:check={DBState.db.NAIImgConfig.style_aware} name="Style Aware"/>
 
             {/if}
 
@@ -411,29 +410,29 @@
 
             {#if (DBState.db.NAIImgModel === 'nai-diffusion-3' || DBState.db.NAIImgModel === 'nai-diffusion-furry-3' || DBState.db.NAIImgModel === 'nai-diffusion-2')
             && DBState.db.NAIImgConfig.sampler !== 'ddim_v3'}
-                <Check bind:check={DBState.db.NAIImgConfig.sm} name="Use SMEA"/>
+                <CheckInput bind:check={DBState.db.NAIImgConfig.sm} name="Use SMEA"/>
             {/if}
 
             {#if DBState.db.NAIImgModel === 'nai-diffusion-3' && DBState.db.NAIImgConfig.sampler !== 'ddim_v3'}
-                <Check bind:check={DBState.db.NAIImgConfig.sm_dyn} name='Use DYN'/>
+                <CheckInput bind:check={DBState.db.NAIImgConfig.sm_dyn} name='Use DYN'/>
             {/if}
 
             {#if DBState.db.NAIImgModel === 'nai-diffusion-4-5-full' || DBState.db.NAIImgModel === 'nai-diffusion-4-5-curated' 
             || DBState.db.NAIImgModel === 'nai-diffusion-4-full' || DBState.db.NAIImgModel === 'nai-diffusion-4-curated-preview'
             || DBState.db.NAIImgModel === 'nai-diffusion-3' || DBState.db.NAIImgModel === 'nai-diffusion-furry-3'}
-                <Check bind:check={DBState.db.NAIImgConfig.variety_plus} name="Variety+"/>
+                <CheckInput bind:check={DBState.db.NAIImgConfig.variety_plus} name="Variety+"/>
             {/if}
 
             {#if DBState.db.NAIImgModel === 'nai-diffusion-3' || DBState.db.NAIImgModel === 'nai-diffusion-furry-3' || DBState.db.NAIImgModel === 'nai-diffusion-2'}
-                <Check bind:check={DBState.db.NAIImgConfig.decrisp} name="Decrisp"/>
+                <CheckInput bind:check={DBState.db.NAIImgConfig.decrisp} name="Decrisp"/>
             {/if}
 
             {#if DBState.db.NAIImgModel === 'nai-diffusion-4-full'
             || DBState.db.NAIImgModel === 'nai-diffusion-4-curated-preview'}
-                <Check bind:check={DBState.db.NAIImgConfig.legacy_uc} name='Use legacy uc'/>
+                <CheckInput bind:check={DBState.db.NAIImgConfig.legacy_uc} name='Use legacy uc'/>
             {/if}
                 
-            <Check className="mt-4 mb-4" bind:check={DBState.db.NAII2I} name="Enable I2I"/>
+            <CheckInput className="mt-4 mb-4" bind:check={DBState.db.NAII2I} name="Enable I2I"/>
             
             {#if DBState.db.NAII2I}
                 <div class="relative">
@@ -762,7 +761,7 @@
             <span>Chunk Size</span>
             <NumberInput size="sm" marginBottom bind:value={DBState.db.hanuraiTokens} min={100} />
             <div class="flex mb-4">
-                <Check bind:check={DBState.db.hanuraiSplit} name="Text Spliting"/>
+                <CheckInput bind:check={DBState.db.hanuraiSplit} name="Text Spliting"/>
             </div>
         {:else if DBState.db.hypav2}
             <span class="mb-2 text-textcolor2 text-sm text-wrap wrap-break-word max-w-full">{language.hypaV2Desc}</span>
@@ -942,20 +941,20 @@
                 <span class="text-textcolor">{language.hypaV3Settings.randomMemoryRatioLabel}</span>
                 <NumberInput marginBottom disabled size="sm" value={parseFloat((1 - settings.recentMemoryRatio - settings.similarMemoryRatio).toFixed(2))} />
                 <div class="mb-2">
-                    <Check name={language.hypaV3Settings.preserveOrphanedMemoryLabel} bind:check={settings.preserveOrphanedMemory} />
+                    <CheckInput name={language.hypaV3Settings.preserveOrphanedMemoryLabel} bind:check={settings.preserveOrphanedMemory} />
                 </div>
                 <div class="mb-2">
-                    <Check name={language.hypaV3Settings.applyRegexScriptWhenRerollingLabel} bind:check={settings.processRegexScript} />
+                    <CheckInput name={language.hypaV3Settings.applyRegexScriptWhenRerollingLabel} bind:check={settings.processRegexScript} />
                 </div>
                 <div class="mb-2">
-                    <Check name={language.hypaV3Settings.doNotSummarizeUserMessageLabel} bind:check={settings.doNotSummarizeUserMessage} />
+                    <CheckInput name={language.hypaV3Settings.doNotSummarizeUserMessageLabel} bind:check={settings.doNotSummarizeUserMessage} />
                 </div>
                 <Accordion name="Advanced Settings" styled>
                     <div class="mb-2">
-                        <Check name="Use Experimental Implementation" bind:check={settings.useExperimentalImpl} />
+                        <CheckInput name="Use Experimental Implementation" bind:check={settings.useExperimentalImpl} />
                     </div>
                     <div class="mb-2">
-                        <Check name="Always Toggle On" bind:check={settings.alwaysToggleOn} />
+                        <CheckInput name="Always Toggle On" bind:check={settings.alwaysToggleOn} />
                     </div>
                     {#if settings.useExperimentalImpl}
                         <span class="text-textcolor">Summarization Requests Per Minute</span>
@@ -968,7 +967,7 @@
                         <NumberInput marginBottom size="sm" min={1} max={10} bind:value={settings.embeddingMaxConcurrent} />
                     {:else}
                         <div class="mb-2">
-                            <Check name={language.hypaV3Settings.enableSimilarityCorrectionLabel} bind:check={settings.enableSimilarityCorrection} />
+                            <CheckInput name={language.hypaV3Settings.enableSimilarityCorrectionLabel} bind:check={settings.enableSimilarityCorrection} />
                         </div>
                     {/if}
                 </Accordion>
@@ -994,7 +993,7 @@
                 <TextInput size="sm" marginBottom bind:value={DBState.db.supaMemoryPrompt} placeholder="Leave it blank to use default"/>
             {/if}
             <div class="flex mb-4">
-                <Check bind:check={DBState.db.hypaMemory} name={language.enable + ' ' + language.HypaMemory}/>
+                <CheckInput bind:check={DBState.db.hypaMemory} name={language.enable + ' ' + language.HypaMemory}/>
             </div>
         {/if}
 

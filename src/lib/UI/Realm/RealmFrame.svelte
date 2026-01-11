@@ -63,7 +63,7 @@
             const encodedPredata = predata.buf
             const encodedPredataName = new TextEncoder().encode(predata.data.name + '.risup')
             data = {
-                data: asBuffer(encodedPredata.buffer),
+                data: encodedPredata.buffer,
                 name: asBuffer(encodedPredataName.buffer)
             }
         }

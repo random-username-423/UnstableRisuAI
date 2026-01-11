@@ -1,4 +1,4 @@
-import type { OpenAIChat } from "./index.svelte";
+import type { OpenAIChat } from "./types";
 import { getDatabase } from "../storage/database.svelte";
 import { getUserName } from "../persona";
 
@@ -80,14 +80,14 @@ export function stringlizeChatOba(formated:OpenAIChat[], characterName:string, s
     if(!continued){
         if(db.ooba.formating.useName){
             if (suggesting){
-                resultString.push(appendWhitespace(assistantPrefix, seperator) + `${getUserName()}:\n` + db.autoSuggestPrefix)
+                resultString.push(appendWhitespace(assistantPrefix, seperator) + `${getUserName()}:\n`)
             } else {
                 resultString.push(assistantPrefix + `${characterName}:`)
             }
         }
         else{
             if (suggesting){
-                resultString.push(appendWhitespace(assistantPrefix, seperator) + `\n` + db.autoSuggestPrefix)
+                resultString.push(appendWhitespace(assistantPrefix, seperator) + `\n`)
             } else {
                 resultString.push(assistantPrefix)
             }
