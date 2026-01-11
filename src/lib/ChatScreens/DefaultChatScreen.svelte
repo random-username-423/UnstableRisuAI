@@ -206,9 +206,6 @@
     // Register callbacks for chatRuntime events
     // ============================================================
 
-    // Register hook for input cleared event (to resize textarea)
-    const unsubscribeInputCleared = chatRuntime.registerOnInputCleared(updateInputSizeAll)
-
     // Register hook for menu close event (from reroll)
     const unsubscribeMenuClose = chatRuntime.registerOnMenuClose(() => {
         openMenu = false
@@ -216,7 +213,6 @@
 
     // Cleanup hooks on component destroy
     onDestroy(() => {
-        unsubscribeInputCleared()
         unsubscribeMenuClose()
     })
 
@@ -260,44 +256,33 @@
     // ============================================================
 
     // Height state for textareas
-    let inputHeight = $state("44px")
+    const DEFAULT_TEXTAREA_HEIGHT = "44px"
+    let inputHeight = $state(DEFAULT_TEXTAREA_HEIGHT)
     let inputEle: HTMLTextAreaElement = $state()
-    let inputTranslateHeight = $state("44px")
+    let inputTranslateHeight = $state(DEFAULT_TEXTAREA_HEIGHT)
     let inputTranslateEle: HTMLTextAreaElement = $state()
 
     /**
-     * Updates both main and translate input heights
+     * Auto-resize textarea based on content
      */
-    function updateInputSizeAll() {
-        updateInputSize()
-        updateInputTranslateSize()
-    }
-
-    /**
-     * Auto-resize the translation textarea based on content
-     */
-    function updateInputTranslateSize() {
-        if (inputTranslateEle) {
-            inputTranslateEle.style.height = "0"
-            inputTranslateHeight = inputTranslateEle.scrollHeight + "px"
-            inputTranslateEle.style.height = inputTranslateHeight
+    function updateTextareaSize(ele: HTMLTextAreaElement | undefined, defaultHeight = DEFAULT_TEXTAREA_HEIGHT): string {
+        if (ele) {
+            ele.style.height = "0"
+            const newHeight = ele.scrollHeight + "px"
+            ele.style.height = newHeight
+            return newHeight
         }
+        return defaultHeight
     }
 
-    /**
-     * Auto-resize the main input textarea based on content
-     */
-    function updateInputSize() {
-        if (inputEle) {
-            inputEle.style.height = "0"
-            inputHeight = inputEle.scrollHeight + "px"
-            inputEle.style.height = inputHeight
-        }
-    }
-
-    // Run before DOM updates to ensure correct sizing
     $effect.pre(() => {
-        updateInputSizeAll()
+        chatRuntime.messageInput
+        inputHeight = updateTextareaSize(inputEle)
+    })
+
+    $effect.pre(() => {
+        chatRuntime.messageInputTranslate
+        inputTranslateHeight = updateTextareaSize(inputTranslateEle)
     })
 
     // ============================================================
@@ -620,7 +605,6 @@
                                                 chatRuntime.messageInput += `{{file::${res.name}::${res.data}}}`
                                             }
                                         }
-                                        updateInputSizeAll()
                                     }
                                     reader.readAsArrayBuffer(file)
                                 }
@@ -628,7 +612,6 @@
                         }
                     }}
                     oninput={() => {
-                        updateInputSizeAll()
                         syncTranslatedInput(false)
                     }}
                     style:height={inputHeight}
@@ -710,7 +693,6 @@
                             }
                         }}
                         oninput={() => {
-                            updateInputSizeAll()
                             syncTranslatedInput(true)
                         }}
                         placeholder={language.enterMessageForTranslateToEnglish}
@@ -750,7 +732,6 @@
                                     class="absolute -right-1 -top-1 p-1 bg-darkbg text-textcolor rounded-md transition-colors hover:text-draculared focus:text-draculared"
                                     onclick={() => {
                                         chatRuntime.fileInput.splice(i, 1)
-                                        updateInputSizeAll()
                                     }}
                                 >
                                     <XIcon size={18} />
@@ -779,7 +760,6 @@
                             }
                             // Insert sticker tag into message
                             chatRuntime.messageInput += `<span class='notranslate' translate='no'>{{${fileType}::${additionalAsset[0]}}}</span> *${additionalAsset[0]} added*`
-                            updateInputSizeAll()
                         }}
                     />
                 </div>
@@ -1018,7 +998,6 @@
                                     chatRuntime.messageInput += `{{file::${res.name}::${res.data}}}`
                                 }
                             }
-                            updateInputSizeAll()
                         }}
                     >
                         {#snippet icon()}<ImagePlusIcon />{/snippet}
