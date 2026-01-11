@@ -7,7 +7,7 @@ import { globalFetch } from "../fetch"
 import { isTauri, isNodeServer } from "src/ts/platform"
 import { alertError } from "../alert.svelte"
 import { requestChatData } from "../process/request/request"
-import { doingChat } from "../process/index.svelte"
+import { chatGenState } from "../process/index.svelte"
 import { type OpenAIChat } from "../process/types"
 import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../parser.svelte"
 import { selectedCharID } from "../stores.svelte"
@@ -274,8 +274,7 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
         }
     }
     const db = getDatabase()
-    const DoingChat = get(doingChat)
-    if(DoingChat){
+    if(chatGenState.generating){
         if(isAPIBasedTranslator()){
             if(!(db.translatorType === 'llm' && await getLLMCache(html) !== null)){
                 return html

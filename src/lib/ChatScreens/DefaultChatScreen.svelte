@@ -56,17 +56,17 @@
 
     // Character and chat processing utilities
     import { getCharImage } from "../../ts/characters.svelte"
-    import { chatProcessStage, doingChat } from "../../ts/process/index.svelte"
+    import { chatGenState, chatProcessStage } from "../../ts/process/index.svelte"
 
     // File handling utilities
-    import { postChatFile } from "src/ts/process/files/multisend"
+    import { postChatFile } from "src/ts/process/files/multisend.svelte"
     import { getInlayAsset } from "src/ts/process/files/inlays"
     import { coldStorageHeader, preLoadChat } from "src/ts/process/coldstorage.svelte"
 
     // General utilities
     import { debounce, sleep } from "../../ts/utils/util"
     import { language } from "../../lang"
-    import { isAPIBasedTranslator, translate } from "../../ts/translator/translator"
+    import { isAPIBasedTranslator, translate } from "../../ts/translator/translator.svelte"
     import { alertError, alertNormal, alertWait, showHypaV2Alert } from "../../ts/alert.svelte"
     import { stopTTS } from "src/ts/process/tts"
     import { aiLawApplies, chatFoldedState, chatFoldedStateMessageIndex, downloadFile } from "src/ts/globalApi.svelte"
@@ -620,7 +620,7 @@
                 ></textarea>
 
                 <!-- Send/Cancel button - shows spinner when generating -->
-                {#if $doingChat}
+                {#if chatGenState.generating}
                     <button
                         aria-labelledby="cancel"
                         class="peer-focus:border-textcolor flex justify-center border-y border-darkborderc items-center text-gray-100 p-3 hover:bg-blue-500 transition-colors"

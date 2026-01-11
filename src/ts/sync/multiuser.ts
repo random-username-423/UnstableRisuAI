@@ -9,7 +9,7 @@ import { sleep } from '../utils/util';
 import { findCharacterIndexbyId } from "../characters.svelte";
 import type { DataConnection, Peer } from 'peerjs';
 import { readImage } from '../globalApi.svelte';
-import { doingChat } from '../process/index.svelte';
+import { chatGenState } from '../process/index.svelte';
 
 async function importPeerJS(){
     return await import('peerjs');
@@ -327,7 +327,7 @@ export async function joinMultiuserRoom(){
                 case 'request-chat-safe':{
                     const rs:ResponseChatSafe = {
                         type: 'response-chat-safe',
-                        data: !get(doingChat) || data.id === waitingMultiuserId,
+                        data: !chatGenState.generating || data.id === waitingMultiuserId,
                         id: data.id
                     }
                     conn.send(rs)

@@ -2,7 +2,7 @@
 <script lang="ts">
     import { language } from "src/lang";
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
-    import { LLMCacheStorage, runTranslator } from "src/ts/translator/translator";
+    import { LLMCacheStorage, runTranslator } from "src/ts/translator/translator.svelte";
     import Button from "../UI/GUI/Button.svelte";
     import SelectInput from "../UI/GUI/SelectInput.svelte";
     import { getLanguageCodes } from "src/ts/utils/util";

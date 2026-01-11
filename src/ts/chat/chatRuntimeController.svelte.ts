@@ -13,7 +13,7 @@
 import { get } from 'svelte/store'
 import { selectedCharID } from '../stores.svelte'
 import { DBState } from '../stores.svelte'
-import { sendChat, doingChat } from '../process/index.svelte'
+import { chatGenState, sendChat } from '../process/index.svelte'
 import { alertError } from '../alert.svelte'
 import { processScript } from '../process/scripts'
 import { runTrigger } from '../process/triggers'
@@ -111,7 +111,7 @@ class ChatRuntimeController {
         const selectedChar = get(selectedCharID)
 
         // Prevent sending while AI is generating
-        if (get(doingChat)) {
+        if (chatGenState.generating) {
             return
         }
 
@@ -205,7 +205,7 @@ class ChatRuntimeController {
      */
     async reroll() {
         // Prevent reroll while generating
-        if (get(doingChat)) {
+        if (chatGenState.generating) {
             return
         }
 
@@ -279,7 +279,7 @@ class ChatRuntimeController {
      */
     async unReroll() {
         // Prevent unreroll while generating
-        if (get(doingChat)) {
+        if (chatGenState.generating) {
             return
         }
 
@@ -346,7 +346,7 @@ class ChatRuntimeController {
 
         // Cleanup after generation
         this.lastCharId = get(selectedCharID)
-        doingChat.set(false)
+        chatGenState.generating = false
 
         // Play notification sound if enabled
         if (DBState.db.playMessage) {

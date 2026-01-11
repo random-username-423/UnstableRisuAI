@@ -54,9 +54,13 @@ Example: <img src="{{ele::{{chardisplayasset}}::0}}">
 <Image Tag Instruction>
 `
 
-export const doingChat = writable(false)
+export const chatGenState = $state({
+    generating: false,
+    stage: 0,
+
+})
+
 export const chatProcessStage = writable(0)
-export const abortChat = writable(false)
 export let previewFormated: OpenAIChat[] = []
 export let previewBody: string = ''
 
@@ -154,14 +158,12 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return
     }
 
-    const isDoing = get(doingChat)
-
-    if (isDoing) {
+    if (chatGenState.generating) {
         if (chatProcessIndex === -1) {
             return false
         }
     }
-    doingChat.set(true)
+    chatGenState.generating = true
 
     if (chatProcessIndex === -1 && DBState.db.presetChain) {
         const names = DBState.db.presetChain.split(',').map((v) => v.trim())
@@ -185,7 +187,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         const peerSafe = await peerSafeCheck()
         if (!peerSafe) {
             peerRevertChat()
-            doingChat.set(false)
+            chatGenState.generating = false
             throwError(language.otherUserRequesting)
             return false
         }
@@ -785,7 +787,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         ms = makeMs(currentChat)
         currentTokens += triggerResult.tokens
         if (triggerResult.stopSending) {
-            doingChat.set(false)
+            chatGenState.generating = false
             return false
         }
     }
@@ -1639,7 +1641,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     if (needsAutoContinue) {
-        doingChat.set(false)
+        chatGenState.generating = false
         return await sendChat(chatProcessIndex, {
             chatAdditonalTokens: arg.chatAdditonalTokens,
             continue: true,
@@ -1686,7 +1688,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             DBState.db.characters[selectedChar].chats[selectedChat].message[lastMessageIndex].generationInfo = generationInfo
         }
 
-        doingChat.set(false)
+        chatGenState.generating = false
         return await sendChat(chatProcessIndex, {
             signal: abortSignal
         })

@@ -12,8 +12,8 @@ import { layoutState, realmState, selectedCharID } from "./stores.svelte"
 import { AppendableBuffer, changeChatTo, checkCharOrder, downloadFile, getFileSrc, requiresFullEncoderReload } from "./globalApi.svelte"
 import { getDefaultNewGenData } from "./process/inlayScreen"
 import { checkImageType, parseMarkdownSafe } from "./parser.svelte"
-import { translateHTML } from "./translator/translator"
-import { doingChat } from "./process/index.svelte"
+import { translateHTML } from "./translator/translator.svelte"
+import { chatGenState } from "./process/index.svelte"
 import { importCharacter } from "./characterCards.svelte"
 import { PngChunk } from "./pngChunk"
 import type { Database } from "./storage/types"
@@ -893,7 +893,7 @@ export function changeChar(index: number, arg: {
     reseter?: () => any,
 } = {}) {
     const reseter = arg.reseter ?? (() => { })
-    if (get(doingChat)) {
+    if (chatGenState.generating) {
         return
     }
     reseter()
