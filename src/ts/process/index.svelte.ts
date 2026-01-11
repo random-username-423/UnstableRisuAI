@@ -3,7 +3,7 @@ import { setCurrentChat } from "../storage/database.svelte"
 import { changeToPreset } from '../storage/preset-manager'
 import { type Message, type MessagePresetInfo, type MessageGenerationInfo, type Chat } from '../storage/types/chat'
 import { type character } from '../storage/types/character'
-import { DBState, selIdState } from '../stores.svelte'
+import { DBState } from '../stores.svelte'
 import { CharEmotion } from "../stores.svelte"
 import { ChatTokenizer, tokenize, tokenizeNum } from "../tokenizer"
 import { language } from "../../lang"
@@ -310,7 +310,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         'personaPrompt': ([] as OpenAIChat[])
     }
 
-    let promptTemplate = safeStructuredClone(DBState.db.promptTemplate)
+    let promptTemplate = $state.snapshot(DBState.db.promptTemplate)
     const usingPromptTemplate = !!promptTemplate
     if (promptTemplate) {
         let hasPostEverything = false
@@ -1111,7 +1111,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     //make into one
 
     let formated: OpenAIChat[] = []
-    const formatOrder = safeStructuredClone(DBState.db.formatingOrder)
+    const formatOrder = $state.snapshot(DBState.db.formatingOrder)
     if (formatOrder) {
         formatOrder.push('postEverything')
     }
