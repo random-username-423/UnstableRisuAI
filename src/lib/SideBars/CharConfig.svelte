@@ -1,7 +1,7 @@
 <!--
     CharConfig.svelte - Character/Group Settings Sidebar
 
-    Menu Structure ($CharConfigSubMenu):
+    Menu Structure (viewState.charConfigSubMenu):
     - 0: Basic Info (name, description, first message, author note)
     - 1: Display (icon, viewscreen, additional assets)
     - 2: Advanced Settings (bias, example message, system prompt, etc.)
@@ -16,9 +16,9 @@
     import { tokenizeAccurate } from "../../ts/tokenizer";
     import { saveImage as saveAsset } from "../../ts/storage/database.svelte";
     import type { character, groupChat } from "../../ts/storage/types/character";
-    import { DBState } from 'src/ts/stores.svelte';
+    import { DBState, viewState } from 'src/ts/stores.svelte';
     import { untrack } from 'svelte';
-    import { CharConfigSubMenu, layoutState, realmState, selectedCharID, hypaV3State } from "../../ts/stores.svelte";
+    import { layoutState, realmState, selectedCharID, hypaV3State } from "../../ts/stores.svelte";
     import { PlusIcon, SmileIcon, TrashIcon, UserIcon, ActivityIcon, BookIcon, User, Braces, Volume2Icon, DownloadIcon, HardDriveUploadIcon, Share2Icon, ImageIcon, ImageOffIcon, ArrowUp, ArrowDown } from '@lucide/svelte'
     import CheckInput from "../UI/GUI/CheckInput.svelte";
     import { addCharEmotion, addingEmotion, getCharImage, rmCharEmotion, selectCharImg, makeGroupImage, removeChar, changeCharImage } from "../../ts/characters.svelte";
@@ -166,8 +166,8 @@
      * Redirect to default menu when group selects character-only menus (Scripts, TTS).
      */
     $effect.pre(() => {
-        if(DBState.currentChar.type === 'group' && ($CharConfigSubMenu === 4 || $CharConfigSubMenu === 5)){
-            $CharConfigSubMenu = 0
+        if(DBState.currentChar.type === 'group' && (viewState.charConfigSubMenu === 4 || viewState.charConfigSubMenu === 5)){
+            viewState.charConfigSubMenu = 0
         }
 
     });
@@ -205,28 +205,28 @@
 
 {#if licensed !== 'private' && !layoutState.betaMobile.enabled}
     <div class="flex mb-2" class:gap-2={iconButtonSize === 24} class:gap-1={iconButtonSize < 24}>
-        <button class={$CharConfigSubMenu === 0 ? 'text-textcolor ' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 0}}>
+        <button class={viewState.charConfigSubMenu === 0 ? 'text-textcolor ' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 0}}>
             <UserIcon size={iconButtonSize} />
         </button>
-        <button class={$CharConfigSubMenu === 1 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 1}}>
+        <button class={viewState.charConfigSubMenu === 1 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 1}}>
             <SmileIcon size={iconButtonSize} />
         </button>
-        <button class={$CharConfigSubMenu === 3 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 3}}>
+        <button class={viewState.charConfigSubMenu === 3 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 3}}>
             <BookIcon size={iconButtonSize} />
         </button>
         {#if DBState.currentChar.type === 'character'}
-            <button class={$CharConfigSubMenu === 5 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 5}}>
+            <button class={viewState.charConfigSubMenu === 5 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 5}}>
                 <Volume2Icon size={iconButtonSize} />
             </button>
-            <button class={$CharConfigSubMenu === 4 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 4}}>
+            <button class={viewState.charConfigSubMenu === 4 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 4}}>
                 <Braces size={iconButtonSize} />
             </button>
         {/if}
-        <button class={$CharConfigSubMenu === 2 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 2}}>
+        <button class={viewState.charConfigSubMenu === 2 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 2}}>
             <ActivityIcon size={iconButtonSize} />
         </button>
         {#if DBState.currentChar.type === 'character'}
-            <button class={$CharConfigSubMenu === 6 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {$CharConfigSubMenu = 6}}>
+            <button class={viewState.charConfigSubMenu === 6 ? 'text-textcolor' : 'text-textcolor2'} onclick={() => {viewState.charConfigSubMenu = 6}}>
                 <Share2Icon size={iconButtonSize} />
             </button>
         {/if}
@@ -234,7 +234,7 @@
 {/if}
 
 
-{#if $CharConfigSubMenu === 0}
+{#if viewState.charConfigSubMenu === 0}
     {#if DBState.currentChar.type !== 'group' && licensed !== 'private'}
         <TextInput size="xl" marginBottom placeholder="Character Name" bind:value={DBState.currentChar.name} />
         <span class="text-textcolor">{language.description} <Help key="charDesc"/></span>
@@ -317,9 +317,9 @@
 {:else if licensed === 'private'}
     <span>You are not allowed</span>
     {(() => {
-        $CharConfigSubMenu = 0
+        viewState.charConfigSubMenu = 0
     })()}
-{:else if $CharConfigSubMenu === 1}
+{:else if viewState.charConfigSubMenu === 1}
     {#if !layoutState.betaMobile.enabled}
         <h2 class="mb-2 text-2xl font-bold mt-2">{language.characterDisplay}</h2>
     {/if}
@@ -647,12 +647,12 @@
                 </table>
             </div>
     {/if}
-{:else if $CharConfigSubMenu === 3}
+{:else if viewState.charConfigSubMenu === 3}
     {#if !layoutState.betaMobile.enabled}
         <h2 class="mb-2 text-2xl font-bold mt-2">{language.loreBook} <Help key="lorebook"/></h2>
     {/if}
     <LoreBook />
-{:else if $CharConfigSubMenu === 4}
+{:else if viewState.charConfigSubMenu === 4}
     {#if DBState.currentChar.type === 'character'}
         {#if !layoutState.betaMobile.enabled}
             <h2 class="mb-2 text-2xl font-bold mt-2">{language.scripts}</h2>
@@ -693,7 +693,7 @@
             <TextAreaInput margin="both" autocomplete="off" bind:value={DBState.currentChar.virtualscript}></TextAreaInput>
         {/if}
     {/if}
-{:else if $CharConfigSubMenu === 6}
+{:else if viewState.charConfigSubMenu === 6}
 
     {#if DBState.currentChar.license !== 'CC BY-NC-SA 4.0'
     && DBState.currentChar.license !== 'CC BY-SA 4.0'
@@ -726,9 +726,9 @@
         removeChar($selectedCharID, DBState.currentChar.name)
     }} className="mt-2" size="sm">{ DBState.currentChar.type === 'group' ? language.removeGroup : language.removeCharacter}</Button>
     
-{:else if $CharConfigSubMenu === 5}
+{:else if viewState.charConfigSubMenu === 5}
     <TTSSettings/>
-{:else if $CharConfigSubMenu === 2}
+{:else if viewState.charConfigSubMenu === 2}
     {#if !layoutState.betaMobile.enabled}
         <h2 class="mb-2 text-2xl font-bold mt-2">{language.advancedSettings}</h2>
     {/if}

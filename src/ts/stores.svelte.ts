@@ -31,6 +31,7 @@ export const layoutState = $state({
 export const viewState = $state({
     playground: 0,
     settingsMenu: -1,
+    charConfigSubMenu: 0,
 })
 
 export const appState = $state({
@@ -71,7 +72,6 @@ export const realmState = $state({
 export const HideIconStore = writable(false)
 export const CustomCSSStore = writable('')
 export const SafeModeStore = writable(false)
-export const CharConfigSubMenu = writable(0)
 export const CustomGUISettingMenuStore = writable(false)
 
 
