@@ -1,4 +1,4 @@
-import { get, writable } from "svelte/store"
+import { get } from "svelte/store"
 import { setCurrentChat } from "../storage/database.svelte"
 import { changeToPreset } from '../storage/preset-manager'
 import { type Message, type MessagePresetInfo, type MessageGenerationInfo, type Chat } from '../storage/types/chat'
@@ -60,7 +60,6 @@ export const chatGenState = $state({
 
 })
 
-export const chatProcessStage = writable(0)
 export let previewFormated: OpenAIChat[] = []
 export let previewBody: string = ''
 
@@ -92,7 +91,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     previewPrompt?: boolean
 } = {}): Promise<boolean> {
 
-    chatProcessStage.set(0)
+    chatGenState.stage = 0
     const abortSignal = arg.signal ?? (new AbortController()).signal
 
     const stageTimings = {
@@ -183,7 +182,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     if (connectionOpen) {
-        chatProcessStage.set(4)
+        chatGenState.stage = 4
         const peerSafe = await peerSafeCheck()
         if (!peerSafe) {
             peerRevertChat()
@@ -192,7 +191,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             return false
         }
         await peerSync()
-        chatProcessStage.set(0)
+        chatGenState.stage = 0
     }
 
     DBState.db.statics.messages += 1
@@ -292,7 +291,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     nowChatroom.chats[selectedChat] = currentChat
     const maxContextTokens = DBState.db.maxContext
 
-    chatProcessStage.set(1)
+    chatGenState.stage = 1
     stageTimings.stage1Start = Date.now()
     const unformated = {
         'main': ([] as OpenAIChat[]),
@@ -956,7 +955,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
     if (nowChatroom.supaMemory && (DBState.db.supaModelType !== 'none' || DBState.db.hanuraiEnable || DBState.db.hypav2 || DBState.db.hypaV3)) {
         stageTimings.stage1Duration = Date.now() - stageTimings.stage1Start
-        chatProcessStage.set(2)
+        chatGenState.stage = 2
         stageTimings.stage2Start = Date.now()
         if (DBState.db.hanuraiEnable) {
             const hn = await hanuraiMemory(chats, {
@@ -1025,7 +1024,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             currentChat.lastMemory = sp.lastId ?? currentChat.lastMemory
         }
         stageTimings.stage2Duration = Date.now() - stageTimings.stage2Start
-        chatProcessStage.set(1)
+        chatGenState.stage = 1
     }
     else {
         stageTimings.stage1Duration = Date.now() - stageTimings.stage1Start
@@ -1438,7 +1437,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
     /* stage 3 */ 
 
-    chatProcessStage.set(3)
+    chatGenState.stage = 3
     stageTimings.stage3Start = Date.now()
     if (arg.preview) {
         previewFormated = formated
@@ -1670,7 +1669,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
     /****** postprocess ******/
 
-    chatProcessStage.set(4)
+    chatGenState.stage = 4
     stageTimings.stage4Start = Date.now()
 
     if (resendChat) {

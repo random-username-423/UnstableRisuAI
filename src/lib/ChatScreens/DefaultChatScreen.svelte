@@ -56,7 +56,7 @@
 
     // Character and chat processing utilities
     import { getCharImage } from "../../ts/characters.svelte"
-    import { chatGenState, chatProcessStage } from "../../ts/process/index.svelte"
+    import { chatGenState } from "../../ts/process/index.svelte"
 
     // File handling utilities
     import { postChatFile } from "src/ts/process/files/multisend.svelte"
@@ -628,7 +628,7 @@
                         style:height={inputHeight}
                     >
                         <!-- Animated loading spinner with stage-based colors -->
-                        <div class="loadmove chat-process-stage-{$chatProcessStage}" class:autoload={chatRuntime.autoMode}></div>
+                        <div class="loadmove chat-process-stage-{chatGenState.stage}" class:autoload={chatRuntime.autoMode}></div>
                     </button>
                 {:else}
                     <button
