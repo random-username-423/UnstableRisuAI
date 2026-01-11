@@ -160,7 +160,7 @@ class ChatRuntimeController {
             const char = DBState.db.characters[selectedChar]
             if (char.type === 'character') {
                 // Run input trigger (custom automation)
-                let triggerResult = await runTrigger(char, 'input', { chat: char.chats[char.chatPage] })
+                const triggerResult = await runTrigger(char, 'input', { chat: char.chats[char.chatPage] })
                 if (triggerResult) {
                     cha = triggerResult.chat.message
                 }
@@ -229,8 +229,8 @@ class ChatRuntimeController {
         if (this.rerollid < this.rerolls.length - 1) {
             if (Array.isArray(this.rerolls[this.rerollid + 1])) {
                 this.rerollid += 1
-                let rerollData = safeStructuredClone(this.rerolls[this.rerollid])
-                let msgs = DBState.currentChat.message
+                const rerollData = safeStructuredClone(this.rerolls[this.rerollid])
+                const msgs = DBState.currentChat.message
                 for (let i = 0; i < rerollData.length; i++) {
                     msgs[msgs.length - rerollData.length + i] = rerollData[i]
                 }
@@ -245,7 +245,7 @@ class ChatRuntimeController {
             this.rerollid = this.rerolls.length - 1
         }
 
-        let cha = safeStructuredClone(DBState.currentChat.message)
+        const cha = safeStructuredClone(DBState.currentChat.message)
         if (cha.length === 0) {
             return
         }
@@ -263,7 +263,7 @@ class ChatRuntimeController {
                     break
                 }
             }
-            let msg = cha.pop()
+            const msg = cha.pop()
             if (!msg) {
                 return
             }
@@ -307,8 +307,8 @@ class ChatRuntimeController {
         // Restore previous version from history
         if (Array.isArray(this.rerolls[this.rerollid - 1])) {
             this.rerollid -= 1
-            let rerollData = safeStructuredClone(this.rerolls[this.rerollid])
-            let msgs = DBState.currentChat.message
+            const rerollData = safeStructuredClone(this.rerolls[this.rerollid])
+            const msgs = DBState.currentChat.message
             for (let i = 0; i < rerollData.length; i++) {
                 msgs[msgs.length - rerollData.length + i] = rerollData[i]
             }
@@ -324,7 +324,7 @@ class ChatRuntimeController {
      * Core function that triggers AI response generation
      */
     async sendChatMain(continued: boolean = false) {
-        let previousLength = DBState.currentChat.message.length
+        const previousLength = DBState.currentChat.message.length
         this.messageInput = ''
         this.abortController = new AbortController()
 
