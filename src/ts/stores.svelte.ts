@@ -28,6 +28,10 @@ export const layoutState = $state({
     },
 })
 
+export const viewState = $state({
+    playground: 0,
+})
+
 export const appState = $state({
     loaded: false,
 })
@@ -64,7 +68,6 @@ export const realmState = $state({
     uploadTarget: ''
 })
 
-export const PlaygroundStore = writable(0)
 export const HideIconStore = writable(false)
 export const CustomCSSStore = writable('')
 export const SafeModeStore = writable(false)

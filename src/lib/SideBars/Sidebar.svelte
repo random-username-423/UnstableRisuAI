@@ -7,13 +7,9 @@
     settingsOpen,
     sideBarState,
     realmState,
-    PlaygroundStore,
-
     QuickSettings,
-
-    additionalHamburgerMenu
-
-
+    additionalHamburgerMenu,
+    viewState
   } from "../../ts/stores.svelte";
     import { setDatabase } from "../../ts/storage/database.svelte";
     import type { folder } from "../../ts/storage/types/database";
@@ -315,13 +311,13 @@
   class="flex items-center justify-center py-2 flex-col gap-1 w-full mt-4"
   class:text-textcolor2={!(
     $selectedCharID < 0 &&
-    $PlaygroundStore === 0 &&
+    viewState.playground === 0 &&
     !$settingsOpen
   )}
   onclick={() => {
     reseter();
     selectedCharID.set(-1)
-    PlaygroundStore.set(0)
+    viewState.playground = 0
     realmState.expanded = false
   }}
 >
@@ -362,12 +358,12 @@
   class="flex items-center justify-center py-2 flex-col gap-1 w-full"
   class:text-textcolor2={!(
     $selectedCharID < 0 &&
-    $PlaygroundStore !== 0
+    viewState.playground !== 0
   )}
   onclick={() => {
     reseter();
     selectedCharID.set(-1)
-    PlaygroundStore.set(1)
+    viewState.playground = 1
   }}
 >
   <ShellIcon />
@@ -408,19 +404,19 @@
         onClick={() => {
           reseter();
           selectedCharID.set(-1)
-          PlaygroundStore.set(0)
+          viewState.playground = 0
           realmState.expanded = false
         }}><HouseIcon /></BarIcon>
       <div class="mt-2"></div>
       <BarIcon
         onClick={() => {
           reseter()
-          if($selectedCharID === -1 && $PlaygroundStore !== 0){
-            PlaygroundStore.set(0)
+          if($selectedCharID === -1 && viewState.playground !== 0){
+            viewState.playground = 0
             return
           }
           selectedCharID.set(-1)
-          PlaygroundStore.set(1)
+          viewState.playground = 1
         }}
       ><ShellIcon /></BarIcon>
       {#each additionalHamburgerMenu as menu}

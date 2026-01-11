@@ -2,7 +2,7 @@ import { get } from "svelte/store"
 import { alertClear, alertMd, alertSelect, alertWait, doingAlert } from "./alert.svelte"
 import { getDatabase  } from "./storage/database.svelte"
 import { changeToPreset as changeToPreset2 } from './storage/preset-manager'
-import { alertState, layoutState, modalState, realmState, PlaygroundStore, QuickSettings, SafeModeStore, selectedCharID, settingsOpen } from "./stores.svelte"
+import { alertState, layoutState, modalState, realmState, QuickSettings, SafeModeStore, selectedCharID, settingsOpen, viewState } from "./stores.svelte"
 import { language } from "src/lang"
 import { updateTextThemeAndCSS } from "./gui/colorscheme"
 import { defaultHotkeys } from "./defaulthotkeys"
@@ -128,7 +128,7 @@ export function initHotkey(){
                         return
                     }
                     selectedCharID.set(sorted[currentIndex - 1].i)
-                    PlaygroundStore.set(0)
+                    viewState.playground = 0
                     realmState.expanded = false
                     break
                 }
@@ -144,7 +144,7 @@ export function initHotkey(){
                         return
                     }
                     selectedCharID.set(sorted[currentIndex + 1].i)
-                    PlaygroundStore.set(0)
+                    viewState.playground = 0
                     realmState.expanded = false
                     break
                 }

@@ -18,7 +18,7 @@
     import { CameraIcon, DatabaseIcon, DicesIcon, GlobeIcon, ImagePlusIcon, LanguagesIcon, Laugh, MenuIcon, MicOffIcon, PackageIcon, Plus, RefreshCcwIcon, ReplyIcon, Send, StepForwardIcon, XIcon, BrainIcon, ArrowDown } from "@lucide/svelte";
 
     // Global state stores
-    import { selectedCharID, PlaygroundStore, createSimpleCharacter, hypaV3State, ScrollToMessageStore, additionalChatMenu, additionalFloatingActionButtons } from "../../ts/stores.svelte";
+    import { selectedCharID, createSimpleCharacter, hypaV3State, ScrollToMessageStore, additionalChatMenu, additionalFloatingActionButtons, viewState } from "../../ts/stores.svelte";
     import { DBState } from 'src/ts/stores.svelte';
     import { ConnectionOpenStore } from 'src/ts/sync/multiuser';
 
@@ -816,7 +816,7 @@
     <!-- ======================================================== -->
     {#if $selectedCharID < 0}
         <!-- Show MainMenu or PlaygroundMenu when no character selected -->
-        {#if $PlaygroundStore === 0}
+        {#if viewState.playground === 0}
             <MainMenu />
         {:else}
             <PlaygroundMenu />
