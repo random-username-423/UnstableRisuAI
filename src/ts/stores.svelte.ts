@@ -30,6 +30,7 @@ export const layoutState = $state({
 
 export const viewState = $state({
     playground: 0,
+    settingsMenu: -1,
 })
 
 export const appState = $state({
@@ -57,7 +58,6 @@ export const settingsOpen = writable(false)
 export const botMakerMode = writable(false)
 export const moduleBackgroundEmbedding = writable('')
 
-export const SettingsMenuIndex = writable(-1)
 export const ReloadGUIPointer = writable(0)
 export const ReloadChatPointer = writable({} as Record<number, number>)
 export const ScrollToMessageStore = $state({ value: -1 })

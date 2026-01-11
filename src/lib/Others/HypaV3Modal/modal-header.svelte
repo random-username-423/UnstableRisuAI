@@ -15,7 +15,7 @@
   import {
     hypaV3State,
     settingsOpen,
-    SettingsMenuIndex,
+    viewState,
   } from "src/ts/stores.svelte";
   import type { SearchState, BulkEditState, CategoryManagerState, FilterState, UIState } from "./types";
 
@@ -79,7 +79,7 @@
   function openGlobalSettings() {
     hypaV3State.open = false;
     $settingsOpen = true;
-    $SettingsMenuIndex = 2; // Other bot settings
+    viewState.settingsMenu = 2; // Other bot settings
   }
 
   function openDropdown(e: MouseEvent) {

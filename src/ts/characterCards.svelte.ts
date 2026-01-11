@@ -14,7 +14,7 @@ import { v4 as uuidv4, v4 } from 'uuid';
 import { characterFormatUpdate } from "./characters.svelte"
 import { AppendableBuffer, BlankWriter, checkCharOrder, downloadFile, forageStorage, loadAsset, LocalWriter, openURL, readImage, saveAsset, VirtualWriter } from "./globalApi.svelte"
 import { isTauri, isNodeServer, isCapacitor } from "src/ts/platform"
-import { SettingsMenuIndex, realmState, selectedCharID, settingsOpen } from "./stores.svelte"
+import { realmState, selectedCharID, settingsOpen, viewState } from "./stores.svelte"
 import { checkImageType, convertImage, hasher } from "./parser.svelte"
 import { type CharacterCardV3, type LorebookEntry } from '@risuai/ccardlib'
 import { reencodeImage } from "./process/files/inlays"
@@ -471,7 +471,7 @@ export async function characterURLImport() {
         db.modules.push(importData)
         setDatabase(db)
         alertNormal(language.successImport)
-        SettingsMenuIndex.set(14)
+        viewState.settingsMenu = 14
         settingsOpen.set(true)
         return
     }
@@ -482,7 +482,7 @@ export async function characterURLImport() {
             name: 'imported.risupreset',
             data: importData
         })
-        SettingsMenuIndex.set(1)
+        viewState.settingsMenu = 1
         settingsOpen.set(true)
         return
     }
@@ -509,7 +509,7 @@ export async function characterURLImport() {
         db.modules.push(md)
         setDatabase(db)
         alertNormal(language.successImport)
-        SettingsMenuIndex.set(14)
+        viewState.settingsMenu = 14
         settingsOpen.set(true)
     }
     if(hash.startsWith('#share_preset')){
@@ -522,7 +522,7 @@ export async function characterURLImport() {
             name: 'shared.risup',
             data: preset
         })
-        SettingsMenuIndex.set(1)
+        viewState.settingsMenu = 1
         settingsOpen.set(true)
     }
     if ("launchQueue" in window) {
@@ -581,7 +581,7 @@ export async function characterURLImport() {
                 name: name,
                 data: data
             })
-            SettingsMenuIndex.set(1)
+            viewState.settingsMenu = 1
             settingsOpen.set(true)
             alertNormal(language.successImport)
             return
@@ -593,7 +593,7 @@ export async function characterURLImport() {
             db.modules.push(md)
             setDatabase(db)
             alertNormal(language.successImport)
-            SettingsMenuIndex.set(14)
+            viewState.settingsMenu = 14
             settingsOpen.set(true)
             return
         }

@@ -2,8 +2,8 @@
     import { ArrowLeft, MenuIcon } from "@lucide/svelte";
     import { language } from "src/lang";
     
-    import { DBState } from 'src/ts/stores.svelte';
-    import { layoutState, selectedCharID, SettingsMenuIndex } from "src/ts/stores.svelte";
+    import { DBState, viewState } from 'src/ts/stores.svelte';
+    import { layoutState, selectedCharID } from "src/ts/stores.svelte";
 
     let { search = $bindable('') } = $props();
 </script>
@@ -29,9 +29,9 @@
                 <MenuIcon />
             </button>
         </div>
-    {:else if layoutState.betaMobile.stack === 2 && $SettingsMenuIndex > -1}
+    {:else if layoutState.betaMobile.stack === 2 && viewState.settingsMenu > -1}
         <button onclick={() => {
-            SettingsMenuIndex.set(-1)
+            viewState.settingsMenu = -1
         }}>
             <ArrowLeft />
         </button>
