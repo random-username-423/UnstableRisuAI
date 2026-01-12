@@ -9,7 +9,7 @@ import { ChatTokenizer, tokenize, tokenizeNum } from "../tokenizer"
 import { language } from "../../lang"
 import { alertError } from "../alert.svelte"
 import { loadLoreBookV3Prompt } from "./lorebook.svelte"
-import { isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax, assertNever } from "../utils/util"
+import { isLastCharPunctuation, trimUntilPunctuation, parseToggleSyntax } from "../utils/util"
 import { getAuthorNoteDefaultText } from "./prompt"
 import { getPersonaPrompt } from "../persona"
 import { getUserName } from "../persona"
@@ -208,13 +208,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     let currentChar: character
-    let caculatedChatTokens = 0
-    if (DBState.db.aiModel.startsWith('gpt')) {
-        caculatedChatTokens += 5
-    }
-    else {
-        caculatedChatTokens += 3
-    }
+    const caculatedChatTokens = DBState.db.aiModel.startsWith('gpt') ? 5 : 3
 
     // Determine which character(s) should respond
     // - 1:1 chat: The chatroom itself is the character
@@ -235,8 +229,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         const charNames = nowChatroom.characters.map((v) => findCharacterbyIdwithCache(v).name)
 
         // Get the last message to determine speaking order
-        const messages = DBState.currentMessages
-        const lastMessage = messages.at(-1)
+        const lastMessage = DBState.currentMessages.at(-1)
 
         // Build list of active characters with their talkness values
         let order = nowChatroom.characters.map((v, i) => {
@@ -1646,9 +1639,9 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             generationInfo.stageTiming.stage4 = stageTimings.stage4Duration
         }
 
-        const lastMessageIndex = DBState.currentMessages.length - 1
-        if (lastMessageIndex >= 0 && DBState.currentMessages[lastMessageIndex].generationInfo) {
-            DBState.currentMessages[lastMessageIndex].generationInfo = generationInfo
+        const lastMessage = DBState.currentMessages.at(-1)
+        if (lastMessage?.generationInfo) {
+            lastMessage.generationInfo = generationInfo
         }
 
         chatGenState.generating = false
@@ -1905,9 +1898,9 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         generationInfo.stageTiming.stage4 = stageTimings.stage4Duration
     }
 
-    const lastMessageIndex = DBState.currentMessages.length - 1
-    if (lastMessageIndex >= 0 && DBState.currentMessages[lastMessageIndex].generationInfo) {
-        DBState.currentMessages[lastMessageIndex].generationInfo = generationInfo
+    const lastMessage = DBState.currentMessages.at(-1)
+    if (lastMessage?.generationInfo) {
+        lastMessage.generationInfo = generationInfo
     }
 
     return true
