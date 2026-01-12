@@ -88,15 +88,14 @@ class ChatRuntimeController {
     /**
      * Send a new message (wrapper)
      */
-    async send() {
-        if (this.messageInput === '' && this.fileInput.length === 0) return
+    send = async () => {
         await this.sendMain(false)
     }
 
     /**
      * Continue the AI's previous response (wrapper)
      */
-    async sendContinue() {
+    sendContinue = async () => {
         await this.sendMain(true)
     }
 
