@@ -74,7 +74,6 @@ export let previewBody: string = ''
  *                           or as the orchestrator call that triggers all group members.
  *                           Values `0, 1, 2...` indicate specific character indices in group chat.
  * @param arg - Optional configuration object
- * @param arg.chatAdditonalTokens - Additional tokens to account for in context calculation
  * @param arg.signal - AbortSignal to cancel the request
  * @param arg.continue - If true, continues the last AI response instead of generating a new one
  * @param arg.usedContinueTokens - Token count already used when continuing a response
@@ -83,7 +82,6 @@ export let previewBody: string = ''
  * @returns Promise resolving to `true` on success, `false` on failure or abort
  */
 export async function sendChat(chatProcessIndex = -1, arg: {
-    chatAdditonalTokens?: number,
     signal?: AbortSignal,
     continue?: boolean,
     usedContinueTokens?: number,
@@ -100,9 +98,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     const nowChatroom = DBState.currentChar
     const selectedChatPage = nowChatroom.chatPage
 
-    const caculatedChatTokens = DBState.db.aiModel.startsWith('gpt') ? 5 : 3
-    const chatAdditonalTokens = arg.chatAdditonalTokens ?? caculatedChatTokens
-    const tokenizer = new ChatTokenizer(chatAdditonalTokens, DBState.db.aiModel.startsWith('gpt') ? 'noName' : 'name')
+    const perChatAdditonalTokens = DBState.db.aiModel.startsWith('gpt') ? 5 : 3
+    const tokenizer = new ChatTokenizer(perChatAdditonalTokens, DBState.db.aiModel.startsWith('gpt') ? 'noName' : 'name')
 
     const stageTimings = {
         stage1Start: 0,
@@ -257,7 +254,6 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         // Recursively call sendChat for each character in order
         for (let i = 0; i < order.length; i++) {
             const r = await sendChat(order[i].index, {
-                chatAdditonalTokens: caculatedChatTokens,
                 signal: abortSignal
             })
             if (!r) {
@@ -1600,7 +1596,6 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     if (needsAutoContinue) {
         chatGenState.generating = false
         return await sendChat(chatProcessIndex, {
-            chatAdditonalTokens: arg.chatAdditonalTokens,
             continue: true,
             signal: abortSignal,
             usedContinueTokens: resultTokens
