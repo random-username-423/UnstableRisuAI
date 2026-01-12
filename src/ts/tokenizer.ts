@@ -372,6 +372,15 @@ export class ChatTokenizer {
     private chatAdditionalTokens:number
     private useName:'name'|'noName'
 
+    /**
+     * Creates a new ChatTokenizer instance.
+     *
+     * @param chatAdditionalTokens - Additional tokens to add per chat message.
+     *                               Used to compensate for message formatting overhead.
+     * @param useName - Determines whether to include the sender's name in token calculation.
+     *                  - `'name'`: Include name in token count
+     *                  - `'noName'`: Exclude name from token count
+     */
     constructor(chatAdditionalTokens:number, useName:'name'|'noName'){
         this.chatAdditionalTokens = chatAdditionalTokens
         this.useName = useName

@@ -97,6 +97,13 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     chatGenState.stage = 0
     const abortSignal = arg.signal ?? (new AbortController()).signal
 
+    const nowChatroom = DBState.currentChar
+    const selectedChatPage = nowChatroom.chatPage
+
+    const caculatedChatTokens = DBState.db.aiModel.startsWith('gpt') ? 5 : 3
+    const chatAdditonalTokens = arg.chatAdditonalTokens ?? caculatedChatTokens
+    const tokenizer = new ChatTokenizer(chatAdditonalTokens, DBState.db.aiModel.startsWith('gpt') ? 'noName' : 'name')
+
     const stageTimings = {
         stage1Start: 0,
         stage2Start: 0,
@@ -133,10 +140,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     // Block new generation requests while already generating.
     // However, allow group chat member calls (chatProcessIndex >= 0) to proceed,
     // since the orchestrator (chatProcessIndex === -1) sequentially invokes each character.
-    if (chatGenState.generating) {
-        if (chatProcessIndex === -1) {
-            return false
-        }
+    if (chatGenState.generating && chatProcessIndex === -1) {
+        return false
     }
     chatGenState.generating = true
 
@@ -173,9 +178,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     DBState.db.statics.messages += 1
-    const nowChatroom = DBState.currentChar
     nowChatroom.lastInteraction = Date.now()
-    const selectedChatPage = nowChatroom.chatPage
     DBState.currentChat.message = DBState.currentChat.message.map((v) => {
         v.chatId = v.chatId ?? v4()
         return v
@@ -208,7 +211,6 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     let currentChar: character
-    const caculatedChatTokens = DBState.db.aiModel.startsWith('gpt') ? 5 : 3
 
     // Determine which character(s) should respond
     // - 1:1 chat: The chatroom itself is the character
@@ -269,8 +271,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return false
     }
 
-    const chatAdditonalTokens = arg.chatAdditonalTokens ?? caculatedChatTokens
-    const tokenizer = new ChatTokenizer(chatAdditonalTokens, DBState.db.aiModel.startsWith('gpt') ? 'noName' : 'name')
+    
+    
     let currentChat = parseChatTemplates(nowChatroom.chats[selectedChatPage], currentChar)
     nowChatroom.chats[selectedChatPage] = currentChat
     const maxContextTokens = DBState.db.maxContext
