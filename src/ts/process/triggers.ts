@@ -1089,7 +1089,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
         if (!localVarScopes || localVarScopes.length === 0) {
             return null
         }
-        const currentScope = localVarScopes[localVarScopes.length - 1]
+        const currentScope = localVarScopes.at(-1)
         if (!currentScope) {
             return null
         }
@@ -1101,12 +1101,12 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
         }
         return null
     }
-    
+
     function setLocalVar(key: string, value: string, indent: number) {
         if (!localVarScopes || localVarScopes.length === 0) {
             localVarScopes = [{}]
         }
-        const currentScope = localVarScopes[localVarScopes.length - 1]
+        const currentScope = localVarScopes.at(-1)
         if (!currentScope) {
             return
         }
@@ -1138,7 +1138,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
         if (!localVarScopes || localVarScopes.length === 0) {
             return
         }
-        const currentScope = localVarScopes[localVarScopes.length - 1]
+        const currentScope = localVarScopes.at(-1)
         if (!currentScope) {
             return
         }
@@ -1927,7 +1927,7 @@ export async function runTrigger(char:character,mode:triggerMode, arg:{
                     break
                 }
                 case 'v2GetLastMessage':{
-                    setVar(risuChatParser(effect.outputVar, {chara:char}), chat.message[chat.message.length - 1]?.data ?? 'null')
+                    setVar(risuChatParser(effect.outputVar, {chara:char}), chat.message.at(-1)?.data ?? 'null')
                     break
                 }
                 case 'v2GetMessageAtIndex':{

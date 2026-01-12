@@ -143,7 +143,7 @@ class ChatRuntimeController {
         if (this.messageInput === '') {
             if (DBState.db.characters[selectedChar].type !== 'group') {
                 // If last message wasn't from user, optionally add "says nothing"
-                if (cha.length === 0 || cha[cha.length - 1].role !== 'user') {
+                if (cha.length === 0 || cha.at(-1).role !== 'user') {
                     if (DBState.db.useSayNothing) {
                         cha.push({
                             role: 'user',
@@ -219,7 +219,7 @@ class ChatRuntimeController {
         if (genId) {
             const r = Prereroll(genId)
             if (r) {
-                DBState.currentChat.message[DBState.currentChat.message.length - 1].data = r
+                DBState.currentChat.message.at(-1).data = r
                 return
             }
         }
@@ -253,10 +253,10 @@ class ChatRuntimeController {
         this.notifyMenuClose()
 
         // Remove the last AI message(s) to regenerate
-        const saying = cha[cha.length - 1].saying
+        const saying = cha.at(-1).saying
         let sayingQu = 2
-        while (cha[cha.length - 1].role !== 'user') {
-            if (cha[cha.length - 1].saying === saying) {
+        while (cha.at(-1).role !== 'user') {
+            if (cha.at(-1).saying === saying) {
                 sayingQu -= 1
                 if (sayingQu === 0) {
                     break
@@ -293,7 +293,7 @@ class ChatRuntimeController {
         if (genId) {
             const r = PreUnreroll(genId)
             if (r) {
-                DBState.currentChat.message[DBState.currentChat.message.length - 1].data = r
+                DBState.currentChat.message.at(-1).data = r
                 return
             }
         }

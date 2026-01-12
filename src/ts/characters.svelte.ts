@@ -883,7 +883,7 @@ export async function addCharacter(arg: {
             return
     }
     const db = getDatabase()
-    if (db.characters[db.characters.length - 1]) {
+    if (db.characters.at(-1)) {
         changeChar(db.characters.length - 1)
     }
     layoutState.betaMobile.stack = 1
@@ -977,7 +977,7 @@ export async function getEmotion(db: Database, chaEmotion: { [key: string]: [str
                 for (const currentChar of currentDat.characters) {
                     const cha = chaEmotion[currentChar]
                     if (cha) {
-                        const latestEmotion = cha[cha.length - 1]
+                        const latestEmotion = cha.at(-1)
                         if (latestEmotion && latestEmotion[2] > newist[2]) {
                             newist = latestEmotion
                             newistChar = currentChar
@@ -1007,7 +1007,7 @@ export async function getEmotion(db: Database, chaEmotion: { [key: string]: [str
                 im = (await getCharImage(defaultEmotion(currentChar?.emotionImages), type))
             }
             else {
-                im = (await getCharImage(currEmotion[currEmotion.length - 1][1], type))
+                im = (await getCharImage(currEmotion.at(-1)[1], type))
             }
             if (im && im.length > 2) {
                 datas.push(im)
@@ -1019,7 +1019,7 @@ export async function getEmotion(db: Database, chaEmotion: { [key: string]: [str
                 datas.push(await getCharImage(currentChar.image ?? '', 'plain'))
             }
             else {
-                datas.push(currEmotion[currEmotion.length - 1][1])
+                datas.push(currEmotion.at(-1)[1])
             }
         }
     }

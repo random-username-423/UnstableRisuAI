@@ -50,7 +50,7 @@ async function sendPofile(arg:sendFileArg){
             await sendChat(-1);
             currentChar = db.characters[get(selectedCharID)]
             currentChat = currentChar.chats[currentChar.chatPage]
-            const res = currentChat.message[currentChat.message.length-1]
+            const res = currentChat.message.at(-1)
             const msgStr = res.data.split('\n').filter((a) => {
                 return a !== ''
             }).map((str) => {

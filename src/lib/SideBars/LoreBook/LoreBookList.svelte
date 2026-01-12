@@ -361,7 +361,7 @@
             -->
         {:else if externalLoreBooks}
             {@const visibleItems = externalLoreBooks.filter(book => (!showFolder && !book.folder) || (showFolder === book.folder))}
-            {@const lastVisibleItem = visibleItems[visibleItems.length - 1]}
+            {@const lastVisibleItem = visibleItems.at(-1)}
             {#if externalLoreBooks.length === 0}
                 <span class="text-textcolor2">No Lorebook</span>
             {:else}
@@ -412,7 +412,7 @@
             {/if}
         {:else if submenu === 0}
             {@const visibleItems = DBState.currentChar.globalLore.filter(book => (!showFolder && !book.folder) || (showFolder === book.folder))}
-            {@const lastVisibleItem = visibleItems[visibleItems.length - 1]}
+            {@const lastVisibleItem = visibleItems.at(-1)}
             {#if DBState.currentChar.globalLore.length === 0}
                 <span class="text-textcolor2">No Lorebook</span>
             {:else}
@@ -463,7 +463,7 @@
             {/if}
         {:else if submenu === 1}
             {@const visibleItems = DBState.currentChat.localLore.filter(book => (!showFolder && !book.folder) || (showFolder === book.folder))}
-            {@const lastVisibleItem = visibleItems[visibleItems.length - 1]}
+            {@const lastVisibleItem = visibleItems.at(-1)}
             {#if DBState.currentChat.localLore.length === 0}
                 <span class="text-textcolor2">No Lorebook</span>
             {:else}

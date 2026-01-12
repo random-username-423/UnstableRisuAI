@@ -369,7 +369,7 @@
                 let [time, ...text] = line.split(']')
                 time = time.slice(1)
                 if(obj.length > 0){
-                    obj[obj.length - 1].end = time + '.000'
+                    obj.at(-1).end = time + '.000'
                 }
                 obj.push({
                     start: time + '.000',
@@ -379,7 +379,7 @@
             }
         }
         //rediculously long line
-        obj[obj.length - 1].end = '99:99.000'
+        obj.at(-1).end = '99:99.000'
         return obj
     }
 

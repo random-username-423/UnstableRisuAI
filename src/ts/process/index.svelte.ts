@@ -110,8 +110,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
     function displayError(error: string) {
         if (DBState.db.inlayErrorResponse) {
-            if (DBState.currentMessages[DBState.currentMessages.length - 1].role === 'char') {
-                DBState.currentMessages[DBState.currentMessages.length - 1].data += `\n\`\`\`risuerror\n${error}\n\`\`\``
+            if (DBState.currentMessages.at(-1).role === 'char') {
+                DBState.currentMessages.at(-1).data += `\n\`\`\`risuerror\n${error}\n\`\`\``
             }
             else {
                 DBState.currentMessages.push({
@@ -236,7 +236,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
         // Get the last message to determine speaking order
         const messages = DBState.currentMessages
-        const lastMessage = messages[messages.length - 1]
+        const lastMessage = messages.at(-1)
 
         // Build list of active characters with their talkness values
         let order = nowChatroom.characters.map((v, i) => {
@@ -1016,7 +1016,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
 
     if (!promptTemplate) {
-        unformated.lastChat.push(chats[chats.length - 1])
+        unformated.lastChat.push(chats.at(-1))
         chats.splice(chats.length - 1, 1)
     }
 
@@ -1098,7 +1098,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             if (chat.role === 'system') {
                 const endf = formated.at(-1)
                 if (endf && endf.role === 'system' && endf.memo === chat.memo && endf.name === chat.name) {
-                    formated[formated.length - 1].content += '\n\n' + chat.content
+                    formated.at(-1).content += '\n\n' + chat.content
                 }
                 else {
                     formated.push(chat)
@@ -1621,7 +1621,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             bias: {}
         }, 'emotion', abortSignal)
 
-        DBState.currentMessages[DBState.currentMessages.length - 1].data += rq
+        DBState.currentMessages.at(-1).data += rq
     }
 
     stageTimings.stage3Duration = Date.now() - stageTimings.stage3Start

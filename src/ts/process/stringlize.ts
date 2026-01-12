@@ -34,7 +34,7 @@ function appendWhitespace(prefix:string, seperator:string=" ") {
     if(!prefix){
         return ""
     }
-    if(prefix && !"> \n".includes(prefix[prefix.length-1])){
+    if(prefix && !"> \n".includes(prefix.at(-1))){
         prefix += seperator.includes("\n\n") ? "\n" : " "
     }
     return prefix
@@ -311,7 +311,7 @@ export function unstringlizeAIN(data:string,formated:OpenAIChat[], char:string =
                 result[0] = ['char', cont.content]
             }
             else{
-                result[result.length - 1][1] += "\n" + cont.content
+                result.at(-1)[1] += "\n" + cont.content
             }
         }
         else{

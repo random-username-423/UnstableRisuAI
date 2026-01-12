@@ -511,27 +511,27 @@ export function reformater(formated:OpenAIChat[],modelInfo:LLMModel|LLMFlags[]){
                 continue
             }
 
-            if(newFormated[newFormated.length-1].role === m.role){
-            
-                newFormated[newFormated.length-1].content += '\n' + m.content
+            if(newFormated.at(-1).role === m.role){
+
+                newFormated.at(-1).content += '\n' + m.content
 
                 if(m.multimodals){
-                    if(!newFormated[newFormated.length-1].multimodals){
-                        newFormated[newFormated.length-1].multimodals = []
+                    if(!newFormated.at(-1).multimodals){
+                        newFormated.at(-1).multimodals = []
                     }
-                    newFormated[newFormated.length-1].multimodals.push(...m.multimodals)
+                    newFormated.at(-1).multimodals.push(...m.multimodals)
                 }
 
                 if(m.thoughts){
-                    if(!newFormated[newFormated.length-1].thoughts){
-                        newFormated[newFormated.length-1].thoughts = []
+                    if(!newFormated.at(-1).thoughts){
+                        newFormated.at(-1).thoughts = []
                     }
-                    newFormated[newFormated.length-1].thoughts.push(...m.thoughts)
+                    newFormated.at(-1).thoughts.push(...m.thoughts)
                 }
 
                 if(m.cachePoint){
-                    if(!newFormated[newFormated.length-1].cachePoint){
-                        newFormated[newFormated.length-1].cachePoint = true
+                    if(!newFormated.at(-1).cachePoint){
+                        newFormated.at(-1).cachePoint = true
                     }
                 }
 
@@ -1258,7 +1258,7 @@ async function requestCohere(arg:RequestDataArgumentExtended):Promise<requestDat
     let lastChatPrompt = ''
     let preamble = ''
 
-    let lastChat = formated[formated.length-1]
+    let lastChat = formated.at(-1)
     if(lastChat.role === 'user'){
         lastChatPrompt = lastChat.content
         formated.pop()

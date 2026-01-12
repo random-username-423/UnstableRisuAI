@@ -59,7 +59,7 @@
 
             for(let i=0;i<formated.length;i++){
                 if(formated[i].role === latestRole){
-                    newFormated[newFormated.length - 1].content += '\n' + formated[i].content
+                    newFormated.at(-1).content += '\n' + formated[i].content
                 }else{
                     newFormated.push(formated[i])
                     latestRole = formated[i].role

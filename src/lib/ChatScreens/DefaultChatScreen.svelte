@@ -912,7 +912,7 @@
                         label={language.continueResponse}
                         onclick={chatRuntime.sendContinue}
                         disabled={DBState.currentChat.message.length < 2 ||
-                            DBState.currentChat.message[DBState.currentChat.message.length - 1].role !== "char"}
+                            DBState.currentChat.message.at(-1).role !== "char"}
                     >
                         {#snippet icon()}<StepForwardIcon />{/snippet}
                     </ActionMenuItem>

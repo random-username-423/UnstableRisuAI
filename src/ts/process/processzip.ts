@@ -122,7 +122,7 @@ export class CharXWriter{
 
         const splitName = sanitized.split('.');
         const baseName = splitName.slice(0, -1).join('.');
-        const extension = splitName.length > 1 ? '.' + splitName[splitName.length - 1] : '';
+        const extension = splitName.length > 1 ? '.' + splitName.at(-1) : '';
         let counter = 1;
         let uniqueName = baseName + extension;
         while (this.#takenFilenames.has(uniqueName)) {

@@ -594,7 +594,7 @@ export function registerCBS(arg:CBSRegisterArg) {
                 return `00:00:00`
             }
 
-            const lastMessage = messages[messages.length - 1]
+            const lastMessage = messages.at(-1)
 
             if(!lastMessage.time){
                 return "[Cannot get time, message was sent in older version]"
@@ -707,7 +707,7 @@ export function registerCBS(arg:CBSRegisterArg) {
                 return ''
             }
             const chat = selchar.chats[selchar.chatPage]
-            return chat.message[chat.message.length - 1].data
+            return chat.message.at(-1).data
         },
         alias: [],
         description: 'Returns the content/data of the last message in the current chat, regardless of role (user/char). Returns empty string if no character selected.\n\nUsage:: {{lastmessage}}',
@@ -2162,7 +2162,7 @@ export function registerCBS(arg:CBSRegisterArg) {
     registerFunction({
         name: 'codeblock',
         callback: (str, matcherArg, args, vars) => {
-            const code = args[args.length - 1]
+            const code = args.at(-1)
                 .replace(/\"/g, '&quot;')
                 .replace(/\'/g, '&#39;')
                 .replace(/</g, '&lt;')

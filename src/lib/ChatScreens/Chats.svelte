@@ -178,7 +178,7 @@
         
         // Only auto-scroll if it's the same chat and new messages were added
         if(isSameChat && messages.length > previousLength){
-            const lastMsg = messages[messages.length - 1];
+            const lastMsg = messages.at(-1);
             if(lastMsg && lastMsg.role === 'char' && DBState.db.autoScrollToNewMessage){
                 if(wasAtBottom || DBState.db.alwaysScrollToNewMessage){
                     const element = chatBody.firstElementChild;

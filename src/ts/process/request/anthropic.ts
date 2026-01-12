@@ -101,20 +101,19 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
         content: string,
         cache: boolean
     }, multimodals?:MultiModal[]) => {
-        if(claudeChat.length > 0 && claudeChat[claudeChat.length-1].role === chat.role){
-            let content = claudeChat[claudeChat.length-1].content
+        if(claudeChat.length > 0 && claudeChat.at(-1).role === chat.role){
+            let content = claudeChat.at(-1).content
             if(multimodals && multimodals.length > 0 && !Array.isArray(content)){
-                content = [{    
+                content = [{
                     type: 'text',
                     text: content
                 }]
             }
 
             if(Array.isArray(content)){
-                const lastContent = content[content.length-1]
+                const lastContent = content.at(-1)
                 if( lastContent?.type === 'text'){
                     lastContent.text += "\n\n" + chat.content
-                    content[content.length-1] = lastContent
                 }
                 else{
                     content.push({
@@ -145,18 +144,18 @@ export async function requestClaude(arg:RequestDataArgumentExtended):Promise<req
             if(chat.cache){
 
                 if(db.claude1HourCaching){
-                    content[content.length-1].cache_control = {
+                    content.at(-1).cache_control = {
                         type: 'ephemeral',
                         ttl: "1h"
                     }
                 }
                 else{
-                    content[content.length-1].cache_control = {
+                    content.at(-1).cache_control = {
                         type: 'ephemeral'
                     }
                 }
             }
-            claudeChat[claudeChat.length-1].content = content
+            claudeChat.at(-1).content = content
         }
         else{
             const formatedChat:Claude3Chat = {
@@ -871,16 +870,16 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
         }
         
         for(const content of (contents as Claude3ContentBlock[])){
-            if(messages[messages.length-1].role !== 'assistant'){
+            if(messages.at(-1).role !== 'assistant'){
                 messages.push({
                     role: 'assistant',
                     content: []
                 })
             }
-            if(typeof messages[messages.length-1].content === 'string'){
-                messages[messages.length-1].content = [{
+            if(typeof messages.at(-1).content === 'string'){
+                messages.at(-1).content = [{
                     type: 'text',
-                    text: messages[messages.length-1].content as string
+                    text: messages.at(-1).content as string
                 }]
             }
 
@@ -930,7 +929,7 @@ async function requestClaudeHTTP(replacerURL:string, headers:{[key:string]:strin
                 }
             }
 
-            (messages[messages.length-1] as Claude3Chat).content.push(content)
+            (messages.at(-1) as Claude3Chat).content.push(content)
         }
 
         messages.push(response)

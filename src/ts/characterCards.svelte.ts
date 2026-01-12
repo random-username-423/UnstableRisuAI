@@ -557,8 +557,8 @@ export async function characterURLImport() {
         await onOpenUrl((urls) => {
             for(const url of urls){
                 const splited = url.split('/')
-                const id = splited[splited.length - 1]
-                const type = splited[splited.length - 2]
+                const id = splited.at(-1)
+                const type = splited.at(-2)
                 switch(type){
                     case 'realm':{
                         downloadRisuHub(id)
@@ -1798,24 +1798,24 @@ export async function downloadRisuHub(id:string, arg:{
             }
             checkCharOrder()
             db = getDatabase()
-            if(db.characters[db.characters.length-1] && (db.goCharacterOnImport || arg.forceRedirect)){
+            if(db.characters.at(-1) && (db.goCharacterOnImport || arg.forceRedirect)){
                 const index = db.characters.length-1
                 characterFormatUpdate(index);
                 selectedCharID.set(index);
-            }   
+            }
             return
         }
-    
+
         const result = await res.json()
         const data:CharacterCardV3 = result.card
         const img:string = result.img
 
         data.data.extensions.risuRealmImportId = id
-    
+
         await importCharacterCardSpec(data, await getHubResources(img), 'hub')
         checkCharOrder()
         const db = getDatabase()
-        if(db.characters[db.characters.length-1] && (db.goCharacterOnImport || arg.forceRedirect)){
+        if(db.characters.at(-1) && (db.goCharacterOnImport || arg.forceRedirect)){
             const index = db.characters.length-1
             characterFormatUpdate(index);
             selectedCharID.set(index);
