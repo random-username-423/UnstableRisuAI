@@ -129,12 +129,6 @@ export const advancedSettingsItems: SettingItem[] = [
         condition: (ctx) => ctx.db.useExperimental, helpKey: 'experimentalChatCompressionDesc', showExperimental: true, classes: 'mt-4'
     },
 
-    // Unrecommended Section
-    {
-        id: 'adv.cot', type: 'check', labelKey: 'cot', bindKey: 'chainOfThought',
-        condition: (ctx) => ctx.db.showUnrecommended, helpKey: 'customChainOfThought', helpUnrecommended: true, classes: 'mt-4'
-    },
-
     // More Toggles
     { id: 'adv.remPunc', type: 'check', labelKey: 'removePunctuationHypa', bindKey: 'removePunctuationHypa', helpKey: 'removePunctuationHypa', classes: 'mt-4' },
     { id: 'adv.devTools', type: 'check', labelKey: 'enableDevTools', bindKey: 'enableDevTools', classes: 'mt-4' },

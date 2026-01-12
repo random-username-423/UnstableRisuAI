@@ -267,11 +267,6 @@
 
     <CheckInput bind:check={DBState.db.strictJsonSchema} name={language.strictJsonSchema} className="mt-4"/>
 
-    {#if DBState.db.showUnrecommended}
-        <CheckInput bind:check={DBState.db.promptSettings.customChainOfThought} name={language.customChainOfThought} className="mt-4">
-            <Help unrecommended key='customChainOfThought' />
-        </CheckInput>
-    {/if}
     <span class="text-textcolor mt-4">{language.maxThoughtTagDepth}</span>
     <NumberInput bind:value={DBState.db.promptSettings.maxThoughtTagDepth}/>
     <span class="text-textcolor mt-4">{language.groupOtherBotRole} <Help key="groupOtherBotRole"/></span>

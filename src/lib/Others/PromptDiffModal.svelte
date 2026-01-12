@@ -301,7 +301,7 @@
 // -----------------------------------------------------------------------------
     function getPromptCards(id: number): PromptCard[] {
         const isPromptItemPlain = (item: PromptItem): item is PromptItemPlain =>
-            item.type === 'plain' || item.type === 'jailbreak' || item.type === 'cot'
+            item.type === 'plain' || item.type === 'jailbreak'
        
         const isPromptItemChatML = (item: PromptItem): item is PromptItemChatML =>
             item.type === 'chatML'

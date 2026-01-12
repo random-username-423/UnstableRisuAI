@@ -276,7 +276,6 @@ export function setDatabase(data:Database){
         sendChatAsSystem: false,
         sendName: false,
         utilOverride: false,
-        customChainOfThought: false,
         maxThoughtTagDepth: -1
     }
     data.keiServerURL ??= ''
