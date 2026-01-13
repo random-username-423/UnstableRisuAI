@@ -85,9 +85,6 @@
         if(promptItem.type === 'postEverything'){
             return language.formating.postEverything
         }
-        if(promptItem.type === 'cot'){
-            return language.cot
-        }
         if(promptItem.type === 'chatML'){
             return 'ChatML'
         }
@@ -221,7 +218,7 @@
         <TextInput bind:value={promptItem.name} />
         <span class="mt-2">{language.type} </span>
         <SelectInput bind:value={promptItem.type} onchange={() => {
-            if(promptItem.type === 'plain' || promptItem.type === 'jailbreak' || promptItem.type === 'cot'){
+            if(promptItem.type === 'plain' || promptItem.type === 'jailbreak'){
                 promptItem.text = ""
                 promptItem.role = "system"
             }
@@ -245,13 +242,9 @@
             <OptionInput value="postEverything">{language.formating.postEverything}</OptionInput>
             <OptionInput value="chatML">{"chatML"}</OptionInput>
             <OptionInput value="cache">{language.cachePoint}</OptionInput>
-
-            {#if DBState.db.promptSettings.customChainOfThought}
-                <OptionInput value="cot">{language.cot}</OptionInput>
-            {/if}
         </SelectInput>
 
-        {#if promptItem.type === 'plain' || promptItem.type === 'jailbreak' || promptItem.type === 'cot'}
+        {#if promptItem.type === 'plain' || promptItem.type === 'jailbreak'}
             <span>{language.specialType}</span>
             <SelectInput bind:value={promptItem.type2}>
                 <OptionInput value="normal">{language.noSpecialType}</OptionInput>

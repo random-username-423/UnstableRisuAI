@@ -970,7 +970,7 @@ async function resizeAndConvert(imageData: Uint8Array): Promise<Buffer> {
 type ImageType = 'JPEG' | 'PNG' | 'GIF' | 'BMP' | 'AVIF' | 'WEBP' | 'Unknown';
 
 export function checkImageType(arr:Uint8Array):ImageType {
-    const isJPEG = arr[0] === 0xFF && arr[1] === 0xD8 && arr[arr.length-2] === 0xFF && arr[arr.length-1] === 0xD9;
+    const isJPEG = arr[0] === 0xFF && arr[1] === 0xD8 && arr.at(-2) === 0xFF && arr.at(-1) === 0xD9;
     const isPNG = arr[0] === 0x89 && arr[1] === 0x50 && arr[2] === 0x4E && arr[3] === 0x47 && arr[4] === 0x0D && arr[5] === 0x0A && arr[6] === 0x1A && arr[7] === 0x0A;
     const isGIF = arr[0] === 0x47 && arr[1] === 0x49 && arr[2] === 0x46 && arr[3] === 0x38 && (arr[4] === 0x37 || arr[4] === 0x39) && arr[5] === 0x61;
     const isBMP = arr[0] === 0x42 && arr[1] === 0x4D;
@@ -1504,7 +1504,7 @@ function blockEndMatcher(p1:string,type:{type:blockMatch,type2?:string,mode?:str
                 while(lines.length > 0 && lines[0].trim() === ''){
                     lines.shift()
                 }
-                while(lines.length > 0 && lines[lines.length - 1].trim() === ''){
+                while(lines.length > 0 && lines.at(-1).trim() === ''){
                     lines.pop()
                 }
             }

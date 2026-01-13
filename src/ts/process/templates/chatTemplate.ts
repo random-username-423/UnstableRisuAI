@@ -62,7 +62,7 @@ export const applyChatTemplate = (messages:OpenAIChat[], arg:{
                     })
                 }
                 else{
-                    formatedMessages[formatedMessages.length - 1].content += "\n" + message.content
+                    formatedMessages.at(-1).content += "\n" + message.content
                 }
             }
             else{
@@ -79,7 +79,7 @@ export const applyChatTemplate = (messages:OpenAIChat[], arg:{
                     })
                 }
                 else{
-                    formatedMessages[formatedMessages.length - 1].content += "\n" + message.content
+                    formatedMessages.at(-1).content += "\n" + message.content
                 }
             }
         }

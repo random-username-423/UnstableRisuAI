@@ -6,7 +6,7 @@ import { alertState, layoutState, modalState, realmState, QuickSettings, SafeMod
 import { language } from "src/lang"
 import { updateTextThemeAndCSS } from "./gui/colorscheme"
 import { defaultHotkeys } from "./defaulthotkeys"
-import { doingChat, previewBody, sendChat } from "./process/index.svelte"
+import { chatGenState, previewBody, sendChat } from "./process/index.svelte"
 import { addToast } from "./toast.svelte"
 
 export function initHotkey(){
@@ -153,7 +153,7 @@ export function initHotkey(){
                     break
                 }
                 case 'previewRequest':{
-                    if(get(doingChat) && get(selectedCharID) !== -1){
+                    if(chatGenState.generating && get(selectedCharID) !== -1){
                         return false
                     }
                     alertWait("Loading...")
@@ -166,7 +166,7 @@ export function initHotkey(){
                     let md = ''
                     md += '### Prompt\n'
                     md += '```json\n' + JSON.stringify(JSON.parse(previewBody), null, 2).replaceAll('```', '\\`\\`\\`') + '\n```\n'
-                    doingChat.set(false)
+                    chatGenState.generating = false
                     alertMd(md)
                     return
                 }

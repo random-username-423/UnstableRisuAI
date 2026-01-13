@@ -258,14 +258,14 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
                 }
             }
             else{
-                const prevChat = reformatedChat[reformatedChat.length-1]
+                const prevChat = reformatedChat.at(-1)
                 if(prevChat?.role === chat.role){
-                    reformatedChat[reformatedChat.length-1].content += '\n' + chat.content
+                    reformatedChat.at(-1).content += '\n' + chat.content
                     continue
                 }
                 else if(chat.role === 'system'){
                     if(prevChat?.role === 'user'){
-                        reformatedChat[reformatedChat.length-1].content += '\nSystem:' + chat.content
+                        reformatedChat.at(-1).content += '\nSystem:' + chat.content
                     }
                     else{
                         reformatedChat.push({
@@ -778,8 +778,8 @@ export async function requestHTTPOpenAI(replacerURL:string,body:any, headers:Rec
                 messages.push(dat.choices[0].message)
 
                 // Remove the last message content if simplifiedToolUse is enabled
-                if(db.simplifiedToolUse && messages[messages.length - 1].content) {
-                    messages[messages.length - 1].content = ''
+                if(db.simplifiedToolUse && messages.at(-1).content) {
+                    messages.at(-1).content = ''
                 }
                 
                 const callCodes: string[] = []
@@ -1058,8 +1058,8 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
         }
     }
 
-    if(items[items.length-1].role === 'assistant'){
-        (items[items.length-1] as OAIResponseOutputItem).status = 'incomplete'
+    if(items.at(-1).role === 'assistant'){
+        (items.at(-1) as OAIResponseOutputItem).status = 'incomplete'
     }
     
     const body = applyParameters({
@@ -1085,7 +1085,7 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
         try{
             const url = new URL(requestURL)
             const pathSegments = url.pathname.split('/').filter(Boolean)
-            const lastSegment = pathSegments[pathSegments.length - 1] ?? ''
+            const lastSegment = pathSegments.at(-1) ?? ''
 
             if(url.searchParams.has('api-version') && url.pathname.includes('/responses')){
                 // Azure-style Responses API URL already includes the endpoint
@@ -1106,7 +1106,7 @@ export async function requestOpenAIResponseAPI(arg:RequestDataArgumentExtended):
             const [baseURL, query] = requestURL.split('?', 2)
             let nextURL = baseURL
             const pathSegments = nextURL.split('/').filter(Boolean)
-            const lastSegment = pathSegments[pathSegments.length - 1] ?? ''
+            const lastSegment = pathSegments.at(-1) ?? ''
             const hasApiVersion = query?.includes('api-version=')
 
             if(hasApiVersion && nextURL.includes('/responses')){

@@ -797,7 +797,6 @@ export const prebuiltPresets:{OAI:botPreset,ooba:botPreset,NAI:botPreset,oobaRp:
       "sendName": false,
       "utilOverride": false,
       "maxThoughtTagDepth": -1,
-      "customChainOfThought": false
     },
     "repetition_penalty": 1,
     "min_p": 0,

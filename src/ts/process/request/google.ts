@@ -57,7 +57,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
     for(let i=0;i<formated.length;i++){
         const chat = formated[i]
   
-        const prevChat = reformatedChat[reformatedChat.length-1]
+        const prevChat = reformatedChat.at(-1)
         const qRole = 
             chat.role === 'user' ? 'user' :
             chat.role === 'assistant' ? 'model' :
@@ -95,7 +95,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             });        }
         else if(chat.role === 'system'){
             if(prevChat?.role === 'user'){
-                reformatedChat[reformatedChat.length-1].parts[0].text += '\nsystem:' + chat.content
+                reformatedChat.at(-1).parts[0].text += '\nsystem:' + chat.content
             }
             else{
                 reformatedChat.push({
@@ -250,7 +250,7 @@ export async function requestGoogleCloudVertex(arg:RequestDataArgumentExtended):
             // If the same role is consecutive, merge the parts arrays and remove the current chat
 
             // If the last part of the previous chat and the first part of the current chat are both text, join with \n\n
-            const prevLastPart = prevChat.parts[prevChat.parts.length - 1]
+            const prevLastPart = prevChat.parts.at(-1)
             const currentFirstPart = currentChat.parts[0]
 
             if (prevLastPart.text && currentFirstPart.text) {
@@ -775,11 +775,11 @@ async function requestGoogle(url:string, body:any, headers:{[key:string]:string}
             })
         }
         // If the last part is a model response, merge it with the previous model response
-        if(chat[chat.length - 2]?.role === 'model') {
-            chat[chat.length - 2].parts = chat[chat.length - 2].parts.concat(chat[chat.length - 1].parts)
-            chat.pop() 
+        if(chat.at(-2)?.role === 'model') {
+            chat.at(-2).parts = chat.at(-2).parts.concat(chat.at(-1).parts)
+            chat.pop()
         }
-        
+
         const functionParts: GeminiPart[] = []
         const callCodes: string[] = []
         const tools = arg?.tools ?? []
@@ -1053,9 +1053,9 @@ function wrapToolStream(
                             })
                         }
                         // If the last part is a model response, merge it with the previous model response
-                        if(chat[chat.length - 2]?.role === 'model') {
-                            chat[chat.length - 2].parts = chat[chat.length - 2].parts.concat(chat[chat.length - 1].parts)
-                            chat.pop() 
+                        if(chat.at(-2)?.role === 'model') {
+                            chat.at(-2).parts = chat.at(-2).parts.concat(chat.at(-1).parts)
+                            chat.pop()
                         }
                         const parts: GeminiPart[] = []
                         const callCodes: string[] = []

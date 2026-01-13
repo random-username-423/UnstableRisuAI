@@ -56,17 +56,17 @@
 
     // Character and chat processing utilities
     import { getCharImage } from "../../ts/characters.svelte"
-    import { chatProcessStage, doingChat } from "../../ts/process/index.svelte"
+    import { chatGenState } from "../../ts/process/index.svelte"
 
     // File handling utilities
-    import { postChatFile } from "src/ts/process/files/multisend"
+    import { postChatFile } from "src/ts/process/files/multisend.svelte"
     import { getInlayAsset } from "src/ts/process/files/inlays"
     import { coldStorageHeader, preLoadChat } from "src/ts/process/coldstorage.svelte"
 
     // General utilities
     import { debounce, sleep } from "../../ts/utils/util"
     import { language } from "../../lang"
-    import { isAPIBasedTranslator, translate } from "../../ts/translator/translator"
+    import { isAPIBasedTranslator, translate } from "../../ts/translator/translator.svelte"
     import { alertError, alertNormal, alertWait, showHypaV2Alert } from "../../ts/alert.svelte"
     import { stopTTS } from "src/ts/process/tts"
     import { aiLawApplies, chatFoldedState, chatFoldedStateMessageIndex, downloadFile } from "src/ts/globalApi.svelte"
@@ -620,7 +620,7 @@
                 ></textarea>
 
                 <!-- Send/Cancel button - shows spinner when generating -->
-                {#if $doingChat}
+                {#if chatGenState.generating}
                     <button
                         aria-labelledby="cancel"
                         class="peer-focus:border-textcolor flex justify-center border-y border-darkborderc items-center text-gray-100 p-3 hover:bg-blue-500 transition-colors"
@@ -628,7 +628,7 @@
                         style:height={inputHeight}
                     >
                         <!-- Animated loading spinner with stage-based colors -->
-                        <div class="loadmove chat-process-stage-{$chatProcessStage}" class:autoload={chatRuntime.autoMode}></div>
+                        <div class="loadmove chat-process-stage-{chatGenState.stage}" class:autoload={chatRuntime.autoMode}></div>
                     </button>
                 {:else}
                     <button
@@ -802,8 +802,8 @@
                     bind:this={chatsInstance}
                     messages={currentChat}
                     {loadPages}
-                    onReroll={chatRuntime.reroll}
-                    unReroll={chatRuntime.unReroll}
+                    onReroll={() => chatRuntime.reroll()}
+                    unReroll={() => chatRuntime.unReroll()}
                     {currentCharacter}
                     {currentUsername}
                     {userIcon}
@@ -912,7 +912,7 @@
                         label={language.continueResponse}
                         onclick={chatRuntime.sendContinue}
                         disabled={DBState.currentChat.message.length < 2 ||
-                            DBState.currentChat.message[DBState.currentChat.message.length - 1].role !== "char"}
+                            DBState.currentChat.message.at(-1).role !== "char"}
                     >
                         {#snippet icon()}<StepForwardIcon />{/snippet}
                     </ActionMenuItem>
@@ -1019,7 +1019,7 @@
 
                     <!-- Reroll button (optional) -->
                     {#if DBState.db.sideMenuRerollButton}
-                        <ActionMenuItem label={language.reroll} onclick={chatRuntime.reroll}>
+                        <ActionMenuItem label={language.reroll} onclick={() => chatRuntime.reroll()}>
                             {#snippet icon()}<RefreshCcwIcon />{/snippet}
                         </ActionMenuItem>
                     {/if}

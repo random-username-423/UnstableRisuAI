@@ -4,7 +4,7 @@
     import { sleep } from "src/ts/utils/util"
     import { alertError } from "../../ts/alert.svelte"
     import { addMetadataToElement, getDistance, ParseMarkdown, postTranslationParse, trimMarkdown, type CbsConditions, type simpleCharacterArgument } from "../../ts/parser.svelte"
-    import { getLLMCache, translateHTML } from "../../ts/translator/translator"
+    import { getLLMCache, translateHTML } from "../../ts/translator/translator.svelte"
     import { getModuleAssets } from "src/ts/process/modules";
     import { getCurrentCharacter } from "src/ts/storage/database.svelte";
     import { getFileSrc } from "src/ts/globalApi.svelte";

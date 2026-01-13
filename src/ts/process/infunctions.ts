@@ -60,9 +60,9 @@ function toRPN(expression:string) {
         } else if (operatorsKeys.includes(token)) {
             while (operatorStack.length > 0 &&
             ((operators[token].associativity === 'Left' &&
-            operators[token].precedence <= operators[operatorStack[operatorStack.length - 1]].precedence) ||
+            operators[token].precedence <= operators[operatorStack.at(-1)].precedence) ||
             (operators[token].associativity === 'Right' &&
-            operators[token].precedence < operators[operatorStack[operatorStack.length - 1]].precedence))) {
+            operators[token].precedence < operators[operatorStack.at(-1)].precedence))) {
                 outputQueue += operatorStack.pop() + ' ';
             }
 

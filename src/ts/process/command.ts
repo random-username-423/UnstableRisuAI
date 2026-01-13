@@ -121,7 +121,7 @@ async function processCommand(command:string, pipe:string):Promise<false | strin
         case 'comment': {
             //works differently, but its close enough
             const addition = `<Comment>\n${arg}\n</Comment>`
-            currentChat.message[currentChat.message.length-1].data += addition
+            currentChat.message.at(-1).data += addition
             setDatabase(db)
             return pipe
         }

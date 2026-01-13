@@ -27,7 +27,7 @@
                 return true
             }
             if ('text' in item && usesJailbreakToggle(item.text)) {
-                // plain, jailbreak, cot
+                // plain, jailbreak
                 return true
             }
             if ('innerFormat' in item && usesJailbreakToggle(item.innerFormat)) {

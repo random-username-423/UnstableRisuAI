@@ -8,7 +8,7 @@
   import { alertNormalWait } from "src/ts/alert.svelte";
   import { DBState, selectedCharID, hypaV3State } from "src/ts/stores.svelte";
   import { language } from "src/lang";
-  import { translateHTML } from "src/ts/translator/translator";
+  import { translateHTML } from "src/ts/translator/translator.svelte";
   import { alertConfirmTwice } from "./HypaV3Modal/utils";
   import ModalHeader from "./HypaV3Modal/modal-header.svelte";
   import ModalSummaryItem from "./HypaV3Modal/modal-summary-item.svelte";

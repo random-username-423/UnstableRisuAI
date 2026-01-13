@@ -21,7 +21,7 @@
   } from "src/ts/process/memory/hypav3.svelte";
   import { type OpenAIChat } from "src/ts/process/types";
   import { type Message } from "src/ts/storage/types/chat";
-  import { translateHTML } from "src/ts/translator/translator";
+  import { translateHTML } from "src/ts/translator/translator.svelte";
   import { alertConfirm } from "src/ts/alert.svelte";
   import { DBState, selectedCharID } from "src/ts/stores.svelte";
   import type {

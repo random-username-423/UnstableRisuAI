@@ -79,7 +79,7 @@
             for (let i = 0; i < parts.length - 1; i++) {
                 obj = obj[parts[i]];
             }
-            obj[parts[parts.length - 1]] = newValue;
+            obj[parts.at(-1)] = newValue;
         } else if (item.bindKey) {
             (DBState.db as any)[item.bindKey] = newValue;
         }

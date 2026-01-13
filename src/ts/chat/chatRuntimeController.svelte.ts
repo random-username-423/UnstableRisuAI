@@ -13,7 +13,7 @@
 import { get } from 'svelte/store'
 import { selectedCharID } from '../stores.svelte'
 import { DBState } from '../stores.svelte'
-import { sendChat, doingChat } from '../process/index.svelte'
+import { chatGenState, sendChat } from '../process/index.svelte'
 import { alertError } from '../alert.svelte'
 import { processScript } from '../process/scripts'
 import { runTrigger } from '../process/triggers'
@@ -88,15 +88,14 @@ class ChatRuntimeController {
     /**
      * Send a new message (wrapper)
      */
-    async send() {
-        if (this.messageInput === '' && this.fileInput.length === 0) return
+    send = async () => {
         await this.sendMain(false)
     }
 
     /**
      * Continue the AI's previous response (wrapper)
      */
-    async sendContinue() {
+    sendContinue = async () => {
         await this.sendMain(true)
     }
 
@@ -111,7 +110,7 @@ class ChatRuntimeController {
         const selectedChar = get(selectedCharID)
 
         // Prevent sending while AI is generating
-        if (get(doingChat)) {
+        if (chatGenState.generating) {
             return
         }
 
@@ -144,7 +143,7 @@ class ChatRuntimeController {
         if (this.messageInput === '') {
             if (DBState.db.characters[selectedChar].type !== 'group') {
                 // If last message wasn't from user, optionally add "says nothing"
-                if (cha.length === 0 || cha[cha.length - 1].role !== 'user') {
+                if (cha.length === 0 || cha.at(-1).role !== 'user') {
                     if (DBState.db.useSayNothing) {
                         cha.push({
                             role: 'user',
@@ -205,7 +204,7 @@ class ChatRuntimeController {
      */
     async reroll() {
         // Prevent reroll while generating
-        if (get(doingChat)) {
+        if (chatGenState.generating) {
             return
         }
 
@@ -220,7 +219,7 @@ class ChatRuntimeController {
         if (genId) {
             const r = Prereroll(genId)
             if (r) {
-                DBState.currentChat.message[DBState.currentChat.message.length - 1].data = r
+                DBState.currentChat.message.at(-1).data = r
                 return
             }
         }
@@ -254,10 +253,10 @@ class ChatRuntimeController {
         this.notifyMenuClose()
 
         // Remove the last AI message(s) to regenerate
-        const saying = cha[cha.length - 1].saying
+        const saying = cha.at(-1).saying
         let sayingQu = 2
-        while (cha[cha.length - 1].role !== 'user') {
-            if (cha[cha.length - 1].saying === saying) {
+        while (cha.at(-1).role !== 'user') {
+            if (cha.at(-1).saying === saying) {
                 sayingQu -= 1
                 if (sayingQu === 0) {
                     break
@@ -279,7 +278,7 @@ class ChatRuntimeController {
      */
     async unReroll() {
         // Prevent unreroll while generating
-        if (get(doingChat)) {
+        if (chatGenState.generating) {
             return
         }
 
@@ -294,7 +293,7 @@ class ChatRuntimeController {
         if (genId) {
             const r = PreUnreroll(genId)
             if (r) {
-                DBState.currentChat.message[DBState.currentChat.message.length - 1].data = r
+                DBState.currentChat.message.at(-1).data = r
                 return
             }
         }
@@ -346,7 +345,7 @@ class ChatRuntimeController {
 
         // Cleanup after generation
         this.lastCharId = get(selectedCharID)
-        doingChat.set(false)
+        chatGenState.generating = false
 
         // Play notification sound if enabled
         if (DBState.db.playMessage) {

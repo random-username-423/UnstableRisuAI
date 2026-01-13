@@ -7,7 +7,7 @@ import { globalFetch } from "../fetch"
 import { isTauri, isNodeServer } from "src/ts/platform"
 import { alertError } from "../alert.svelte"
 import { requestChatData } from "../process/request/request"
-import { doingChat } from "../process/index.svelte"
+import { chatGenState } from "../process/index.svelte"
 import { type OpenAIChat } from "../process/types"
 import { applyMarkdownToNode, parseChatML, type simpleCharacterArgument } from "../parser.svelte"
 import { selectedCharID } from "../stores.svelte"
@@ -73,7 +73,7 @@ export async function runTranslator(text:string, reverse:boolean, from:string,ta
             chunks.push(["", true])
         }
         else{
-            chunks[chunks.length-1][0] += texts[i]
+            chunks.at(-1)[0] += texts[i]
         }
     }
 
@@ -274,8 +274,7 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
         }
     }
     const db = getDatabase()
-    const DoingChat = get(doingChat)
-    if(DoingChat){
+    if(chatGenState.generating){
         if(isAPIBasedTranslator()){
             if(!(db.translatorType === 'llm' && await getLLMCache(html) !== null)){
                 return html
@@ -322,7 +321,7 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
             return
         }
 
-        const currentChunk = translationChunks[translationChunks.length-1]
+        const currentChunk = translationChunks.at(-1)
         const text: string = currentChunk.chunks.join('\n■\n')
 
         if(!force && text.length + additionalChunkLength < 5000){
@@ -366,8 +365,8 @@ export async function translateHTML(html: string, reverse:boolean, charArg:simpl
             if(needSuperChunkedTranslate()){
                 const prm = new Promise<string>((resolve) => {
                     translateTranslationChunks(false, node.textContent.length)
-                    translationChunks[translationChunks.length-1].resolvers.push(resolve)
-                    translationChunks[translationChunks.length-1].chunks.push(node.textContent)
+                    translationChunks.at(-1).resolvers.push(resolve)
+                    translationChunks.at(-1).chunks.push(node.textContent)
                 })
     
                 node.textContent = await prm

@@ -1587,7 +1587,7 @@
             if (value[selectedIndex].effect.length === 0) {
                 return 0
             }
-            const lastEffect = value[selectedIndex].effect[value[selectedIndex].effect.length - 1] as triggerEffectV2
+            const lastEffect = value[selectedIndex].effect.at(-1) as triggerEffectV2
             if (lastEffect.type === 'v2EndIndent') {
                 return lastEffect.indent - 1
             }

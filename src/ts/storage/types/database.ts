@@ -495,7 +495,6 @@ interface LegacySettings {
     logShare: boolean
     palmAPI: string
     tpo?: boolean
-    chainOfThought?: boolean
 }
 
 export interface DynamicOutput {

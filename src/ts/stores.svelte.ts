@@ -9,6 +9,7 @@ import { resetScriptCache } from "./process/scripts";
 import type { hubType } from "./characterCards.svelte";
 import type { PluginSafetyErrors } from "./plugins/pluginSafety";
 import type { ToastItem } from "./toast.svelte";
+import type { Chat, Message } from "./storage/types/chat"
 
 function updateSize() {
     layoutState.width = window.innerWidth
@@ -135,12 +136,16 @@ updateSize()
 window.addEventListener("resize", updateSize);
 export const DBState = $state({
     db: {} as any as Database,
-    get currentChar() {
+    get currentChar(): (character | groupChat | undefined) {
         return this.db.characters?.[selIdState.selId]
     },
 
-    get currentChat() {
+    get currentChat(): (Chat | undefined) {
         return this.currentChar?.chats?.[this.currentChar.chatPage]
+    },
+
+    get currentMessages(): (Message[] | undefined) {
+        return this.currentChat?.message
     }
 });
 // 사용: DBState.currentChar

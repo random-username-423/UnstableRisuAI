@@ -11,13 +11,12 @@ export type PromptSettings = {
     sendChatAsSystem: boolean
     sendName: boolean
     utilOverride: boolean
-    customChainOfThought?: boolean
     maxThoughtTagDepth?: number
     trimStartNewChat?: boolean
 }
 
 export interface PromptItemPlain {
-    type: 'plain'|'jailbreak'|'cot';
+    type: 'plain'|'jailbreak';
     type2: 'normal'|'globalNote'|'main'
     text: string;
     role: 'user'|'bot'|'system';

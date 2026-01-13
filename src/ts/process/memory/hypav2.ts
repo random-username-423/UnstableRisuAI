@@ -290,7 +290,7 @@ function cleanInvalidChunks(
     );
     // Update lastMainChunkID
     if (data.mainChunks.length > 0) {
-        data.lastMainChunkID = data.mainChunks[data.mainChunks.length - 1].id;
+        data.lastMainChunkID = data.mainChunks.at(-1).id;
     } else {
         data.lastMainChunkID = 0;
     }
@@ -381,7 +381,7 @@ export async function hypaMemoryV2(
     // Find the index to start summarizing from
     let idx = 0;
     if (data.mainChunks.length > 0) {
-        const lastMainChunk = data.mainChunks[data.mainChunks.length - 1];
+        const lastMainChunk = data.mainChunks.at(-1);
         const lastChatMemo = lastMainChunk.lastChatMemo;
         const lastChatIndex = chats.findIndex(chat => chat.memo === lastChatMemo);
         if (lastChatIndex !== -1) {
@@ -526,7 +526,7 @@ export async function hypaMemoryV2(
         const newMainChunkId = data.lastMainChunkID;
 
         const chatMemos = new Set(halfData.map((chat) => chat.memo));
-        const lastChatMemo = halfData[halfData.length - 1].memo;
+        const lastChatMemo = halfData.at(-1).memo;
 
         data.mainChunks.push({
             id: newMainChunkId,
