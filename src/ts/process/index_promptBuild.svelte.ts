@@ -901,14 +901,17 @@ export async function buildPrompt(
     }
     else {
         stageTimings.stage1Duration = Date.now() - stageTimings.stage1Start
-        while (reservedTokens > maxContextTokens) {
-            if (chats.length <= 1) {
-                return { success: false, error: language.errors.toomuchtoken + "\n\nRequired Tokens: " + reservedTokens }
-            }
 
-            reservedTokens -= await tokenizer.tokenizeChat(chats[0])
-            chats.splice(0, 1)
+        let skipCount = 0
+        while (reservedTokens > maxContextTokens) {
+            if (skipCount >= chats.length - 1) {
+                return { success: false, error: language.errors.toomuchtoken + "\n\nRequired Tokens: " + reservedTokens  }
+            }
+            reservedTokens -= await tokenizer.tokenizeChat(chats[skipCount])
+            skipCount++
         }
+        chats = chats.slice(skipCount)
+
         workingChat.lastMemory = chats[0].memo
     }
 
