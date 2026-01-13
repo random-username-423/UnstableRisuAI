@@ -202,11 +202,17 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
 
+    /* ========================================
+     *       STAGE 1,2: PROMPT BUILDING
+     * ======================================== */
     let workingChat: Chat
 
-    const promptResult = await buildPrompt(abortSignal, chatOwner, selectedChatPage, speakingChar, arg)
+    const promptResult = await buildPrompt(chatOwner, selectedChatPage, speakingChar, arg)
     if (!promptResult.success) {
-        return promptResult.success
+        if ('error' in promptResult && promptResult.error) {
+            displayError(promptResult.error)
+        }
+        return false
     }
 
     const { workingChat: _workingChat, promptInfo, stageTimings, formated, biases, generationId, generationInfo } = promptResult.data

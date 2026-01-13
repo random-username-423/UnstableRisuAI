@@ -2,7 +2,6 @@ import { v4 } from "uuid"
 
 import { language } from "src/lang"
 
-import { alertError } from "../alert.svelte"
 import { readImage } from "../globalApi.svelte"
 import { getModelInfo, LLMFlags } from "../model/modellist"
 import { parseChatML, risuChatParser } from "../parser.svelte"
@@ -225,28 +224,6 @@ export async function buildPrompt(
         promptTemplate.push({
             type: 'postEverything'
         })
-    }
-
-    function displayError(error: string) {
-        if (DBState.db.inlayErrorResponse) {
-            if (DBState.currentMessages.at(-1).role === 'char') {
-                DBState.currentMessages.at(-1).data += `\n\`\`\`risuerror\n${error}\n\`\`\``
-            }
-            else {
-                DBState.currentMessages.push({
-                    role: 'char',
-                    data: `\`\`\`risuerror\n${error}\n\`\`\``,
-                    saying: speakingChar.chaId,
-                    time: Date.now(),
-                    generationInfo,
-                })
-            }
-
-            return
-        }
-
-        alertError(error)
-        return
     }
 
     if (speakingChar.utilityBot && (!DBState.db.promptSettings.utilOverride)) {
@@ -890,8 +867,7 @@ export async function buildPrompt(
             const sp = await hypaMemoryV2(chats, reservedTokens, maxContextTokens, workingChat, chatOwner, tokenizer)
             if (sp.error) {
                 console.log(sp)
-                displayError(sp.error)
-                return { success: false }
+                return { success: false, error: sp.error }
             }
             chats = sp.chats
             reservedTokens = sp.currentTokens
@@ -911,8 +887,7 @@ export async function buildPrompt(
                     DBState.currentChat.hypaV3Data = workingChat.hypaV3Data
                 }
                 console.log(sp)
-                displayError(sp.error)
-                return { success: false }
+                return { success: false, error: sp.error }
             }
             chats = sp.chats
             reservedTokens = sp.currentTokens
@@ -927,8 +902,7 @@ export async function buildPrompt(
                 asHyper: DBState.db.hypaMemory
             })
             if (sp.error) {
-                displayError(sp.error)
-                return { success: false }
+                return { success: false, error: sp.error }
             }
             chats = sp.chats
             reservedTokens = sp.currentTokens
@@ -945,9 +919,7 @@ export async function buildPrompt(
         stageTimings.stage1Duration = Date.now() - stageTimings.stage1Start
         while (reservedTokens > maxContextTokens) {
             if (chats.length <= 1) {
-                displayError(language.errors.toomuchtoken + "\n\nRequired Tokens: " + reservedTokens)
-
-                return { success: false }
+                return { success: false, error: language.errors.toomuchtoken + "\n\nRequired Tokens: " + reservedTokens }
             }
 
             reservedTokens -= await tokenizer.tokenizeChat(chats[0])
@@ -1298,8 +1270,7 @@ export async function buildPrompt(
         let pointer = 0
         while (inputTokens > maxContextTokens) {
             if (pointer >= formated.length) {
-                displayError(language.errors.toomuchtoken + "\n\nAt token rechecking. Required Tokens: " + inputTokens)
-                return { success: false }
+                return { success: false, error: language.errors.toomuchtoken + "\n\nAt token rechecking. Required Tokens: " + inputTokens }
             }
             if (formated[pointer].removable) {
                 inputTokens -= await tokenizer.tokenizeChat(formated[pointer])
