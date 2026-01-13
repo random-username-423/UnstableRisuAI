@@ -55,8 +55,7 @@ type BuildPromptResult =
     | { success: true; data: Stage1_2Output }
     | { success: false; error?: string }
 
-
-const defaultPrebuiltAssetCommand = `
+const DEFAULT_PREBUILT_ASSET_COMMAND = `
 <Image Tag Instruction>Insert HTML image tags between paragraphs based on context.
 Set src as keywords from the list below that matches current character, outfit, situation sentiment and etc.
 print as many different images as possible. Use only available keywords.
@@ -66,6 +65,44 @@ try to put at least 1 image per output.
 Example: <img src="{{ele::{{chardisplayasset}}::0}}">
 <Image Tag Instruction>
 `
+
+const CONVERT_ROLE = {
+    "system": "system",
+    "user": "user",
+    "bot": "assistant"
+} as const
+
+/**
+ * Normalizes chat range indices, handling negative indices and special values.
+ * Returns null if the range is invalid (start >= end).
+ */
+function normalizeChatRange(
+    rangeStart: number,
+    rangeEnd: number | 'end',
+    chatLength: number
+): { start: number; end: number } | null {
+    let start = rangeStart
+    let end = rangeEnd === 'end' ? chatLength : rangeEnd
+
+    // -1000 means include all chats
+    if (start === -1000) {
+        return { start: 0, end: chatLength }
+    }
+
+    // Handle negative indices (count from end)
+    if (start < 0) {
+        start = Math.max(0, chatLength + start)
+    }
+    if (end < 0) {
+        end = Math.max(0, chatLength + end)
+    }
+
+    if (start >= end) {
+        return null
+    }
+
+    return { start, end }
+}
 
 /**
  * Converts legacy formatingOrder to promptTemplate
@@ -163,14 +200,9 @@ export async function buildPrompt(
     chatOwner.chats[selectedChatPage] = workingChat
 
     let promptInfo: MessagePresetInfo = {}
-    let initialPresetNameForPromptInfo = null
-    let initialPromptTogglesForPromptInfo: {
-        key: string,
-        value: string,
-    }[] = []
     if (DBState.db.promptInfoInsideChat) {
-        initialPresetNameForPromptInfo = DBState.db.botPresets[DBState.db.botPresetsId]?.name ?? ''
-        initialPromptTogglesForPromptInfo = parseToggleSyntax(DBState.db.customPromptTemplateToggle + getModuleToggles())
+        const presetName = DBState.db.botPresets[DBState.db.botPresetsId]?.name ?? ''
+        const promptToggles = parseToggleSyntax(DBState.db.customPromptTemplateToggle + getModuleToggles())
             .flatMap(toggle => {
                 const raw = DBState.db.globalChatVariables[`toggle_${toggle.key}`]
                 if (toggle.type === 'select' || toggle.type === 'text') {
@@ -182,13 +214,8 @@ export async function buildPrompt(
                 return []
             })
 
-        promptInfo = {
-            promptName: initialPresetNameForPromptInfo,
-            promptToggles: initialPromptTogglesForPromptInfo,
-        }
+        promptInfo = { promptName: presetName, promptToggles }
     }
-
-
 
     /* ========================================
      *       STAGE 1: PROMPT BUILDING
@@ -271,7 +298,6 @@ export async function buildPrompt(
         })
     }
 
-
     // build Character Description
     {
         let description = risuChatParser((DBState.db.promptPreprocess ? DBState.db.descriptionPrefix : '') + speakingChar.desc, { chara: speakingChar })
@@ -345,7 +371,7 @@ export async function buildPrompt(
         })
     }
 
-    // 
+    // Inlay view screen instructions
     if (speakingChar.inlayViewScreen) {
         if (speakingChar.viewScreen === 'emotion') {
             promptParts.postEverything.push({
@@ -434,8 +460,6 @@ export async function buildPrompt(
     let reservedTokens = DBState.db.maxResponse
     let supaMemoryCardUsed = false
 
-    const template = promptTemplate
-
     // Helper function to accumulate token count from chat array into reservedTokens
     async function tokenizeChatArray(chats: OpenAIChat[]) {
         for (const chat of chats) {
@@ -445,7 +469,7 @@ export async function buildPrompt(
     }
 
     // Iterate through each template card and calculate tokens based on card type
-    for (const card of template) {
+    for (const card of promptTemplate) {
         switch (card.type) {
             case 'persona': {
                 const pmt = safeStructuredClone(promptParts.personaPrompt)
@@ -501,12 +525,6 @@ export async function buildPrompt(
                     continue
                 }
 
-                const convertRole = {
-                    "system": "system",
-                    "user": "user",
-                    "bot": "assistant"
-                } as const
-
                 const posType = card.type === 'plain' ? card.type2 : card.type
                 let content = positionParser(card.text, posType)
 
@@ -516,7 +534,7 @@ export async function buildPrompt(
                     }
 
                     if (speakingChar.prebuiltAssetCommand && !card.text.includes('{{//@customimageinstruction}}')) {
-                        content += defaultPrebuiltAssetCommand
+                        content += DEFAULT_PREBUILT_ASSET_COMMAND
                     }
                     content = (risuChatParser(content, { chara: speakingChar, role: card.role }))
                 }
@@ -531,7 +549,7 @@ export async function buildPrompt(
                 }
 
                 const prompt: OpenAIChat = {
-                    role: convertRole[card.role],
+                    role: CONVERT_ROLE[card.role],
                     content: content
                 }
 
@@ -543,35 +561,14 @@ export async function buildPrompt(
                 await tokenizeChatArray(prompts)
                 break
             }
-            // Handle chat history with range selection (supports negative indices)
             case 'chat': {
-                let start = card.rangeStart
-                let end = (card.rangeEnd === 'end') ? promptParts.chats.length : card.rangeEnd
-                // -1000 means include all chats
-                if (start === -1000) {
-                    start = 0
-                    end = promptParts.chats.length
-                }
-                // Handle negative indices (count from end)
-                if (start < 0) {
-                    start = promptParts.chats.length + start
-                    if (start < 0) {
-                        start = 0
-                    }
-                }
-                if (end < 0) {
-                    end = promptParts.chats.length + end
-                    if (end < 0) {
-                        end = 0
-                    }
-                }
-
-                if (start >= end) {
+                const range = normalizeChatRange(card.rangeStart, card.rangeEnd, promptParts.chats.length)
+                if (!range) {
                     break
                 }
-                let chats = promptParts.chats.slice(start, end)
+                let chats = promptParts.chats.slice(range.start, range.end)
 
-                if (DBState.db.promptSettings.sendChatAsSystem && (!card.chatAsOriginalOnSystem)) {
+                if (DBState.db.promptSettings.sendChatAsSystem && !card.chatAsOriginalOnSystem) {
                     chats = systemizeChat(chats)
                 }
                 await tokenizeChatArray(chats)
@@ -669,20 +666,6 @@ export async function buildPrompt(
         let formatedChat = (await processScriptFull(chatOwner, risuChatParser(msg.data, { chara: speakingChar, role: msg.role }), 'editprocess', index, {
             chatRole: msg.role,
         })).data
-
-        // Determine speaker name based on role
-        let name = ''
-        if (msg.role === 'char') {
-            if (msg.saying) {
-                name = `${findCharacterbyIdwithCache(msg.saying).name}`
-            }
-            else {
-                name = `${speakingChar.name}`
-            }
-        }
-        else if (msg.role === 'user') {
-            name = `${getUserName()}`
-        }
 
         // Generate unique chat ID if not present
         if (!msg.chatId) {
@@ -986,12 +969,10 @@ export async function buildPrompt(
         }
     }
 
-
-    //make into one
-
+    // Build final formatted prompt array
     let formated: OpenAIChat[] = []
 
-    //continue chat model
+    // Continue chat model
     if (arg.continue && (DBState.db.aiModel.startsWith('claude') || DBState.db.aiModel.startsWith('gpt') || DBState.db.aiModel.startsWith('openrouter') || DBState.db.aiModel.startsWith('reverse_proxy'))) {
         promptParts.postEverything.push({
             role: 'system',
@@ -1009,14 +990,13 @@ export async function buildPrompt(
                 continue
             }
             if (chat.role === 'system') {
-                const endf = formated.at(-1)
-                if (endf && endf.role === 'system' && endf.memo === chat.memo && endf.name === chat.name) {
-                    formated.at(-1).content += '\n\n' + chat.content
+                const lastChat = formated.at(-1)
+                if (lastChat && lastChat.role === 'system' && lastChat.memo === chat.memo && lastChat.name === chat.name) {
+                    lastChat.content += '\n\n' + chat.content
                 }
                 else {
                     formated.push(chat)
                 }
-                formated.at(-1).content += ''
             }
             else {
                 formated.push(chat)
@@ -1035,197 +1015,169 @@ export async function buildPrompt(
         })
     }
 
-    {
-        const template = promptTemplate
+    for (const card of promptTemplate) {
+        switch (card.type) {
+            case 'persona': {
+                const pmt = safeStructuredClone(promptParts.personaPrompt)
+                if (card.innerFormat && pmt.length > 0) {
+                    for (let i = 0; i < pmt.length; i++) {
+                        pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content)
 
-        for (const card of template) {
-            switch (card.type) {
-                case 'persona': {
-                    const pmt = safeStructuredClone(promptParts.personaPrompt)
-                    if (card.innerFormat && pmt.length > 0) {
-                        for (let i = 0; i < pmt.length; i++) {
-                            pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content)
-
-                            if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat) {
-                                pushPromptInfoBody(pmt[i].role, card.innerFormat, promptBodyformatedForChatStore)
-                            }
+                        if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat) {
+                            pushPromptInfoBody(pmt[i].role, card.innerFormat, promptBodyformatedForChatStore)
                         }
                     }
+                }
 
-                    pushPrompts(pmt)
+                pushPrompts(pmt)
+                break
+            }
+            case 'description': {
+                const pmt = safeStructuredClone(promptParts.description)
+                if (card.innerFormat && pmt.length > 0) {
+                    for (let i = 0; i < pmt.length; i++) {
+                        pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content)
+
+                        if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat) {
+                            pushPromptInfoBody(pmt[i].role, card.innerFormat, promptBodyformatedForChatStore)
+                        }
+                    }
+                }
+
+                pushPrompts(pmt)
+                break
+            }
+            case 'authornote': {
+                const pmt = safeStructuredClone(promptParts.authorNote)
+                if (card.innerFormat && pmt.length > 0) {
+                    for (let i = 0; i < pmt.length; i++) {
+                        pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content || card.defaultText || '')
+
+                        if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat) {
+                            pushPromptInfoBody(pmt[i].role, card.innerFormat, promptBodyformatedForChatStore)
+                        }
+                    }
+                }
+
+                pushPrompts(pmt)
+                break
+            }
+            case 'lorebook': {
+                pushPrompts(promptParts.lorebook)
+                break
+            }
+            case 'postEverything': {
+                pushPrompts(promptParts.postEverything)
+                if (DBState.db.promptSettings.postEndInnerFormat) {
+                    pushPrompts([{
+                        role: 'system',
+                        content: DBState.db.promptSettings.postEndInnerFormat
+                    }])
+                }
+                break
+            }
+            case 'plain':
+            case 'jailbreak': {
+                if (!DBState.db.jailbreakToggle && card.type === 'jailbreak') {
+                    continue
+                }
+
+                const posType = card.type === 'plain' ? card.type2 : card.type
+                let content = positionParser(card.text, posType)
+
+                if (card.type2 === 'globalNote') {
+                    if (speakingChar.replaceGlobalNote) {
+                        content = positionParser(speakingChar.replaceGlobalNote, posType).replaceAll('{{original}}', content)
+                    }
+                    if (speakingChar.prebuiltAssetCommand && !card.text.includes('{{//@customimageinstruction}}')) {
+                        content += DEFAULT_PREBUILT_ASSET_COMMAND
+                    }
+                    content = risuChatParser(content, { chara: speakingChar, role: card.role })
+                }
+                else if (card.type2 === 'main') {
+                    if (speakingChar.systemPrompt) {
+                        content = positionParser(speakingChar.systemPrompt, posType).replaceAll('{{original}}', content)
+                    }
+                    content = risuChatParser(content, { chara: speakingChar, role: card.role })
+                }
+                else {
+                    content = risuChatParser(content, { chara: speakingChar, role: card.role })
+                }
+
+                const prompt: OpenAIChat = {
+                    role: CONVERT_ROLE[card.role],
+                    content: content
+                }
+
+                if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat && card.type2 !== 'globalNote') {
+                    pushPromptInfoBody(prompt.role, prompt.content, promptBodyformatedForChatStore)
+                }
+
+                pushPrompts([prompt])
+                break
+            }
+            case 'chatML': {
+                const prompts = parseChatML(card.text)
+                pushPrompts(prompts)
+                break
+            }
+            case 'chat': {
+                const range = normalizeChatRange(card.rangeStart, card.rangeEnd, promptParts.chats.length)
+                if (!range) {
                     break
                 }
-                case 'description': {
-                    const pmt = safeStructuredClone(promptParts.description)
-                    if (card.innerFormat && pmt.length > 0) {
-                        for (let i = 0; i < pmt.length; i++) {
-                            pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content)
 
-                            if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat) {
-                                pushPromptInfoBody(pmt[i].role, card.innerFormat, promptBodyformatedForChatStore)
-                            }
-                        }
-                    }
-
-                    pushPrompts(pmt)
-                    break
+                let chats = promptParts.chats.slice(range.start, range.end)
+                if (DBState.db.promptSettings.sendChatAsSystem && !card.chatAsOriginalOnSystem) {
+                    chats = systemizeChat(chats)
                 }
-                case 'authornote': {
-                    const pmt = safeStructuredClone(promptParts.authorNote)
-                    if (card.innerFormat && pmt.length > 0) {
-                        for (let i = 0; i < pmt.length; i++) {
-                            pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content || card.defaultText || '')
+                pushPrompts(chats)
 
-                            if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat) {
-                                pushPromptInfoBody(pmt[i].role, card.innerFormat, promptBodyformatedForChatStore)
-                            }
-                        }
-                    }
-
-                    pushPrompts(pmt)
-                    break
-                }
-                case 'lorebook': {
-                    pushPrompts(promptParts.lorebook)
-                    break
-                }
-                case 'postEverything': {
-                    pushPrompts(promptParts.postEverything)
-                    if (DBState.db.promptSettings.postEndInnerFormat) {
-                        pushPrompts([{
-                            role: 'system',
-                            content: DBState.db.promptSettings.postEndInnerFormat
-                        }])
-                    }
-                    break
-                }
-                case 'plain':
-                case 'jailbreak': {
-                    if ((!DBState.db.jailbreakToggle) && (card.type === 'jailbreak')) {
-                        continue
-                    }
-
-                    const convertRole = {
-                        "system": "system",
-                        "user": "user",
-                        "bot": "assistant"
-                    } as const
-
-                    const posType = card.type === 'plain' ? card.type2 : card.type
-                    let content = positionParser(card.text, posType)
-
-                    if (card.type2 === 'globalNote') {
-                        if (speakingChar.replaceGlobalNote) {
-                            content = positionParser(speakingChar.replaceGlobalNote, posType).replaceAll('{{original}}', content)
-                        }
-                        if (speakingChar.prebuiltAssetCommand && !card.text.includes('{{//@customimageinstruction}}')) {
-                            content += defaultPrebuiltAssetCommand
-                        }
-                        content = (risuChatParser(content, { chara: speakingChar, role: card.role }))
-                    }
-                    else if (card.type2 === 'main') {
-                        if (speakingChar.systemPrompt) {
-                            content = positionParser(speakingChar.systemPrompt, posType).replaceAll('{{original}}', content)
-                        }
-                        content = (risuChatParser(content, { chara: speakingChar, role: card.role }))
-                    }
-                    else {
-                        content = risuChatParser(content, { chara: speakingChar, role: card.role })
-                    }
-
-                    const prompt: OpenAIChat = {
-                        role: convertRole[card.role],
-                        content: content
-                    }
-
-                    if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat && card.type2 !== 'globalNote') {
-                        pushPromptInfoBody(prompt.role, prompt.content, promptBodyformatedForChatStore)
-                    }
-
-                    pushPrompts([prompt])
-                    break
-                }
-                case 'chatML': {
-                    const prompts = parseChatML(card.text)
-                    pushPrompts(prompts)
-                    break
-                }
-                case 'chat': {
-                    let start = card.rangeStart
-                    let end = (card.rangeEnd === 'end') ? promptParts.chats.length : card.rangeEnd
-                    if (start === -1000) {
-                        start = 0
-                        end = promptParts.chats.length
-                    }
-                    if (start < 0) {
-                        start = promptParts.chats.length + start
-                        if (start < 0) {
-                            start = 0
-                        }
-                    }
-                    if (end < 0) {
-                        end = promptParts.chats.length + end
-                        if (end < 0) {
-                            end = 0
-                        }
-                    }
-
-                    if (start >= end) {
-                        break
-                    }
-
-                    let chats = promptParts.chats.slice(start, end)
-                    if (DBState.db.promptSettings.sendChatAsSystem && (!card.chatAsOriginalOnSystem)) {
-                        chats = systemizeChat(chats)
-                    }
-                    pushPrompts(chats)
-
-                    if (DBState.db.automaticCachePoint && !hasCachePoint) {
-                        let pointer = formated.length - 1
-                        let depthRemaining = 3
-                        while (pointer >= 0) {
-                            if (depthRemaining === 0) {
-                                break
-                            }
-                            if (formated[pointer].role === 'user') {
-                                formated[pointer].cachePoint = true
-                                depthRemaining--
-                            }
-                            pointer--
-                        }
-                    }
-                    break
-                }
-                case 'memory': {
-                    const pmt = safeStructuredClone(memories)
-                    if (card.innerFormat && pmt.length > 0) {
-                        for (let i = 0; i < pmt.length; i++) {
-                            pmt[i].content = risuChatParser(card.innerFormat, { chara: speakingChar }).replace('{{slot}}', pmt[i].content)
-
-                            if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat) {
-                                pushPromptInfoBody(pmt[i].role, card.innerFormat, promptBodyformatedForChatStore)
-                            }
-                        }
-                    }
-
-                    pushPrompts(pmt)
-                    break
-                }
-                case 'cache': {
+                if (DBState.db.automaticCachePoint && !hasCachePoint) {
                     let pointer = formated.length - 1
-                    let depthRemaining = card.depth
+                    let depthRemaining = 3
                     while (pointer >= 0) {
                         if (depthRemaining === 0) {
                             break
                         }
-                        if (formated[pointer].role === card.role || card.role === 'all') {
+                        if (formated[pointer].role === 'user') {
                             formated[pointer].cachePoint = true
                             depthRemaining--
                         }
                         pointer--
                     }
-                    break
                 }
+                break
+            }
+            case 'memory': {
+                const pmt = safeStructuredClone(memories)
+                if (card.innerFormat && pmt.length > 0) {
+                    for (let i = 0; i < pmt.length; i++) {
+                        pmt[i].content = risuChatParser(card.innerFormat, { chara: speakingChar }).replace('{{slot}}', pmt[i].content)
+
+                        if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat) {
+                            pushPromptInfoBody(pmt[i].role, card.innerFormat, promptBodyformatedForChatStore)
+                        }
+                    }
+                }
+
+                pushPrompts(pmt)
+                break
+            }
+            case 'cache': {
+                let pointer = formated.length - 1
+                let depthRemaining = card.depth
+                while (pointer >= 0) {
+                    if (depthRemaining === 0) {
+                        break
+                    }
+                    if (formated[pointer].role === card.role || card.role === 'all') {
+                        formated[pointer].cachePoint = true
+                        depthRemaining--
+                    }
+                    pointer--
+                }
+                break
             }
         }
     }
@@ -1242,9 +1194,8 @@ export async function buildPrompt(
         })
     }
 
-
+    // Character depth prompt insertion
     if (speakingChar.depth_prompt && speakingChar.depth_prompt.prompt && speakingChar.depth_prompt.prompt.length > 0) {
-        //depth_prompt
         const depthPrompt = speakingChar.depth_prompt
         formated.splice(formated.length - depthPrompt.depth, 0, {
             role: 'system',
