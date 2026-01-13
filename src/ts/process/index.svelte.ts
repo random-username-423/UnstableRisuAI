@@ -270,8 +270,6 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return false
     }
 
-
-
     let workingChat = parseChatCBS(chatOwner.chats[selectedChatPage], speakingChar)
     chatOwner.chats[selectedChatPage] = workingChat
 
@@ -280,7 +278,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
      * ======================================== */
     chatGenState.stage = 1
     stageTimings.stage1Start = Date.now()
-    const unformated = {
+    const promptParts = {
         'main': ([] as OpenAIChat[]),
         'jailbreak': ([] as OpenAIChat[]),
         'chats': ([] as OpenAIChat[]),
@@ -294,8 +292,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     let promptTemplate = $state.snapshot(DBState.db.promptTemplate)
-    const usingPromptTemplate = !!promptTemplate
-    if (promptTemplate) {
+    const usingPromptTemplate = !!promptTemplate // NOTE: empty array is also truthy
+    if (usingPromptTemplate) {
         let hasPostEverything = false
         for (const card of promptTemplate) {
             if (card.type === 'postEverything') {
@@ -344,23 +342,23 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     if ((!speakingChar.utilityBot) && (!promptTemplate)) {
         const mainp = speakingChar.systemPrompt?.replaceAll('{{original}}', DBState.db.mainPrompt) || DBState.db.mainPrompt
 
-        unformated.main.push(...formatPrompt(risuChatParser(mainp + ((DBState.db.additionalPrompt === '' || (!DBState.db.promptPreprocess)) ? '' : `\n${DBState.db.additionalPrompt}`), { chara: speakingChar })))
+        promptParts.main.push(...formatPrompt(risuChatParser(mainp + ((DBState.db.additionalPrompt === '' || (!DBState.db.promptPreprocess)) ? '' : `\n${DBState.db.additionalPrompt}`), { chara: speakingChar })))
 
         if (DBState.db.jailbreakToggle) {
-            unformated.jailbreak.push(...formatPrompt(risuChatParser(DBState.db.jailbreak, { chara: speakingChar })))
+            promptParts.jailbreak.push(...formatPrompt(risuChatParser(DBState.db.jailbreak, { chara: speakingChar })))
         }
 
-        unformated.globalNote.push(...formatPrompt(risuChatParser(speakingChar.replaceGlobalNote?.replaceAll('{{original}}', DBState.db.globalNote) || DBState.db.globalNote, { chara: speakingChar })))
+        promptParts.globalNote.push(...formatPrompt(risuChatParser(speakingChar.replaceGlobalNote?.replaceAll('{{original}}', DBState.db.globalNote) || DBState.db.globalNote, { chara: speakingChar })))
     }
 
     if (workingChat.note) {
-        unformated.authorNote.push({
+        promptParts.authorNote.push({
             role: 'system',
             content: risuChatParser(workingChat.note, { chara: speakingChar })
         })
     }
     else if (getAuthorNoteDefaultText() !== '') {
-        unformated.authorNote.push({
+        promptParts.authorNote.push({
             role: 'system',
             content: risuChatParser(getAuthorNoteDefaultText(), { chara: speakingChar })
         })
@@ -383,14 +381,14 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             description += risuChatParser("\n\nCircumstances and context of the dialogue: " + speakingChar.scenario, { chara: speakingChar })
         }
 
-        unformated.description.push({
+        promptParts.description.push({
             role: 'system',
             content: description
         })
 
         if (chatOwner.type === 'group') {
             const systemMsg = `[Write the next reply only as ${speakingChar.name}]`
-            unformated.postEverything.push({
+            promptParts.postEverything.push({
                 role: 'system',
                 content: systemMsg
             })
@@ -404,7 +402,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     console.log(normalActives)
 
     for (const lorebook of normalActives) {
-        unformated.lorebook.push({
+        promptParts.lorebook.push({
             role: lorebook.role,
             content: risuChatParser(lorebook.prompt, { chara: speakingChar })
         })
@@ -420,15 +418,15 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             content: risuChatParser(lorebook.prompt, { chara: speakingChar })
         }
         if (lorebook.pos === 'before_desc') {
-            unformated.description.unshift(c)
+            promptParts.description.unshift(c)
         }
         else {
-            unformated.description.push(c)
+            promptParts.description.push(c)
         }
     }
 
     if (DBState.db.personaPrompt) {
-        unformated.personaPrompt.push({
+        promptParts.personaPrompt.push({
             role: 'system',
             content: risuChatParser(getPersonaPrompt(), { chara: speakingChar })
         })
@@ -436,13 +434,13 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
     if (speakingChar.inlayViewScreen) {
         if (speakingChar.viewScreen === 'emotion') {
-            unformated.postEverything.push({
+            promptParts.postEverything.push({
                 role: 'system',
                 content: speakingChar.newGenData.emotionInstructions.replaceAll('{{slot}}', speakingChar.emotionImages.map((v) => v[0]).join(', '))
             })
         }
         if (speakingChar.viewScreen === 'imggen') {
-            unformated.postEverything.push({
+            promptParts.postEverything.push({
                 role: 'system',
                 content: speakingChar.newGenData.instructions
             })
@@ -453,7 +451,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return v.pos === 'depth' && v.depth === 0 && v.role !== 'assistant'
     })
     for (const lorebook of postEverythingLorebooks) {
-        unformated.postEverything.push({
+        promptParts.postEverything.push({
             role: lorebook.role,
             content: risuChatParser(lorebook.prompt, { chara: speakingChar })
         })
@@ -474,7 +472,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     for (const lorebook of postEverythingAssistantLorebooks) {
-        unformated.postEverything.push({
+        promptParts.postEverything.push({
             role: lorebook.role,
             content: risuChatParser(lorebook.prompt, { chara: speakingChar })
         })
@@ -523,7 +521,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     let hasCachePoint = false
-    if (promptTemplate) {
+    if (usingPromptTemplate) {
         const template = promptTemplate
 
         async function tokenizeChatArray(chats: OpenAIChat[]) {
@@ -536,7 +534,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         for (const card of template) {
             switch (card.type) {
                 case 'persona': {
-                    const pmt = safeStructuredClone(unformated.personaPrompt)
+                    const pmt = safeStructuredClone(promptParts.personaPrompt)
                     if (card.innerFormat && pmt.length > 0) {
                         for (let i = 0; i < pmt.length; i++) {
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content)
@@ -547,7 +545,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     break
                 }
                 case 'description': {
-                    const pmt = safeStructuredClone(unformated.description)
+                    const pmt = safeStructuredClone(promptParts.description)
                     if (card.innerFormat && pmt.length > 0) {
                         for (let i = 0; i < pmt.length; i++) {
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content)
@@ -558,7 +556,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     break
                 }
                 case 'authornote': {
-                    const pmt = safeStructuredClone(unformated.authorNote)
+                    const pmt = safeStructuredClone(promptParts.authorNote)
                     if (card.innerFormat && pmt.length > 0) {
                         for (let i = 0; i < pmt.length; i++) {
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content || card.defaultText || '')
@@ -569,11 +567,11 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     break
                 }
                 case 'lorebook': {
-                    await tokenizeChatArray(unformated.lorebook)
+                    await tokenizeChatArray(promptParts.lorebook)
                     break
                 }
                 case 'postEverything': {
-                    await tokenizeChatArray(unformated.postEverything)
+                    await tokenizeChatArray(promptParts.postEverything)
                     if (usingPromptTemplate && DBState.db.promptSettings.postEndInnerFormat) {
                         await tokenizeChatArray([{
                             role: 'system',
@@ -629,19 +627,19 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 }
                 case 'chat': {
                     let start = card.rangeStart
-                    let end = (card.rangeEnd === 'end') ? unformated.chats.length : card.rangeEnd
+                    let end = (card.rangeEnd === 'end') ? promptParts.chats.length : card.rangeEnd
                     if (start === -1000) {
                         start = 0
-                        end = unformated.chats.length
+                        end = promptParts.chats.length
                     }
                     if (start < 0) {
-                        start = unformated.chats.length + start
+                        start = promptParts.chats.length + start
                         if (start < 0) {
                             start = 0
                         }
                     }
                     if (end < 0) {
-                        end = unformated.chats.length + end
+                        end = promptParts.chats.length + end
                         if (end < 0) {
                             end = 0
                         }
@@ -650,7 +648,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     if (start >= end) {
                         break
                     }
-                    let chats = unformated.chats.slice(start, end)
+                    let chats = promptParts.chats.slice(start, end)
 
                     if (usingPromptTemplate && DBState.db.promptSettings.sendChatAsSystem && (!card.chatAsOriginalOnSystem)) {
                         chats = systemizeChat(chats)
@@ -670,8 +668,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         }
     }
     else {
-        for (const key in unformated) {
-            const chats = unformated[key] as OpenAIChat[]
+        for (const key in promptParts) {
+            const chats = promptParts[key] as OpenAIChat[]
             for (const chat of chats) {
                 currentTokens += await tokenizer.tokenizeChat(chat)
             }
@@ -1009,11 +1007,11 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
 
     if (!promptTemplate) {
-        unformated.lastChat.push(chats.at(-1))
+        promptParts.lastChat.push(chats.at(-1))
         chats.splice(chats.length - 1, 1)
     }
 
-    unformated.chats = chats.map((v) => {
+    promptParts.chats = chats.map((v) => {
         if (v.memo !== 'supaMemory' && v.memo !== 'hypaMemory') {
             v.removable = true
         }
@@ -1037,25 +1035,25 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             role: depthPrompt.role,
             content: risuChatParser(depthPrompt.prompt, { chara: speakingChar })
         }
-        const depth = depthPrompt.pos === 'depth' ? (depthPrompt.depth) : (unformated.chats.length - depthPrompt.depth)
-        unformated.chats.splice(depth, 0, chat)
+        const depth = depthPrompt.pos === 'depth' ? (depthPrompt.depth) : (promptParts.chats.length - depthPrompt.depth)
+        promptParts.chats.splice(depth, 0, chat)
     }
 
     if (triggerResult) {
         if (triggerResult.additonalSysPrompt.promptend) {
-            unformated.postEverything.push({
+            promptParts.postEverything.push({
                 role: 'system',
                 content: triggerResult.additonalSysPrompt.promptend
             })
         }
         if (triggerResult.additonalSysPrompt.historyend) {
-            unformated.lastChat.push({
+            promptParts.lastChat.push({
                 role: 'system',
                 content: triggerResult.additonalSysPrompt.historyend
             })
         }
         if (triggerResult.additonalSysPrompt.start) {
-            unformated.lastChat.unshift({
+            promptParts.lastChat.unshift({
                 role: 'system',
                 content: triggerResult.additonalSysPrompt.start
             })
@@ -1073,7 +1071,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
     //continue chat model
     if (arg.continue && (DBState.db.aiModel.startsWith('claude') || DBState.db.aiModel.startsWith('gpt') || DBState.db.aiModel.startsWith('openrouter') || DBState.db.aiModel.startsWith('reverse_proxy'))) {
-        unformated.postEverything.push({
+        promptParts.postEverything.push({
             role: 'system',
             content: '[Continue the last response]'
         })
@@ -1115,13 +1113,13 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         })
     }
 
-    if (promptTemplate) {
+    if (usingPromptTemplate) {
         const template = promptTemplate
 
         for (const card of template) {
             switch (card.type) {
                 case 'persona': {
-                    const pmt = safeStructuredClone(unformated.personaPrompt)
+                    const pmt = safeStructuredClone(promptParts.personaPrompt)
                     if (card.innerFormat && pmt.length > 0) {
                         for (let i = 0; i < pmt.length; i++) {
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content)
@@ -1136,7 +1134,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     break
                 }
                 case 'description': {
-                    const pmt = safeStructuredClone(unformated.description)
+                    const pmt = safeStructuredClone(promptParts.description)
                     if (card.innerFormat && pmt.length > 0) {
                         for (let i = 0; i < pmt.length; i++) {
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content)
@@ -1151,7 +1149,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     break
                 }
                 case 'authornote': {
-                    const pmt = safeStructuredClone(unformated.authorNote)
+                    const pmt = safeStructuredClone(promptParts.authorNote)
                     if (card.innerFormat && pmt.length > 0) {
                         for (let i = 0; i < pmt.length; i++) {
                             pmt[i].content = risuChatParser(positionParser(card.innerFormat, card.type), { chara: speakingChar }).replace('{{slot}}', pmt[i].content || card.defaultText || '')
@@ -1166,11 +1164,11 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     break
                 }
                 case 'lorebook': {
-                    pushPrompts(unformated.lorebook)
+                    pushPrompts(promptParts.lorebook)
                     break
                 }
                 case 'postEverything': {
-                    pushPrompts(unformated.postEverything)
+                    pushPrompts(promptParts.postEverything)
                     if (usingPromptTemplate && DBState.db.promptSettings.postEndInnerFormat) {
                         pushPrompts([{
                             role: 'system',
@@ -1229,19 +1227,19 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 }
                 case 'chat': {
                     let start = card.rangeStart
-                    let end = (card.rangeEnd === 'end') ? unformated.chats.length : card.rangeEnd
+                    let end = (card.rangeEnd === 'end') ? promptParts.chats.length : card.rangeEnd
                     if (start === -1000) {
                         start = 0
-                        end = unformated.chats.length
+                        end = promptParts.chats.length
                     }
                     if (start < 0) {
-                        start = unformated.chats.length + start
+                        start = promptParts.chats.length + start
                         if (start < 0) {
                             start = 0
                         }
                     }
                     if (end < 0) {
-                        end = unformated.chats.length + end
+                        end = promptParts.chats.length + end
                         if (end < 0) {
                             end = 0
                         }
@@ -1251,7 +1249,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                         break
                     }
 
-                    let chats = unformated.chats.slice(start, end)
+                    let chats = promptParts.chats.slice(start, end)
                     if (usingPromptTemplate && DBState.db.promptSettings.sendChatAsSystem && (!card.chatAsOriginalOnSystem)) {
                         chats = systemizeChat(chats)
                     }
@@ -1308,7 +1306,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
     else {
         for (let i = 0; i < formatOrder.length; i++) {
-            const cha = unformated[formatOrder[i]]
+            const cha = promptParts[formatOrder[i]]
             pushPrompts(cha)
         }
     }
