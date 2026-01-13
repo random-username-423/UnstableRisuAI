@@ -1299,7 +1299,7 @@ export async function buildPrompt(
         while (inputTokens > maxContextTokens) {
             if (pointer >= formated.length) {
                 displayError(language.errors.toomuchtoken + "\n\nAt token rechecking. Required Tokens: " + inputTokens)
-                return false
+                return { success: false }
             }
             if (formated[pointer].removable) {
                 inputTokens -= await tokenizer.tokenizeChat(formated[pointer])
