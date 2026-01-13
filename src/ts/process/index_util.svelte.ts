@@ -71,10 +71,20 @@ export function findCharacterbyIdwithCache(id: string) {
     }
 }
 
-export function parseChatTemplates(chat: Chat, character: character) {
-    chat.message = chat.message.map((v) => {
-        v.data = risuChatParser(v.data, { chara: character, runVar: true })
-        return v
-    })
-    return chat
+/**
+ * Parses chat CBS by processing each message's data through risuChatParser.
+ * Returns a new Chat object without modifying the original (immutable).
+ *
+ * @param chat - The chat object containing messages to parse
+ * @param character - The character context used for template parsing
+ * @returns A new Chat object with parsed message data
+ */
+export function parseChatCBS(chat: Chat, character: character): Chat {
+    return {
+        ...chat,
+        message: chat.message.map((v) => ({
+            ...v,
+            data: risuChatParser(v.data, { chara: character, runVar: true })
+        }))
+    }
 }

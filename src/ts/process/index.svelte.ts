@@ -40,7 +40,7 @@ import { getModuleAssets, getModuleToggles } from "./modules"
 import { readImage } from "../globalApi.svelte"
 import { type OpenAIChat, type MultiModal } from "./types"
 import { addToast } from "../toast.svelte"
-import { findCharacterbyIdwithCache, formatPrompt, parseChatTemplates, reformatContent, shuffleArray, systemizeChat } from "./index_util.svelte"
+import { findCharacterbyIdwithCache, formatPrompt, parseChatCBS, reformatContent, shuffleArray, systemizeChat } from "./index_util.svelte"
 export type { MultiModal }
 
 const defaultPrebuiltAssetCommand = `
@@ -272,8 +272,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
 
 
-    let currentChat = parseChatTemplates(chatOwner.chats[selectedChatPage], speakingChar)
-    chatOwner.chats[selectedChatPage] = currentChat
+    let workingChat = parseChatCBS(chatOwner.chats[selectedChatPage], speakingChar)
+    chatOwner.chats[selectedChatPage] = workingChat
 
     /* ========================================
      *       STAGE 1: PROMPT BUILDING
@@ -353,10 +353,10 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         unformated.globalNote.push(...formatPrompt(risuChatParser(speakingChar.replaceGlobalNote?.replaceAll('{{original}}', DBState.db.globalNote) || DBState.db.globalNote, { chara: speakingChar })))
     }
 
-    if (currentChat.note) {
+    if (workingChat.note) {
         unformated.authorNote.push({
             role: 'system',
-            content: risuChatParser(currentChat.note, { chara: speakingChar })
+            content: risuChatParser(workingChat.note, { chara: speakingChar })
         })
     }
     else if (getAuthorNoteDefaultText() !== '') {
@@ -369,7 +369,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     {
         let description = risuChatParser((DBState.db.promptPreprocess ? DBState.db.descriptionPrefix : '') + speakingChar.desc, { chara: speakingChar })
 
-        const additionalInfo = await additionalInformations(speakingChar, currentChat)
+        const additionalInfo = await additionalInformations(speakingChar, workingChat)
 
         if (additionalInfo) {
             description += '\n\n' + risuChatParser(additionalInfo, { chara: speakingChar })
@@ -713,10 +713,10 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return mss
     }
 
-    let ms: Message[] = makeMs(currentChat)
+    let ms: Message[] = makeMs(workingChat)
 
     if (chatOwner.type !== 'group' && !msReseted) {
-        const firstMsg = currentChat.fmIndex === -1 ? chatOwner.firstMessage : chatOwner.alternateGreetings[currentChat.fmIndex]
+        const firstMsg = workingChat.fmIndex === -1 ? chatOwner.firstMessage : chatOwner.alternateGreetings[workingChat.fmIndex]
 
         const chat: OpenAIChat = {
             role: 'assistant',
@@ -735,11 +735,11 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
     console.log('Prepared messages for token calculation:', ms)
 
-    const triggerResult = await runTrigger(speakingChar, 'start', { chat: currentChat })
+    const triggerResult = await runTrigger(speakingChar, 'start', { chat: workingChat })
     if (triggerResult) {
-        currentChat = triggerResult.chat
-        setCurrentChat(currentChat)
-        ms = makeMs(currentChat)
+        workingChat = triggerResult.chat
+        setCurrentChat(workingChat)
+        ms = makeMs(workingChat)
         currentTokens += triggerResult.tokens
         if (triggerResult.stopSending) {
             chatGenState.generating = false
@@ -931,8 +931,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             currentTokens = hn.tokens
         }
         else if (DBState.db.hypav2) {
-            console.log("Current chat's hypaV2 Data: ", currentChat.hypaV2Data)
-            const sp = await hypaMemoryV2(chats, currentTokens, maxContextTokens, currentChat, chatOwner, tokenizer)
+            console.log("Current chat's hypaV2 Data: ", workingChat.hypaV2Data)
+            const sp = await hypaMemoryV2(chats, currentTokens, maxContextTokens, workingChat, chatOwner, tokenizer)
             if (sp.error) {
                 console.log(sp)
                 displayError(sp.error)
@@ -940,20 +940,20 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             }
             chats = sp.chats
             currentTokens = sp.currentTokens
-            currentChat.hypaV2Data = sp.memory ?? currentChat.hypaV2Data
-            DBState.currentChat.hypaV2Data = currentChat.hypaV2Data
+            workingChat.hypaV2Data = sp.memory ?? workingChat.hypaV2Data
+            DBState.currentChat.hypaV2Data = workingChat.hypaV2Data
 
-            currentChat = DBState.currentChat
-            console.log("[Expected to be updated] chat's HypaV2Data: ", currentChat.hypaV2Data)
+            workingChat = DBState.currentChat
+            console.log("[Expected to be updated] chat's HypaV2Data: ", workingChat.hypaV2Data)
         }
         else if (DBState.db.hypaV3) {
-            console.log("Current chat's hypaV3 Data: ", currentChat.hypaV3Data)
-            const sp = await hypaMemoryV3(chats, currentTokens, maxContextTokens, currentChat, chatOwner, tokenizer)
+            console.log("Current chat's hypaV3 Data: ", workingChat.hypaV3Data)
+            const sp = await hypaMemoryV3(chats, currentTokens, maxContextTokens, workingChat, chatOwner, tokenizer)
             if (sp.error) {
                 // Save new summary
                 if (sp.memory) {
-                    currentChat.hypaV3Data = sp.memory
-                    DBState.currentChat.hypaV3Data = currentChat.hypaV3Data
+                    workingChat.hypaV3Data = sp.memory
+                    DBState.currentChat.hypaV3Data = workingChat.hypaV3Data
                 }
                 console.log(sp)
                 displayError(sp.error)
@@ -961,14 +961,14 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             }
             chats = sp.chats
             currentTokens = sp.currentTokens
-            currentChat.hypaV3Data = sp.memory ?? currentChat.hypaV3Data
-            DBState.currentChat.hypaV3Data = currentChat.hypaV3Data
+            workingChat.hypaV3Data = sp.memory ?? workingChat.hypaV3Data
+            DBState.currentChat.hypaV3Data = workingChat.hypaV3Data
 
-            currentChat = DBState.currentChat
-            console.log("[Expected to be updated] chat's HypaV3Data: ", currentChat.hypaV3Data)
+            workingChat = DBState.currentChat
+            console.log("[Expected to be updated] chat's HypaV3Data: ", workingChat.hypaV3Data)
         }
         else {
-            const sp = await supaMemory(chats, currentTokens, maxContextTokens, currentChat, chatOwner, tokenizer, {
+            const sp = await supaMemory(chats, currentTokens, maxContextTokens, workingChat, chatOwner, tokenizer, {
                 asHyper: DBState.db.hypaMemory
             })
             if (sp.error) {
@@ -977,10 +977,10 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             }
             chats = sp.chats
             currentTokens = sp.currentTokens
-            currentChat.supaMemoryData = sp.memory ?? currentChat.supaMemoryData
-            DBState.currentChat.supaMemoryData = currentChat.supaMemoryData
-            console.log(currentChat.supaMemoryData)
-            currentChat.lastMemory = sp.lastId ?? currentChat.lastMemory
+            workingChat.supaMemoryData = sp.memory ?? workingChat.supaMemoryData
+            DBState.currentChat.supaMemoryData = workingChat.supaMemoryData
+            console.log(workingChat.supaMemoryData)
+            workingChat.lastMemory = sp.lastId ?? workingChat.lastMemory
         }
         stageTimings.stage2Duration = Date.now() - stageTimings.stage2Start
         chatGenState.stage = 1
@@ -997,7 +997,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             currentTokens -= await tokenizer.tokenizeChat(chats[0])
             chats.splice(0, 1)
         }
-        currentChat.lastMemory = chats[0].memo
+        workingChat.lastMemory = chats[0].memo
     }
 
     const biases: [string, number][] = DBState.db.bias.concat(speakingChar.bias).map((v) => {
@@ -1484,22 +1484,22 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
         addRerolls(generationId, Object.values(lastResponseChunk))
 
-        chatOwner.chats[selectedChatPage] = parseChatTemplates(DBState.currentChat, speakingChar)
-        currentChat = DBState.currentChat
-        const triggerResult = await runTrigger(speakingChar, 'output', { chat: currentChat })
+        chatOwner.chats[selectedChatPage] = parseChatCBS(DBState.currentChat, speakingChar)
+        workingChat = DBState.currentChat
+        const triggerResult = await runTrigger(speakingChar, 'output', { chat: workingChat })
         if (triggerResult && triggerResult.chat) {
-            currentChat = triggerResult.chat
+            workingChat = triggerResult.chat
         }
         if (triggerResult && triggerResult.sendAIprompt) {
             resendChat = true
         }
-        const inlayr = runInlayScreen(speakingChar, currentChat.message[msgIndex].data)
-        currentChat.message[msgIndex].data = inlayr.text
-        chatOwner.chats[selectedChatPage] = currentChat
+        const inlayr = runInlayScreen(speakingChar, workingChat.message[msgIndex].data)
+        workingChat.message[msgIndex].data = inlayr.text
+        chatOwner.chats[selectedChatPage] = workingChat
         if (inlayr.promise) {
             const t = await inlayr.promise
-            currentChat.message[msgIndex].data = t
-            chatOwner.chats[selectedChatPage] = currentChat
+            workingChat.message[msgIndex].data = t
+            chatOwner.chats[selectedChatPage] = workingChat
         }
         if (DBState.db.ttsAutoSpeech) {
             await sayTTS(speakingChar, result)
@@ -1572,10 +1572,10 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             addRerolls(generationId, mrerolls)
         }
 
-        chatOwner.chats[selectedChatPage] = parseChatTemplates(DBState.currentChat, speakingChar)
-        currentChat = DBState.currentChat
+        chatOwner.chats[selectedChatPage] = parseChatCBS(DBState.currentChat, speakingChar)
+        workingChat = DBState.currentChat
 
-        const triggerResult = await runTrigger(speakingChar, 'output', { chat: currentChat })
+        const triggerResult = await runTrigger(speakingChar, 'output', { chat: workingChat })
         if (triggerResult && triggerResult.chat) {
             chatOwner.chats[selectedChatPage] = triggerResult.chat
         }
