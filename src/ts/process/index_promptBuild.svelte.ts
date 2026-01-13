@@ -47,7 +47,6 @@ interface Stage1_2Output {
         stage4Duration: number
     }
     formated: OpenAIChat[]
-    biases: [string, number][]
     generationId: string
     generationInfo: MessageGenerationInfo
 }
@@ -919,10 +918,6 @@ export async function buildPrompt(
     /* ========================================
      *       STAGE 1: PROMPT ASSEMBLY (cont.)
      * ======================================== */
-    const biases: [string, number][] = DBState.db.bias.concat(speakingChar.bias).map((v) => {
-        return [risuChatParser(v[0].replaceAll("\\n", "\n").replaceAll("\\r", "\r").replaceAll("\\\\", "\\"), { chara: speakingChar }), v[1]]
-    })
-
     const memories: OpenAIChat[] = []
 
     promptParts.chats = chats.map((v) => {
@@ -1261,5 +1256,5 @@ export async function buildPrompt(
         }
     }
 
-    return { success: true, data: { biases, formated, generationId, generationInfo, promptInfo, stageTimings, workingChat } }
+    return { success: true, data: { formated, generationId, generationInfo, promptInfo, stageTimings, workingChat } }
 }

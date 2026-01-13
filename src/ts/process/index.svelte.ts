@@ -216,8 +216,12 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return false
     }
 
-    const { workingChat: _workingChat, promptInfo, stageTimings, formated, biases, generationId, generationInfo } = promptResult.data
+    const { workingChat: _workingChat, promptInfo, stageTimings, formated, generationId, generationInfo } = promptResult.data
     workingChat = _workingChat
+
+    const biases: [string, number][] = DBState.db.bias.concat(speakingChar.bias).map((v) => {
+        return [risuChatParser(v[0].replaceAll("\\n", "\n").replaceAll("\\r", "\r").replaceAll("\\\\", "\\"), { chara: speakingChar }), v[1]]
+    })
 
     /* ========================================
      *       STAGE 3: AI REQUEST
