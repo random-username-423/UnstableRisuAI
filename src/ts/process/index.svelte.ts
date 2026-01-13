@@ -1,6 +1,6 @@
 import { get } from "svelte/store"
 import { changeToPreset } from '../storage/preset-manager'
-import { type Chat } from '../storage/types/chat'
+import { type Chat, type MessageGenerationInfo } from '../storage/types/chat'
 import { type character } from '../storage/types/character'
 import { DBState } from '../stores.svelte'
 import { CharEmotion } from "../stores.svelte"
@@ -216,8 +216,25 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return false
     }
 
-    const { workingChat: _workingChat, promptInfo, stageTimings, formatted: formatted, generationId, generationInfo } = promptResult.data
+    const { workingChat: _workingChat, promptInfo, stageTimings, formatted: formatted, inputTokens, outputTokens } = promptResult.data
     workingChat = _workingChat
+
+    const generationId = v4()
+    const generationModel = getGenerationModelString()
+
+    const generationInfo: MessageGenerationInfo = {
+        model: generationModel,
+        generationId: generationId,
+        inputTokens: inputTokens,
+        outputTokens: outputTokens,
+        maxContext: DBState.db.maxContext,
+        stageTiming: {
+            stage1: stageTimings.stage1Duration,
+            stage2: stageTimings.stage2Duration,
+            stage3: 0,
+            stage4: 0
+        }
+    }
 
     const biases: [string, number][] = DBState.db.bias.concat(speakingChar.bias).map((v) => {
         return [risuChatParser(v[0].replaceAll("\\n", "\n").replaceAll("\\r", "\r").replaceAll("\\\\", "\\"), { chara: speakingChar }), v[1]]

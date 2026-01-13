@@ -8,7 +8,7 @@ import { risuChatParser } from "../parser.svelte"
 import { getPersonaPrompt, getUserName } from "../persona"
 import { setCurrentChat } from "../storage/database.svelte"
 import type { character, groupChat } from "../storage/types/character"
-import type { Chat, Message, MessageGenerationInfo, MessagePresetInfo } from "../storage/types/chat"
+import type { Chat, Message, MessagePresetInfo } from "../storage/types/chat"
 import { DBState } from "../stores.svelte"
 import { ChatTokenizer } from "../tokenizer"
 import { parseToggleSyntax } from "../utils/util"
@@ -23,7 +23,6 @@ import { hanuraiMemory } from "./memory/hanuraiMemory"
 import { hypaMemoryV2 } from "./memory/hypav2"
 import { hypaMemoryV3 } from "./memory/hypav3.svelte"
 import { supaMemory } from "./memory/supaMemory"
-import { getGenerationModelString } from "./models/modelString"
 import { getModuleAssets, getModuleToggles } from "./modules"
 import { getAuthorNoteDefaultText, type PromptItem } from "./prompt"
 import { processScript, processScriptFull } from "./scripts"
@@ -46,9 +45,9 @@ interface Stage1_2Output {
         stage3Duration: number,
         stage4Duration: number
     }
-    formatted: OpenAIChat[]
-    generationId: string
-    generationInfo: MessageGenerationInfo
+    formatted: OpenAIChat[],
+    inputTokens: number,
+    outputTokens: number
 }
 
 type BuildPromptResult =
@@ -905,7 +904,7 @@ export async function buildPrompt(
         let skipCount = 0
         while (reservedTokens > maxContextTokens) {
             if (skipCount >= chats.length - 1) {
-                return { success: false, error: language.errors.toomuchtoken + "\n\nRequired Tokens: " + reservedTokens  }
+                return { success: false, error: language.errors.toomuchtoken + "\n\nRequired Tokens: " + reservedTokens }
             }
             reservedTokens -= await tokenizer.tokenizeChat(chats[skipCount])
             skipCount++
@@ -1239,22 +1238,6 @@ export async function buildPrompt(
     if (inputTokens + outputTokens > maxContextTokens) {
         outputTokens = maxContextTokens - inputTokens
     }
-    const generationId = v4()
-    const generationModel = getGenerationModelString()
 
-    const generationInfo: MessageGenerationInfo = {
-        model: generationModel,
-        generationId: generationId,
-        inputTokens: inputTokens,
-        outputTokens: outputTokens,
-        maxContext: maxContextTokens,
-        stageTiming: {
-            stage1: stageTimings.stage1Duration,
-            stage2: stageTimings.stage2Duration,
-            stage3: 0,
-            stage4: 0
-        }
-    }
-
-    return { success: true, data: { formatted, generationId, generationInfo, promptInfo, stageTimings, workingChat } }
+    return { success: true, data: { formatted, inputTokens, outputTokens, promptInfo, stageTimings, workingChat } }
 }
