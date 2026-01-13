@@ -216,8 +216,6 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     /* ========================================
      *       STAGE 1,2: PROMPT BUILDING
      * ======================================== */
-    let workingChat: Chat
-
     const stageTimings = {
         stage1Start: 0,
         stage2Start: 0,
@@ -356,7 +354,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         addRerolls(generationId, Object.values(lastResponseChunk))
 
         chatOwner.chats[selectedChatPage] = parseChatCBS(DBState.currentChat, speakingChar)
-        workingChat = DBState.currentChat
+        let workingChat = DBState.currentChat
+
         const triggerResult = await runTrigger(speakingChar, 'output', { chat: workingChat })
         if (triggerResult && triggerResult.chat) {
             workingChat = triggerResult.chat
@@ -444,7 +443,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         }
 
         chatOwner.chats[selectedChatPage] = parseChatCBS(DBState.currentChat, speakingChar)
-        workingChat = DBState.currentChat
+        const workingChat = DBState.currentChat
 
         const triggerResult = await runTrigger(speakingChar, 'output', { chat: workingChat })
         if (triggerResult && triggerResult.chat) {
