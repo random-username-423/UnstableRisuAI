@@ -1,47 +1,37 @@
+import { v4 } from "uuid"
+
 import { language } from "src/lang"
+
 import { alertError } from "../alert.svelte"
+import { readImage } from "../globalApi.svelte"
+import { getModelInfo, LLMFlags } from "../model/modellist"
+import { parseChatML, risuChatParser } from "../parser.svelte"
 import { getPersonaPrompt, getUserName } from "../persona"
+import { setCurrentChat } from "../storage/database.svelte"
 import type { character, groupChat } from "../storage/types/character"
 import type { Chat, Message, MessageGenerationInfo, MessagePresetInfo } from "../storage/types/chat"
 import { DBState } from "../stores.svelte"
 import { ChatTokenizer } from "../tokenizer"
 import { parseToggleSyntax } from "../utils/util"
+
+import { additionalInformations } from "./embedding/addinfo"
 import { exampleMessage } from "./exampleMessages"
+import { getInlayAsset } from "./files/inlays"
 import { chatGenState } from "./index.svelte"
 import { findCharacterbyIdwithCache, formatPrompt, parseChatCBS, systemizeChat } from "./index_util.svelte"
-import { parseChatML, risuChatParser } from "../parser.svelte"
-import { getModuleAssets, getModuleToggles } from "./modules"
-import { processScript, processScriptFull } from "./scripts"
-import { setCurrentChat } from "../storage/database.svelte"
-import { runTrigger } from "./triggers"
+import { loadLoreBookV3Prompt } from "./lorebook.svelte"
+import { hanuraiMemory } from "./memory/hanuraiMemory"
 import { hypaMemoryV2 } from "./memory/hypav2"
 import { hypaMemoryV3 } from "./memory/hypav3.svelte"
 import { supaMemory } from "./memory/supaMemory"
-import { getAuthorNoteDefaultText } from "./prompt"
-import { additionalInformations } from "./embedding/addinfo"
-import { type OpenAIChat, type MultiModal } from "./types"
-import { v4 } from "uuid"
-import { loadLoreBookV3Prompt } from "./lorebook.svelte"
-import { runLuaEditTrigger } from "./scriptings"
-import { hanuraiMemory } from "./memory/hanuraiMemory"
 import { getGenerationModelString } from "./models/modelString"
-import { readImage } from "../globalApi.svelte"
-import { getInlayAsset } from "./files/inlays"
-import { getModelInfo, LLMFlags } from "../model/modellist"
+import { getModuleAssets, getModuleToggles } from "./modules"
+import { getAuthorNoteDefaultText, type PromptItem } from "./prompt"
+import { processScript, processScriptFull } from "./scripts"
+import { runLuaEditTrigger } from "./scriptings"
 import { runImageEmbedding } from "./transformers"
-
-interface Stage1_2Input {
-    abortSignal: AbortSignal
-    chatOwner: character | groupChat
-    selectedChatPage: number
-    speakingChar: character
-    arg: {
-        continue?: boolean
-        usedContinueTokens?: number
-        preview?: boolean
-        previewPrompt?: boolean
-    }
-}
+import { runTrigger } from "./triggers"
+import type { OpenAIChat, MultiModal } from "./types"
 
 interface Stage1_2Output {
     workingChat: Chat
@@ -66,6 +56,7 @@ type BuildPromptResult =
     | { success: true; data: Stage1_2Output }
     | { success: false; error?: string }
 
+
 const defaultPrebuiltAssetCommand = `
 <Image Tag Instruction>Insert HTML image tags between paragraphs based on context.
 Set src as keywords from the list below that matches current character, outfit, situation sentiment and etc.
@@ -77,7 +68,7 @@ Example: <img src="{{ele::{{chardisplayasset}}::0}}">
 <Image Tag Instruction>
 `
 
-export async function buildPrompt(abortSignal: AbortSignal,
+export async function buildPrompt(
     chatOwner: character | groupChat,
     selectedChatPage: number,
     speakingChar: character,
@@ -101,7 +92,6 @@ export async function buildPrompt(abortSignal: AbortSignal,
 
     const perChatAdditonalTokens = DBState.db.aiModel.startsWith('gpt') ? 5 : 3
     const tokenizer = new ChatTokenizer(perChatAdditonalTokens, DBState.db.aiModel.startsWith('gpt') ? 'noName' : 'name')
-
     const maxContextTokens = DBState.db.maxContext
 
     let workingChat = parseChatCBS(chatOwner.chats[selectedChatPage], speakingChar)
@@ -154,6 +144,8 @@ export async function buildPrompt(abortSignal: AbortSignal,
     }
 
     let promptTemplate = $state.snapshot(DBState.db.promptTemplate)
+
+
 
     if (promptTemplate) {
         const hasPostEverything = promptTemplate.some(card => card.type === 'postEverything')
@@ -1308,5 +1300,5 @@ export async function buildPrompt(abortSignal: AbortSignal,
         }
     }
 
-    return { success: true, data: {biases,formated,generationId,generationInfo,promptInfo,stageTimings,workingChat}}
+    return { success: true, data: { biases, formated, generationId, generationInfo, promptInfo, stageTimings, workingChat } }
 }
