@@ -292,23 +292,17 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     let promptTemplate = $state.snapshot(DBState.db.promptTemplate)
-    const usingPromptTemplate = !!promptTemplate // NOTE: empty array is also truthy
-    if (usingPromptTemplate) {
-        let hasPostEverything = false
-        for (const card of promptTemplate) {
-            if (card.type === 'postEverything') {
-                hasPostEverything = true
-                break
-            }
-        }
 
+    if (promptTemplate) {
+        const hasPostEverything = promptTemplate.some(card => card.type === 'postEverything')
         if (!hasPostEverything) {
             promptTemplate.push({
                 type: 'postEverything'
             })
         }
     }
-    if (speakingChar.utilityBot && (!(usingPromptTemplate && DBState.db.promptSettings.utilOverride))) {
+
+    if (speakingChar.utilityBot && (!(promptTemplate && DBState.db.promptSettings.utilOverride))) {
         promptTemplate = [
             {
                 "type": "plain",
@@ -339,6 +333,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         ]
     }
 
+    // legacy
     if ((!speakingChar.utilityBot) && (!promptTemplate)) {
         const mainp = speakingChar.systemPrompt?.replaceAll('{{original}}', DBState.db.mainPrompt) || DBState.db.mainPrompt
 
@@ -351,6 +346,9 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         promptParts.globalNote.push(...formatPrompt(risuChatParser(speakingChar.replaceGlobalNote?.replaceAll('{{original}}', DBState.db.globalNote) || DBState.db.globalNote, { chara: speakingChar })))
     }
 
+
+
+    // authorNote
     if (workingChat.note) {
         promptParts.authorNote.push({
             role: 'system',
@@ -364,6 +362,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         })
     }
 
+
+    // build Character Description
     {
         let description = risuChatParser((DBState.db.promptPreprocess ? DBState.db.descriptionPrefix : '') + speakingChar.desc, { chara: speakingChar })
 
@@ -395,24 +395,27 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         }
     }
 
-    const lorepmt = await loadLoreBookV3Prompt()
-    const normalActives = lorepmt.actives.filter(v => {
+    const lorePrompt = await loadLoreBookV3Prompt()
+
+    // Lorebook entries with no specific position - goes to default lorebook section
+    const unpositionedLores = lorePrompt.actives.filter(v => {
         return v.pos === '' && v.inject === null
     })
-    console.log(normalActives)
+    console.log(unpositionedLores)
 
-    for (const lorebook of normalActives) {
+    for (const lorebook of unpositionedLores) {
         promptParts.lorebook.push({
             role: lorebook.role,
             content: risuChatParser(lorebook.prompt, { chara: speakingChar })
         })
     }
 
-    const descActives = lorepmt.actives.filter(v => {
+    // Lorebook entries positioned around character description
+    const descRelatedLores = lorePrompt.actives.filter(v => {
         return v.pos === 'after_desc' || v.pos === 'before_desc' || v.pos === 'personality' || v.pos === 'scenario'
     })
 
-    for (const lorebook of descActives) {
+    for (const lorebook of descRelatedLores) {
         const c = {
             role: lorebook.role,
             content: risuChatParser(lorebook.prompt, { chara: speakingChar })
@@ -425,6 +428,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         }
     }
 
+    // persona
     if (DBState.db.personaPrompt) {
         promptParts.personaPrompt.push({
             role: 'system',
@@ -432,6 +436,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         })
     }
 
+    // 
     if (speakingChar.inlayViewScreen) {
         if (speakingChar.viewScreen === 'emotion') {
             promptParts.postEverything.push({
@@ -447,7 +452,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         }
     }
 
-    const postEverythingLorebooks = lorepmt.actives.filter(v => {
+    // postEverything
+    const postEverythingLorebooks = lorePrompt.actives.filter(v => {
         return v.pos === 'depth' && v.depth === 0 && v.role !== 'assistant'
     })
     for (const lorebook of postEverythingLorebooks) {
@@ -458,11 +464,12 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     //Since assistant needs to be prefill, we need to add assistant lorebooks after user/system lorebooks
-    const postEverythingAssistantLorebooks = lorepmt.actives.filter(v => {
+    const postEverythingAssistantLorebooks = lorePrompt.actives.filter(v => {
         return v.pos === 'depth' && v.depth === 0 && v.role === 'assistant'
     })
 
-    const injectionLorebooks = lorepmt.actives.filter(v => {
+    // Lorebooks that inject content into specific {{position::location}} markers via append/prepend
+    const injectionLorebooks = lorePrompt.actives.filter(v => {
         return v.inject && !v.inject.lore
     })
 
@@ -477,13 +484,6 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             content: risuChatParser(lorebook.prompt, { chara: speakingChar })
         })
     }
-
-    //await tokenize currernt
-    let currentTokens = DBState.db.maxResponse
-    let supaMemoryCardUsed = false
-
-    //for unexpected error
-    currentTokens += 50
 
     const positionRegex = /{{position::(.+?)}}/g
     const positionParser = (text: string, loc: string) => {
@@ -510,7 +510,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             }
         }
         return text.replace(positionRegex, (match, p1) => {
-            const MatchingLorebooks = lorepmt.actives.filter(v => {
+            const MatchingLorebooks = lorePrompt.actives.filter(v => {
                 return v.pos === ('pt_' + p1)
             })
 
@@ -521,13 +521,15 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
 
     let hasCachePoint = false
-    if (usingPromptTemplate) {
+    let reservedTokens = DBState.db.maxResponse
+    let supaMemoryCardUsed = false
+    if (promptTemplate) {
         const template = promptTemplate
 
         async function tokenizeChatArray(chats: OpenAIChat[]) {
             for (const chat of chats) {
                 const tokens = await tokenizer.tokenizeChat(chat)
-                currentTokens += tokens
+                reservedTokens += tokens
             }
         }
 
@@ -572,7 +574,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 }
                 case 'postEverything': {
                     await tokenizeChatArray(promptParts.postEverything)
-                    if (usingPromptTemplate && DBState.db.promptSettings.postEndInnerFormat) {
+                    if (promptTemplate && DBState.db.promptSettings.postEndInnerFormat) {
                         await tokenizeChatArray([{
                             role: 'system',
                             content: DBState.db.promptSettings.postEndInnerFormat
@@ -650,7 +652,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     }
                     let chats = promptParts.chats.slice(start, end)
 
-                    if (usingPromptTemplate && DBState.db.promptSettings.sendChatAsSystem && (!card.chatAsOriginalOnSystem)) {
+                    if (promptTemplate && DBState.db.promptSettings.sendChatAsSystem && (!card.chatAsOriginalOnSystem)) {
                         chats = systemizeChat(chats)
                     }
                     await tokenizeChatArray(chats)
@@ -671,7 +673,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         for (const key in promptParts) {
             const chats = promptParts[key] as OpenAIChat[]
             for (const chat of chats) {
-                currentTokens += await tokenizer.tokenizeChat(chat)
+                reservedTokens += await tokenizer.tokenizeChat(chat)
             }
         }
     }
@@ -679,7 +681,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     const examples = exampleMessage(speakingChar, getUserName())
 
     for (const example of examples) {
-        currentTokens += await tokenizer.tokenizeChat(example)
+        reservedTokens += await tokenizer.tokenizeChat(example)
     }
 
     let chats: OpenAIChat[] = examples
@@ -723,12 +725,12 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 'editprocess'))
         }
 
-        if (usingPromptTemplate && DBState.db.promptSettings.sendName) {
+        if (promptTemplate && DBState.db.promptSettings.sendName) {
             chat.content = `${speakingChar.name}: ${chat.content}`
             chat.attr = ['nameAdded']
         }
         chats.push(chat)
-        currentTokens += await tokenizer.tokenizeChat(chat)
+        reservedTokens += await tokenizer.tokenizeChat(chat)
     }
 
     console.log('Prepared messages for token calculation:', ms)
@@ -738,7 +740,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         workingChat = triggerResult.chat
         setCurrentChat(workingChat)
         ms = makeMs(workingChat)
-        currentTokens += triggerResult.tokens
+        reservedTokens += triggerResult.tokens
         if (triggerResult.stopSending) {
             chatGenState.generating = false
             return false
@@ -825,7 +827,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         if (
             (chatOwner.type === 'group' && findCharacterbyIdwithCache(msg.saying).chaId !== speakingChar.chaId) ||
             (chatOwner.type === 'group' && DBState.db.groupOtherBotRole === 'assistant') ||
-            (usingPromptTemplate && DBState.db.promptSettings.sendName)
+            (promptTemplate && DBState.db.promptSettings.sendName)
         ) {
             const form = DBState.db.groupTemplate || `<{{char}}\'s Message>\n{{slot}}\n</{{char}}\'s Message>`
             formatedChat = risuChatParser(form, { chara: findCharacterbyIdwithCache(msg.saying).name }).replace('{{slot}}', formatedChat)
@@ -890,12 +892,12 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             delete chat.multimodals
         }
         chats.push(chat)
-        currentTokens += await tokenizer.tokenizeChat(chat)
+        reservedTokens += await tokenizer.tokenizeChat(chat)
         index++
     }
     console.log(JSON.stringify(chats, null, 2))
 
-    const depthPrompts = lorepmt.actives.filter(v => {
+    const depthPrompts = lorePrompt.actives.filter(v => {
         return (v.pos === 'depth' && v.depth > 0) || v.pos === 'reverse_depth'
     })
 
@@ -904,7 +906,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             role: depthPrompt.role,
             content: risuChatParser(depthPrompt.prompt, { chara: speakingChar })
         }
-        currentTokens += await tokenizer.tokenizeChat(chat)
+        reservedTokens += await tokenizer.tokenizeChat(chat)
     }
 
     /* ========================================
@@ -916,7 +918,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         stageTimings.stage2Start = Date.now()
         if (DBState.db.hanuraiEnable) {
             const hn = await hanuraiMemory(chats, {
-                currentTokens,
+                currentTokens: reservedTokens,
                 maxContextTokens,
                 tokenizer
             })
@@ -926,18 +928,18 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             }
 
             chats = hn.chats
-            currentTokens = hn.tokens
+            reservedTokens = hn.tokens
         }
         else if (DBState.db.hypav2) {
             console.log("Current chat's hypaV2 Data: ", workingChat.hypaV2Data)
-            const sp = await hypaMemoryV2(chats, currentTokens, maxContextTokens, workingChat, chatOwner, tokenizer)
+            const sp = await hypaMemoryV2(chats, reservedTokens, maxContextTokens, workingChat, chatOwner, tokenizer)
             if (sp.error) {
                 console.log(sp)
                 displayError(sp.error)
                 return false
             }
             chats = sp.chats
-            currentTokens = sp.currentTokens
+            reservedTokens = sp.currentTokens
             workingChat.hypaV2Data = sp.memory ?? workingChat.hypaV2Data
             DBState.currentChat.hypaV2Data = workingChat.hypaV2Data
 
@@ -946,7 +948,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         }
         else if (DBState.db.hypaV3) {
             console.log("Current chat's hypaV3 Data: ", workingChat.hypaV3Data)
-            const sp = await hypaMemoryV3(chats, currentTokens, maxContextTokens, workingChat, chatOwner, tokenizer)
+            const sp = await hypaMemoryV3(chats, reservedTokens, maxContextTokens, workingChat, chatOwner, tokenizer)
             if (sp.error) {
                 // Save new summary
                 if (sp.memory) {
@@ -958,7 +960,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 return false
             }
             chats = sp.chats
-            currentTokens = sp.currentTokens
+            reservedTokens = sp.currentTokens
             workingChat.hypaV3Data = sp.memory ?? workingChat.hypaV3Data
             DBState.currentChat.hypaV3Data = workingChat.hypaV3Data
 
@@ -966,7 +968,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
             console.log("[Expected to be updated] chat's HypaV3Data: ", workingChat.hypaV3Data)
         }
         else {
-            const sp = await supaMemory(chats, currentTokens, maxContextTokens, workingChat, chatOwner, tokenizer, {
+            const sp = await supaMemory(chats, reservedTokens, maxContextTokens, workingChat, chatOwner, tokenizer, {
                 asHyper: DBState.db.hypaMemory
             })
             if (sp.error) {
@@ -974,7 +976,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 return false
             }
             chats = sp.chats
-            currentTokens = sp.currentTokens
+            reservedTokens = sp.currentTokens
             workingChat.supaMemoryData = sp.memory ?? workingChat.supaMemoryData
             DBState.currentChat.supaMemoryData = workingChat.supaMemoryData
             console.log(workingChat.supaMemoryData)
@@ -985,14 +987,14 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     }
     else {
         stageTimings.stage1Duration = Date.now() - stageTimings.stage1Start
-        while (currentTokens > maxContextTokens) {
+        while (reservedTokens > maxContextTokens) {
             if (chats.length <= 1) {
-                displayError(language.errors.toomuchtoken + "\n\nRequired Tokens: " + currentTokens)
+                displayError(language.errors.toomuchtoken + "\n\nRequired Tokens: " + reservedTokens)
 
                 return false
             }
 
-            currentTokens -= await tokenizer.tokenizeChat(chats[0])
+            reservedTokens -= await tokenizer.tokenizeChat(chats[0])
             chats.splice(0, 1)
         }
         workingChat.lastMemory = chats[0].memo
@@ -1113,7 +1115,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         })
     }
 
-    if (usingPromptTemplate) {
+    if (promptTemplate) {
         const template = promptTemplate
 
         for (const card of template) {
@@ -1169,7 +1171,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                 }
                 case 'postEverything': {
                     pushPrompts(promptParts.postEverything)
-                    if (usingPromptTemplate && DBState.db.promptSettings.postEndInnerFormat) {
+                    if (promptTemplate && DBState.db.promptSettings.postEndInnerFormat) {
                         pushPrompts([{
                             role: 'system',
                             content: DBState.db.promptSettings.postEndInnerFormat
@@ -1250,7 +1252,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
                     }
 
                     let chats = promptParts.chats.slice(start, end)
-                    if (usingPromptTemplate && DBState.db.promptSettings.sendChatAsSystem && (!card.chatAsOriginalOnSystem)) {
+                    if (promptTemplate && DBState.db.promptSettings.sendChatAsSystem && (!card.chatAsOriginalOnSystem)) {
                         chats = systemizeChat(chats)
                     }
                     pushPrompts(chats)

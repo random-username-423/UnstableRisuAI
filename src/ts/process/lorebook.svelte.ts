@@ -73,6 +73,17 @@ export function addLorebookFolder(type:number) {
     }
 }
 
+/**
+ * Scans chat messages for lorebook keyword matches and returns activated lorebook entries.
+ *
+ * Combines character lorebook, chat-local lorebook, and module lorebooks,
+ * then performs keyword matching (regex or plain text) against recent messages.
+ * Supports recursive scanning where activated lorebook content can trigger other entries.
+ *
+ * @returns Object containing:
+ *   - `actives`: Array of activated lorebook prompts with position and role info
+ *   - `matchLog`: Debug log of which keywords matched and where
+ */
 export async function loadLoreBookV3Prompt(){
     const selectedID = get(selectedCharID)
     const char = DBState.db.characters[selectedID]
