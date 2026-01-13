@@ -265,21 +265,6 @@ export async function buildPrompt(
         ]
     }
 
-    // legacy
-    if ((!speakingChar.utilityBot) && (!promptTemplate)) {
-        const mainp = speakingChar.systemPrompt?.replaceAll('{{original}}', DBState.db.mainPrompt) || DBState.db.mainPrompt
-
-        promptParts.main.push(...formatPrompt(risuChatParser(mainp + ((DBState.db.additionalPrompt === '' || (!DBState.db.promptPreprocess)) ? '' : `\n${DBState.db.additionalPrompt}`), { chara: speakingChar })))
-
-        if (DBState.db.jailbreakToggle) {
-            promptParts.jailbreak.push(...formatPrompt(risuChatParser(DBState.db.jailbreak, { chara: speakingChar })))
-        }
-
-        promptParts.globalNote.push(...formatPrompt(risuChatParser(speakingChar.replaceGlobalNote?.replaceAll('{{original}}', DBState.db.globalNote) || DBState.db.globalNote, { chara: speakingChar })))
-    }
-
-
-
     // authorNote
     if (workingChat.note) {
         promptParts.authorNote.push({
@@ -975,13 +960,6 @@ export async function buildPrompt(
 
     const memories: OpenAIChat[] = []
 
-
-
-    if (!promptTemplate) {
-        promptParts.lastChat.push(chats.at(-1))
-        chats.splice(chats.length - 1, 1)
-    }
-
     promptParts.chats = chats.map((v) => {
         if (v.memo !== 'supaMemory' && v.memo !== 'hypaMemory') {
             v.removable = true
@@ -1035,10 +1013,6 @@ export async function buildPrompt(
     //make into one
 
     let formated: OpenAIChat[] = []
-    const formatOrder = $state.snapshot(DBState.db.formatingOrder)
-    if (formatOrder) {
-        formatOrder.push('postEverything')
-    }
 
     //continue chat model
     if (arg.continue && (DBState.db.aiModel.startsWith('claude') || DBState.db.aiModel.startsWith('gpt') || DBState.db.aiModel.startsWith('openrouter') || DBState.db.aiModel.startsWith('reverse_proxy'))) {
@@ -1278,13 +1252,6 @@ export async function buildPrompt(
             }
         }
     }
-    else {
-        for (let i = 0; i < formatOrder.length; i++) {
-            const cha = promptParts[formatOrder[i]]
-            pushPrompts(cha)
-        }
-    }
-
 
     formated = formated.map((v) => {
         v.content = v.content.trim()
