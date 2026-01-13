@@ -216,7 +216,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return false
     }
 
-    const { workingChat: _workingChat, promptInfo, stageTimings, formated, generationId, generationInfo } = promptResult.data
+    const { workingChat: _workingChat, promptInfo, stageTimings, formatted: formatted, generationId, generationInfo } = promptResult.data
     workingChat = _workingChat
 
     const biases: [string, number][] = DBState.db.bias.concat(speakingChar.bias).map((v) => {
@@ -229,12 +229,12 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     chatGenState.stage = 3
     stageTimings.stage3Start = Date.now()
     if (arg.preview) {
-        previewFormated = formated
+        previewFormated = formatted
         return true
     }
 
     const req = await requestChatData({
-        formated: formated,
+        formated: formatted,
         biasString: biases,
         currentChar: speakingChar,
         useStreaming: true,

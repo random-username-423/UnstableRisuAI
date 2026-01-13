@@ -46,7 +46,7 @@ interface Stage1_2Output {
         stage3Duration: number,
         stage4Duration: number
     }
-    formated: OpenAIChat[]
+    formatted: OpenAIChat[]
     generationId: string
     generationInfo: MessageGenerationInfo
 }
@@ -970,7 +970,7 @@ export async function buildPrompt(
     }
 
     // Build final formatted prompt array
-    let formated: OpenAIChat[] = []
+    let formatted: OpenAIChat[] = []
 
     // Continue chat model
     if (arg.continue && (DBState.db.aiModel.startsWith('claude') || DBState.db.aiModel.startsWith('gpt') || DBState.db.aiModel.startsWith('openrouter') || DBState.db.aiModel.startsWith('reverse_proxy'))) {
@@ -986,20 +986,20 @@ export async function buildPrompt(
                 continue
             }
             if (!(DBState.db.aiModel.startsWith('gpt') || DBState.db.aiModel.startsWith('claude') || DBState.db.aiModel === 'openrouter' || DBState.db.aiModel === 'reverse_proxy')) {
-                formated.push(chat)
+                formatted.push(chat)
                 continue
             }
             if (chat.role === 'system') {
-                const lastChat = formated.at(-1)
+                const lastChat = formatted.at(-1)
                 if (lastChat && lastChat.role === 'system' && lastChat.memo === chat.memo && lastChat.name === chat.name) {
                     lastChat.content += '\n\n' + chat.content
                 }
                 else {
-                    formated.push(chat)
+                    formatted.push(chat)
                 }
             }
             else {
-                formated.push(chat)
+                formatted.push(chat)
             }
         }
     }
@@ -1134,14 +1134,14 @@ export async function buildPrompt(
                 pushPrompts(chats)
 
                 if (DBState.db.automaticCachePoint && !hasCachePoint) {
-                    let pointer = formated.length - 1
+                    let pointer = formatted.length - 1
                     let depthRemaining = 3
                     while (pointer >= 0) {
                         if (depthRemaining === 0) {
                             break
                         }
-                        if (formated[pointer].role === 'user') {
-                            formated[pointer].cachePoint = true
+                        if (formatted[pointer].role === 'user') {
+                            formatted[pointer].cachePoint = true
                             depthRemaining--
                         }
                         pointer--
@@ -1165,14 +1165,14 @@ export async function buildPrompt(
                 break
             }
             case 'cache': {
-                let pointer = formated.length - 1
+                let pointer = formatted.length - 1
                 let depthRemaining = card.depth
                 while (pointer >= 0) {
                     if (depthRemaining === 0) {
                         break
                     }
-                    if (formated[pointer].role === card.role || card.role === 'all') {
-                        formated[pointer].cachePoint = true
+                    if (formatted[pointer].role === card.role || card.role === 'all') {
+                        formatted[pointer].cachePoint = true
                         depthRemaining--
                     }
                     pointer--
@@ -1182,7 +1182,7 @@ export async function buildPrompt(
         }
     }
 
-    formated = formated.map((v) => {
+    formatted = formatted.map((v) => {
         v.content = v.content.trim()
         return v
     })
@@ -1197,13 +1197,13 @@ export async function buildPrompt(
     // Character depth prompt insertion
     if (speakingChar.depth_prompt && speakingChar.depth_prompt.prompt && speakingChar.depth_prompt.prompt.length > 0) {
         const depthPrompt = speakingChar.depth_prompt
-        formated.splice(formated.length - depthPrompt.depth, 0, {
+        formatted.splice(formatted.length - depthPrompt.depth, 0, {
             role: 'system',
             content: risuChatParser(depthPrompt.prompt, { chara: speakingChar })
         })
     }
 
-    formated = await runLuaEditTrigger(speakingChar, 'editRequest', formated)
+    formatted = await runLuaEditTrigger(speakingChar, 'editRequest', formatted)
 
     if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat) {
         promptBodyformatedForChatStore = await runLuaEditTrigger(speakingChar, 'editRequest', promptBodyformatedForChatStore)
@@ -1213,23 +1213,23 @@ export async function buildPrompt(
     //token rechecking
     let inputTokens = 0
 
-    for (const chat of formated) {
+    for (const chat of formatted) {
         inputTokens += await tokenizer.tokenizeChat(chat)
     }
 
     if (inputTokens > maxContextTokens) {
         let pointer = 0
         while (inputTokens > maxContextTokens) {
-            if (pointer >= formated.length) {
+            if (pointer >= formatted.length) {
                 return { success: false, error: language.errors.toomuchtoken + "\n\nAt token rechecking. Required Tokens: " + inputTokens }
             }
-            if (formated[pointer].removable) {
-                inputTokens -= await tokenizer.tokenizeChat(formated[pointer])
-                formated[pointer].content = ''
+            if (formatted[pointer].removable) {
+                inputTokens -= await tokenizer.tokenizeChat(formatted[pointer])
+                formatted[pointer].content = ''
             }
             pointer++
         }
-        formated = formated.filter((v) => {
+        formatted = formatted.filter((v) => {
             return v.content !== '' || (v.multimodals && v.multimodals.length > 0)
         })
     }
@@ -1256,5 +1256,5 @@ export async function buildPrompt(
         }
     }
 
-    return { success: true, data: { formated, generationId, generationInfo, promptInfo, stageTimings, workingChat } }
+    return { success: true, data: { formatted, generationId, generationInfo, promptInfo, stageTimings, workingChat } }
 }
