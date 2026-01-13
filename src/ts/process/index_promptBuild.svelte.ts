@@ -239,6 +239,7 @@ export async function buildPrompt(
 
     // Convert legacy formatingOrder to promptTemplate if needed
     if (!promptTemplate && DBState.db.formatingOrder) {
+        console.info('[Migration] Converting legacy formatingOrder to promptTemplate')
         promptTemplate = convertFormatingOrderToTemplate($state.snapshot(DBState.db.formatingOrder))
     }
 

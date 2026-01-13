@@ -197,7 +197,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return true
     }
     else {
-        displayError("Unknown characrer type")
+        displayError("Unknown character type")
         return false
     }
 
@@ -209,9 +209,10 @@ export async function sendChat(chatProcessIndex = -1, arg: {
 
     const promptResult = await buildPrompt(chatOwner, selectedChatPage, speakingChar, arg)
     if (!promptResult.success) {
-        if ('error' in promptResult && promptResult.error) {
-            displayError(promptResult.error)
-        }
+        const errorMsg = ('error' in promptResult && promptResult.error)
+            ? promptResult.error
+            : 'Unknown error during prompt building'
+        displayError(errorMsg)
         return false
     }
 
