@@ -68,6 +68,58 @@ Example: <img src="{{ele::{{chardisplayasset}}::0}}">
 <Image Tag Instruction>
 `
 
+/**
+ * Converts legacy formatingOrder to promptTemplate
+ * This allows removing the legacy code path that handles formatingOrder separately
+ */
+function convertFormatingOrderToTemplate(order: string[]): PromptItem[] {
+    const hasLastChat = order.includes('lastChat')
+
+    const result: PromptItem[] = []
+
+    for (const slot of order) {
+        switch (slot) {
+            case 'main':
+                result.push({ type: 'plain', text: '', role: 'system', type2: 'main' })
+                break
+            case 'jailbreak':
+                result.push({ type: 'jailbreak', text: '', role: 'system', type2: 'normal' })
+                break
+            case 'globalNote':
+                result.push({ type: 'plain', text: '', role: 'system', type2: 'globalNote' })
+                break
+            case 'description':
+                result.push({ type: 'description' })
+                break
+            case 'personaPrompt':
+                result.push({ type: 'persona' })
+                break
+            case 'lorebook':
+                result.push({ type: 'lorebook' })
+                break
+            case 'authorNote':
+                result.push({ type: 'authornote' })
+                break
+            case 'chats':
+                result.push({ type: 'chat', rangeStart: 0, rangeEnd: hasLastChat ? -1 : 'end' })
+                break
+            case 'lastChat':
+                result.push({ type: 'chat', rangeStart: -1, rangeEnd: 'end' })
+                break
+            case 'postEverything':
+                result.push({ type: 'postEverything' })
+                break
+        }
+    }
+
+    // Ensure postEverything is always present
+    if (!result.some(item => item.type === 'postEverything')) {
+        result.push({ type: 'postEverything' })
+    }
+
+    return result
+}
+
 export async function buildPrompt(
     chatOwner: character | groupChat,
     selectedChatPage: number,
@@ -145,6 +197,10 @@ export async function buildPrompt(
 
     let promptTemplate = $state.snapshot(DBState.db.promptTemplate)
 
+    // Convert legacy formatingOrder to promptTemplate if needed
+    if (!promptTemplate && DBState.db.formatingOrder) {
+        promptTemplate = convertFormatingOrderToTemplate($state.snapshot(DBState.db.formatingOrder))
+    }
 
 
     if (promptTemplate) {
