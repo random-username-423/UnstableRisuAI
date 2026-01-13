@@ -36,6 +36,18 @@ export const chatGenState = $state({
 export let previewFormated: OpenAIChat[] = []
 export let previewBody: string = ''
 
+
+export interface StageTimings {
+    stage1Start: number
+    stage2Start: number
+    stage3Start: number
+    stage4Start: number
+    stage1Duration: number
+    stage2Duration: number
+    stage3Duration: number
+    stage4Duration: number
+}
+
 /**
  * Sends a chat message and processes the AI response.
  *
@@ -201,13 +213,23 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return false
     }
 
-
     /* ========================================
      *       STAGE 1,2: PROMPT BUILDING
      * ======================================== */
     let workingChat: Chat
 
-    const promptResult = await buildPrompt(chatOwner, selectedChatPage, speakingChar, arg)
+    const stageTimings = {
+        stage1Start: 0,
+        stage2Start: 0,
+        stage3Start: 0,
+        stage4Start: 0,
+        stage1Duration: 0,
+        stage2Duration: 0,
+        stage3Duration: 0,
+        stage4Duration: 0
+    }
+
+    const promptResult = await buildPrompt(chatOwner, selectedChatPage, speakingChar, stageTimings, arg.continue)
     if (!promptResult.success) {
         const errorMsg = ('error' in promptResult && promptResult.error)
             ? promptResult.error
@@ -216,8 +238,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return false
     }
 
-    const { workingChat: _workingChat, promptInfo, stageTimings, formatted: formatted, inputTokens, outputTokens } = promptResult.data
-    workingChat = _workingChat
+    const { finalPrompt, promptInfo, inputTokens, outputTokens } = promptResult.data
 
     const generationId = v4()
     const generationModel = getGenerationModelString()
@@ -246,12 +267,12 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     chatGenState.stage = 3
     stageTimings.stage3Start = Date.now()
     if (arg.preview) {
-        previewFormated = formatted
+        previewFormated = finalPrompt
         return true
     }
 
     const req = await requestChatData({
-        formated: formatted,
+        formated: finalPrompt,
         biasString: biases,
         currentChar: speakingChar,
         useStreaming: true,

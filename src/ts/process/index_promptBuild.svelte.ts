@@ -12,11 +12,12 @@ import type { Chat, Message, MessagePresetInfo } from "../storage/types/chat"
 import { DBState } from "../stores.svelte"
 import { ChatTokenizer } from "../tokenizer"
 import { parseToggleSyntax } from "../utils/util"
+import { parseChatML } from "../parser/chatML"
 
 import { additionalInformations } from "./embedding/addinfo"
 import { exampleMessage } from "./exampleMessages"
 import { getInlayAsset } from "./files/inlays"
-import { chatGenState } from "./index.svelte"
+import { chatGenState, type StageTimings } from "./index.svelte"
 import { findCharacterbyIdwithCache, formatPrompt, parseChatCBS, systemizeChat } from "./index_util.svelte"
 import { loadLoreBookV3Prompt } from "./lorebook.svelte"
 import { hanuraiMemory } from "./memory/hanuraiMemory"
@@ -30,28 +31,17 @@ import { runLuaEditTrigger } from "./scriptings"
 import { runImageEmbedding } from "./transformers"
 import { runTrigger } from "./triggers"
 import type { OpenAIChat, MultiModal } from "./types"
-import { parseChatML } from "../parser/chatML"
 
-interface Stage1_2Output {
-    workingChat: Chat
-    promptInfo: MessagePresetInfo
-    stageTimings: {
-        stage1Start: number,
-        stage2Start: number,
-        stage3Start: number,
-        stage4Start: number,
-        stage1Duration: number,
-        stage2Duration: number,
-        stage3Duration: number,
-        stage4Duration: number
-    }
-    formatted: OpenAIChat[],
+interface BuildPromptOutput {
+    promptInfo: MessagePresetInfo,
+    stageTimings: StageTimings,
+    finalPrompt: OpenAIChat[],
     inputTokens: number,
     outputTokens: number
 }
 
 type BuildPromptResult =
-    | { success: true; data: Stage1_2Output }
+    | { success: true; data: BuildPromptOutput }
     | { success: false; error?: string }
 
 const DEFAULT_PREBUILT_ASSET_COMMAND = `
@@ -173,23 +163,9 @@ export async function buildPrompt(
     chatOwner: character | groupChat,
     selectedChatPage: number,
     speakingChar: character,
-    arg: {
-        continue?: boolean
-        usedContinueTokens?: number
-        preview?: boolean
-        previewPrompt?: boolean
-    }): Promise<BuildPromptResult> {
-
-    const stageTimings = {
-        stage1Start: 0,
-        stage2Start: 0,
-        stage3Start: 0,
-        stage4Start: 0,
-        stage1Duration: 0,
-        stage2Duration: 0,
-        stage3Duration: 0,
-        stage4Duration: 0
-    }
+    stageTimings: StageTimings,
+    continueResponse?: boolean
+): Promise<BuildPromptResult> {
 
     const perChatAdditonalTokens = DBState.db.aiModel.startsWith('gpt') ? 5 : 3
     const tokenizer = new ChatTokenizer(perChatAdditonalTokens, DBState.db.aiModel.startsWith('gpt') ? 'noName' : 'name')
@@ -964,10 +940,10 @@ export async function buildPrompt(
     }
 
     // Build final formatted prompt array
-    let formatted: OpenAIChat[] = []
+    let finalPrompt: OpenAIChat[] = []
 
     // Continue chat model
-    if (arg.continue && (DBState.db.aiModel.startsWith('claude') || DBState.db.aiModel.startsWith('gpt') || DBState.db.aiModel.startsWith('openrouter') || DBState.db.aiModel.startsWith('reverse_proxy'))) {
+    if (continueResponse && (DBState.db.aiModel.startsWith('claude') || DBState.db.aiModel.startsWith('gpt') || DBState.db.aiModel.startsWith('openrouter') || DBState.db.aiModel.startsWith('reverse_proxy'))) {
         promptParts.postEverything.push({
             role: 'system',
             content: '[Continue the last response]'
@@ -980,20 +956,20 @@ export async function buildPrompt(
                 continue
             }
             if (!(DBState.db.aiModel.startsWith('gpt') || DBState.db.aiModel.startsWith('claude') || DBState.db.aiModel === 'openrouter' || DBState.db.aiModel === 'reverse_proxy')) {
-                formatted.push(chat)
+                finalPrompt.push(chat)
                 continue
             }
             if (chat.role === 'system') {
-                const lastChat = formatted.at(-1)
+                const lastChat = finalPrompt.at(-1)
                 if (lastChat && lastChat.role === 'system' && lastChat.memo === chat.memo && lastChat.name === chat.name) {
                     lastChat.content += '\n\n' + chat.content
                 }
                 else {
-                    formatted.push(chat)
+                    finalPrompt.push(chat)
                 }
             }
             else {
-                formatted.push(chat)
+                finalPrompt.push(chat)
             }
         }
     }
@@ -1128,14 +1104,14 @@ export async function buildPrompt(
                 pushPrompts(chats)
 
                 if (DBState.db.automaticCachePoint && !hasCachePoint) {
-                    let pointer = formatted.length - 1
+                    let pointer = finalPrompt.length - 1
                     let depthRemaining = 3
                     while (pointer >= 0) {
                         if (depthRemaining === 0) {
                             break
                         }
-                        if (formatted[pointer].role === 'user') {
-                            formatted[pointer].cachePoint = true
+                        if (finalPrompt[pointer].role === 'user') {
+                            finalPrompt[pointer].cachePoint = true
                             depthRemaining--
                         }
                         pointer--
@@ -1159,14 +1135,14 @@ export async function buildPrompt(
                 break
             }
             case 'cache': {
-                let pointer = formatted.length - 1
+                let pointer = finalPrompt.length - 1
                 let depthRemaining = card.depth
                 while (pointer >= 0) {
                     if (depthRemaining === 0) {
                         break
                     }
-                    if (formatted[pointer].role === card.role || card.role === 'all') {
-                        formatted[pointer].cachePoint = true
+                    if (finalPrompt[pointer].role === card.role || card.role === 'all') {
+                        finalPrompt[pointer].cachePoint = true
                         depthRemaining--
                     }
                     pointer--
@@ -1176,7 +1152,7 @@ export async function buildPrompt(
         }
     }
 
-    formatted = formatted.map((v) => {
+    finalPrompt = finalPrompt.map((v) => {
         v.content = v.content.trim()
         return v
     })
@@ -1191,13 +1167,13 @@ export async function buildPrompt(
     // Character depth prompt insertion
     if (speakingChar.depth_prompt && speakingChar.depth_prompt.prompt && speakingChar.depth_prompt.prompt.length > 0) {
         const depthPrompt = speakingChar.depth_prompt
-        formatted.splice(formatted.length - depthPrompt.depth, 0, {
+        finalPrompt.splice(finalPrompt.length - depthPrompt.depth, 0, {
             role: 'system',
             content: risuChatParser(depthPrompt.prompt, { chara: speakingChar })
         })
     }
 
-    formatted = await runLuaEditTrigger(speakingChar, 'editRequest', formatted)
+    finalPrompt = await runLuaEditTrigger(speakingChar, 'editRequest', finalPrompt)
 
     if (DBState.db.promptInfoInsideChat && DBState.db.promptTextInfoInsideChat) {
         promptBodyformatedForChatStore = await runLuaEditTrigger(speakingChar, 'editRequest', promptBodyformatedForChatStore)
@@ -1207,23 +1183,23 @@ export async function buildPrompt(
     //token rechecking
     let inputTokens = 0
 
-    for (const chat of formatted) {
+    for (const chat of finalPrompt) {
         inputTokens += await tokenizer.tokenizeChat(chat)
     }
 
     if (inputTokens > maxContextTokens) {
         let pointer = 0
         while (inputTokens > maxContextTokens) {
-            if (pointer >= formatted.length) {
+            if (pointer >= finalPrompt.length) {
                 return { success: false, error: language.errors.toomuchtoken + "\n\nAt token rechecking. Required Tokens: " + inputTokens }
             }
-            if (formatted[pointer].removable) {
-                inputTokens -= await tokenizer.tokenizeChat(formatted[pointer])
-                formatted[pointer].content = ''
+            if (finalPrompt[pointer].removable) {
+                inputTokens -= await tokenizer.tokenizeChat(finalPrompt[pointer])
+                finalPrompt[pointer].content = ''
             }
             pointer++
         }
-        formatted = formatted.filter((v) => {
+        finalPrompt = finalPrompt.filter((v) => {
             return v.content !== '' || (v.multimodals && v.multimodals.length > 0)
         })
     }
@@ -1234,5 +1210,5 @@ export async function buildPrompt(
         outputTokens = maxContextTokens - inputTokens
     }
 
-    return { success: true, data: { formatted, inputTokens, outputTokens, promptInfo, stageTimings, workingChat } }
+    return { success: true, data: { finalPrompt, promptInfo, inputTokens, outputTokens, stageTimings } }
 }
