@@ -544,6 +544,9 @@ export async function buildPrompt(
                         content = (risuChatParser(content, { chara: speakingChar, role: card.role }))
                     }
                     else if (card.type2 === 'main') {
+                        if (speakingChar.systemPrompt) {
+                            content = positionParser(speakingChar.systemPrompt, posType).replaceAll('{{original}}', content)
+                        }
                         content = (risuChatParser(content, { chara: speakingChar, role: card.role }))
                     }
                     else {
@@ -1170,6 +1173,9 @@ export async function buildPrompt(
                         content = (risuChatParser(content, { chara: speakingChar, role: card.role }))
                     }
                     else if (card.type2 === 'main') {
+                        if (speakingChar.systemPrompt) {
+                            content = positionParser(speakingChar.systemPrompt, posType).replaceAll('{{original}}', content)
+                        }
                         content = (risuChatParser(content, { chara: speakingChar, role: card.role }))
                     }
                     else {
