@@ -2,17 +2,17 @@
     import {
     CharEmotion,
     layoutState,
+    sideBarState,
+    viewState,
+    realmState,
     botMakerMode,
     selectedCharID,
     settingsOpen,
-    sideBarState,
-    realmState,
     QuickSettings,
     additionalHamburgerMenu,
-    viewState
   } from "../../ts/stores.svelte";
     import { setDatabase } from "../../ts/storage/database.svelte";
-    import type { folder } from "../../ts/storage/types/database";
+    import { type folder } from "../../ts/storage/types"
     import { DBState } from 'src/ts/stores.svelte';
     import BarIcon from "./BarIcon.svelte";
     import SidebarIndicator from "./SidebarIndicator.svelte";
@@ -23,13 +23,14 @@
     LayoutGridIcon,
     FolderIcon,
     FolderOpenIcon,
-    HouseIcon,
+    HomeIcon,
     WrenchIcon,
-    UserRoundIcon,
+    User2Icon,
   } from "@lucide/svelte";
     import {
-  addCharacter,
+    addCharacter,
     changeChar,
+    getCharacterIndexObject,
     getCharImage,
   } from "../../ts/characters.svelte";
     import CharConfig from "./CharConfig.svelte";
@@ -38,14 +39,13 @@
     import SidebarAvatar from "./SidebarAvatar.svelte";
     import BaseRoundedButton from "../UI/BaseRoundedButton.svelte";
     import { openFilePicker } from "src/ts/utils/util";
-    import { getCharacterIndexObject } from "src/ts/characters.svelte";
     import { v4 } from "uuid";
     import { checkCharOrder, getFileSrc, saveAsset } from "src/ts/globalApi.svelte";
     import { alertInput, alertSelect } from "src/ts/alert.svelte";
     import SideChatList from "./SideChatList.svelte";
     import { ConnectionIsHost, ConnectionOpenStore, RoomIdStore } from "src/ts/sync/multiuser";
-  import { sideBarSize } from "src/ts/gui/guisize";
-  import DevTool from "./DevTool.svelte";
+    import { sideBarSize } from "src/ts/gui/guisize";
+    import DevTool from "./DevTool.svelte";
     import QuickSettingsGui from "../Others/QuickSettingsGUI.svelte";
     import PluginDefinedIcon from "../Others/PluginDefinedIcon.svelte";
   let sideBarMode = $state(0);
@@ -217,6 +217,58 @@
     return -1
   }
 
+  function scrollToActiveCharacter() {
+    const selectedId = $selectedCharID
+    if (selectedId === -1) return
+    
+    const characterId = DBState.db.characters[selectedId]?.chaId
+    if (!characterId) return
+    
+    let targetFolderId: string | null = null
+    
+    for (const item of charImages) {
+      if (item.type === 'folder') {
+        const foundChar = item.folder.find(c => 
+          DBState.db.characters[c.index]?.chaId === characterId
+        )
+        if (foundChar) {
+          targetFolderId = item.id
+          break
+        }
+      }
+    }
+    
+    if (targetFolderId && !openFolders.includes(targetFolderId)) {
+      openFolders.push(targetFolderId)
+      openFolders = openFolders
+    }
+    
+    setTimeout(() => {
+      const activeElement = document.querySelector(`[data-char-id="${characterId}"]`)
+      if (activeElement) {
+        activeElement.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        })
+      }
+    }, 100)
+  }
+
+  $effect(() => {
+    if (typeof window === 'undefined') return
+    
+    const handler = () => {
+      scrollToActiveCharacter()
+    }
+    
+    window.addEventListener('scrollToActiveCharacter', handler)
+    
+    return () => {
+      window.removeEventListener('scrollToActiveCharacter', handler)
+    }
+  })
+
+
   const createFolder = (mainIndex:DragData, targetIndex:DragData) => {
     if(mainIndex.index === targetIndex.index && mainIndex.folder === targetIndex.folder){
       return
@@ -321,7 +373,7 @@
     realmState.expanded = false
   }}
 >
-  <HouseIcon />
+  <HomeIcon />
   <span class="text-xs">{language.home}</span>
 </button>
 <button
@@ -351,7 +403,7 @@
 
   }}
 >
-  <UserRoundIcon />
+  <User2Icon />
   <span class="text-xs">{language.character}</span>
 </button>
 <button
@@ -406,7 +458,7 @@
           selectedCharID.set(-1)
           viewState.playground = 0
           realmState.expanded = false
-        }}><HouseIcon /></BarIcon>
+        }}><HomeIcon /></BarIcon>
       <div class="mt-2"></div>
       <BarIcon
         onClick={() => {
@@ -467,6 +519,7 @@
         <SidebarIndicator
           isActive={char.type === 'normal' && $selectedCharID === char.index && sideBarMode !== 1}
         />
+        <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
         <div
             role="button" tabindex="0"
             onclick={() => {
@@ -483,7 +536,13 @@
             }}
           >
           {#if char.type === 'normal'}
-            <SidebarAvatar src={getCharImage(char.img, "plain")} size="56" rounded={IconRounded} name={char.name} />
+            <SidebarAvatar 
+              src={char.img ? getCharImage(char.img, "plain") : "/none.webp"} 
+              size="56" 
+              rounded={IconRounded} 
+              name={char.name}
+              chaId={DBState.db.characters[char.index]?.chaId}
+            />
           {:else if char.type === "folder"}
             {#key char.color}
             {#key char.name}
@@ -535,7 +594,7 @@
                         'png',
                         'jpg',
                         'webp',
-                      ], { readContent: true })
+                      ],{multiple:false, readContent:true})
 
                       if(!folderImage) {
                         return
@@ -581,7 +640,7 @@
       {#if char.type === 'folder' && openFolders.includes(char.id)}
         {#key char.color}
         <div class="p-1 flex flex-col items-center py-1 mt-1 rounded-lg relative">
-          <div class="absolute top-0 left-1 right-1 border border-selected h-full rounded-lg z-0 {
+          <div class="absolute top-0 left-1 border border-selected w-full h-full rounded-lg z-0 {
             char.color === 'red' ? 'bg-red-700/20' :
             char.color === 'yellow' ? 'bg-yellow-700/20' :
             char.color === 'green' ? 'bg-green-700/20' :
@@ -617,6 +676,7 @@
               <SidebarIndicator
                 isActive={$selectedCharID === char2.index && sideBarMode !== 1}
               />
+              <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
               <div
                   role="button" tabindex="0"
                   onclick={() => {
@@ -632,7 +692,13 @@
                     }
                   }}
                 >
-                <SidebarAvatar src={getCharImage(char2.img, "plain")} size="56" rounded={IconRounded} name={char2.name}/>
+                <SidebarAvatar 
+                  src={char2.img ? getCharImage(char2.img, "plain") : "/none.webp"} 
+                  size="56" 
+                  rounded={IconRounded} 
+                  name={char2.name}
+                  chaId={DBState.db.characters[char2.index]?.chaId}
+                />
               </div>
             </div>
             <div class="h-4 min-h-4 w-14 relative z-20" role="listitem" ondragover={(e) => {
@@ -708,7 +774,7 @@
   onanimationend={() => {
     if(sideBarState.closing){
       sideBarState.closing = false
-      sideBarState.open = false;
+      sideBarState.open = false
     }
   }}
 >
@@ -729,8 +795,8 @@
         <h1 class="text-xl">Welcome to RisuAI!</h1>
         <span class="text-xs text-textcolor2">Select a bot to start chatting</span>
       </div>
-    {:else if DBState.currentChar?.chaId === '§playground'}
-      <SideChatList bind:chara={ DBState.currentChar} />
+    {:else if DBState.db.characters[$selectedCharID]?.chaId === '§playground'}
+      <SideChatList bind:chara={ DBState.db.characters[$selectedCharID]} />
     {:else if $ConnectionOpenStore}
       <div class="flex flex-col">
         <h1 class="text-xl">{language.connectionOpen}</h1>
@@ -772,7 +838,7 @@
       {:else if $botMakerMode}
         <CharConfig />
       {:else}
-        <SideChatList bind:chara={ DBState.currentChar} />
+        <SideChatList bind:chara={ DBState.db.characters[$selectedCharID]} />
       {/if}
     {/if}
   {/if}

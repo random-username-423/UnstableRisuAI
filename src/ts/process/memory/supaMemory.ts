@@ -9,8 +9,8 @@ import { HypaProcesser } from "./hypamemory";
 import { stringlizeChat } from "../stringlize";
 import { globalFetch } from "src/ts/fetch";
 import { runSummarizer } from "../transformers";
+import { parseChatML } from "src/ts/parser/chatML";
 import { getUserName } from "src/ts/persona";
-import { parseChatML } from "src/ts/parser.svelte";
 
 export async function supaMemory(
         chats:OpenAIChat[],

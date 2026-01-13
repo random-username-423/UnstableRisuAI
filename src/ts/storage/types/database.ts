@@ -287,6 +287,7 @@ export interface Database extends UISettings, LLMParametersSettings, ImageGenera
     enableBookmark?: boolean
     autoScrollToNewMessage?: boolean
     alwaysScrollToNewMessage?: boolean
+    enableScrollToActiveChar: boolean
     newMessageButtonStyle?: string
     pluginDevelopMode?: boolean
     echoMessage?: string
@@ -521,6 +522,7 @@ export interface SeparateParameters {
     outputImageModal?: boolean
     verbosity?: number
 }
+
 export interface PromptDiffPrefs {
     diffStyle: 'line' | 'intraline'
     formatStyle: 'raw' | 'card'

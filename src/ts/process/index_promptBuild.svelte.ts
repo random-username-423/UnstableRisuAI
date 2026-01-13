@@ -4,7 +4,7 @@ import { language } from "src/lang"
 
 import { readImage } from "../globalApi.svelte"
 import { getModelInfo, LLMFlags } from "../model/modellist"
-import { parseChatML, risuChatParser } from "../parser.svelte"
+import { risuChatParser } from "../parser.svelte"
 import { getPersonaPrompt, getUserName } from "../persona"
 import { setCurrentChat } from "../storage/database.svelte"
 import type { character, groupChat } from "../storage/types/character"
@@ -31,6 +31,7 @@ import { runLuaEditTrigger } from "./scriptings"
 import { runImageEmbedding } from "./transformers"
 import { runTrigger } from "./triggers"
 import type { OpenAIChat, MultiModal } from "./types"
+import { parseChatML } from "../parser/chatML"
 
 interface Stage1_2Output {
     workingChat: Chat

@@ -13,7 +13,7 @@ import { open } from '@tauri-apps/plugin-shell'
 import { setDatabase, getDatabase, appVer, getCurrentCharacter } from "./storage/database.svelte";
 import { type Database } from './storage/types/database';
 import { selectedCharID, DBState, selIdState, ReloadGUIPointer } from "./stores.svelte";
-import { alertConfirm, alertNormal, alertNormalWait, alertSelect } from "./alert.svelte";
+import { alertConfirm, alertError, alertNormal, alertNormalWait, alertSelect } from "./alert.svelte";
 import { syncDrive } from "./drive/drive.svelte";
 import { hasher } from "./parser.svelte";
 import { hubURL } from "./characterCards.svelte";
@@ -449,7 +449,7 @@ export async function saveDb() {
         } catch (error) {
             savetrys += 1
             if (savetrys > 4) {
-                await alertConfirm(`DBSaveError: ${error.message ?? error}. report to the developer.`)
+                alertError(error)
             }
             else {
                 console.error(error)

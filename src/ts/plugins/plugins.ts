@@ -549,7 +549,7 @@ export const getV2PluginAPIs = () => {
             }
         },
         getChar: () => {
-            return getCurrentCharacter()
+            return getCurrentCharacter({ snapshot: true })
         },
         setChar: (char: any) => {
             const db = getDatabase()
@@ -742,7 +742,7 @@ export const getV2PluginAPIs = () => {
         },
         pluginStorage: {
             getItem: (key: string) => {
-                const db = getDatabase();
+                const db = getDatabase({ snapshot: true });
                 db.pluginCustomStorage ??= {}
                 return db.pluginCustomStorage[key] || null;
             },
