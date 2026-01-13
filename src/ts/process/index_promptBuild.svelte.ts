@@ -739,7 +739,7 @@ export async function buildPrompt(
             (chatOwner.type === 'group' && DBState.db.groupOtherBotRole === 'assistant') ||
             (DBState.db.promptSettings.sendName)
         ) {
-            const form = DBState.db.groupTemplate || `<{{char}}\'s Message>\n{{slot}}\n</{{char}}\'s Message>`
+            const form = DBState.db.groupTemplate || `<{{char}}'s Message>\n{{slot}}\n</{{char}}'s Message>`
             formatedChat = risuChatParser(form, { chara: findCharacterbyIdwithCache(msg.saying).name }).replace('{{slot}}', formatedChat)
             switch (DBState.db.groupOtherBotRole) {
                 case 'user':
@@ -855,9 +855,7 @@ export async function buildPrompt(
             chats = sp.chats
             reservedTokens = sp.currentTokens
             workingChat.hypaV2Data = sp.memory ?? workingChat.hypaV2Data
-            DBState.currentChat.hypaV2Data = workingChat.hypaV2Data
 
-            workingChat = DBState.currentChat
             console.log("[Expected to be updated] chat's HypaV2Data: ", workingChat.hypaV2Data)
         }
         else if (DBState.db.hypaV3) {
@@ -867,7 +865,6 @@ export async function buildPrompt(
                 // Save new summary
                 if (sp.memory) {
                     workingChat.hypaV3Data = sp.memory
-                    DBState.currentChat.hypaV3Data = workingChat.hypaV3Data
                 }
                 console.log(sp)
                 return { success: false, error: sp.error }
@@ -875,9 +872,7 @@ export async function buildPrompt(
             chats = sp.chats
             reservedTokens = sp.currentTokens
             workingChat.hypaV3Data = sp.memory ?? workingChat.hypaV3Data
-            DBState.currentChat.hypaV3Data = workingChat.hypaV3Data
 
-            workingChat = DBState.currentChat
             console.log("[Expected to be updated] chat's HypaV3Data: ", workingChat.hypaV3Data)
         }
         else {
@@ -890,7 +885,7 @@ export async function buildPrompt(
             chats = sp.chats
             reservedTokens = sp.currentTokens
             workingChat.supaMemoryData = sp.memory ?? workingChat.supaMemoryData
-            DBState.currentChat.supaMemoryData = workingChat.supaMemoryData
+
             console.log(workingChat.supaMemoryData)
             workingChat.lastMemory = sp.lastId ?? workingChat.lastMemory
         }
