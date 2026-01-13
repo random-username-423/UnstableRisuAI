@@ -77,17 +77,31 @@ function convertFormatingOrderToTemplate(order: string[]): PromptItem[] {
 
     const result: PromptItem[] = []
 
+    // Helper to convert formatPrompt output to PromptItem cards
+    function pushFormattedPrompts(text: string, type: 'plain' | 'jailbreak', type2: 'main' | 'globalNote' | 'normal') {
+        const parsed = formatPrompt(text)
+        for (const chat of parsed) {
+            // Convert 'assistant' to 'bot' for PromptItem role
+            const role = chat.role === 'assistant' ? 'bot' : chat.role as 'user' | 'system'
+            result.push({ type, text: chat.content, role, type2 })
+        }
+    }
+
     for (const slot of order) {
         switch (slot) {
-            case 'main':
-                result.push({ type: 'plain', text: '', role: 'system', type2: 'main' })
+            case 'main': {
+                const mainText = DBState.db.mainPrompt + ((DBState.db.additionalPrompt === '' || (!DBState.db.promptPreprocess)) ? '' : `\n${DBState.db.additionalPrompt}`)
+                pushFormattedPrompts(mainText, 'plain', 'main')
                 break
-            case 'jailbreak':
-                result.push({ type: 'jailbreak', text: '', role: 'system', type2: 'normal' })
+            }
+            case 'jailbreak': {
+                pushFormattedPrompts(DBState.db.jailbreak, 'jailbreak', 'normal')
                 break
-            case 'globalNote':
-                result.push({ type: 'plain', text: '', role: 'system', type2: 'globalNote' })
+            }
+            case 'globalNote': {
+                pushFormattedPrompts(DBState.db.globalNote, 'plain', 'globalNote')
                 break
+            }
             case 'description':
                 result.push({ type: 'description' })
                 break
