@@ -1,6 +1,6 @@
 import { get } from "svelte/store"
 import { changeToPreset } from '../storage/preset-manager'
-import { type Chat, type MessageGenerationInfo } from '../storage/types/chat'
+import { type MessageGenerationInfo } from '../storage/types/chat'
 import { type character } from '../storage/types/character'
 import { DBState } from '../stores.svelte'
 import { CharEmotion } from "../stores.svelte"

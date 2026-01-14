@@ -34,7 +34,6 @@ import type { OpenAIChat, MultiModal } from "./types"
 
 interface BuildPromptOutput {
     promptInfo: MessagePresetInfo,
-    stageTimings: StageTimings,
     finalPrompt: OpenAIChat[],
     inputTokens: number,
     outputTokens: number
@@ -43,6 +42,8 @@ interface BuildPromptOutput {
 type BuildPromptResult =
     | { success: true; data: BuildPromptOutput }
     | { success: false; error?: string }
+
+type PromptSection = 'main' | 'jailbreak' | 'chats' | 'lorebook' | 'globalNote' | 'authorNote' | 'lastChat' | 'description' | 'postEverything' | 'personaPrompt'
 
 const DEFAULT_PREBUILT_ASSET_COMMAND = `
 <Image Tag Instruction>Insert HTML image tags between paragraphs based on context.
@@ -197,7 +198,7 @@ export async function buildPrompt(
      * ======================================== */
     chatGenState.stage = 1
     stageTimings.stage1Start = Date.now()
-    const promptParts = {
+    const promptParts: Record<PromptSection, OpenAIChat[]> = {
         'main': ([] as OpenAIChat[]),
         'jailbreak': ([] as OpenAIChat[]),
         'chats': ([] as OpenAIChat[]),
@@ -1210,5 +1211,5 @@ export async function buildPrompt(
         outputTokens = maxContextTokens - inputTokens
     }
 
-    return { success: true, data: { finalPrompt, promptInfo, inputTokens, outputTokens, stageTimings } }
+    return { success: true, data: { finalPrompt, promptInfo, inputTokens, outputTokens } }
 }
