@@ -1,6 +1,6 @@
 import { get } from "svelte/store"
 import { changeToPreset } from '../storage/preset-manager'
-import { type Chat } from '../storage/types/chat'
+import { type MessageGenerationInfo } from '../storage/types/chat'
 import { type character } from '../storage/types/character'
 import { DBState } from '../stores.svelte'
 import { CharEmotion } from "../stores.svelte"
@@ -35,6 +35,18 @@ export const chatGenState = $state({
 
 export let previewFormated: OpenAIChat[] = []
 export let previewBody: string = ''
+
+
+export interface StageTimings {
+    stage1Start: number
+    stage2Start: number
+    stage3Start: number
+    stage4Start: number
+    stage1Duration: number
+    stage2Duration: number
+    stage3Duration: number
+    stage4Duration: number
+}
 
 /**
  * Sends a chat message and processes the AI response.
@@ -201,13 +213,21 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return false
     }
 
-
     /* ========================================
      *       STAGE 1,2: PROMPT BUILDING
      * ======================================== */
-    let workingChat: Chat
+    const stageTimings = {
+        stage1Start: 0,
+        stage2Start: 0,
+        stage3Start: 0,
+        stage4Start: 0,
+        stage1Duration: 0,
+        stage2Duration: 0,
+        stage3Duration: 0,
+        stage4Duration: 0
+    }
 
-    const promptResult = await buildPrompt(chatOwner, selectedChatPage, speakingChar, arg)
+    const promptResult = await buildPrompt(chatOwner, selectedChatPage, speakingChar, stageTimings, arg.continue)
     if (!promptResult.success) {
         const errorMsg = ('error' in promptResult && promptResult.error)
             ? promptResult.error
@@ -216,8 +236,28 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         return false
     }
 
-    const { workingChat: _workingChat, promptInfo, stageTimings, formated, biases, generationId, generationInfo } = promptResult.data
-    workingChat = _workingChat
+    const { finalPrompt, promptInfo, inputTokens, outputTokens } = promptResult.data
+
+    const generationId = v4()
+    const generationModel = getGenerationModelString()
+
+    const generationInfo: MessageGenerationInfo = {
+        model: generationModel,
+        generationId: generationId,
+        inputTokens: inputTokens,
+        outputTokens: outputTokens,
+        maxContext: DBState.db.maxContext,
+        stageTiming: {
+            stage1: stageTimings.stage1Duration,
+            stage2: stageTimings.stage2Duration,
+            stage3: 0,
+            stage4: 0
+        }
+    }
+
+    const biases: [string, number][] = DBState.db.bias.concat(speakingChar.bias).map((v) => {
+        return [risuChatParser(v[0].replaceAll("\\n", "\n").replaceAll("\\r", "\r").replaceAll("\\\\", "\\"), { chara: speakingChar }), v[1]]
+    })
 
     /* ========================================
      *       STAGE 3: AI REQUEST
@@ -225,12 +265,12 @@ export async function sendChat(chatProcessIndex = -1, arg: {
     chatGenState.stage = 3
     stageTimings.stage3Start = Date.now()
     if (arg.preview) {
-        previewFormated = formated
+        previewFormated = finalPrompt
         return true
     }
 
     const req = await requestChatData({
-        formated: formated,
+        formated: finalPrompt,
         biasString: biases,
         currentChar: speakingChar,
         useStreaming: true,
@@ -314,7 +354,8 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         addRerolls(generationId, Object.values(lastResponseChunk))
 
         chatOwner.chats[selectedChatPage] = parseChatCBS(DBState.currentChat, speakingChar)
-        workingChat = DBState.currentChat
+        let workingChat = DBState.currentChat
+
         const triggerResult = await runTrigger(speakingChar, 'output', { chat: workingChat })
         if (triggerResult && triggerResult.chat) {
             workingChat = triggerResult.chat
@@ -402,7 +443,7 @@ export async function sendChat(chatProcessIndex = -1, arg: {
         }
 
         chatOwner.chats[selectedChatPage] = parseChatCBS(DBState.currentChat, speakingChar)
-        workingChat = DBState.currentChat
+        const workingChat = DBState.currentChat
 
         const triggerResult = await runTrigger(speakingChar, 'output', { chat: workingChat })
         if (triggerResult && triggerResult.chat) {
