@@ -386,8 +386,13 @@ export type sidebarToggle =
     | {
         key?:string,
         value?:string,
+        type:'caption',
+    }
+    | {
+        key?:string,
+        value?:string,
         type:'divider',
-    } 
+    }
     | {
         key:string,
         value:string,
@@ -397,7 +402,7 @@ export type sidebarToggle =
     | {
         key:string,
         value:string,
-        type:'text'|undefined,
+        type:'text'|'textarea'|undefined,
         options?:string[]
     }
 
@@ -425,11 +430,17 @@ export function parseToggleSyntax(template:string){
                     type,
                     children: []
                 })
+            } else if(type === 'caption' && value){
+                keyValue.push({
+                    key,
+                    value,
+                    type
+                })
             } else if((key && value)){
                 keyValue.push({
                     key,
                     value,
-                    type: type === 'select' || type === 'text' ? type : undefined,
+                    type: type === 'select' || type === 'text' || type === 'textarea' ? type : undefined,
                     options: option?.split(',') ?? []
                 })
             }
