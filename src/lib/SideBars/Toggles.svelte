@@ -94,7 +94,7 @@
                 <TextInput className="w-32" bind:value={DBState.db.globalChatVariables[`toggle_${toggle.key}`]} />
             </div>
         {:else if toggle.type === 'textarea'}
-            <div class="w-full flex gap-2 mt-2 items-start" class:justify-end={$MobileGUI}>
+            <div class="w-full flex gap-2 mt-2 items-start" class:justify-end={layoutState.betaMobile.enabled}>
                 <span class="mt-1.5">{toggle.value}</span>
                 <TextAreaInput className="w-32" height='20' bind:value={DBState.db.globalChatVariables[`toggle_${toggle.key}`]} />
             </div>

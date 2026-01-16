@@ -159,7 +159,8 @@ async function runLocalModelOld(prompt:string){
 }
 
 let initPython = false
-export async function installPython(){
+
+async function installPython(){
     if(initPython){
         return
     }
@@ -224,7 +225,7 @@ export async function installPython(){
  * @returns The authentication key string
  * @throws When the Python server connection fails or the key file cannot be read
  */
-export async function getLocalKey(retry = true) {
+async function getLocalKey(retry = true) {
     try {
         const ft = await fetch("http://localhost:10026/")
         const keyJson: { dir: string } = await ft.json()
@@ -249,44 +250,6 @@ export async function getLocalKey(retry = true) {
             throw new Error(`Error when getting local key: ${message}`)
         }
     }
-}
-
-export async function runGGUFModel(arg:{
-    prompt: string
-    modelPath: string
-    temperature: number
-    top_p: number
-    top_k: number
-    maxTokens: number
-    presencePenalty: number
-    frequencyPenalty: number
-    repeatPenalty: number
-    maxContext: number
-    stop: string[]
-}) {
-    const key = await getLocalKey()
-    const b = await fetch("http://localhost:10026/llamacpp", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "x-risu-auth": key
-        },
-        body: JSON.stringify({
-            prompt: arg.prompt,
-            model_path: arg.modelPath,
-            temperature: arg.temperature,
-            top_p: arg.top_p,
-            top_k: arg.top_k,
-            max_tokens: arg.maxTokens,
-            presence_penalty: arg.presencePenalty,
-            frequency_penalty: arg.frequencyPenalty,
-            repeat_penalty: arg.repeatPenalty,
-            n_ctx: arg.maxContext,
-            stop: arg.stop
-        })
-    })
-
-    return b.body
 }
 
 export async function tokenizeGGUFModel(prompt:string):Promise<number[]> {

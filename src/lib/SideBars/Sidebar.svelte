@@ -35,7 +35,7 @@
   } from "../../ts/characters.svelte";
     import CharConfig from "./CharConfig.svelte";
     import { language } from "../../lang";
-    import { isEqual } from "lodash";
+    import isEqual from "lodash/isEqual";
     import SidebarAvatar from "./SidebarAvatar.svelte";
     import BaseRoundedButton from "../UI/BaseRoundedButton.svelte";
     import { openFilePicker } from "src/ts/utils/util";

@@ -9,7 +9,7 @@ import { CharEmotion } from "../stores.svelte"
 import type { OpenAIChat } from "./types"
 import { processZip } from "./processzip"
 import { keiServerURL } from "../kei/kei"
-import { random } from "lodash"
+import random from "lodash/random"
 
 export async function stableDiff(currentChar:character,prompt:string){
     const db = getDatabase()

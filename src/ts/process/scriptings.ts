@@ -1,5 +1,6 @@
 import { asBuffer } from 'src/ts/utils/util';
-import { getChatVar, hasher, setChatVar, getGlobalChatVar, type simpleCharacterArgument, risuChatParser } from "../parser.svelte";
+import { getChatVar, getGlobalChatVar, setChatVar } from "../parser/chatVar.svelte";
+import { hasher, type simpleCharacterArgument, risuChatParser } from "../parser.svelte";
 import { LuaEngine, LuaFactory } from "wasmoon";
 import { getCurrentCharacter, getCurrentChat, getDatabase, setDatabase } from "../storage/database.svelte";
 import { type Chat } from '../storage/types/chat';

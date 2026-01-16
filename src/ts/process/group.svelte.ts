@@ -1,4 +1,4 @@
-import { shuffle } from "lodash";
+import shuffle from "lodash/shuffle";
 import { findCharacterbyId } from "../characters.svelte";
 import { alertConfirm, alertError, alertSelectChar } from "../alert.svelte";
 import { language } from "src/lang";
