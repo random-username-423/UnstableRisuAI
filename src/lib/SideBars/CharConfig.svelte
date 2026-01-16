@@ -773,7 +773,7 @@
         </div>
 
         <span class="text-textcolor">{language.exampleMessage} <Help key="exampleMessage"/></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.exampleMessage}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.exampleMessage} class="my-2 h-[200px]" />
 
         <span class="text-textcolor">{language.creatorNotes} <Help key="creatorQuotes"/></span>
         <MultiLangInput bind:value={DBState.currentChar.creatorNotes} className="my-2" onInput={() => {
@@ -781,13 +781,13 @@
         }}></MultiLangInput>
 
         <span class="text-textcolor">{language.systemPrompt} <Help key="systemPrompt"/></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.systemPrompt}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.systemPrompt} class="my-2 h-[200px]" />
 
         <span class="text-textcolor">{language.replaceGlobalNote} <Help key="replaceGlobalNote"/></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.replaceGlobalNote}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.replaceGlobalNote} class="my-2 h-[200px]" />
 
         <span class="text-textcolor mt-2">{language.additionalText} <Help key="additionalText" /></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.additionalText}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.additionalText} class="my-2 h-[200px]" />
 
         {#if DBState.db.showUnrecommended || DBState.currentChar.personality.length > 3}
             <span class="text-textcolor">{language.personality} <Help key="personality" unrecommended/></span>
@@ -845,7 +845,7 @@
                 {#each DBState.currentChar.alternateGreetings as bias, i}
                     <tr>
                         <td class="font-medium truncate">
-                            <TextAreaInput highlight bind:value={DBState.currentChar.alternateGreetings[i]} placeholder="..." fullwidth />
+                            <CodeMirrorEditor bind:value={DBState.currentChar.alternateGreetings[i]} class="h-[150px]" />
                         </td>
                         <th class="font-medium cursor-pointer w-8">
                             <div class="flex flex-col items-center">

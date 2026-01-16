@@ -370,6 +370,8 @@
     })
 
     const createEditor = () => {
+        if (!editorEl) return
+
         if (view) {
             view.destroy()
         }
@@ -389,7 +391,7 @@
 
         view = new EditorView({
             state: EditorState.create({
-                doc: value,
+                doc: value ?? '',
                 extensions,
             }),
             parent: editorEl,
@@ -399,7 +401,7 @@
     // Update editor when value changes externally
     $effect(() => {
         // Track value explicitly
-        const newValue = value
+        const newValue = value ?? ''
 
         if (view && !isInternalUpdate) {
             const currentValue = view.state.doc.toString()
@@ -424,5 +426,5 @@
 
 <div
     bind:this={editorEl}
-    class="w-full border border-selected rounded-md overflow-hidden {className}"
+    class="w-full border border-selected rounded-md overflow-hidden min-h-40 {className}"
 ></div>
