@@ -7,6 +7,7 @@
     import { EditorState, RangeSetBuilder } from '@codemirror/state'
     import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
     import { tags } from '@lezer/highlight'
+    import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete'
 
     interface Props {
         value?: string
@@ -74,6 +75,64 @@
         return results
     }
 
+    // CBS autocompletion
+    const cbsCompletions = [
+        // Basic variables
+        { label: 'char', detail: 'Character name' },
+        { label: 'user', detail: 'User name' },
+        { label: 'persona', detail: 'Persona description' },
+        { label: 'main_char', detail: 'Main character name' },
+        // Control flow
+        { label: '#if ', detail: 'Conditional block start' },
+        { label: '/if', detail: 'Conditional block end' },
+        { label: '#each ', detail: 'Loop block start' },
+        { label: '/each', detail: 'Loop block end' },
+        { label: 'else', detail: 'Else clause' },
+        // Variables
+        { label: 'getvar::', detail: 'Get variable value' },
+        { label: 'setvar::', detail: 'Set variable value' },
+        { label: 'addvar::', detail: 'Add to variable' },
+        { label: 'getglobalvar::', detail: 'Get global variable' },
+        { label: 'setglobalvar::', detail: 'Set global variable' },
+        // Utility
+        { label: 'random::', detail: 'Random number' },
+        { label: 'pick::', detail: 'Pick random item' },
+        { label: 'roll::', detail: 'Dice roll' },
+        { label: 'idle::', detail: 'Idle time check' },
+        { label: 'equal::', detail: 'Equality check' },
+        { label: 'greater::', detail: 'Greater than check' },
+        { label: 'less::', detail: 'Less than check' },
+        // Special
+        { label: 'none', detail: 'No output' },
+        { label: 'newline', detail: 'Line break' },
+        { label: 'time', detail: 'Current time' },
+        { label: 'date', detail: 'Current date' },
+    ]
+
+    function cbsCompletionSource(context: CompletionContext): CompletionResult | null {
+        // Find {{ before cursor
+        const line = context.state.doc.lineAt(context.pos)
+        const textBefore = line.text.slice(0, context.pos - line.from)
+
+        // Check for {{ pattern
+        const match = textBefore.match(/\{\{([a-zA-Z_#\/]*)$/)
+        if (!match) return null
+
+        const from = context.pos - match[1].length
+        const typed = match[1].toLowerCase()
+
+        return {
+            from,
+            options: cbsCompletions
+                .filter(c => c.label.toLowerCase().startsWith(typed))
+                .map(c => ({
+                    label: c.label,
+                    detail: c.detail,
+                    type: c.label.startsWith('#') || c.label.startsWith('/') ? 'keyword' : 'variable'
+                }))
+        }
+    }
+
     // CBS ViewPlugin
     const cbsHighlighter = ViewPlugin.fromClass(
         class {
@@ -120,9 +179,14 @@
             color: 'var(--risu-textcolor)',
             fontSize: '14px',
             borderRadius: '0.375rem',
+            height: '100%',
         },
         '&.cm-focused': {
             outline: 'none',
+        },
+        '.cm-scroller': {
+            overflow: 'auto',
+            height: '100%',
         },
         '.cm-content': {
             caretColor: 'var(--risu-textcolor)',
@@ -139,10 +203,42 @@
             display: 'none',
         },
         '.cm-activeLine': {
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            backgroundColor: 'transparent',
         },
         '.cm-placeholder': {
             color: 'var(--risu-textcolor2)',
+        },
+        // Autocomplete dropdown styles
+        '.cm-tooltip': {
+            backgroundColor: 'var(--risu-bgcolor)',
+            border: '1px solid var(--risu-borderc)',
+            borderRadius: '0.375rem',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+        },
+        '.cm-tooltip-autocomplete': {
+            '& > ul': {
+                fontFamily: '"Consolas", "Monaco", "Courier New", monospace',
+                fontSize: '13px',
+            },
+            '& > ul > li': {
+                padding: '4px 8px',
+                color: 'var(--risu-textcolor)',
+            },
+            '& > ul > li[aria-selected]': {
+                backgroundColor: 'var(--risu-selected)',
+                color: 'var(--risu-textcolor)',
+            },
+        },
+        '.cm-completionLabel': {
+            color: 'var(--risu-textcolor)',
+        },
+        '.cm-completionDetail': {
+            color: 'var(--risu-textcolor2)',
+            marginLeft: '8px',
+            fontStyle: 'italic',
+        },
+        '.cm-completionIcon': {
+            opacity: 0.7,
         },
         // CBS styles
         '.cm-cbs-bracket-0': { color: '#8be9fd', fontWeight: 'bold' },
@@ -159,9 +255,9 @@
 
     // Highlight style
     const customHighlight = HighlightStyle.define([
-        { tag: tags.heading1, color: '#ff79c6', fontWeight: 'bold', fontSize: '1.4em' },
-        { tag: tags.heading2, color: '#ff79c6', fontWeight: 'bold', fontSize: '1.2em' },
-        { tag: tags.heading3, color: '#ff79c6', fontWeight: 'bold' },
+        { tag: tags.heading1, color: '#ffd700', fontWeight: 'bold', fontSize: '1.4em' },
+        { tag: tags.heading2, color: '#ffd700', fontWeight: 'bold', fontSize: '1.2em' },
+        { tag: tags.heading3, color: '#ffd700', fontWeight: 'bold' },
         { tag: tags.emphasis, color: '#f1fa8c', fontStyle: 'italic' },
         { tag: tags.strong, color: '#ffb86c', fontWeight: 'bold' },
         { tag: tags.link, color: '#8be9fd', textDecoration: 'underline' },
@@ -204,6 +300,10 @@
 
         const extensions = [
             basicSetup,
+            autocompletion({
+                override: [cbsCompletionSource],
+                activateOnTyping: true,
+            }),
             customTheme,
             syntaxHighlighting(customHighlight),
             getLangExtension(),
@@ -224,11 +324,14 @@
 
     // Update editor when value changes externally
     $effect(() => {
+        // Track value explicitly
+        const newValue = value
+
         if (view && !isInternalUpdate) {
             const currentValue = view.state.doc.toString()
-            if (value !== currentValue) {
+            if (newValue !== currentValue) {
                 view.dispatch({
-                    changes: { from: 0, to: currentValue.length, insert: value }
+                    changes: { from: 0, to: currentValue.length, insert: newValue }
                 })
             }
         }

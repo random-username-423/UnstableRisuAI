@@ -34,6 +34,9 @@ importers:
       '@capacitor/filesystem':
         specifier: ^5.2.2
         version: 5.2.2(@capacitor/core@5.7.8)
+      '@codemirror/autocomplete':
+        specifier: ^6.20.0
+        version: 6.20.0
       '@codemirror/lang-html':
         specifier: ^6.4.11
         version: 6.4.11

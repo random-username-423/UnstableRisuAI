@@ -46,6 +46,7 @@
     import { exportRegex, importRegex } from "src/ts/process/scripts";
     import Toggles from "./Toggles.svelte";
     import TTSSettings from "./TTS/TTSSettings.svelte"
+    import CodeMirrorEditor from "../UI/GUI/CodeMirrorEditor.svelte"
 
     // ===== Local State =====
     let iconRemoveMode = $state(false)       // Icon delete mode toggle
@@ -238,10 +239,10 @@
     {#if DBState.currentChar.type !== 'group' && licensed !== 'private'}
         <TextInput size="xl" marginBottom placeholder="Character Name" bind:value={DBState.currentChar.name} />
         <span class="text-textcolor">{language.description} <Help key="charDesc"/></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={(DBState.currentChar as character).desc}></TextAreaInput>
+        <CodeMirrorEditor bind:value={(DBState.currentChar as character).desc} class="my-2 h-[200px]" />
         <span class="text-textcolor2 mb-6 text-sm">{tokens.desc} {language.tokens}</span>
         <span class="text-textcolor">{language.firstMessage} <Help key="charFirstMessage"/></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.firstMessage}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.firstMessage} class="my-2 h-[200px]" />
         <span class="text-textcolor2 mb-6 text-sm">{tokens.firstMsg} {language.tokens}</span>
 
     {:else if licensed !== 'private' && DBState.currentChar.type === 'group'}
@@ -296,13 +297,7 @@
 
     {/if}
     <span class="text-textcolor">{language.authorNote} <Help key="chatNote"/></span>
-    <TextAreaInput
-        margin="both"
-        autocomplete="off"
-        bind:value={DBState.currentChat.note}
-        highlight
-        placeholder={getAuthorNoteDefaultText()}
-    />
+    <CodeMirrorEditor bind:value={DBState.currentChat.note} class="my-2 h-[120px]" />
     <span class="text-textcolor2 mb-6 text-sm">{tokens.localNote} {language.tokens}</span>
 
     {#if !layoutState.betaMobile.enabled}
