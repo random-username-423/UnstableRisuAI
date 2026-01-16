@@ -99,6 +99,10 @@
     // Component instance reference
     let chatsInstance: any = $state() // Reference to Chats component for scroll control
 
+    // Scroll container references
+    let outerScrollContainer: HTMLDivElement
+    let innerScrollContainer: HTMLDivElement
+
     // Bind props with defaults
     let { openModuleList = $bindable(false), openChatList = $bindable(false), customStyle = "" }: Props = $props()
 
@@ -129,7 +133,7 @@
      * Check if user is scrolled to bottom of chat
      */
     function checkIfAtBottom(): boolean {
-        const scrollContainer = document.querySelector('.default-chat-screen')
+        const scrollContainer = DBState.db.fixedChatTextarea ? innerScrollContainer : outerScrollContainer
         if (!scrollContainer) return true
         const lastEl = chatsInstance?.getLastMessageElement()
         if (!lastEl) return true
@@ -590,11 +594,13 @@
         <!-- fixedChatTextarea: true = input fixed, false = all scrolls -->
         <!-- ======================================================== -->
         <div
+            bind:this={outerScrollContainer}
             class="h-full w-full flex flex-col relative {DBState.db.fixedChatTextarea ? '' : 'overflow-y-auto'}"
             onscroll={DBState.db.fixedChatTextarea ? undefined : handleChatScroll}
         >
             <!-- Messages area: scrollable when fixed, part of parent scroll when not -->
             <div
+                bind:this={innerScrollContainer}
                 class="flex flex-col relative {DBState.db.fixedChatTextarea ? 'flex-1 overflow-y-auto' : ''} default-chat-screen"
                 onscroll={DBState.db.fixedChatTextarea ? handleChatScroll : undefined}
             >
