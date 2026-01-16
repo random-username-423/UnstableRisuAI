@@ -507,28 +507,139 @@
         <!-- ======================================================== -->
         <!-- CHAT CONTAINER                                           -->
         <!-- Main scrollable area containing all chat messages        -->
-        <!-- Uses flex-col-reverse for bottom-to-top message display  -->
+        <!-- Uses flex-col for top-to-bottom message display           -->
         <!-- ======================================================== -->
         <div
-            class="h-full w-full flex flex-col-reverse overflow-y-auto relative default-chat-screen"
+            class="h-full w-full flex flex-col overflow-y-auto relative default-chat-screen"
             onscroll={(e) => {
                 // Infinite scroll: load more messages when near top
-                //@ts-expect-error scrollHeight/clientHeight/scrollTop don't exist on EventTarget, but target is HTMLElement here
-                const scrolled = e.target.scrollHeight - e.target.clientHeight + e.target.scrollTop
-                if (scrolled < 100 && DBState.currentChat.message.length > loadPages) {
+                const chatTarget = e.target as HTMLElement
+                if (chatTarget.scrollTop < 100 && DBState.currentChat.message.length > loadPages) {
                     loadPages += 15
                 }
 
                 // Hide "new message" button when scrolled to bottom
-                const chatTarget = e.target as HTMLElement
                 const chatsContainer = DBState.db.fixedChatTextarea && chatTarget.children[1] ? chatTarget.children[1] : chatTarget.children[0]
-                const lastEl = chatsContainer?.firstElementChild
-                const isAtBottom = lastEl ? lastEl.getBoundingClientRect().top <= chatTarget.getBoundingClientRect().bottom + 100 : true
+                const lastEl = chatsContainer?.lastElementChild // Newest message is now at the end
+                const isAtBottom = lastEl ? lastEl.getBoundingClientRect().bottom <= chatTarget.getBoundingClientRect().bottom + 100 : true
                 if (isAtBottom) {
                     showNewMessageButton = false
                 }
             }}
         >
+            <!-- ======================================================== -->
+            <!-- CHAT MESSAGES SECTION                                    -->
+            <!-- Displays all chat messages and handles cold storage      -->
+            <!-- ======================================================== -->
+
+            <!-- Handle cold storage (archived chats that need loading) -->
+            {#if DBState.currentChat.message?.[0]?.data?.startsWith(coldStorageHeader)}
+                {#await preLoadChat($selectedCharID, DBState.currentChar.chatPage)}
+                    <div class="w-full flex justify-center text-textcolor2 italic mb-12">
+                        {language.loadingChatData}
+                    </div>
+                {:then a}
+                    <div></div>
+                {/await}
+            {:else}
+                <!-- Load more button for folded/hidden older messages -->
+                {#if chatFoldedStateMessageIndex.index !== -1}
+                    <button class="w-full flex justify-center max-w-full p-4">
+                        <Button
+                            className="max-w-xl w-full"
+                            onclick={() => {
+                                loadPages += chatFoldedStateMessageIndex.index + 1
+                                chatFoldedState.data = null
+                            }}
+                        >
+                            {language.loadMore}
+                        </Button>
+                    </button>
+                {/if}
+
+                <!-- ======================================================== -->
+                <!-- FIRST MESSAGE / GREETING SECTION                         -->
+                <!-- Order: Creator's comment -> AI warning -> First message  -->
+                <!-- ======================================================== -->
+                {#if DBState.currentChat.message.length <= loadPages}
+                    {#if DBState.currentChar.type !== "group"}
+                        <!-- Creator notes/quote display (shown first/top) -->
+                        {#if !DBState.currentChar.removedQuotes && DBState.currentChar.creatorNotes.length >= 2}
+                            <CreatorQuote
+                                quote={DBState.currentChar.creatorNotes}
+                                onRemove={() => {
+                                    const cha = DBState.currentChar
+                                    if (cha.type !== "group") {
+                                        cha.removedQuotes = true
+                                    }
+                                }}
+                            />
+                        {/if}
+                        <!-- AI generation warning for applicable regions -->
+                        {#if aiLawApplies() && DBState.currentChat.message.length === 0}
+                            <div class="ml-auto mr-auto mt-4 text-textcolor2 italic max-w-2/3 wrap-break-word text-center">
+                                {language.aiGenerationWarning}
+                            </div>
+                        {/if}
+                        <!-- First message / greeting (shown after creator comment and AI warning) -->
+                        <Chat
+                            character={createSimpleCharacter(DBState.currentChar)}
+                            name={DBState.currentChar.name}
+                            message={DBState.currentChat.fmIndex === -1
+                                ? DBState.currentChar.firstMessage
+                                : DBState.currentChar.alternateGreetings[DBState.currentChat.fmIndex]}
+                            role="char"
+                            img={getCharImage(DBState.currentChar.image, "css")}
+                            idx={-1}
+                            altGreeting={DBState.currentChar.alternateGreetings.length > 0}
+                            largePortrait={DBState.currentChar.largePortrait}
+                            firstMessage={true}
+                            onReroll={() => {
+                                // Cycle forward through alternate greetings
+                                const cha = DBState.currentChar
+                                const chat = DBState.currentChat
+                                if (cha.type !== "group") {
+                                    if (chat.fmIndex >= cha.alternateGreetings.length - 1) {
+                                        chat.fmIndex = -1
+                                    } else {
+                                        chat.fmIndex += 1
+                                    }
+                                }
+                            }}
+                            unReroll={() => {
+                                // Cycle backward through alternate greetings
+                                const cha = DBState.currentChar
+                                const chat = DBState.currentChat
+                                if (cha.type !== "group") {
+                                    if (chat.fmIndex === -1) {
+                                        chat.fmIndex = cha.alternateGreetings.length - 1
+                                    } else {
+                                        chat.fmIndex -= 1
+                                    }
+                                }
+                            }}
+                            isLastMemory={false}
+                            currentPage={(DBState.currentChat.fmIndex ?? -1) + 2}
+                            totalPages={DBState.currentChar.alternateGreetings.length + 1}
+                        />
+                    {/if}
+                {/if}
+
+                <!-- Main chat messages list component -->
+                <Chats
+                    bind:this={chatsInstance}
+                    messages={currentChat}
+                    {loadPages}
+                    onReroll={() => chatRuntime.reroll()}
+                    unReroll={() => chatRuntime.unReroll()}
+                    {currentCharacter}
+                    {currentUsername}
+                    {userIcon}
+                    {userIconPortrait}
+                    bind:hasNewUnreadMessage={showNewMessageButton}
+                />
+            {/if}
+
             <!-- ======================================================== -->
             <!-- MESSAGE INPUT AREA                                       -->
             <!-- Contains textarea, send button, and menu button          -->
@@ -765,119 +876,6 @@
                         }}
                     />
                 </div>
-            {/if}
-
-            <!-- ======================================================== -->
-            <!-- CHAT MESSAGES SECTION                                    -->
-            <!-- Displays all chat messages and handles cold storage      -->
-            <!-- ======================================================== -->
-
-            <!-- Handle cold storage (archived chats that need loading) -->
-            {#if DBState.currentChat.message?.[0]?.data?.startsWith(coldStorageHeader)}
-                {#await preLoadChat($selectedCharID, DBState.currentChar.chatPage)}
-                    <div class="w-full flex justify-center text-textcolor2 italic mb-12">
-                        {language.loadingChatData}
-                    </div>
-                {:then a}
-                    <div></div>
-                {/await}
-            {:else}
-                <!-- Load more button for folded/hidden older messages -->
-                {#if chatFoldedStateMessageIndex.index !== -1}
-                    <button class="w-full flex justify-center max-w-full p-4">
-                        <Button
-                            className="max-w-xl w-full"
-                            onclick={() => {
-                                loadPages += chatFoldedStateMessageIndex.index + 1
-                                chatFoldedState.data = null
-                            }}
-                        >
-                            {language.loadMore}
-                        </Button>
-                    </button>
-                {/if}
-
-                <!-- Main chat messages list component -->
-                <Chats
-                    bind:this={chatsInstance}
-                    messages={currentChat}
-                    {loadPages}
-                    onReroll={() => chatRuntime.reroll()}
-                    unReroll={() => chatRuntime.unReroll()}
-                    {currentCharacter}
-                    {currentUsername}
-                    {userIcon}
-                    {userIconPortrait}
-                    bind:hasNewUnreadMessage={showNewMessageButton}
-                />
-
-                <!-- ======================================================== -->
-                <!-- FIRST MESSAGE / GREETING                                 -->
-                <!-- Shows character's initial greeting (not stored in chat)  -->
-                <!-- Supports alternate greetings with reroll navigation      -->
-                <!-- ======================================================== -->
-                {#if DBState.currentChat.message.length <= loadPages}
-                    {#if DBState.currentChar.type !== "group"}
-                        <Chat
-                            character={createSimpleCharacter(DBState.currentChar)}
-                            name={DBState.currentChar.name}
-                            message={DBState.currentChat.fmIndex === -1
-                                ? DBState.currentChar.firstMessage
-                                : DBState.currentChar.alternateGreetings[DBState.currentChat.fmIndex]}
-                            role="char"
-                            img={getCharImage(DBState.currentChar.image, "css")}
-                            idx={-1}
-                            altGreeting={DBState.currentChar.alternateGreetings.length > 0}
-                            largePortrait={DBState.currentChar.largePortrait}
-                            firstMessage={true}
-                            onReroll={() => {
-                                // Cycle forward through alternate greetings
-                                const cha = DBState.currentChar
-                                const chat = DBState.currentChat
-                                if (cha.type !== "group") {
-                                    if (chat.fmIndex >= cha.alternateGreetings.length - 1) {
-                                        chat.fmIndex = -1
-                                    } else {
-                                        chat.fmIndex += 1
-                                    }
-                                }
-                            }}
-                            unReroll={() => {
-                                // Cycle backward through alternate greetings
-                                const cha = DBState.currentChar
-                                const chat = DBState.currentChat
-                                if (cha.type !== "group") {
-                                    if (chat.fmIndex === -1) {
-                                        chat.fmIndex = cha.alternateGreetings.length - 1
-                                    } else {
-                                        chat.fmIndex -= 1
-                                    }
-                                }
-                            }}
-                            isLastMemory={false}
-                            currentPage={(DBState.currentChat.fmIndex ?? -1) + 2}
-                            totalPages={DBState.currentChar.alternateGreetings.length + 1}
-                        />
-                        <!-- AI generation warning for applicable regions -->
-                        {#if aiLawApplies() && DBState.currentChat.message.length === 0}
-                            <div class="ml-auto mr-auto mt-4 text-textcolor2 italic max-w-2/3 wrap-break-word text-center">
-                                {language.aiGenerationWarning}
-                            </div>
-                        {/if}
-                        <!-- Creator notes/quote display -->
-                        {#if !DBState.currentChar.removedQuotes && DBState.currentChar.creatorNotes.length >= 2}
-                            <CreatorQuote
-                                quote={DBState.currentChar.creatorNotes}
-                                onRemove={() => {
-                                    const cha = DBState.currentChar
-                                    if (cha.type !== "group") {
-                                        cha.removedQuotes = true
-                                    }
-                                }}
-                            />
-                        {/if}
-                    {/if}
-                {/if}
             {/if}
 
             <!-- ======================================================== -->
