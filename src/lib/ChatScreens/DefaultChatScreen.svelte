@@ -125,7 +125,7 @@
         showNewMessageButton = false
         const element = chatsInstance?.getLastMessageElement()
         if (element) {
-            element.scrollIntoView({ behavior: 'instant', block: 'end' })
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
         }
     }
 
