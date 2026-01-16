@@ -8,7 +8,7 @@
     import { risuChatParser } from "src/ts/process/scripts"
     import { runTrigger } from 'src/ts/process/triggers'
     import { sayTTS } from "src/ts/process/tts"
-    import { DBState, ReloadChatPointer, CurrentTriggerIdStore } from 'src/ts/stores.svelte'
+    import { DBState, ReloadChatPointer, CurrentTriggerIdStore, layoutState } from 'src/ts/stores.svelte'
     import { ConnectionOpenStore } from "src/ts/sync/multiuser"
     import { sleep } from "src/ts/utils/util"
     import { getUserIcon, getUserName } from "src/ts/persona"
@@ -393,7 +393,7 @@
             <span class="text-xs">{statusMessage}</span>
             <div class="flex items-center ml-2 gap-2">
                 {@render translationButton()}
-                {#if window.innerWidth >= 640}
+                {#if !layoutState.smallMode}
                     {@render majorIconButtonsBody(false)}
                     {#if DBState.currentChar}
                         <PopupButton>
@@ -420,7 +420,7 @@
 
 {#snippet majorIconButtonsBody(showNames:boolean)}
     {#if DBState.db.useChatCopy && !blankMessage}
-    <button class="flex items-center hover:text-blue-500 transition-colors button-icon-copy" onclick={async ()=>{
+    <button class={"flex items-center hover:text-blue-500 transition-colors button-icon-copy " + (showNames ? "hover:bg-darkbutton rounded px-1 py-1" : "")} onclick={async ()=>{
         if(window.navigator.clipboard.write){
             try {
                 alertWait(language.loading)
@@ -644,11 +644,14 @@
         })
     }}>
         <CopyIcon size={20}/>
+        {#if showNames}
+            <span class="ml-1">{language.copy}</span>
+        {/if}
     </button>
 {/if}
 {#if idx > -1}
     {#if DBState.currentChar.type !== 'group' && DBState.currentChar.ttsMode !== 'none' && (DBState.currentChar.ttsMode)}
-        <button class="flex items-center hover:text-blue-500 transition-colors button-icon-tts" onclick={()=>{
+        <button class={"flex items-center hover:text-blue-500 transition-colors button-icon-tts " + (showNames ? "hover:bg-darkbutton rounded px-1 py-1" : "")} onclick={()=>{
             return sayTTS(null, message)
         }}>
             <Volume2Icon size={20}/>
@@ -658,7 +661,7 @@
         </button>
     {/if}
     {#if !$ConnectionOpenStore}
-        <button class="flex items-center hover:text-blue-500 transition-colors button-icon-remove" onclick={(e) => rm(e, false)} use:longpress={(e) => rm(e, true)}>
+        <button class={"flex items-center hover:text-blue-500 transition-colors button-icon-remove " + (showNames ? "hover:bg-darkbutton rounded px-1 py-1" : "")} onclick={(e) => rm(e, false)} use:longpress={(e) => rm(e, true)}>
             <TrashIcon size={20}/>
 
             {#if showNames}
@@ -671,7 +674,7 @@
 
 {#snippet translationButton(showNames = false)}
     {#if DBState.db.translator !== '' && !blankMessage}
-        <button class={"flex items-center cursor-pointer hover:text-blue-500 transition-colors button-icon-translate " + (translated ? 'text-blue-400':'')} class:translating={translating} onclick={async () => {
+        <button class={"flex items-center cursor-pointer hover:text-blue-500 transition-colors button-icon-translate " + (translated ? 'text-blue-400 ':'') + (showNames ? "hover:bg-darkbutton rounded px-1 py-1" : "")} class:translating={translating} onclick={async () => {
             translated = !translated
         }}>
             <LanguagesIcon />
@@ -681,7 +684,7 @@
         </button>
     {/if}
     {#if idx > -1}
-        <button class={"flex items-center hover:text-blue-500 transition-colors button-icon-edit "+(editMode?'text-blue-400':'')} onclick={() => {
+        <button class={"flex items-center hover:text-blue-500 transition-colors button-icon-edit " + (editMode?'text-blue-400 ':'') + (showNames ? "hover:bg-darkbutton rounded px-1 py-1" : "")} onclick={() => {
             if(!editMode){
                 editMode = true
             }
@@ -722,7 +725,7 @@
 {#snippet minorIconButtonsBody(showNames:boolean)}
     
     {#if DBState.db.enableBookmark}
-        <button class="flex items-center hover:text-blue-500 transition-colors button-icon-bookmark {isBookmarked ? 'text-yellow-400' : ''}" onclick={async () => {
+        <button class={"flex items-center hover:text-blue-500 transition-colors button-icon-bookmark " + (isBookmarked ? 'text-yellow-400 ' : '') + (showNames ? "hover:bg-darkbutton rounded px-1 py-1" : "")} onclick={async () => {
             await sleep(1)
             toggleBookmark()
         }}>
@@ -733,10 +736,10 @@
         </button>
     {/if}
 
-    <button class="flex items-center hover:text-blue-500 transition-colors" onclick={async () => {
+    <button class={"flex items-center hover:text-blue-500 transition-colors " + (showNames ? "hover:bg-darkbutton rounded px-1 py-1" : "")} onclick={async () => {
         await sleep(1)
         const currentChat = DBState.currentChat
-        
+
         if(DBState.db.createFolderOnBranch && !currentChat.folderId){
             const folderId = v4()
             DBState.currentChar.chatFolders.unshift({
@@ -746,7 +749,7 @@
             })
             currentChat.folderId = folderId
         }
-        
+
         const currentMessage = currentChat.message[idx]
         const newChat = $state.snapshot(currentChat)
         newChat.name = createChatCopyName(newChat.name, 'Branch')
@@ -769,7 +772,7 @@
         {/if}
     </button>
 
-    <button class="flex items-center hover:text-blue-500 transition-colors" onclick={async () => {
+    <button class={"flex items-center hover:text-blue-500 transition-colors " + (showNames ? "hover:bg-darkbutton rounded px-1 py-1" : "")} onclick={async () => {
         await sleep(1)
         const currentMessage = DBState.currentChat.message[idx]
         DBState.currentChat.message[idx].disabled = !currentMessage.disabled
@@ -780,7 +783,7 @@
         {/if}
     </button>
 
-    <button class="flex items-center hover:text-blue-500 transition-colors" onclick={async () => {
+    <button class={"flex items-center hover:text-blue-500 transition-colors " + (showNames ? "hover:bg-darkbutton rounded px-1 py-1" : "")} onclick={async () => {
         await sleep(1)
         const currentMessage = DBState.currentChat.message[idx]
         DBState.currentChat.message[idx].disabled = currentMessage.disabled === 'allBefore' ? false : 'allBefore'

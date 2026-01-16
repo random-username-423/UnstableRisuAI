@@ -15,12 +15,14 @@ function updateSize() {
     layoutState.width = window.innerWidth
     layoutState.height = window.innerHeight
     layoutState.compactMode = window.innerWidth <= 1024
+    layoutState.smallMode = window.innerWidth < 640
 }
 
 export const layoutState = $state({
     width: 0,
     height: 0,
     compactMode: false,
+    smallMode: false,
     ShowVN: false,
     betaMobile: {
         enabled: false,

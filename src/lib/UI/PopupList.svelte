@@ -25,6 +25,7 @@
 
     const close = (() => {
         popupStore.children = null;
+        popupStore.openId = 0;
     });
 
     onMount(async () => {
@@ -39,7 +40,7 @@
 </script>
 
 {#if popupStore.children}
-    <div class="bg-darkbg border-darkborderc border rounded-md p-4 gap-2 flex flex-col fixed z-50 items-start" style={styleString}>
+    <div class="bg-darkbg border-darkborderc border rounded-md px-3 py-3 gap-2 flex flex-col fixed z-50 items-stretch" style={styleString}>
         {@render popupStore.children()}
     </div>
 {/if}
