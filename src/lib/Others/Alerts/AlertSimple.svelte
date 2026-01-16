@@ -37,7 +37,7 @@
 <AlertContainer {title} {titleColor}>
     <!-- Message Content -->
     {#if msgType === "markdown"}
-        <div class="markdown-content">
+        <div class="markdown-content prose prose-invert">
             {#await ParseMarkdown(msg) then parsedMsg}
                 {@html parsedMsg}
             {:catch error}
