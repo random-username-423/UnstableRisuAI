@@ -12,8 +12,8 @@
     let buttonId = Math.random()
 </script>
 
-<button onclick={async (e:MouseEvent) => {
-    await sleep(0)
+<button onclick={(e:MouseEvent) => {
+    e.stopPropagation()
     if(popupStore.openId === buttonId){
         popupStore.children = null
         popupStore.openId = 0
