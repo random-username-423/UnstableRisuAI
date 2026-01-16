@@ -124,9 +124,9 @@ interface Props {
                 <OptionInput value="disabled">{language.disabled}</OptionInput>
             </SelectInput>
             <span class="text-textcolor mt-6">IN:</span>
-            <CodeMirrorEditor bind:value={value.in} lang="regex" class="h-10" />
+            <CodeMirrorEditor bind:value={value.in} lang="regex" class="h-14" />
             <span class="text-textcolor mt-6">OUT:</span>
-            <CodeMirrorEditor bind:value={value.out} class="h-28" onchange={() => {
+            <CodeMirrorEditor bind:value={value.out} height="default" onchange={() => {
                 $ReloadGUIPointer += 1
             }} />
             {#if value.ableFlag}
