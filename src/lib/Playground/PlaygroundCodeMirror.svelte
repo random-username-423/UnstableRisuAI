@@ -9,6 +9,7 @@
             return `# Hello World
 
 This is **bold** and *italic* text.
+Also ***bold italic*** and ~~strikethrough~~.
 
 {{char}} says hello to {{user}}.
 
@@ -25,7 +26,9 @@ This is **bold** and *italic* text.
 {{/if}}
 
 <custom_tag>
-  Some XML content here
+## Markdown inside XML
+This **bold** and *italic* works inside XML tags!
+Even ~~strikethrough~~ and \`inline code\` work here.
 </custom_tag>
 
 \`\`\`javascript
@@ -86,5 +89,5 @@ console.log("Hello");
 />
 
 <p class="text-textcolor2 mt-4 text-sm">
-    CBS syntax is highlighted with nesting level colors. Try typing {"{{#if {{nested}}}}"} to see different levels.
+    CBS syntax is highlighted with nesting level colors. Markdown (bold, italic, strikethrough, code) works everywhere, including inside XML tags.
 </p>

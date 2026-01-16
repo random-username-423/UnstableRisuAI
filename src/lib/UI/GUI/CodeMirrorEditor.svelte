@@ -1,12 +1,8 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte'
-    import { EditorView, basicSetup } from 'codemirror'
-    import { ViewPlugin, Decoration, type DecorationSet, type ViewUpdate } from '@codemirror/view'
-    import { markdown } from '@codemirror/lang-markdown'
-    import { html } from '@codemirror/lang-html'
+    import { minimalSetup } from 'codemirror'
+    import { EditorView, ViewPlugin, Decoration, type DecorationSet, type ViewUpdate } from '@codemirror/view'
     import { EditorState, RangeSetBuilder } from '@codemirror/state'
-    import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
-    import { tags } from '@lezer/highlight'
     import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete'
 
     interface Props {
@@ -70,6 +66,75 @@
             } else {
                 i++
             }
+        }
+
+        return results
+    }
+
+    // Markdown decoration classes
+    const mdHeading1Deco = Decoration.mark({ class: 'cm-md-h1' })
+    const mdHeading2Deco = Decoration.mark({ class: 'cm-md-h2' })
+    const mdHeading3Deco = Decoration.mark({ class: 'cm-md-h3' })
+    const mdHeadingDeco = Decoration.mark({ class: 'cm-md-heading' }) // h4-h6
+    const mdBoldDeco = Decoration.mark({ class: 'cm-md-bold' })
+    const mdItalicDeco = Decoration.mark({ class: 'cm-md-italic' })
+    const mdBoldItalicDeco = Decoration.mark({ class: 'cm-md-bold-italic' })
+    const mdStrikeDeco = Decoration.mark({ class: 'cm-md-strike' })
+    const mdCodeDeco = Decoration.mark({ class: 'cm-md-code' })
+    const xmlTagDeco = Decoration.mark({ class: 'cm-xml-tag' })
+
+    // Markdown parsing (regex-based for universal highlighting)
+    type MarkdownMatch = { from: number; to: number; type: 'h1' | 'h2' | 'h3' | 'heading' | 'bold' | 'italic' | 'bolditalic' | 'strike' | 'code' | 'xmltag' }
+
+    function parseMarkdown(text: string): MarkdownMatch[] {
+        const results: MarkdownMatch[] = []
+
+        // Headings: # at line start (up to 6 levels)
+        const headingRegex = /^(#{1,6})\s+.+$/gm
+        let match
+        while ((match = headingRegex.exec(text)) !== null) {
+            const level = match[1].length
+            let type: 'h1' | 'h2' | 'h3' | 'heading' = 'heading'
+            if (level === 1) type = 'h1'
+            else if (level === 2) type = 'h2'
+            else if (level === 3) type = 'h3'
+            results.push({ from: match.index, to: match.index + match[0].length, type })
+        }
+
+        // Bold+Italic: ***text*** or ___text___
+        const boldItalicRegex = /(\*\*\*|___)(?!\s)([^\*_]+?)(?<!\s)\1/g
+        while ((match = boldItalicRegex.exec(text)) !== null) {
+            results.push({ from: match.index, to: match.index + match[0].length, type: 'bolditalic' })
+        }
+
+        // Bold: **text** or __text__ (but not ***)
+        const boldRegex = /(?<!\*)(\*\*)(?!\*)(?!\s)([^\*]+?)(?<!\s)(?<!\*)\1(?!\*)|(?<!_)(__)(?!_)(?!\s)([^_]+?)(?<!\s)(?<!_)\1(?!_)/g
+        while ((match = boldRegex.exec(text)) !== null) {
+            results.push({ from: match.index, to: match.index + match[0].length, type: 'bold' })
+        }
+
+        // Italic: *text* or _text_ (but not ** or __)
+        const italicRegex = /(?<!\*)(\*)(?!\*)(?!\s)([^\*]+?)(?<!\s)(?<!\*)\1(?!\*)|(?<!_)(_)(?!_)(?!\s)([^_]+?)(?<!\s)(?<!_)\1(?!_)/g
+        while ((match = italicRegex.exec(text)) !== null) {
+            results.push({ from: match.index, to: match.index + match[0].length, type: 'italic' })
+        }
+
+        // Strikethrough: ~~text~~
+        const strikeRegex = /~~(?!\s)(.+?)(?<!\s)~~/g
+        while ((match = strikeRegex.exec(text)) !== null) {
+            results.push({ from: match.index, to: match.index + match[0].length, type: 'strike' })
+        }
+
+        // Inline code: `code`
+        const codeRegex = /`([^`\n]+)`/g
+        while ((match = codeRegex.exec(text)) !== null) {
+            results.push({ from: match.index, to: match.index + match[0].length, type: 'code' })
+        }
+
+        // XML/HTML tags: <tag>, </tag>, <tag />, <tag attr="value">
+        const xmlTagRegex = /<\/?[a-zA-Z_][\w\-]*(?:\s+[^>]*)?\s*\/?>/g
+        while ((match = xmlTagRegex.exec(text)) !== null) {
+            results.push({ from: match.index, to: match.index + match[0].length, type: 'xmltag' })
         }
 
         return results
@@ -151,17 +216,46 @@
             buildDecorations(view: EditorView): DecorationSet {
                 const builder = new RangeSetBuilder<Decoration>()
                 const text = view.state.doc.toString()
-                const parsed = parseCBS(text)
 
-                parsed.sort((a, b) => a.from - b.from)
+                // Collect all decorations
+                type DecoItem = { from: number; to: number; deco: Decoration; priority: number }
+                const decos: DecoItem[] = []
 
-                for (const item of parsed) {
+                // CBS decorations (highest priority)
+                const cbsParsed = parseCBS(text)
+                for (const item of cbsParsed) {
                     const level = item.level % cbsColors.length
                     if (item.type === 'bracket') {
-                        builder.add(item.from, item.to, cbsBracketDecos[level])
+                        decos.push({ from: item.from, to: item.to, deco: cbsBracketDecos[level], priority: 2 })
                     } else {
-                        builder.add(item.from, item.to, cbsContentDecos[level])
+                        decos.push({ from: item.from, to: item.to, deco: cbsContentDecos[level], priority: 2 })
                     }
+                }
+
+                // Markdown decorations (lower priority than CBS)
+                const mdParsed = parseMarkdown(text)
+                for (const item of mdParsed) {
+                    let deco: Decoration
+                    switch (item.type) {
+                        case 'h1': deco = mdHeading1Deco; break
+                        case 'h2': deco = mdHeading2Deco; break
+                        case 'h3': deco = mdHeading3Deco; break
+                        case 'heading': deco = mdHeadingDeco; break
+                        case 'bold': deco = mdBoldDeco; break
+                        case 'italic': deco = mdItalicDeco; break
+                        case 'bolditalic': deco = mdBoldItalicDeco; break
+                        case 'strike': deco = mdStrikeDeco; break
+                        case 'code': deco = mdCodeDeco; break
+                        case 'xmltag': deco = xmlTagDeco; break
+                    }
+                    decos.push({ from: item.from, to: item.to, deco, priority: 1 })
+                }
+
+                // Sort by position (required by RangeSetBuilder)
+                decos.sort((a, b) => a.from - b.from || b.priority - a.priority)
+
+                for (const item of decos) {
+                    builder.add(item.from, item.to, item.deco)
                 }
 
                 return builder.finish()
@@ -251,37 +345,19 @@
         '.cm-cbs-content-2': { color: '#ffb86c' },
         '.cm-cbs-content-3': { color: '#ff79c6' },
         '.cm-cbs-content-4': { color: '#bd93f9' },
+        // Markdown styles (regex-based)
+        '.cm-md-h1': { color: '#ffd700', fontWeight: 'bold', fontSize: '1.4em' },
+        '.cm-md-h2': { color: '#ffd700', fontWeight: 'bold', fontSize: '1.2em' },
+        '.cm-md-h3': { color: '#ffd700', fontWeight: 'bold', fontSize: '1.1em' },
+        '.cm-md-heading': { color: '#ffd700', fontWeight: 'bold' }, // h4-h6
+        '.cm-md-bold': { color: '#ffb86c', fontWeight: 'bold' },
+        '.cm-md-italic': { color: '#f1fa8c', fontStyle: 'italic' },
+        '.cm-md-bold-italic': { color: '#ffb86c', fontWeight: 'bold', fontStyle: 'italic' },
+        '.cm-md-strike': { color: '#6272a4', textDecoration: 'line-through' },
+        '.cm-md-code': { color: '#50fa7b', backgroundColor: 'rgba(80, 250, 123, 0.1)' },
+        // XML tag styles
+        '.cm-xml-tag': { color: '#ff79c6' },
     })
-
-    // Highlight style
-    const customHighlight = HighlightStyle.define([
-        { tag: tags.heading1, color: '#ffd700', fontWeight: 'bold', fontSize: '1.4em' },
-        { tag: tags.heading2, color: '#ffd700', fontWeight: 'bold', fontSize: '1.2em' },
-        { tag: tags.heading3, color: '#ffd700', fontWeight: 'bold' },
-        { tag: tags.emphasis, color: '#f1fa8c', fontStyle: 'italic' },
-        { tag: tags.strong, color: '#ffb86c', fontWeight: 'bold' },
-        { tag: tags.link, color: '#8be9fd', textDecoration: 'underline' },
-        { tag: tags.url, color: '#8be9fd' },
-        { tag: tags.tagName, color: '#ff79c6' },
-        { tag: tags.attributeName, color: '#50fa7b' },
-        { tag: tags.attributeValue, color: '#f1fa8c' },
-        { tag: tags.string, color: '#f1fa8c' },
-        { tag: tags.comment, color: '#6272a4', fontStyle: 'italic' },
-        { tag: tags.keyword, color: '#ff79c6' },
-        { tag: tags.operator, color: '#ff79c6' },
-        { tag: tags.punctuation, color: '#f8f8f2' },
-    ])
-
-    const getLangExtension = () => {
-        switch (lang) {
-            case 'markdown':
-                return markdown()
-            case 'html':
-                return html()
-            default:
-                return []
-        }
-    }
 
     // Value change listener
     const updateListener = EditorView.updateListener.of((update) => {
@@ -299,14 +375,12 @@
         }
 
         const extensions = [
-            basicSetup,
+            minimalSetup,
             autocompletion({
                 override: [cbsCompletionSource],
                 activateOnTyping: true,
             }),
             customTheme,
-            syntaxHighlighting(customHighlight),
-            getLangExtension(),
             cbsHighlighter,
             EditorView.lineWrapping,
             updateListener,
@@ -334,13 +408,6 @@
                     changes: { from: 0, to: currentValue.length, insert: newValue }
                 })
             }
-        }
-    })
-
-    // Recreate editor when lang changes
-    $effect(() => {
-        if (view && lang) {
-            createEditor()
         }
     })
 

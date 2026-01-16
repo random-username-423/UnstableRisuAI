@@ -297,7 +297,7 @@
 
     {/if}
     <span class="text-textcolor">{language.authorNote} <Help key="chatNote"/></span>
-    <CodeMirrorEditor bind:value={DBState.currentChat.note} class="my-2 h-[120px]" />
+    <CodeMirrorEditor bind:value={DBState.currentChat.note} class="my-2 h-[200px]" />
     <span class="text-textcolor2 mb-6 text-sm">{tokens.localNote} {language.tokens}</span>
 
     {#if !layoutState.betaMobile.enabled}
