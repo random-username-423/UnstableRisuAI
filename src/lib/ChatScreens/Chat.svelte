@@ -8,7 +8,7 @@
     import { risuChatParser } from "src/ts/process/scripts"
     import { runTrigger } from 'src/ts/process/triggers'
     import { sayTTS } from "src/ts/process/tts"
-    import { DBState, ReloadChatPointer, CurrentTriggerIdStore } from 'src/ts/stores.svelte'
+    import { DBState, ReloadChatPointer, CurrentTriggerIdStore, layoutState } from 'src/ts/stores.svelte'
     import { ConnectionOpenStore } from "src/ts/sync/multiuser"
     import { sleep } from "src/ts/utils/util"
     import { getUserIcon, getUserName } from "src/ts/persona"
@@ -393,7 +393,7 @@
             <span class="text-xs">{statusMessage}</span>
             <div class="flex items-center ml-2 gap-2">
                 {@render translationButton()}
-                {#if window.innerWidth >= 640}
+                {#if !layoutState.smallMode}
                     {@render majorIconButtonsBody(false)}
                     {#if DBState.currentChar}
                         <PopupButton>
