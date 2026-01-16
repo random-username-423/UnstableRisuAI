@@ -6,7 +6,7 @@
     import type { customscript } from "src/ts/storage/types/character";
     import CheckInput from "../../UI/GUI/CheckInput.svelte";
     import TextInput from "../../UI/GUI/TextInput.svelte";
-    import TextAreaInput from "../../UI/GUI/TextAreaInput.svelte";
+    import CodeMirrorEditor from "../../UI/GUI/CodeMirrorEditor.svelte";
     import SelectInput from "../../UI/GUI/SelectInput.svelte";
     import OptionInput from "../../UI/GUI/OptionInput.svelte";
     import Accordion from "src/lib/UI/Accordion.svelte";
@@ -124,9 +124,9 @@ interface Props {
                 <OptionInput value="disabled">{language.disabled}</OptionInput>
             </SelectInput>
             <span class="text-textcolor mt-6">IN:</span>
-            <TextInput size="sm" bind:value={value.in} />
+            <CodeMirrorEditor bind:value={value.in} lang="regex" class="h-10" />
             <span class="text-textcolor mt-6">OUT:</span>
-            <TextAreaInput highlight autocomplete="off" size="sm" bind:value={value.out} onInput={(e) => {
+            <CodeMirrorEditor bind:value={value.out} class="h-28" onchange={() => {
                 $ReloadGUIPointer += 1
             }} />
             {#if value.ableFlag}

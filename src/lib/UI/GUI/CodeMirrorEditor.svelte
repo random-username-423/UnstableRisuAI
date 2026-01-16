@@ -4,12 +4,14 @@
     import { EditorView, ViewPlugin, Decoration, type DecorationSet, type ViewUpdate } from '@codemirror/view'
     import { EditorState, RangeSetBuilder } from '@codemirror/state'
     import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete'
+    import { textAreaSize } from 'src/ts/gui/guisize'
 
     interface Props {
         value?: string
-        lang?: 'markdown' | 'html' | 'plain'
+        lang?: 'markdown' | 'html' | 'plain' | 'regex' | 'cbs'
         placeholder?: string
         class?: string
+        height?: '20' | '24' | '28' | '32' | '36' | '40' | 'full' | 'default'
         onchange?: (value: string) => void
     }
 
@@ -18,12 +20,16 @@
         lang = 'markdown',
         placeholder = '',
         class: className = '',
+        height = 'default',
         onchange
     }: Props = $props()
 
     let editorEl: HTMLDivElement
     let view: EditorView | null = null
     let isInternalUpdate = false
+
+    // Check if className contains height classes (h- or min-h-)
+    const hasCustomHeight = className.includes('h-') || className.includes('min-h-')
 
     // CBS nesting level colors
     const cbsColors = [
@@ -135,6 +141,100 @@
         const xmlTagRegex = /<\/?[a-zA-Z_][\w\-]*(?:\s+[^>]*)?\s*\/?>/g
         while ((match = xmlTagRegex.exec(text)) !== null) {
             results.push({ from: match.index, to: match.index + match[0].length, type: 'xmltag' })
+        }
+
+        return results
+    }
+
+    // Regex decoration classes
+    const regexGroupDeco = Decoration.mark({ class: 'cm-regex-group' })
+    const regexCharClassDeco = Decoration.mark({ class: 'cm-regex-charclass' })
+    const regexQuantifierDeco = Decoration.mark({ class: 'cm-regex-quantifier' })
+    const regexAnchorDeco = Decoration.mark({ class: 'cm-regex-anchor' })
+    const regexEscapeDeco = Decoration.mark({ class: 'cm-regex-escape' })
+    const regexAlternationDeco = Decoration.mark({ class: 'cm-regex-alternation' })
+
+    type RegexMatch = { from: number; to: number; type: 'group' | 'charclass' | 'quantifier' | 'anchor' | 'escape' | 'alternation' }
+
+    function parseRegex(text: string): RegexMatch[] {
+        const results: RegexMatch[] = []
+        let i = 0
+
+        while (i < text.length) {
+            // Escape sequences: \d, \w, \s, \D, \W, \S, \b, \B, \n, \r, \t, \\, \., etc.
+            if (text[i] === '\\' && i + 1 < text.length) {
+                results.push({ from: i, to: i + 2, type: 'escape' })
+                i += 2
+                continue
+            }
+
+            // Character class: [...]
+            if (text[i] === '[') {
+                const start = i
+                i++
+                // Handle negation [^...]
+                if (text[i] === '^') i++
+                // Find closing ]
+                while (i < text.length) {
+                    if (text[i] === '\\' && i + 1 < text.length) {
+                        i += 2 // Skip escaped char
+                    } else if (text[i] === ']') {
+                        i++
+                        break
+                    } else {
+                        i++
+                    }
+                }
+                results.push({ from: start, to: i, type: 'charclass' })
+                continue
+            }
+
+            // Groups: (...), (?:...), (?=...), (?!...), (?<=...), (?<!...)
+            if (text[i] === '(' || text[i] === ')') {
+                results.push({ from: i, to: i + 1, type: 'group' })
+                i++
+                continue
+            }
+
+            // Quantifiers: *, +, ?, {n}, {n,}, {n,m}
+            if (text[i] === '*' || text[i] === '+' || text[i] === '?') {
+                results.push({ from: i, to: i + 1, type: 'quantifier' })
+                i++
+                continue
+            }
+
+            if (text[i] === '{') {
+                const start = i
+                const match = text.slice(i).match(/^\{\d+(?:,\d*)?\}/)
+                if (match) {
+                    results.push({ from: start, to: start + match[0].length, type: 'quantifier' })
+                    i += match[0].length
+                    continue
+                }
+            }
+
+            // Anchors: ^, $
+            if (text[i] === '^' || text[i] === '$') {
+                results.push({ from: i, to: i + 1, type: 'anchor' })
+                i++
+                continue
+            }
+
+            // Alternation: |
+            if (text[i] === '|') {
+                results.push({ from: i, to: i + 1, type: 'alternation' })
+                i++
+                continue
+            }
+
+            // Dot (any char)
+            if (text[i] === '.') {
+                results.push({ from: i, to: i + 1, type: 'escape' })
+                i++
+                continue
+            }
+
+            i++
         }
 
         return results
@@ -266,6 +366,55 @@
         }
     )
 
+    // Regex ViewPlugin
+    const regexHighlighter = ViewPlugin.fromClass(
+        class {
+            decorations: DecorationSet
+
+            constructor(view: EditorView) {
+                this.decorations = this.buildDecorations(view)
+            }
+
+            update(update: ViewUpdate) {
+                if (update.docChanged || update.viewportChanged) {
+                    this.decorations = this.buildDecorations(update.view)
+                }
+            }
+
+            buildDecorations(view: EditorView): DecorationSet {
+                const builder = new RangeSetBuilder<Decoration>()
+                const text = view.state.doc.toString()
+
+                const regexParsed = parseRegex(text)
+                const decos: { from: number; to: number; deco: Decoration }[] = []
+
+                for (const item of regexParsed) {
+                    let deco: Decoration
+                    switch (item.type) {
+                        case 'group': deco = regexGroupDeco; break
+                        case 'charclass': deco = regexCharClassDeco; break
+                        case 'quantifier': deco = regexQuantifierDeco; break
+                        case 'anchor': deco = regexAnchorDeco; break
+                        case 'escape': deco = regexEscapeDeco; break
+                        case 'alternation': deco = regexAlternationDeco; break
+                    }
+                    decos.push({ from: item.from, to: item.to, deco })
+                }
+
+                decos.sort((a, b) => a.from - b.from)
+
+                for (const item of decos) {
+                    builder.add(item.from, item.to, item.deco)
+                }
+
+                return builder.finish()
+            }
+        },
+        {
+            decorations: (v) => v.decorations,
+        }
+    )
+
     // Theme
     const customTheme = EditorView.theme({
         '&': {
@@ -357,6 +506,13 @@
         '.cm-md-code': { color: '#50fa7b', backgroundColor: 'rgba(80, 250, 123, 0.1)' },
         // XML tag styles
         '.cm-xml-tag': { color: '#ff79c6' },
+        // Regex styles
+        '.cm-regex-group': { color: '#ff79c6', fontWeight: 'bold' },
+        '.cm-regex-charclass': { color: '#8be9fd' },
+        '.cm-regex-quantifier': { color: '#ffb86c', fontWeight: 'bold' },
+        '.cm-regex-anchor': { color: '#ff5555', fontWeight: 'bold' },
+        '.cm-regex-escape': { color: '#50fa7b' },
+        '.cm-regex-alternation': { color: '#f1fa8c', fontWeight: 'bold' },
     })
 
     // Value change listener
@@ -378,16 +534,25 @@
 
         const extensions = [
             minimalSetup,
-            autocompletion({
-                override: [cbsCompletionSource],
-                activateOnTyping: true,
-            }),
             customTheme,
-            cbsHighlighter,
             EditorView.lineWrapping,
             updateListener,
             placeholder ? EditorView.contentAttributes.of({ 'aria-placeholder': placeholder }) : [],
         ]
+
+        // Add language-specific extensions
+        if (lang === 'regex') {
+            extensions.push(regexHighlighter)
+        } else if (lang !== 'plain') {
+            // CBS highlighting for markdown, html, cbs modes
+            extensions.push(
+                autocompletion({
+                    override: [cbsCompletionSource],
+                    activateOnTyping: true,
+                }),
+                cbsHighlighter
+            )
+        }
 
         view = new EditorView({
             state: EditorState.create({
@@ -426,5 +591,28 @@
 
 <div
     bind:this={editorEl}
-    class="w-full border border-selected rounded-md overflow-hidden min-h-40 {className}"
+    class="w-full border border-selected rounded-md overflow-hidden {className}"
+    class:h-20={!hasCustomHeight && (height === '20' || (height === 'default' && $textAreaSize === -5))}
+    class:h-24={!hasCustomHeight && (height === '24' || (height === 'default' && $textAreaSize === -4))}
+    class:h-28={!hasCustomHeight && (height === '28' || (height === 'default' && $textAreaSize === -3))}
+    class:h-32={!hasCustomHeight && (height === '32' || (height === 'default' && $textAreaSize === -2))}
+    class:h-36={!hasCustomHeight && (height === '36' || (height === 'default' && $textAreaSize === -1))}
+    class:h-40={!hasCustomHeight && (height === '40' || (height === 'default' && $textAreaSize === 0))}
+    class:h-44={!hasCustomHeight && height === 'default' && $textAreaSize === 1}
+    class:h-48={!hasCustomHeight && height === 'default' && $textAreaSize === 2}
+    class:h-52={!hasCustomHeight && height === 'default' && $textAreaSize === 3}
+    class:h-56={!hasCustomHeight && height === 'default' && $textAreaSize === 4}
+    class:h-60={!hasCustomHeight && height === 'default' && $textAreaSize === 5}
+    class:h-full={!hasCustomHeight && height === 'full'}
+    class:min-h-20={!hasCustomHeight && (height === '20' || (height === 'default' && $textAreaSize === -5))}
+    class:min-h-24={!hasCustomHeight && (height === '24' || (height === 'default' && $textAreaSize === -4))}
+    class:min-h-28={!hasCustomHeight && (height === '28' || (height === 'default' && $textAreaSize === -3))}
+    class:min-h-32={!hasCustomHeight && (height === '32' || (height === 'default' && $textAreaSize === -2))}
+    class:min-h-36={!hasCustomHeight && (height === '36' || (height === 'default' && $textAreaSize === -1))}
+    class:min-h-40={!hasCustomHeight && (height === '40' || (height === 'default' && $textAreaSize === 0))}
+    class:min-h-48={!hasCustomHeight && height === 'default' && $textAreaSize === 1}
+    class:min-h-56={!hasCustomHeight && height === 'default' && $textAreaSize === 2}
+    class:min-h-64={!hasCustomHeight && height === 'default' && $textAreaSize === 3}
+    class:min-h-72={!hasCustomHeight && height === 'default' && $textAreaSize === 4}
+    class:min-h-80={!hasCustomHeight && height === 'default' && $textAreaSize === 5}
 ></div>

@@ -239,10 +239,10 @@
     {#if DBState.currentChar.type !== 'group' && licensed !== 'private'}
         <TextInput size="xl" marginBottom placeholder="Character Name" bind:value={DBState.currentChar.name} />
         <span class="text-textcolor">{language.description} <Help key="charDesc"/></span>
-        <CodeMirrorEditor bind:value={(DBState.currentChar as character).desc} class="my-2 h-[200px]" />
+        <CodeMirrorEditor bind:value={(DBState.currentChar as character).desc} class="my-2" />
         <span class="text-textcolor2 mb-6 text-sm">{tokens.desc} {language.tokens}</span>
         <span class="text-textcolor">{language.firstMessage} <Help key="charFirstMessage"/></span>
-        <CodeMirrorEditor bind:value={DBState.currentChar.firstMessage} class="my-2 h-[200px]" />
+        <CodeMirrorEditor bind:value={DBState.currentChar.firstMessage} class="my-2" />
         <span class="text-textcolor2 mb-6 text-sm">{tokens.firstMsg} {language.tokens}</span>
 
     {:else if licensed !== 'private' && DBState.currentChar.type === 'group'}
@@ -297,7 +297,7 @@
 
     {/if}
     <span class="text-textcolor">{language.authorNote} <Help key="chatNote"/></span>
-    <CodeMirrorEditor bind:value={DBState.currentChat.note} class="my-2 h-[200px]" />
+    <CodeMirrorEditor bind:value={DBState.currentChat.note} class="my-2" />
     <span class="text-textcolor2 mb-6 text-sm">{tokens.localNote} {language.tokens}</span>
 
     {#if !layoutState.betaMobile.enabled}
@@ -773,7 +773,7 @@
         </div>
 
         <span class="text-textcolor">{language.exampleMessage} <Help key="exampleMessage"/></span>
-        <CodeMirrorEditor bind:value={DBState.currentChar.exampleMessage} class="my-2 h-[200px]" />
+        <CodeMirrorEditor bind:value={DBState.currentChar.exampleMessage} class="my-2" />
 
         <span class="text-textcolor">{language.creatorNotes} <Help key="creatorQuotes"/></span>
         <MultiLangInput bind:value={DBState.currentChar.creatorNotes} className="my-2" onInput={() => {
@@ -781,13 +781,13 @@
         }}></MultiLangInput>
 
         <span class="text-textcolor">{language.systemPrompt} <Help key="systemPrompt"/></span>
-        <CodeMirrorEditor bind:value={DBState.currentChar.systemPrompt} class="my-2 h-[200px]" />
+        <CodeMirrorEditor bind:value={DBState.currentChar.systemPrompt} class="my-2" />
 
         <span class="text-textcolor">{language.replaceGlobalNote} <Help key="replaceGlobalNote"/></span>
-        <CodeMirrorEditor bind:value={DBState.currentChar.replaceGlobalNote} class="my-2 h-[200px]" />
+        <CodeMirrorEditor bind:value={DBState.currentChar.replaceGlobalNote} class="my-2" />
 
         <span class="text-textcolor mt-2">{language.additionalText} <Help key="additionalText" /></span>
-        <CodeMirrorEditor bind:value={DBState.currentChar.additionalText} class="my-2 h-[200px]" />
+        <CodeMirrorEditor bind:value={DBState.currentChar.additionalText} class="my-2" />
 
         {#if DBState.db.showUnrecommended || DBState.currentChar.personality.length > 3}
             <span class="text-textcolor">{language.personality} <Help key="personality" unrecommended/></span>
