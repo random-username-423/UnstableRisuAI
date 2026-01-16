@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte'
     import { minimalSetup } from 'codemirror'
-    import { EditorView, ViewPlugin, Decoration, type DecorationSet, type ViewUpdate } from '@codemirror/view'
+    import { EditorView, ViewPlugin, Decoration, type DecorationSet, type ViewUpdate, placeholder as cmPlaceholder } from '@codemirror/view'
     import { EditorState, RangeSetBuilder } from '@codemirror/state'
     import { autocompletion, type CompletionContext, type CompletionResult } from '@codemirror/autocomplete'
     import { textAreaSize } from 'src/ts/gui/guisize'
@@ -449,7 +449,9 @@
             backgroundColor: 'transparent',
         },
         '.cm-placeholder': {
-            color: 'var(--risu-textcolor2)',
+            color: 'var(--risu-textcolor2) !important',
+            opacity: '0.6',
+            fontStyle: 'italic',
         },
         // Autocomplete dropdown styles
         '.cm-tooltip': {
@@ -537,7 +539,7 @@
             customTheme,
             EditorView.lineWrapping,
             updateListener,
-            placeholder ? EditorView.contentAttributes.of({ 'aria-placeholder': placeholder }) : [],
+            placeholder ? cmPlaceholder(placeholder) : [],
         ]
 
         // Add language-specific extensions
