@@ -87,10 +87,50 @@
     const mdBoldItalicDeco = Decoration.mark({ class: 'cm-md-bold-italic' })
     const mdStrikeDeco = Decoration.mark({ class: 'cm-md-strike' })
     const mdCodeDeco = Decoration.mark({ class: 'cm-md-code' })
-    const xmlTagDeco = Decoration.mark({ class: 'cm-xml-tag' })
+
+    // XML tag nesting level decorations (same colors as CBS)
+    const xmlTagDecos = cbsColors.map((_, i) =>
+        Decoration.mark({ class: `cm-xml-tag-${i}` })
+    )
+
+    // XML tag parsing with nesting level tracking
+    type XmlTagMatch = { from: number; to: number; level: number }
+
+    function parseXmlTags(text: string): XmlTagMatch[] {
+        const results: XmlTagMatch[] = []
+        const tagStack: string[] = []
+
+        // Match opening tags, closing tags, and self-closing tags
+        const tagRegex = /<(\/?)\s*([a-zA-Z_][\w\-]*)[^>]*?(\/?)>/g
+        let match
+
+        while ((match = tagRegex.exec(text)) !== null) {
+            const isClosing = match[1] === '/'
+            const tagName = match[2].toLowerCase()
+            const isSelfClosing = match[3] === '/'
+
+            if (isSelfClosing) {
+                // Self-closing tag: use current depth
+                results.push({ from: match.index, to: match.index + match[0].length, level: tagStack.length })
+            } else if (isClosing) {
+                // Closing tag: pop from stack first, then color at new level
+                const lastIndex = tagStack.lastIndexOf(tagName)
+                if (lastIndex !== -1) {
+                    tagStack.splice(lastIndex, 1)
+                }
+                results.push({ from: match.index, to: match.index + match[0].length, level: tagStack.length })
+            } else {
+                // Opening tag: color at current level, then push
+                results.push({ from: match.index, to: match.index + match[0].length, level: tagStack.length })
+                tagStack.push(tagName)
+            }
+        }
+
+        return results
+    }
 
     // Markdown parsing (regex-based for universal highlighting)
-    type MarkdownMatch = { from: number; to: number; type: 'h1' | 'h2' | 'h3' | 'heading' | 'bold' | 'italic' | 'bolditalic' | 'strike' | 'code' | 'xmltag' }
+    type MarkdownMatch = { from: number; to: number; type: 'h1' | 'h2' | 'h3' | 'heading' | 'bold' | 'italic' | 'bolditalic' | 'strike' | 'code' }
 
     function parseMarkdown(text: string): MarkdownMatch[] {
         const results: MarkdownMatch[] = []
@@ -135,12 +175,6 @@
         const codeRegex = /`([^`\n]+)`/g
         while ((match = codeRegex.exec(text)) !== null) {
             results.push({ from: match.index, to: match.index + match[0].length, type: 'code' })
-        }
-
-        // XML/HTML tags: <tag>, </tag>, <tag />, <tag attr="value">
-        const xmlTagRegex = /<\/?[a-zA-Z_][\w\-]*(?:\s+[^>]*)?\s*\/?>/g
-        while ((match = xmlTagRegex.exec(text)) !== null) {
-            results.push({ from: match.index, to: match.index + match[0].length, type: 'xmltag' })
         }
 
         return results
@@ -332,7 +366,14 @@
                     }
                 }
 
-                // Markdown decorations (lower priority than CBS)
+                // XML tag decorations (with nesting levels)
+                const xmlParsed = parseXmlTags(text)
+                for (const item of xmlParsed) {
+                    const level = item.level % cbsColors.length
+                    decos.push({ from: item.from, to: item.to, deco: xmlTagDecos[level], priority: 1.5 })
+                }
+
+                // Markdown decorations (lower priority than CBS and XML)
                 const mdParsed = parseMarkdown(text)
                 for (const item of mdParsed) {
                     let deco: Decoration
@@ -346,7 +387,6 @@
                         case 'bolditalic': deco = mdBoldItalicDeco; break
                         case 'strike': deco = mdStrikeDeco; break
                         case 'code': deco = mdCodeDeco; break
-                        case 'xmltag': deco = xmlTagDeco; break
                     }
                     decos.push({ from: item.from, to: item.to, deco, priority: 1 })
                 }
@@ -506,8 +546,12 @@
         '.cm-md-bold-italic': { color: '#ffb86c', fontWeight: 'bold', fontStyle: 'italic' },
         '.cm-md-strike': { color: '#6272a4', textDecoration: 'line-through' },
         '.cm-md-code': { color: '#50fa7b', backgroundColor: 'rgba(80, 250, 123, 0.1)' },
-        // XML tag styles
-        '.cm-xml-tag': { color: '#ff79c6' },
+        // XML tag styles (nesting level colors, same as CBS)
+        '.cm-xml-tag-0': { color: '#8be9fd' },
+        '.cm-xml-tag-1': { color: '#50fa7b' },
+        '.cm-xml-tag-2': { color: '#ffb86c' },
+        '.cm-xml-tag-3': { color: '#ff79c6' },
+        '.cm-xml-tag-4': { color: '#bd93f9' },
         // Regex styles
         '.cm-regex-group': { color: '#ff79c6', fontWeight: 'bold' },
         '.cm-regex-charclass': { color: '#8be9fd' },
