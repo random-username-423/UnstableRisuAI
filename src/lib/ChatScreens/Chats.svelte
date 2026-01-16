@@ -6,7 +6,7 @@
     import { createSimpleCharacter, DBState, ReloadChatPointer, selectedCharID } from 'src/ts/stores.svelte';
     import { chatFoldedStateMessageIndex } from 'src/ts/globalApi.svelte';
     import { get } from 'svelte/store';
-    import { tick } from 'svelte';
+    import { tick, untrack } from 'svelte';
 
     // Get current chat room ID to detect chat switches
     const getCurrentChatRoomId = () => {
@@ -119,31 +119,35 @@
     let previousChatRoomId: string | null = null;
 
     // Auto-scroll when new messages arrive
+    // Tracked: messages.length (triggers effect on new messages)
+    // Untracked: settings, chat room ID, DOM checks (read-only, shouldn't trigger)
     $effect(() => {
-        const currentLength = messages.length;
-        const currentChatRoomId = getCurrentChatRoomId();
-        const isSameChat = currentChatRoomId === previousChatRoomId;
+        const currentLength = messages.length; // <-- TRACKED: triggers on message count change
 
-        // Only auto-scroll if same chat and new messages were added
-        if (isSameChat && currentLength > previousLength) {
-            const lastMsg = messages.at(-1);
-            if (lastMsg && lastMsg.role === 'char' && DBState.db.autoScrollToNewMessage) {
-                const wasAtBottom = checkIfAtBottom();
-                if (wasAtBottom || DBState.db.alwaysScrollToNewMessage) {
-                    // Wait for DOM update then scroll
-                    tick().then(() => {
-                        setTimeout(() => {
-                            scrollToLatestMessage();
-                        }, 100);
-                    });
-                } else {
-                    hasNewUnreadMessage = true;
+        untrack(() => {
+            const currentChatRoomId = getCurrentChatRoomId();
+            const isSameChat = currentChatRoomId === previousChatRoomId;
+
+            // Only auto-scroll if same chat and new messages were added
+            if (isSameChat && currentLength > previousLength) {
+                const lastMsg = messages.at(-1);
+                if (lastMsg && lastMsg.role === 'char' && DBState.db.autoScrollToNewMessage) {
+                    const wasAtBottom = checkIfAtBottom();
+                    if (wasAtBottom || DBState.db.alwaysScrollToNewMessage) {
+                        tick().then(() => {
+                            setTimeout(() => {
+                                scrollToLatestMessage();
+                            }, 100);
+                        });
+                    } else {
+                        hasNewUnreadMessage = true;
+                    }
                 }
             }
-        }
 
-        previousLength = currentLength;
-        previousChatRoomId = currentChatRoomId;
+            previousLength = currentLength;
+            previousChatRoomId = currentChatRoomId;
+        });
     });
 </script>
 
