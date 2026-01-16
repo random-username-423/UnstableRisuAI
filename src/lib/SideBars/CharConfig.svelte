@@ -654,7 +654,7 @@
         {/if}
 
         <span class="text-textcolor mt-2">{language.backgroundHTML} <Help key="backgroundHTML" /></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.backgroundHTML}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.backgroundHTML} lang="html" class="my-2" />
 
         <span class="text-textcolor mt-4">{language.regexScript} <Help key="regexScript"/></span>
         <RegexList bind:value={DBState.currentChar.customscript} />
