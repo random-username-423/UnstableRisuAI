@@ -139,6 +139,23 @@
     }
 
     /**
+     * Handles scroll events for infinite scroll and new message button
+     */
+    function handleChatScroll(e: Event) {
+        const chatTarget = e.target as HTMLElement
+        // Infinite scroll: load more messages when near top
+        if (chatTarget.scrollTop < 100 && DBState.currentChat.message.length > loadPages) {
+            loadPages += 15
+        }
+        // Hide "new message" button when scrolled to bottom
+        const lastEl = chatTarget.lastElementChild
+        const isAtBottom = lastEl ? lastEl.getBoundingClientRect().bottom <= chatTarget.getBoundingClientRect().bottom + 100 : true
+        if (isAtBottom) {
+            showNewMessageButton = false
+        }
+    }
+
+    /**
      * Get current chat room ID to detect chat switches
      */
     function getCurrentChatRoomId(): string | null {
@@ -570,27 +587,17 @@
     {:else}
         <!-- ======================================================== -->
         <!-- CHAT CONTAINER                                           -->
-        <!-- Main scrollable area containing all chat messages        -->
-        <!-- Uses flex-col for top-to-bottom message display           -->
+        <!-- fixedChatTextarea: true = input fixed, false = all scrolls -->
         <!-- ======================================================== -->
         <div
-            class="h-full w-full flex flex-col overflow-y-auto relative default-chat-screen"
-            onscroll={(e) => {
-                // Infinite scroll: load more messages when near top
-                const chatTarget = e.target as HTMLElement
-                if (chatTarget.scrollTop < 100 && DBState.currentChat.message.length > loadPages) {
-                    loadPages += 15
-                }
-
-                // Hide "new message" button when scrolled to bottom
-                const chatsContainer = DBState.db.fixedChatTextarea && chatTarget.children[1] ? chatTarget.children[1] : chatTarget.children[0]
-                const lastEl = chatsContainer?.lastElementChild // Newest message is now at the end
-                const isAtBottom = lastEl ? lastEl.getBoundingClientRect().bottom <= chatTarget.getBoundingClientRect().bottom + 100 : true
-                if (isAtBottom) {
-                    showNewMessageButton = false
-                }
-            }}
+            class="h-full w-full flex flex-col relative {DBState.db.fixedChatTextarea ? '' : 'overflow-y-auto'}"
+            onscroll={DBState.db.fixedChatTextarea ? undefined : handleChatScroll}
         >
+            <!-- Messages area: scrollable when fixed, part of parent scroll when not -->
+            <div
+                class="flex flex-col relative {DBState.db.fixedChatTextarea ? 'flex-1 overflow-y-auto' : ''} default-chat-screen"
+                onscroll={DBState.db.fixedChatTextarea ? handleChatScroll : undefined}
+            >
             <!-- ======================================================== -->
             <!-- CHAT MESSAGES SECTION                                    -->
             <!-- Displays all chat messages and handles cold storage      -->
@@ -702,16 +709,19 @@
                     {userIconPortrait}
                 />
             {/if}
+            </div>
+            <!-- End of messages area -->
+
+            <!-- Spacer: pushes input to bottom when messages don't fill screen (only when not fixed) -->
+            {#if !DBState.db.fixedChatTextarea}
+                <div class="flex-1"></div>
+            {/if}
 
             <!-- ======================================================== -->
             <!-- MESSAGE INPUT AREA                                       -->
             <!-- Contains textarea, send button, and menu button          -->
-            <!-- Can be sticky (fixed at bottom) or inline                -->
             <!-- ======================================================== -->
-            <div
-                class="{DBState.db.fixedChatTextarea ? 'sticky pt-2 pb-2 right-0 bottom-0 bg-bgcolor' : 'mt-2 mb-2'} flex items-stretch w-full"
-                style={DBState.db.fixedChatTextarea ? "z-index:29;" : ""}
-            >
+            <div class="{DBState.db.fixedChatTextarea ? 'shrink-0 bg-bgcolor' : ''} pt-2 pb-2 flex items-stretch w-full">
                 <!-- Sticker toggle button (for non-group chats) -->
                 {#if DBState.db.useChatSticker && currentCharacter.type !== "group"}
                     <div
