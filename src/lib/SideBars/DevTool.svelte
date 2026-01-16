@@ -3,13 +3,12 @@
     import TextInput from "../UI/GUI/TextInput.svelte";
     import NumberInput from "../UI/GUI/NumberInput.svelte";
     import Button from "../UI/GUI/Button.svelte";
-    import { getRequestLog } from "src/ts/fetch";
     import { alertMd, alertWait } from "src/ts/alert.svelte";
     import Accordion from "../UI/Accordion.svelte";
     import { getCharToken, getChatToken } from "src/ts/tokenizer";
     import { tokenizePreset } from "src/ts/process/prompt";
     
-    import { DBState } from 'src/ts/stores.svelte';
+    import { DBState, modalState } from 'src/ts/stores.svelte';
     import TextAreaInput from "../UI/GUI/TextAreaInput.svelte";
     import { HardDriveUploadIcon, PlusIcon, TrashIcon } from "@lucide/svelte";
     import { openFilePicker } from "src/ts/utils/util";
@@ -312,5 +311,5 @@
 }}>Preview Module</Button>
 
 <Button className="mt-2" onclick={() => {
-    alertMd(getRequestLog())
+    modalState.requestLogs = true
 }}>Request Log</Button>
