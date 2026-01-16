@@ -135,6 +135,9 @@
   "pnpm": {
     "neverBuiltDependencies": [
       "sharp"
-    ]
+    ],
+    "patchedDependencies": {
+      "fflate@0.8.2": "patches/fflate@0.8.2.patch"
+    }
   }
 }
