@@ -496,7 +496,7 @@ body {
   display: none;
 }
 
-.chat-message-container:first-of-type .dyna-icon {
+.chat-message-container:last-of-type .dyna-icon {
   display: block;
 }
 
