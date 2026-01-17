@@ -10,6 +10,9 @@ import { sleep, getBasename, Semaphore } from "../utils/util";
 import { hubURL } from "../characterCards.svelte";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 
+const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp', '.avif']
+const isImageFile = (name: string) => imageExtensions.some(ext => name.toLowerCase().endsWith(ext))
+
 export async function checkDriver(type:'save'|'load'|'loadtauri'|'savetauri'|'reftoken'){
     const CLIENT_ID = '580075990041-l26k2d3c0nemmqiu3d3aag01npfrkn76.apps.googleusercontent.com';
     const REDIRECT_URI = type === 'reftoken' ? 'https://sv.risuai.xyz/drive' : "https://risuai.xyz/"
@@ -123,7 +126,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
 
     if(isTauri){
         const assets = await readDir('assets', {baseDir: BaseDirectory.AppData})
-        const toUpload = assets.filter(asset => asset.name && asset.name.endsWith('.png') && !fileNames.includes(newFormatKeys(asset.name)))
+        const toUpload = assets.filter(asset => asset.name && isImageFile(asset.name) && !fileNames.includes(newFormatKeys(asset.name)))
         const total = toUpload.length
 
         await Promise.all(toUpload.map(async (asset) => {
@@ -141,7 +144,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
     }
     else{
         const keys = await forageStorage.keys()
-        const toUpload = keys.filter(key => key.endsWith('.png') && !fileNames.includes(newFormatKeys(key)))
+        const toUpload = keys.filter(key => isImageFile(key) && !fileNames.includes(newFormatKeys(key)))
         const total = toUpload.length
 
         await Promise.all(toUpload.map(async (key) => {
