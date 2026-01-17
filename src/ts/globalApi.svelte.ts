@@ -17,7 +17,7 @@ import { alertConfirm, alertError, alertNormal, alertNormalWait, alertSelect } f
 import { syncDrive } from "./drive/drive.svelte";
 import { hasher } from "./parser.svelte";
 import { hubURL } from "./characterCards.svelte";
-import { decodeRisuSave, RisuSaveEncoder, type toSaveType } from "./storage/risuSave";
+import { decodeRisuSave, RisuSaveEncoder, type toSaveType, RisuSavePatcher } from "./storage/risuSave";
 import { AutoStorage } from "./storage/autoStorage";
 import { saveDbKei } from "./kei/backup";
 import { Capacitor } from '@capacitor/core';
@@ -25,7 +25,7 @@ import * as CapFS from '@capacitor/filesystem'
 import { save } from "@tauri-apps/plugin-dialog";
 import { language } from "src/lang";
 import { encodeCapKeySafe } from "./storage/mobileStorage";
-import { isTauri, isNodeServer, isCapacitor } from "./platform";
+import { isTauri, isNodeServer, isCapacitor, supportsPatchSync } from "./platform";
 
 export const forageStorage = new AutoStorage()
 
@@ -321,6 +321,9 @@ export async function saveDb() {
         compression: forageStorage.isAccount
     })
 
+    let patcher = new RisuSavePatcher()
+    await patcher.init(getDatabase())
+
     $effect.root(() => {
 
         let selIdState = $state(0)
@@ -413,6 +416,10 @@ export async function saveDb() {
                 await encoder.init(getDatabase(), {
                     compression: forageStorage.isAccount
                 })
+                // Also reinitialize patcher to match new DB state
+                if (supportsPatchSync) {
+                    await patcher.init(getDatabase())
+                }
                 requiresFullEncoderReload.state = false
             }
 
@@ -435,24 +442,38 @@ export async function saveDb() {
                 continue
             }
 
-            await encoder.set(db, toSave)
+            await encoder.set(db, safeStructuredClone(toSave))
             const encoded = encoder.encode()
             if (!encoded) {
                 await sleep(1000)
                 continue
             }
             const dbData = new Uint8Array(encoded)
-            if (isTauri) {
-                await writeFile('database/database.bin', dbData, { baseDir: BaseDirectory.AppData });
-                await writeFile(`database/dbbackup-${(Date.now() / 100).toFixed()}.bin`, dbData, { baseDir: BaseDirectory.AppData });
-            }
-            else {
 
-                await forageStorage.setItem('database/database.bin', dbData)
-                if (!forageStorage.isAccount) {
-                    await forageStorage.setItem(`database/dbbackup-${(Date.now() / 100).toFixed()}.bin`, dbData)
+            if(isTauri){
+                await writeFile('database/database.bin', dbData, {baseDir: BaseDirectory.AppData});
+                await writeFile(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData, {baseDir: BaseDirectory.AppData});
+            }
+            else{
+                if(!forageStorage.isAccount){
+                    let saved = false
+                    if (supportsPatchSync) {
+                        const patchData = await patcher.set(db, safeStructuredClone(toSave))
+                        saved = await forageStorage.patchItem('database/database.bin', patchData);
+                    }
+                    if (!saved) {
+                        await forageStorage.setItem('database/database.bin', dbData);
+                        await forageStorage.setItem(`database/dbbackup-${(Date.now()/100).toFixed()}.bin`, dbData);
+
+                        if (supportsPatchSync) {
+                            const decodedDb = await decodeRisuSave(dbData);
+                            globalThis.decoded = decodedDb
+                            await patcher.init(decodedDb);
+                        }
+                    }
                 }
-                if (forageStorage.isAccount) {
+                if(forageStorage.isAccount){
+                    await forageStorage.setItem('database/database.bin', dbData)
                     await sleep(3000)
                 }
             }
@@ -503,8 +524,8 @@ export async function getDbBackups() {
         }
         return backups
     }
-    else {
-        const keys = await forageStorage.keys()
+    else{
+        const keys = await forageStorage.keys('database/dbbackup-')
 
         const backups = keys
             .filter(key => key.startsWith('database/dbbackup-'))
