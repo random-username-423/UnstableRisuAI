@@ -19,6 +19,7 @@
   import PlaygroundMcp from "./PlaygroundMCP.svelte";
     import PlaygroundDocs from "./PlaygroundDocs.svelte";
     import PlaygroundAlert from "./PlaygroundAlert.svelte";
+    import PlaygroundCodeMirror from "./PlaygroundCodeMirror.svelte";
 
     let easterEggTouch = $state(0)
 
@@ -129,6 +130,11 @@
                 <h1 class="text-2xl font-bold text-start">Alert</h1>
             </button>
             <button class="bg-darkbg rounded-md p-6 flex flex-col transition-shadow hover:ring-1" onclick={() => {
+                viewState.playground = 15
+            }}>
+                <h1 class="text-2xl font-bold text-start">CodeMirror</h1>
+            </button>
+            <button class="bg-darkbg rounded-md p-6 flex flex-col transition-shadow hover:ring-1" onclick={() => {
                 easterEggTouch += 1
             }}>
                 <h1 class="text-2xl font-bold text-start">
@@ -191,6 +197,9 @@
             {/if}
             {#if viewState.playground === 14}
                 <PlaygroundAlert/>
+            {/if}
+            {#if viewState.playground === 15}
+                <PlaygroundCodeMirror/>
             {/if}
             {#if viewState.playground === 101}
                 <ToolConversion/>

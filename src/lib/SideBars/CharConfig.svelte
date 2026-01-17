@@ -46,6 +46,7 @@
     import { exportRegex, importRegex } from "src/ts/process/scripts";
     import Toggles from "./Toggles.svelte";
     import TTSSettings from "./TTS/TTSSettings.svelte"
+    import CodeMirrorEditor from "../UI/GUI/CodeMirrorEditor.svelte"
 
     // ===== Local State =====
     let iconRemoveMode = $state(false)       // Icon delete mode toggle
@@ -238,10 +239,10 @@
     {#if DBState.currentChar.type !== 'group' && licensed !== 'private'}
         <TextInput size="xl" marginBottom placeholder="Character Name" bind:value={DBState.currentChar.name} />
         <span class="text-textcolor">{language.description} <Help key="charDesc"/></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={(DBState.currentChar as character).desc}></TextAreaInput>
+        <CodeMirrorEditor bind:value={(DBState.currentChar as character).desc} class="my-2" />
         <span class="text-textcolor2 mb-6 text-sm">{tokens.desc} {language.tokens}</span>
         <span class="text-textcolor">{language.firstMessage} <Help key="charFirstMessage"/></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.firstMessage}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.firstMessage} class="my-2" />
         <span class="text-textcolor2 mb-6 text-sm">{tokens.firstMsg} {language.tokens}</span>
 
     {:else if licensed !== 'private' && DBState.currentChar.type === 'group'}
@@ -296,13 +297,7 @@
 
     {/if}
     <span class="text-textcolor">{language.authorNote} <Help key="chatNote"/></span>
-    <TextAreaInput
-        margin="both"
-        autocomplete="off"
-        bind:value={DBState.currentChat.note}
-        highlight
-        placeholder={getAuthorNoteDefaultText()}
-    />
+    <CodeMirrorEditor bind:value={DBState.currentChat.note} class="my-2" />
     <span class="text-textcolor2 mb-6 text-sm">{tokens.localNote} {language.tokens}</span>
 
     {#if !layoutState.betaMobile.enabled}
@@ -659,7 +654,7 @@
         {/if}
 
         <span class="text-textcolor mt-2">{language.backgroundHTML} <Help key="backgroundHTML" /></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.backgroundHTML}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.backgroundHTML} lang="html" class="my-2" />
 
         <span class="text-textcolor mt-4">{language.regexScript} <Help key="regexScript"/></span>
         <RegexList bind:value={DBState.currentChar.customscript} />
@@ -778,7 +773,7 @@
         </div>
 
         <span class="text-textcolor">{language.exampleMessage} <Help key="exampleMessage"/></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.exampleMessage}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.exampleMessage} class="my-2" />
 
         <span class="text-textcolor">{language.creatorNotes} <Help key="creatorQuotes"/></span>
         <MultiLangInput bind:value={DBState.currentChar.creatorNotes} className="my-2" onInput={() => {
@@ -786,13 +781,13 @@
         }}></MultiLangInput>
 
         <span class="text-textcolor">{language.systemPrompt} <Help key="systemPrompt"/></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.systemPrompt}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.systemPrompt} class="my-2" />
 
         <span class="text-textcolor">{language.replaceGlobalNote} <Help key="replaceGlobalNote"/></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.replaceGlobalNote}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.replaceGlobalNote} class="my-2" />
 
         <span class="text-textcolor mt-2">{language.additionalText} <Help key="additionalText" /></span>
-        <TextAreaInput highlight margin="both" autocomplete="off" bind:value={DBState.currentChar.additionalText}></TextAreaInput>
+        <CodeMirrorEditor bind:value={DBState.currentChar.additionalText} class="my-2" />
 
         {#if DBState.db.showUnrecommended || DBState.currentChar.personality.length > 3}
             <span class="text-textcolor">{language.personality} <Help key="personality" unrecommended/></span>
@@ -850,7 +845,7 @@
                 {#each DBState.currentChar.alternateGreetings as bias, i}
                     <tr>
                         <td class="font-medium truncate">
-                            <TextAreaInput highlight bind:value={DBState.currentChar.alternateGreetings[i]} placeholder="..." fullwidth />
+                            <CodeMirrorEditor bind:value={DBState.currentChar.alternateGreetings[i]} class="h-[150px]" />
                         </td>
                         <th class="font-medium cursor-pointer w-8">
                             <div class="flex flex-col items-center">
