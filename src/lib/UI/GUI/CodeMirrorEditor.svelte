@@ -93,6 +93,13 @@
         Decoration.mark({ class: `cm-xml-tag-${i}` })
     )
 
+    // CSS decoration classes
+    const cssSelectorDeco = Decoration.mark({ class: 'cm-css-selector' })
+    const cssPropertyDeco = Decoration.mark({ class: 'cm-css-property' })
+    const cssValueDeco = Decoration.mark({ class: 'cm-css-value' })
+    const cssBracketDeco = Decoration.mark({ class: 'cm-css-bracket' })
+    const cssCommentDeco = Decoration.mark({ class: 'cm-css-comment' })
+
     // XML tag parsing with nesting level tracking
     type XmlTagMatch = { from: number; to: number; level: number }
 
@@ -124,6 +131,77 @@
                 results.push({ from: match.index, to: match.index + match[0].length, level: tagStack.length })
                 tagStack.push(tagName)
             }
+        }
+
+        return results
+    }
+
+    // CSS parsing for <style> tag contents
+    type CssMatch = { from: number; to: number; type: 'selector' | 'property' | 'value' | 'bracket' | 'comment' }
+
+    function parseCSS(text: string, offset: number): CssMatch[] {
+        const results: CssMatch[] = []
+
+        // Comments: /* ... */
+        const commentRegex = /\/\*[\s\S]*?\*\//g
+        let match
+        while ((match = commentRegex.exec(text)) !== null) {
+            results.push({ from: offset + match.index, to: offset + match.index + match[0].length, type: 'comment' })
+        }
+
+        // Remove comments for further parsing
+        const textNoComments = text.replace(/\/\*[\s\S]*?\*\//g, m => ' '.repeat(m.length))
+
+        // Find all braces positions
+        const braceRegex = /[{}]/g
+        while ((match = braceRegex.exec(textNoComments)) !== null) {
+            results.push({ from: offset + match.index, to: offset + match.index + 1, type: 'bracket' })
+        }
+
+        // Parse selectors (text before {)
+        const selectorRegex = /([^{}]+?)(\s*\{)/g
+        while ((match = selectorRegex.exec(textNoComments)) !== null) {
+            const selector = match[1].trim()
+            if (selector.length > 0) {
+                // Find actual position of selector in original text
+                const searchStart = match.index
+                const selectorPos = textNoComments.indexOf(selector, searchStart)
+                if (selectorPos !== -1) {
+                    results.push({ from: offset + selectorPos, to: offset + selectorPos + selector.length, type: 'selector' })
+                }
+            }
+        }
+
+        // Parse property: value pairs
+        const declRegex = /([\w-]+)(\s*:\s*)([^;{}]+)/g
+        while ((match = declRegex.exec(textNoComments)) !== null) {
+            const propName = match[1]
+            const colonPart = match[2]
+            const propValue = match[3].trimEnd()
+
+            // Property name position
+            const propStart = match.index
+            results.push({ from: offset + propStart, to: offset + propStart + propName.length, type: 'property' })
+
+            // Value position (after property name and colon)
+            const valueStart = propStart + propName.length + colonPart.length
+            results.push({ from: offset + valueStart, to: offset + valueStart + propValue.length, type: 'value' })
+        }
+
+        return results
+    }
+
+    // Find <style> tag contents and parse CSS
+    function findStyleTagContents(text: string): CssMatch[] {
+        const results: CssMatch[] = []
+        const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi
+        let match
+
+        while ((match = styleRegex.exec(text)) !== null) {
+            const cssContent = match[1]
+            const cssStart = match.index + match[0].indexOf(cssContent)
+            const cssMatches = parseCSS(cssContent, cssStart)
+            results.push(...cssMatches)
         }
 
         return results
@@ -373,7 +451,21 @@
                     decos.push({ from: item.from, to: item.to, deco: xmlTagDecos[level], priority: 1.5 })
                 }
 
-                // Markdown decorations (lower priority than CBS and XML)
+                // CSS decorations (inside <style> tags)
+                const cssParsed = findStyleTagContents(text)
+                for (const item of cssParsed) {
+                    let deco: Decoration
+                    switch (item.type) {
+                        case 'selector': deco = cssSelectorDeco; break
+                        case 'property': deco = cssPropertyDeco; break
+                        case 'value': deco = cssValueDeco; break
+                        case 'bracket': deco = cssBracketDeco; break
+                        case 'comment': deco = cssCommentDeco; break
+                    }
+                    decos.push({ from: item.from, to: item.to, deco, priority: 1.7 })
+                }
+
+                // Markdown decorations (lower priority than CBS, XML, and CSS)
                 const mdParsed = parseMarkdown(text)
                 for (const item of mdParsed) {
                     let deco: Decoration
@@ -552,6 +644,12 @@
         '.cm-xml-tag-2': { color: '#ffb86c' },
         '.cm-xml-tag-3': { color: '#ff79c6' },
         '.cm-xml-tag-4': { color: '#bd93f9' },
+        // CSS styles (inside <style> tags)
+        '.cm-css-selector': { color: '#50fa7b' },
+        '.cm-css-property': { color: '#8be9fd' },
+        '.cm-css-value': { color: '#f1fa8c' },
+        '.cm-css-bracket': { color: '#ff79c6', fontWeight: 'bold' },
+        '.cm-css-comment': { color: '#6272a4', fontStyle: 'italic' },
         // Regex styles
         '.cm-regex-group': { color: '#ff79c6', fontWeight: 'bold' },
         '.cm-regex-charclass': { color: '#8be9fd' },
