@@ -194,7 +194,6 @@ export interface Database extends UISettings, LLMParametersSettings, ImageGenera
     jsonSchema: string
     strictJsonSchema: boolean
     extractJson: string
-    ai21Key: string
     statics: {
         messages: number
         imports: number

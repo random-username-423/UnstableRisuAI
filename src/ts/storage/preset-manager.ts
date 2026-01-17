@@ -104,7 +104,9 @@ export function saveCurrentPreset() {
     }
     db.botPresets = pres;
     setDatabase(db);
-}export function copyPreset(id: number) {
+}
+
+export function copyPreset(id: number) {
     saveCurrentPreset();
     const db = getDatabase();
     const pres = db.botPresets;
@@ -113,6 +115,7 @@ export function saveCurrentPreset() {
     db.botPresets.push(newPres);
     setDatabase(db);
 }
+
 export function changeToPreset(id = 0, savecurrent = true) {
     if (savecurrent) {
         saveCurrentPreset();
@@ -124,6 +127,7 @@ export function changeToPreset(id = 0, savecurrent = true) {
     db = setPreset(db, newPres);
     setDatabase(db);
 }
+
 export function setPreset(db: Database, newPres: botPreset) {
     db.apiType = newPres.apiType ?? db.apiType;
     db.mainPrompt = newPres.mainPrompt ?? db.mainPrompt;
@@ -233,6 +237,7 @@ export function setPreset(db: Database, newPres: botPreset) {
 
     return db;
 }
+
 export async function downloadPreset(id: number, type: 'json' | 'risupreset' | 'return' = 'json') {
     saveCurrentPreset();
     const db = getDatabase();
@@ -280,6 +285,7 @@ export async function downloadPreset(id: number, type: 'json' | 'risupreset' | '
         buf: null
     };
 }
+
 export async function importPreset(f: {
     name: string;
     data: Uint8Array;
@@ -309,7 +315,7 @@ export async function importPreset(f: {
     const db = getDatabase();
     if (pre.presetVersion && pre.presetVersion >= 3) {
         //NAI preset
-        const pr = safeStructuredClone(prebuiltPresets.NAI2);
+        const pr = safeStructuredClone(prebuiltPresets.NAI);
         pr.temperature = pre.parameters.temperature * 100;
         pr.maxResponse = pre.parameters.max_length;
         pr.NAISettings.topK = pre.parameters.top_k;

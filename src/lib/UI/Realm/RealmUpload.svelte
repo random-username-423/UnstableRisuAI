@@ -116,7 +116,7 @@
     import TextInput from "../GUI/TextInput.svelte";
     import Button from "../GUI/Button.svelte";
     import SelectInput from "../GUI/SelectInput.svelte";
-    import { CCLicenseData } from "src/ts/creation/license";
+    import { CCLicenseData } from "src/ts/licenses";
     import OptionInput from "../GUI/OptionInput.svelte";
     import { parseMultilangString, sleep } from "src/ts/utils/util";
     import { searchTagList } from "src/ts/realm";

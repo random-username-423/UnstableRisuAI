@@ -867,17 +867,11 @@ export const languageEnglish = {
     icon: "Icon",
     account: "Account",
     remove: "Remove",
-    creationSuccess: "Creation Success",
-    noweb: "This feature cannot be used on web version.",
-    createBotInternet: "Create Bot from Internet with AI",
-    createBotInternetAlert: "Please provide the character's name and the corresponding series/game.",
     able: "Able",
     assetWidth: "Asset Images Max Width",
     animationSpeed: "Animation Speed",
     screenshot: "Screenshot",
     screenshotSaved: "Screenshot Saved",
-    inputBotGenerationPrompt: "Input Bot Generation Prompt",
-    createBotAI: "Create OC Bot from AI",
     createBotwithAI: "Create Bot from AI",
     changeFolderName: "Input the new folder name (blank to cancel)",
     cancel: "Cancel",
@@ -1498,4 +1492,5 @@ export const languageEnglish = {
     partialBackupFirstConfirm: "⚠️ WARNING: Partial Local Backup ⚠️\n\nThis backup quickly saves only essential information.\n\nIncluded:\n- Database (chat history, characters, modules, plugins, prompts, settings, etc.)\n- Character profile icons (main images)\n- User icons and custom backgrounds\n- Persona icons\n- Folder images\n- Bot preset images\n\n⚠️ NOT Included:\n- Emotion images\n- Additional character assets\n- VITS voice files\n- All other additional media files\n\nThis backup file does NOT include all character assets!\nIf you need a complete backup, use the regular local backup.\n\nDo you want to continue?",
     partialBackupSecondConfirm: "⚠️⚠️ FINAL WARNING ⚠️⚠️\n\nThis backup saves only character profile images and does NOT save most other assets!\n\nWhat will be saved:\n- Database (chat history, characters, modules, plugins, prompts, settings, etc.)\n- Character profile icons (main images)\n- User icons and custom backgrounds\n- Persona icons\n- Folder images\n- Bot preset images\n\nWhat will NOT be saved:\n- Emotion images\n- Additional character assets\n- VITS voice files\n- All other media files\n\n⚠️ Proceed ONLY if you don't need character assets in your backup file! ⚠️\n\nAre you really sure you want to proceed with partial backup?",
     savePartialLocalBackup: "Save Partial Backup Locally (Excluding Character Assets)",
+    pluginProviderNotFound: "Unknown Plugin detected. please change the model or enable the corresponding plugin."
 }
