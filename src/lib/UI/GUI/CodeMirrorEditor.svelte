@@ -147,26 +147,26 @@
             results.push({ from: match.index, to: match.index + match[0].length, type })
         }
 
-        // Bold+Italic: ***text*** (not underscore style to avoid variable_name issues)
-        const boldItalicRegex = /(\*\*\*)(?!\s)([^\*]+?)(?<!\s)\1/g
+        // Bold+Italic: ***text*** (not underscore style to avoid variable_name issues, no newlines)
+        const boldItalicRegex = /(\*\*\*)(?!\s)([^\*\n]+?)(?<!\s)\1/g
         while ((match = boldItalicRegex.exec(text)) !== null) {
             results.push({ from: match.index, to: match.index + match[0].length, type: 'bolditalic' })
         }
 
-        // Bold: **text** (not *** or underscore style to avoid variable_name issues)
-        const boldRegex = /(?<!\*)(\*\*)(?!\*)(?!\s)([^\*]+?)(?<!\s)(?<!\*)\1(?!\*)/g
+        // Bold: **text** (not *** or underscore style to avoid variable_name issues, no newlines)
+        const boldRegex = /(?<!\*)(\*\*)(?!\*)(?!\s)([^\*\n]+?)(?<!\s)(?<!\*)\1(?!\*)/g
         while ((match = boldRegex.exec(text)) !== null) {
             results.push({ from: match.index, to: match.index + match[0].length, type: 'bold' })
         }
 
-        // Italic: *text* (not ** or underscore style to avoid variable_name issues)
-        const italicRegex = /(?<!\*)(\*)(?!\*)(?!\s)([^\*]+?)(?<!\s)(?<!\*)\1(?!\*)/g
+        // Italic: *text* (not ** or underscore style to avoid variable_name issues, no newlines)
+        const italicRegex = /(?<!\*)(\*)(?!\*)(?!\s)([^\*\n]+?)(?<!\s)(?<!\*)\1(?!\*)/g
         while ((match = italicRegex.exec(text)) !== null) {
             results.push({ from: match.index, to: match.index + match[0].length, type: 'italic' })
         }
 
-        // Strikethrough: ~~text~~
-        const strikeRegex = /~~(?!\s)(.+?)(?<!\s)~~/g
+        // Strikethrough: ~~text~~ (no newlines)
+        const strikeRegex = /~~(?!\s)([^\n]+?)(?<!\s)~~/g
         while ((match = strikeRegex.exec(text)) !== null) {
             results.push({ from: match.index, to: match.index + match[0].length, type: 'strike' })
         }
