@@ -758,10 +758,10 @@
         },
         // Autocomplete dropdown styles
         '.cm-tooltip': {
-            backgroundColor: 'var(--risu-bgcolor)',
-            border: '1px solid var(--risu-borderc)',
+            backgroundColor: '#1e1e2e !important',
+            border: '1px solid #45475a !important',
             borderRadius: '0.375rem',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.6)',
         },
         '.cm-tooltip-autocomplete': {
             '& > ul': {
