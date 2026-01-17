@@ -121,7 +121,7 @@ async function backupDrive(ACCESS_TOKEN:string) {
         return d.name
     })
 
-    const semaphore = new Semaphore(10)
+    const semaphore = new Semaphore(30)
     let completed = 0
 
     if(isTauri){
@@ -272,7 +272,7 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         const requiredImages = (getUnpargeables(db))
         let completed = 0
         const total = requiredImages.length
-        const semaphore = new Semaphore(10)
+        const semaphore = new Semaphore(30)
 
         await Promise.all(requiredImages.map(async (images) => {
             await semaphore.acquire()
