@@ -416,6 +416,10 @@ export async function saveDb() {
                 await encoder.init(getDatabase(), {
                     compression: forageStorage.isAccount
                 })
+                // Also reinitialize patcher to match new DB state
+                if (supportsPatchSync) {
+                    await patcher.init(getDatabase())
+                }
                 requiresFullEncoderReload.state = false
             }
 

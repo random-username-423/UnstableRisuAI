@@ -154,7 +154,8 @@ class RisuSaveDecoder {
                 case RisuSaveType.ROOT: {
                     const rootData = JSON.parse(this.blocks[key].content);
                     for (const rootKey in rootData) {
-                        if (!db[rootKey]) {
+                        // Filter out internal keys like __directory (same as client)
+                        if (!db[rootKey] && !rootKey.startsWith('__')) {
                             db[rootKey] = rootData[rootKey];
                         }
                     }
