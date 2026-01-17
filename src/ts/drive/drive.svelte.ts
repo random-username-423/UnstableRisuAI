@@ -6,7 +6,7 @@ import { isTauri } from "src/ts/platform"
 import { BaseDirectory, exists, readFile, readDir, writeFile } from "@tauri-apps/plugin-fs";
 import { language } from "../../lang";
 import { relaunch } from '@tauri-apps/plugin-process';
-import { sleep, getBasename } from "../utils/util";
+import { sleep, getBasename, Semaphore } from "../utils/util";
 import { hubURL } from "../characterCards.svelte";
 import { decodeRisuSave, encodeRisuSaveLegacy } from "../storage/risuSave";
 
@@ -118,36 +118,43 @@ async function backupDrive(ACCESS_TOKEN:string) {
         return d.name
     })
 
+    const semaphore = new Semaphore(10)
+    let completed = 0
+
     if(isTauri){
         const assets = await readDir('assets', {baseDir: BaseDirectory.AppData})
-        let i = 0;
-        for(const asset of assets){
-            i += 1;
-            alertWait(`Uploading Backup... (${i} / ${assets.length})`)
-            const key = asset.name
-            if(!key || !key.endsWith('.png')){
-                continue
-            }
-            const formatedKey = newFormatKeys(key)
-            if(!fileNames.includes(formatedKey)){
+        const toUpload = assets.filter(asset => asset.name && asset.name.endsWith('.png') && !fileNames.includes(newFormatKeys(asset.name)))
+        const total = toUpload.length
+
+        await Promise.all(toUpload.map(async (asset) => {
+            await semaphore.acquire()
+            try {
+                const key = asset.name
+                const formatedKey = newFormatKeys(key)
                 await createFileInFolder(ACCESS_TOKEN, formatedKey, await readFile('assets/' + asset.name, {baseDir: BaseDirectory.AppData}))
+                completed++
+                alertWait(`Uploading Backup... (${completed} / ${total})`)
+            } finally {
+                semaphore.release()
             }
-        }
+        }))
     }
     else{
         const keys = await forageStorage.keys()
+        const toUpload = keys.filter(key => key.endsWith('.png') && !fileNames.includes(newFormatKeys(key)))
+        const total = toUpload.length
 
-        for(let i=0;i<keys.length;i++){
-            alertWait(`Uploading Backup... (${i} / ${keys.length})`)
-            const key = keys[i]
-            if(!key.endsWith('.png')){
-                continue
-            }
-            const formatedKey = newFormatKeys(key)
-            if(!fileNames.includes(formatedKey)){
+        await Promise.all(toUpload.map(async (key) => {
+            await semaphore.acquire()
+            try {
+                const formatedKey = newFormatKeys(key)
                 await createFileInFolder(ACCESS_TOKEN, formatedKey, await forageStorage.getItem(key) as unknown as Uint8Array)
+                completed++
+                alertWait(`Uploading Backup... (${completed} / ${total})`)
+            } finally {
+                semaphore.release()
             }
-        }
+        }))
     }
 
     const dbData = encodeRisuSaveLegacy(getDatabase(), 'compression')
@@ -260,22 +267,18 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
         lastSaved = Date.now()
         localStorage.setItem('risu_lastsaved', `${lastSaved}`)
         const requiredImages = (getUnpargeables(db))
-        let ind = 0;
-        const errorLogs:string[] = []
-        for(const images of requiredImages){
-            ind += 1
-            for(let tries=0;tries<3;tries++){
-                const formatedImage = tries === 0 ? newFormatKeys(images) : formatKeys(images)
-                if(mode === 'sync'){
-                    alertWait(`Sync Files... (${ind} / ${requiredImages.length})`)
-                }
-                else{
-                    alertWait(`Loading Backup... (${ind} / ${requiredImages.length})`)
-                }
-                if(await checkImageExists(images)){
-                    //skip process
-                }
-                else{
+        let completed = 0
+        const total = requiredImages.length
+        const semaphore = new Semaphore(10)
+
+        await Promise.all(requiredImages.map(async (images) => {
+            await semaphore.acquire()
+            try {
+                for(let tries=0;tries<3;tries++){
+                    const formatedImage = tries === 0 ? newFormatKeys(images) : formatKeys(images)
+                    if(await checkImageExists(images)){
+                        break
+                    }
                     if(formatedImage.length >= 7){
                         if(fileNames.includes(formatedImage)){
                             for(const file of files){
@@ -283,23 +286,31 @@ async function loadDrive(ACCESS_TOKEN:string, mode: 'backup'|'sync'):Promise<voi
                                     const fData = await getFileData(ACCESS_TOKEN, file.id)
                                     if(isTauri){
                                         await writeFile(`assets/` + images, fData ,{baseDir: BaseDirectory.AppData})
-        
                                     }
                                     else{
                                         await forageStorage.setItem('assets/' + images, fData)
                                     }
                                     tries = 3
+                                    break
                                 }
                             }
                         }
                         else{
-                            alertWait(`Loading Backup... (${ind} / ${requiredImages.length}) (Error in ${formatedImage})`)
                             await sleep(1000)
                         }
                     }
                 }
+                completed++
+                if(mode === 'sync'){
+                    alertWait(`Sync Files... (${completed} / ${total})`)
+                }
+                else{
+                    alertWait(`Loading Backup... (${completed} / ${total})`)
+                }
+            } finally {
+                semaphore.release()
             }
-        }
+        }))
         db.didFirstSetup = true
         const dbData = encodeRisuSaveLegacy(db, 'compression')
 
