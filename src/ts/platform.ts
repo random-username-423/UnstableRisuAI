@@ -2,6 +2,7 @@ import { Capacitor } from "@capacitor/core";
 
 export const isTauri: boolean = !!(window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__
 export const isNodeServer: boolean = !!(globalThis as typeof globalThis & { __NODE__?: boolean }).__NODE__
+export const supportsPatchSync = !!globalThis.__PATCH_SYNC__
 export const isCapacitor: boolean = Capacitor.isNativePlatform(); // android & ios
 export const isWeb: boolean = !isTauri && !isNodeServer && location.hostname === 'risuai.xyz' && !isCapacitor;
 export const isMobile: boolean = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent);
