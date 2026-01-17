@@ -417,7 +417,7 @@ app.get('/api/read', async (req, res, next) => {
 
     if(!isHex(filePath)){
         res.status(400).send({
-            error:'Invaild Path'
+            error:'Invalid Path'
         });
         return;
     }
@@ -471,7 +471,7 @@ app.get('/api/remove', async (req, res, next) => {
     }
     if(!isHex(filePath)){
         res.status(400).send({
-            error:'Invaild Path'
+            error:'Invalid Path'
         });
         return;
     }
@@ -497,7 +497,7 @@ app.get('/api/list', async (req, res, next) => {
     try {
         const data = (await fs.readdir(path.join(savePath)))
             .map((v) => { return Buffer.from(v, 'hex').toString('utf-8') })
-            .filter((v) => { return v.startsWith(req.headers['key-prefix'].trim()) })
+            .filter((v) => { return v.startsWith((req.headers['key-prefix'] || '').trim()) })
 
         res.send({
             success: true,
@@ -526,7 +526,7 @@ app.post('/api/write', async (req, res, next) => {
     }
     if(!isHex(filePath)){
         res.status(400).send({
-            error:'Invaild Path'
+            error:'Invalid Path'
         });
         return;
     }
@@ -687,7 +687,7 @@ app.post('/api/patch', async (req, res, next) => {
     }
     if(!isHex(filePath)){
         res.status(400).send({
-            error:'Invaild Path'
+            error:'Invalid Path'
         });
         return;
     }
