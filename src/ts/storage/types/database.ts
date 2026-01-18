@@ -2,7 +2,7 @@ import type { Hotkey } from 'src/ts/defaulthotkeys'
 import type { ColorScheme } from 'src/ts/gui/colorscheme'
 import type { OobaChatCompletionRequestParams } from 'src/ts/model/ooba'
 import type { LLMFormat, LLMFlags, LLMTokenizer } from 'src/ts/model/types'
-import type { RisuPlugin } from 'src/ts/plugins/plugins'
+import type { RisuPlugin } from 'src/ts/plugins/plugins.svelte'
 import type { HypaModel } from 'src/ts/process/memory/hypamemory'
 import type { HypaV3Settings, HypaV3Preset } from 'src/ts/process/memory/hypav3.svelte'
 import type { NAISettings } from 'src/ts/process/models/nai'
@@ -19,7 +19,6 @@ import type { FormatingOrderItem, botPreset } from './preset'
 
 export interface Database extends UISettings, LLMParametersSettings, ImageGenerationSettings, TranslationSettings, MemorySettings, OpenRouterSettings, VertexSettings, LegacySettings {
     characters: (character | groupChat)[]
-    forceReplaceUrl2: string
     openAIKey: string
     proxyKey: string
     mainPrompt: string
@@ -46,19 +45,15 @@ export interface Database extends UISettings, LLMParametersSettings, ImageGenera
     language: string
     plugins: RisuPlugin[]
     currentPluginProvider: string
-    lastup: string
     textgenWebUIStreamURL: string
     textgenWebUIBlockingURL: string
     playMessage: boolean
     subModel: string
-    timeOut: number
     emotionPrompt: string
-    requester: string
     formatversion: number
     botPresets: botPreset[]
     botPresetsId: number
     ttsAutoSpeech?: boolean
-    runpodKey: string
     promptPreprocess: boolean
     swipe: boolean
     instantRemove: boolean
@@ -66,8 +61,6 @@ export interface Database extends UISettings, LLMParametersSettings, ImageGenera
     emotionPrompt2: string
     useSayNothing: boolean
     didFirstSetup: boolean
-    requestmet: string
-    requestproxy: string
     showUnrecommended: boolean
     elevenLabKey: string
     voicevoxUrl: string
@@ -79,7 +72,6 @@ export interface Database extends UISettings, LLMParametersSettings, ImageGenera
     textScreenBorder?: string
     characterOrder: (string | folder)[]
     hordeConfig: hordeConfig
-    toggleConfirmRecommendedPreset: boolean
     novelai: {
         token: string
         model: string
@@ -88,7 +80,6 @@ export interface Database extends UISettings, LLMParametersSettings, ImageGenera
     sendWithEnter: boolean
     clickToEdit: boolean
     koboldURL: string
-    advancedBotSettings: boolean
     useAutoSuggestions: boolean
     autoSuggestPrompt: string
     autoSuggestPrefix: string
@@ -139,11 +130,8 @@ export interface Database extends UISettings, LLMParametersSettings, ImageGenera
     autofillRequestUrl: boolean
     customProxyRequestModel: string
     newOAIHandle: boolean
-    putUserOpen: boolean
-    inlayImage: boolean
     reverseProxyOobaMode: boolean
     reverseProxyOobaArgs: OobaChatCompletionRequestParams
-    automark?: boolean
     huggingfaceKey: string
     fishSpeechKey: string
     allowAllExtentionFiles?: boolean
@@ -202,7 +190,6 @@ export interface Database extends UISettings, LLMParametersSettings, ImageGenera
     customQuotesData?: [string, string, string, string]
     groupTemplate?: string
     groupOtherBotRole?: string
-    OAIPrediction: string
     customAPIFormat: LLMFormat
     systemContentReplacement: string
     systemRoleReplacement: 'user' | 'assistant'
@@ -484,15 +471,6 @@ interface VertexSettings {
 
 interface LegacySettings {
     apiType: string
-    officialplugins: {
-        automark?: boolean
-        romanizer?: boolean
-        metrica?: boolean
-        oaiFix?: boolean
-        oaiFixEmdash?: boolean
-        oaiFixLetters?: boolean
-    }
-    logShare: boolean
     palmAPI: string
     tpo?: boolean
 }

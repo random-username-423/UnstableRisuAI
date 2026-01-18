@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { setDatabase, defaultSdDataFunc, getDatabase } from "./storage/database.svelte";
 import { checkRisuUpdate } from "./update";
 import { layoutState, botMakerMode, selectedCharID, appState, DBState, LoadingStatusState } from "./stores.svelte";
-import { loadPlugins } from "./plugins/plugins";
+import { loadPlugins } from "./plugins/plugins.svelte";
 import { alertError, alertMd, alertTOS, waitAlert } from "./alert.svelte";
 import { checkDriverInit } from "./drive/drive.svelte";
 import { characterURLImport } from "./characterCards.svelte";

@@ -34,7 +34,6 @@ export function saveCurrentPreset() {
         textgenWebUIStreamURL: db.textgenWebUIStreamURL,
         textgenWebUIBlockingURL: db.textgenWebUIBlockingURL,
         forceReplaceUrl: db.forceReplaceUrl,
-        forceReplaceUrl2: db.forceReplaceUrl2,
         promptPreprocess: db.promptPreprocess,
         bias: db.bias,
         koboldURL: db.koboldURL,
@@ -72,7 +71,6 @@ export function saveCurrentPreset() {
         groupTemplate: db.groupTemplate ?? '',
         seperateParametersEnabled: db.seperateParametersEnabled ?? false,
         seperateParameters: safeStructuredClone(db.seperateParameters),
-        openAIPrediction: db.OAIPrediction,
         customAPIFormat: safeStructuredClone(db.customAPIFormat),
         systemContentReplacement: db.systemContentReplacement,
         systemRoleReplacement: db.systemRoleReplacement,
@@ -146,7 +144,6 @@ export function setPreset(db: Database, newPres: botPreset) {
     db.textgenWebUIBlockingURL = newPres.textgenWebUIBlockingURL ?? db.textgenWebUIBlockingURL;
     db.forceReplaceUrl = newPres.forceReplaceUrl ?? db.forceReplaceUrl;
     db.promptPreprocess = newPres.promptPreprocess ?? db.promptPreprocess;
-    db.forceReplaceUrl2 = newPres.forceReplaceUrl2 ?? db.forceReplaceUrl2;
     db.bias = newPres.bias ?? db.bias;
     db.koboldURL = newPres.koboldURL ?? db.koboldURL;
     db.proxyKey = newPres.proxyKey ?? db.proxyKey;
@@ -202,7 +199,6 @@ export function setPreset(db: Database, newPres: botPreset) {
         translate: {},
         otherAx: {}
     };
-    db.OAIPrediction = newPres.openAIPrediction ?? '';
     db.customAPIFormat = safeStructuredClone(newPres.customAPIFormat) ?? LLMFormat.OpenAICompatible;
     db.systemContentReplacement = newPres.systemContentReplacement ?? '';
     db.systemRoleReplacement = newPres.systemRoleReplacement ?? 'user';
@@ -245,7 +241,6 @@ export async function downloadPreset(id: number, type: 'json' | 'risupreset' | '
     console.log(pres);
     pres.openAIKey = '';
     pres.forceReplaceUrl = '';
-    pres.forceReplaceUrl2 = '';
     pres.proxyKey = '';
     pres.textgenWebUIStreamURL = '';
     pres.textgenWebUIBlockingURL = '';

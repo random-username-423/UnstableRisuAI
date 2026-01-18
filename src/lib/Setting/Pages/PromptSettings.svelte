@@ -279,8 +279,6 @@
     <CodeMirrorEditor bind:value={DBState.db.customPromptTemplateToggle} class="my-2 h-[120px]" />
     <span class="text-textcolor mt-4">{language.defaultVariables} <Help key='defaultVariables' /></span>
     <CodeMirrorEditor bind:value={DBState.db.templateDefaultVariables} class="my-2 h-[120px]" />
-    <span class="text-textcolor mt-4">{language.predictedOutput}</span>
-    <CodeMirrorEditor bind:value={DBState.db.OAIPrediction} class="my-2 h-[120px]" />
     <span class="text-textcolor mt-4">{language.autoSuggest} <Help key='autoSuggest' /></span>
     <CodeMirrorEditor bind:value={DBState.db.autoSuggestPrompt} placeholder={defaultAutoSuggestPrompt} class="my-2 h-[120px]" />
     <span class="text-textcolor mt-4">{language.groupInnerFormat} <Help key='groupInnerFormat' /></span>

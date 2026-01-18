@@ -28,7 +28,6 @@ export interface botPreset {
     textgenWebUIStreamURL?: string;
     textgenWebUIBlockingURL?: string;
     forceReplaceUrl?: string;
-    forceReplaceUrl2?: string;
     promptPreprocess: boolean;
     bias: [string, number][];
     proxyRequestModel?: string;
@@ -80,7 +79,6 @@ export interface botPreset {
     customAPIFormat?: LLMFormat;
     systemContentReplacement?: string;
     systemRoleReplacement?: 'user' | 'assistant';
-    openAIPrediction?: string;
     enableCustomFlags?: boolean;
     customFlags?: LLMFlags[];
     image?: string;

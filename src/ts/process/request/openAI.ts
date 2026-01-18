@@ -410,13 +410,6 @@ export async function requestOpenAI(arg:RequestDataArgumentExtended):Promise<req
         }
     }
 
-    if(db.OAIPrediction){
-        body.prediction = {
-            type: "content",
-            content: db.OAIPrediction
-        }
-    }
-
     if(aiModel === 'openrouter'){
         if(db.openrouterFallback){
             body.route = "fallback"

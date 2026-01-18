@@ -3,7 +3,7 @@ import { language } from "../../../lang";
 import { globalFetch } from "src/ts/fetch";
 import { getModelInfo, LLMFlags, LLMFormat, type LLMModel } from "../../model/modellist";
 import { risuChatParser, risuEscape, risuUnescape } from "../../parser.svelte";
-import { pluginProcess, pluginV2 } from "../../plugins/plugins";
+import { pluginProcess, pluginV2 } from "../../plugins/plugins.svelte";
 import { getCurrentCharacter, getCurrentChat, getDatabase } from "../../storage/database.svelte";
 import { type character } from 'src/ts/storage/types/character';
 import { tokenizeNum } from "../../tokenizer";

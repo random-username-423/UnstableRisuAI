@@ -72,10 +72,13 @@
     import { aiLawApplies, chatFoldedState, chatFoldedStateMessageIndex, downloadFile } from "src/ts/globalApi.svelte"
     import { v4 } from "uuid"
 
+    const loadPlaygroundMenu = () => import('../Playground/PlaygroundMenu.svelte').then(m => m.default);
+    
     // ============================================================
     // COMPONENT PROPS INTERFACE
     // Defines the external properties this component accepts
     // ============================================================
+
     interface Props {
         openModuleList?: boolean // Controls visibility of module list panel
         openChatList?: boolean // Controls visibility of chat list panel
@@ -595,7 +598,9 @@
         {#if viewState.playground === 0}
             <MainMenu />
         {:else}
-            <PlaygroundMenu />
+            {#await loadPlaygroundMenu() then PlaygroundMenu}
+                <PlaygroundMenu />
+            {/await}
         {/if}
     {:else}
         <!-- ======================================================== -->

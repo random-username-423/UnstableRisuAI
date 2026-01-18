@@ -16,7 +16,7 @@ import type { Database } from './types/database';
 import type { AINsettings, OobaSettings } from './types/settings';
 
 //APP_VERSION_POINT is to locate the app version in the database file for version bumping
-export let appVer = "2026.1.90" //<APP_VERSION_POINT>
+export let appVer = "2026.1.184" //<APP_VERSION_POINT>
 export let webAppSubVer = ''
 
 type DatabaseUpdatePathKey = string | number | symbol
@@ -133,7 +133,6 @@ export function setDatabase(data:Database){
     data.additionalPrompt ??= 'The assistant must act as {{char}}. user is {{user}}.'
     data.descriptionPrefix ??= 'description of {{char}}: '
     data.forceReplaceUrl ??= ''
-    data.forceReplaceUrl2 ??= ''
     data.language ??= 'en'
     data.swipe ??= true
     data.translator ??= ''
@@ -141,7 +140,6 @@ export function setDatabase(data:Database){
     data.currentPluginProvider ??= ''
     data.plugins ??= []
     data.zoomsize ??= 100
-    data.lastup ??= ''
     data.customBackground ??= ''
     data.textgenWebUIStreamURL ??= 'wss://localhost/api/'
     data.textgenWebUIBlockingURL ??= 'https://localhost/api/'
@@ -151,11 +149,9 @@ export function setDatabase(data:Database){
     data.iconsize ??= 100
     data.theme ??= ''
     data.subModel ??= 'gemini-3-flash-preview'
-    data.timeOut ??= 120
     data.waifuWidth ??= 100
     data.waifuWidth2 ??= 100
     data.emotionPrompt ??= ""
-    data.requester ??= "new"
     data.proxyKey ??= ""
     if(data.botPresets == null){
         const defaultPreset = presetTemplate
@@ -164,7 +160,6 @@ export function setDatabase(data:Database){
     }
     data.botPresetsId ??= 0
     data.sdProvider ??= ''
-    data.runpodKey ??= ''
     data.webUiUrl ??= 'http://127.0.0.1:7860/'
     data.sdSteps ??= 30
     data.sdCFG ??= 7
@@ -178,8 +173,6 @@ export function setDatabase(data:Database){
     data.requestRetrys ??= 2
     data.useSayNothing ??= true
     data.bias ??= []
-    data.requestmet ??= 'normal'
-    data.requestproxy ??= ''
     data.showUnrecommended ??= false
     data.elevenLabKey ??= ''
     data.voicevoxUrl ??= ''
@@ -293,7 +286,6 @@ export function setDatabase(data:Database){
     data.sendWithEnter ??= true
     data.autoSuggestPrompt ??= defaultAutoSuggestPrompt
     data.autoSuggestPrefix ??= ""
-    data.OAIPrediction ??= ''
     data.autoSuggestClean ??= true
     data.imageCompression ??= true
     if(!data.formatingOrder.includes('personaPrompt')){
@@ -313,8 +305,6 @@ export function setDatabase(data:Database){
     data.ainconfig ??= safeStructuredClone(defaultAIN)
     data.openrouterKey ??= ''
     data.openrouterRequestModel ??= 'openai/gpt-3.5-turbo'
-    data.toggleConfirmRecommendedPreset ??= true
-    data.officialplugins ??= {}
     data.NAIsettings ??= safeStructuredClone(prebuiltNAIpresets)
     data.assetWidth ??= -1
     data.animationSpeed ??= 0.4
@@ -346,7 +336,6 @@ export function setDatabase(data:Database){
     data.gptVisionQuality ??= 'low'
     data.huggingfaceKey ??= ''
     data.fishSpeechKey ??= ''
-    data.statistics ??= {}
     data.presetRegex ??= []
     data.reverseProxyOobaArgs ??= {
         mode: 'instruct'
@@ -485,7 +474,6 @@ export function setDatabase(data:Database){
     data.showSavingIcon ??= false
     data.banCharacterset ??= []
     data.showPromptComparison ??= false
-    data.checkCorruption ??= true
     data.OaiCompAPIKeys ??= {}
     data.reasoningEffort ??= 0
     data.hypaV3Presets ??= [
@@ -711,7 +699,6 @@ export const presetTemplate:botPreset = {
     textgenWebUIStreamURL: '',
     textgenWebUIBlockingURL: '',
     forceReplaceUrl: '',
-    forceReplaceUrl2: '',
     promptPreprocess: false,
     proxyKey: '',
     bias: [],
@@ -738,5 +725,4 @@ const defaultSdData:[string,string][] = [
 export const defaultSdDataFunc = () =>{
     return safeStructuredClone(defaultSdData)
 }
-
 
