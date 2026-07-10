@@ -286,6 +286,7 @@
             }}
         >
             <OptionInput value={LLMFormat.OpenAICompatible.toString()}>OpenAI Compatible</OptionInput>
+            <OptionInput value={LLMFormat.OpenAIResponseAPI.toString()}>OpenAI Responses API</OptionInput>
             <OptionInput value={LLMFormat.Anthropic.toString()}>Anthropic Claude</OptionInput>
             <OptionInput value={LLMFormat.Mistral.toString()}>Mistral</OptionInput>
             <OptionInput value={LLMFormat.GeminiAPI.toString()}>Gemini API</OptionInput>

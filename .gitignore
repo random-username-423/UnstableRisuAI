@@ -68,3 +68,4 @@ src-tauri/gen/schemas/
 
 # OAuth Secrets
 src/ts/config/secrets.ts
+.pnpm-store/

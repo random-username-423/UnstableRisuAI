@@ -1,0 +1,19 @@
+allowBuilds:
+  '@swc/core': true
+  core-js: true
+  esbuild: true
+  msgpackr-extract: true
+  onnxruntime-node: true
+  protobufjs: true
+  sharp: true
+  svelte-preprocess: true
+onlyBuiltDependencies:
+  - '@swc/core'
+  - core-js
+  - esbuild
+  - msgpackr-extract
+  - onnxruntime-node
+  - protobufjs
+  - sharp
+  - svelte-preprocess
+verifyDepsBeforeRun: false

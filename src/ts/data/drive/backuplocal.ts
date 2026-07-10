@@ -75,9 +75,16 @@ export async function SaveLocalBackup() {
     const writtenAssets = new Set<string>() // 중복 방지
 
     // 1. IndexedDB (forageStorage)에서 에셋 수집
+    console.log(`[LocalBackup] forageStorage.isAccount: ${forageStorage.isAccount}`)
     const keys = await forageStorage.keys()
+    console.log(`[LocalBackup] All keys count: ${keys.length}, first 10:`, keys.slice(0, 10))
     const indexedDbAssetKeys = keys.filter((key) => key && key.startsWith("assets/"))
     console.log(`[LocalBackup] Found ${indexedDbAssetKeys.length} assets in IndexedDB`)
+    console.log(`[LocalBackup] First 10 IndexedDB keys:`, indexedDbAssetKeys.slice(0, 10))
+    console.log(
+        `[LocalBackup] AssetMap has ${assetMap.size} referenced assets. First 5:`,
+        [...assetMap.keys()].slice(0, 5)
+    )
 
     // 2. Tauri fs (AppData/assets)에서 에셋 수집 (레거시 데이터 호환)
     let tauriFsAssetKeys: string[] = []
@@ -94,9 +101,9 @@ export async function SaveLocalBackup() {
         }
     }
 
-    // 전체 에셋 목록 (중복 제거)
-    const allAssetKeys = [...new Set([...indexedDbAssetKeys, ...tauriFsAssetKeys])]
-    console.log(`[LocalBackup] Total unique assets to backup: ${allAssetKeys.length}`)
+    // DB에서 참조하는 에셋을 기준으로 백업 (assetMap 사용)
+    const allAssetKeys = [...assetMap.keys()]
+    console.log(`[LocalBackup] Total referenced assets to backup: ${allAssetKeys.length}`)
 
     for (let i = 0; i < allAssetKeys.length; i++) {
         const key = allAssetKeys[i]
@@ -124,6 +131,25 @@ export async function SaveLocalBackup() {
             }
         }
 
+        // 여전히 없으면 서비스 워커 캐시에서 직접 시도 (웹 환경)
+        if (!data && !isTauri && typeof caches !== "undefined") {
+            try {
+                const encoded = Buffer.from(key, "utf-8").toString("hex")
+                const cache = await caches.open("risuCache")
+                const cacheUrl = new URL("/sw/img/" + encoded, location.origin)
+                const cachedResponse = await cache.match(cacheUrl)
+                if (cachedResponse) {
+                    const arrayBuffer = await cachedResponse.arrayBuffer()
+                    data = new Uint8Array(arrayBuffer)
+                    console.log(`[LocalBackup] Loaded from Cache API: ${key} (${data.byteLength} bytes)`)
+                } else {
+                    console.log(`[LocalBackup] Not in cache: ${key}`)
+                }
+            } catch (e) {
+                console.log(`[LocalBackup] Cache API error for ${key}:`, e)
+            }
+        }
+
         if (data && data.byteLength > 0) {
             // Remove "assets/" prefix for backward compatibility with older versions
             const backupName = key.startsWith("assets/") ? key.slice(7) : key
@@ -139,25 +165,27 @@ export async function SaveLocalBackup() {
 
     // Backup chat files from OPFS (one by one to avoid memory issues)
     // Uses listRecursiveFromWorker for nested directory structure (chaId/chatId.bin)
-    try {
-        const chatFiles = await listRecursiveFromWorker("database/chats")
-        console.log(`[LocalBackup] Found ${chatFiles.length} chat files to backup`)
-        for (let i = 0; i < chatFiles.length; i++) {
-            const file = chatFiles[i] // 상대 경로: "chaId/chatId.bin"
-            alertWait(`Saving local Backup... (Chat ${i + 1}/${chatFiles.length})`)
-            try {
-                const data = await loadFromWorker(`database/chats/${file}`)
-                if (data && data.byteLength > 0) {
-                    await writer.writeBackup(`chats/${file}`, data)
-                }
-            } catch (e) {
-                console.warn(`[LocalBackup] Failed to backup chat file ${file}:`, e)
-            }
-        }
-        console.log(`[LocalBackup] Backed up ${chatFiles.length} chat files`)
-    } catch (e) {
-        console.log("[LocalBackup] No chat files to backup or error:", e)
-    }
+    // TODO: 디버깅용 임시 스킵
+    console.log(`[LocalBackup] SKIPPING chat backup for debugging`)
+    // try {
+    //     const chatFiles = await listRecursiveFromWorker("database/chats")
+    //     console.log(`[LocalBackup] Found ${chatFiles.length} chat files to backup`)
+    //     for (let i = 0; i < chatFiles.length; i++) {
+    //         const file = chatFiles[i] // 상대 경로: "chaId/chatId.bin"
+    //         alertWait(`Saving local Backup... (Chat ${i + 1}/${chatFiles.length})`)
+    //         try {
+    //             const data = await loadFromWorker(`database/chats/${file}`)
+    //             if (data && data.byteLength > 0) {
+    //                 await writer.writeBackup(`chats/${file}`, data)
+    //             }
+    //         } catch (e) {
+    //             console.warn(`[LocalBackup] Failed to backup chat file ${file}:`, e)
+    //         }
+    //     }
+    //     console.log(`[LocalBackup] Backed up ${chatFiles.length} chat files`)
+    // } catch (e) {
+    //     console.log("[LocalBackup] No chat files to backup or error:", e)
+    // }
 
     const dbData = encodeRisuSaveLegacy(getDatabase(), "compression")
 
@@ -623,9 +651,15 @@ export async function SaveLocalBackupWithEmbeddedChats() {
     const writtenAssets = new Set<string>()
 
     // 1. IndexedDB (forageStorage)에서 에셋 수집
+    console.log(`[LocalBackupEmbedded] forageStorage.isAccount: ${forageStorage.isAccount}`)
     const keys = await forageStorage.keys()
+    console.log(`[LocalBackupEmbedded] All keys count: ${keys.length}, first 10:`, keys.slice(0, 10))
     const indexedDbAssetKeys = keys.filter((key) => key && key.startsWith("assets/"))
     console.log(`[LocalBackupEmbedded] Found ${indexedDbAssetKeys.length} assets in IndexedDB`)
+    console.log(
+        `[LocalBackupEmbedded] AssetMap has ${assetMap.size} referenced assets. First 5:`,
+        [...assetMap.keys()].slice(0, 5)
+    )
 
     // 2. Tauri fs (AppData/assets)에서 에셋 수집 (레거시 데이터 호환)
     let tauriFsAssetKeys: string[] = []
@@ -642,9 +676,9 @@ export async function SaveLocalBackupWithEmbeddedChats() {
         }
     }
 
-    // 전체 에셋 목록 (중복 제거)
-    const allAssetKeys = [...new Set([...indexedDbAssetKeys, ...tauriFsAssetKeys])]
-    console.log(`[LocalBackupEmbedded] Total unique assets to backup: ${allAssetKeys.length}`)
+    // DB에서 참조하는 에셋을 기준으로 백업 (assetMap 사용)
+    const allAssetKeys = [...assetMap.keys()]
+    console.log(`[LocalBackupEmbedded] Total referenced assets to backup: ${allAssetKeys.length}`)
 
     for (let i = 0; i < allAssetKeys.length; i++) {
         const key = allAssetKeys[i]
@@ -669,6 +703,25 @@ export async function SaveLocalBackupWithEmbeddedChats() {
                 data = await readFile(key, { baseDir: BaseDirectory.AppData })
             } catch (e) {
                 // 무시
+            }
+        }
+
+        // 여전히 없으면 서비스 워커 캐시에서 직접 시도 (웹 환경)
+        if (!data && !isTauri && typeof caches !== "undefined") {
+            try {
+                const encoded = Buffer.from(key, "utf-8").toString("hex")
+                const cache = await caches.open("risuCache")
+                const cacheUrl = new URL("/sw/img/" + encoded, location.origin)
+                const cachedResponse = await cache.match(cacheUrl)
+                if (cachedResponse) {
+                    const arrayBuffer = await cachedResponse.arrayBuffer()
+                    data = new Uint8Array(arrayBuffer)
+                    console.log(`[LocalBackupEmbedded] Loaded from Cache API: ${key} (${data.byteLength} bytes)`)
+                } else {
+                    console.log(`[LocalBackupEmbedded] Not in cache: ${key}`)
+                }
+            } catch (e) {
+                console.log(`[LocalBackupEmbedded] Cache API error for ${key}:`, e)
             }
         }
 

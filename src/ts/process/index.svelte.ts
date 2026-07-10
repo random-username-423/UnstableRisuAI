@@ -790,7 +790,6 @@ export async function sendChat(
         currentTokens += chatTokens
         index++
     }
-    console.log(JSON.stringify(chats, null, 2))
 
     const depthPrompts = lorepmt.actives.filter((v) => {
         return (v.pos === "depth" && v.depth > 0) || v.pos === "reverse_depth"

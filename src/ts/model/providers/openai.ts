@@ -9,6 +9,132 @@ import {
 } from "../types"
 
 export const OpenAIModels: LLMModel[] = [
+    {
+        id: "gpt-5.6",
+        internalID: "gpt-5.6",
+        name: "GPT 5.6",
+        provider: LLMProvider.OpenAI,
+        format: LLMFormat.OpenAIResponseAPI,
+        flags: [
+            LLMFlags.hasStreaming,
+            LLMFlags.OAICompletionTokens,
+            LLMFlags.hasFullSystemPrompt,
+            LLMFlags.hasImageInput,
+            LLMFlags.DeveloperRole,
+        ],
+        parameters: GPT5Parameters,
+        tokenizer: LLMTokenizer.tiktokenO200Base,
+        recommended: true,
+    },
+    {
+        id: "gpt-5.5",
+        internalID: "gpt-5.5",
+        name: "GPT 5.5",
+        provider: LLMProvider.OpenAI,
+        format: LLMFormat.OpenAIResponseAPI,
+        flags: [
+            LLMFlags.hasStreaming,
+            LLMFlags.OAICompletionTokens,
+            LLMFlags.hasFullSystemPrompt,
+            LLMFlags.hasImageInput,
+            LLMFlags.DeveloperRole,
+        ],
+        parameters: GPT5Parameters,
+        tokenizer: LLMTokenizer.tiktokenO200Base,
+        recommended: true,
+    },
+    {
+        id: "chat-latest",
+        internalID: "chat-latest",
+        name: "GPT 5.5 Chat",
+        provider: LLMProvider.OpenAI,
+        format: LLMFormat.OpenAIResponseAPI,
+        flags: [
+            LLMFlags.hasStreaming,
+            LLMFlags.OAICompletionTokens,
+            LLMFlags.hasFullSystemPrompt,
+            LLMFlags.hasImageInput,
+            LLMFlags.DeveloperRole,
+        ],
+        //Note: this is special case
+        parameters: OpenAIParameters,
+        tokenizer: LLMTokenizer.tiktokenO200Base,
+        recommended: true,
+    },
+
+    {
+        id: "gpt-5.4",
+        internalID: "gpt-5.4",
+        name: "GPT 5.4",
+        provider: LLMProvider.OpenAI,
+        format: LLMFormat.OpenAIResponseAPI,
+        flags: [
+            LLMFlags.hasStreaming,
+            LLMFlags.OAICompletionTokens,
+            LLMFlags.hasFullSystemPrompt,
+            LLMFlags.hasImageInput,
+            LLMFlags.DeveloperRole,
+        ],
+        parameters: GPT5Parameters,
+        tokenizer: LLMTokenizer.tiktokenO200Base,
+        recommended: true,
+    },
+    {
+        id: "gpt-5.3-chat-latest",
+        internalID: "gpt-5.3-chat-latest",
+        name: "GPT 5.3 Chat",
+        provider: LLMProvider.OpenAI,
+        format: LLMFormat.OpenAIResponseAPI,
+        flags: [
+            LLMFlags.hasStreaming,
+            LLMFlags.OAICompletionTokens,
+            LLMFlags.hasFullSystemPrompt,
+            LLMFlags.hasImageInput,
+            LLMFlags.DeveloperRole,
+        ],
+        //Note: this is special case
+        parameters: OpenAIParameters,
+        tokenizer: LLMTokenizer.tiktokenO200Base,
+        recommended: true,
+    },
+
+    {
+        id: "gpt-5.2",
+        internalID: "gpt-5.2",
+        name: "GPT 5.2",
+        provider: LLMProvider.OpenAI,
+        format: LLMFormat.OpenAIResponseAPI,
+        flags: [
+            LLMFlags.hasStreaming,
+            LLMFlags.OAICompletionTokens,
+            LLMFlags.hasFullSystemPrompt,
+            LLMFlags.hasImageInput,
+            LLMFlags.DeveloperRole,
+        ],
+        parameters: GPT5Parameters,
+        tokenizer: LLMTokenizer.tiktokenO200Base,
+        recommended: true,
+    },
+
+    {
+        id: "gpt-5.2-chat-latest",
+        internalID: "gpt-5.2-chat-latest",
+        name: "GPT 5.2 Chat",
+        provider: LLMProvider.OpenAI,
+        format: LLMFormat.OpenAIResponseAPI,
+        flags: [
+            LLMFlags.hasStreaming,
+            LLMFlags.OAICompletionTokens,
+            LLMFlags.hasFullSystemPrompt,
+            LLMFlags.hasImageInput,
+            LLMFlags.DeveloperRole,
+        ],
+        //Note: this is special case
+        parameters: OpenAIParameters,
+        tokenizer: LLMTokenizer.tiktokenO200Base,
+        recommended: true,
+    },
+
     // ===== GPT-5.1 Series (2025-11) =====
     {
         id: "gpt-5.1",

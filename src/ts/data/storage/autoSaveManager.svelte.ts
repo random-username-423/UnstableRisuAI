@@ -99,6 +99,8 @@ export async function startAutoSaveLoop() {
             saveTimeoutExecute()
         })
 
+        $effect(() => {})
+
         // Stage 2-3: DB 전체 + 현재 캐릭터/채팅 변경 감지
         $effect(() => {
             // DB의 characters, botPresets, modules 외 모든 필드 감지
@@ -107,6 +109,7 @@ export async function startAutoSaveLoop() {
                     $state.snapshot(DBState.db[key])
                 }
             }
+
             // 현재 선택된 캐릭터의 변경 감지
             const charIndex = ChatState.selectedCharId
             if (DBState?.db?.characters?.[charIndex]) {
@@ -143,6 +146,14 @@ export async function startAutoSaveLoop() {
                     changeTracker.chat.unshift([currentChar?.chaId, currentChar?.chats[currentChar?.chatPage].id])
                 }
             }
+
+            const char = DBState.db.characters[charIndex]
+            const chatPage = char?.chatPage
+            // chatPage 변경 시 자동으로 preload
+            if (char && chatPage !== undefined) {
+                console.log("chatpage changed test")
+            }
+
             saveTimeoutExecute()
         })
     })

@@ -58,7 +58,15 @@ let appDataDirPath = ""
  * @param {string} loc - The location of the file.
  * @returns {Promise<string>} - A promise that resolves to the source URL of the file.
  */
+// 디버그용 카운터
+let getFileSrcCallCount = 0
+
 export async function getFileSrc(loc: string) {
+    const callId = ++getFileSrcCallCount
+    const shouldLog = callId <= 5
+    if (shouldLog) {
+        console.log(`[getFileSrc #${callId}] START loc="${loc}"`)
+    }
     if (isTauri) {
         if (loc.startsWith("assets")) {
             // 캐시 확인
@@ -101,6 +109,7 @@ export async function getFileSrc(loc: string) {
         return convertFileSrc(loc)
     }
     if (forageStorage.isAccount && loc.startsWith("assets")) {
+        if (shouldLog) console.log(`[getFileSrc #${callId}] → Account hub URL`)
         return hubURL + `/rs/` + loc
     }
     try {
@@ -114,10 +123,17 @@ export async function getFileSrc(loc: string) {
                 try {
                     const hasCache: boolean = (await (await fetch("/sw/check/" + encoded)).json()).able
                     if (hasCache) {
+                        if (shouldLog) console.log(`[getFileSrc #${callId}] → SW cache HIT`)
                         fileCache.res[ind] = "done"
                         return "/sw/img/" + encoded
                     } else {
+                        if (shouldLog)
+                            console.log(`[getFileSrc #${callId}] → SW cache MISS, loading from forageStorage...`)
                         const f: Uint8Array = (await forageStorage.getItem(loc)) as unknown as Uint8Array
+                        if (shouldLog)
+                            console.log(
+                                `[getFileSrc #${callId}] → forageStorage returned: ${f ? f.byteLength + " bytes" : "null"}`
+                            )
                         await fetch("/sw/register/" + encoded, {
                             method: "POST",
                             body: f as any,

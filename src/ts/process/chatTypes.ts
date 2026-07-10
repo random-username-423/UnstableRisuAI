@@ -23,6 +23,8 @@ export interface MultiModal {
 }
 
 export interface OpenAIChatFull extends OpenAIChat {
+    reasoning?: string
+    reasoning_content?: string
     function_call?: {
         name: string
         arguments: string

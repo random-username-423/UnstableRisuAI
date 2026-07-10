@@ -551,6 +551,19 @@ async function finalizeLoading(): Promise<void> {
         }
     }
 
+    // Debug: Log first 10 character image paths
+    const debugDb = getDatabase()
+    if (debugDb.characters && debugDb.characters.length > 0) {
+        console.log("[DEBUG] First 10 character image paths:")
+        for (let i = 0; i < Math.min(10, debugDb.characters.length); i++) {
+            const char = debugDb.characters[i]
+            console.log(`  ${i + 1}. "${char.name}": image="${char.image}"`)
+            if (char.emotionImages && char.emotionImages.length > 0) {
+                console.log(`     emotionImages[0]: "${char.emotionImages[0]?.[1]}"`)
+            }
+        }
+    }
+
     AppState.loaded = true
     ChatState.selectedCharId = -1
     startObserveDom()

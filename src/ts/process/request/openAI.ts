@@ -736,6 +736,56 @@ export async function requestOpenAI(arg: RequestDataArgumentExtended): Promise<r
     return requestHTTPOpenAI(replacerURL, body, headers, arg)
 }
 
+function cleanReasoningContent(reasoning: string): string {
+    return reasoning
+        .replace(/<think>/gms, "")
+        .replace(/<\/think>/gms, "")
+        .trim()
+}
+
+function collectReasoningContent(...values: unknown[]): string {
+    const seen = new Set<string>()
+    const parts: string[] = []
+
+    for (const value of values) {
+        if (typeof value !== "string") {
+            continue
+        }
+
+        const cleaned = cleanReasoningContent(value)
+        if (!cleaned || seen.has(cleaned)) {
+            continue
+        }
+
+        seen.add(cleaned)
+        parts.push(cleaned)
+    }
+
+    return parts.join("\n")
+}
+
+function prependThoughts(result: string | null | undefined, ...reasoningValues: unknown[]): string {
+    const reasoning = collectReasoningContent(...reasoningValues)
+    const content = result ?? ""
+
+    if (!reasoning) {
+        return content
+    }
+
+    return `<Thoughts>\n${reasoning}\n</Thoughts>\n${content}`
+}
+
+function appendReasoningChunk(reasoningContent: string, ...values: unknown[]): string {
+    const chunks = values.filter((value): value is string => {
+        return typeof value === "string" && value.length > 0
+    })
+    if (chunks.length === 0) {
+        return reasoningContent
+    }
+
+    return reasoningContent + [...new Set(chunks)].join("")
+}
+
 export async function requestHTTPOpenAI(
     replacerURL: string,
     body: any,
@@ -768,24 +818,27 @@ export async function requestHTTPOpenAI(
         if (arg.extractJson && (db.jsonSchemaEnabled || arg.schema)) {
             return extractJSON(dat.choices[0].message.content, arg.extractJson)
         }
-        const msg: OpenAIChatFull = dat.choices[0].message
-        let result = msg.content
+        const choice = dat.choices[0]
+        const msg: OpenAIChatFull = choice.message
+        let result = msg.content ?? ""
+        let reasoningContent = ""
         if (arg.modelInfo.flags.includes(LLMFlags.deepSeekThinkingOutput)) {
             console.log("Checking for reasoning content")
-            let reasoningContent = ""
             result = result.replace(/(.*)<\/think>/gms, (m, p1) => {
                 reasoningContent = p1
                 return ""
             })
             console.log(`Reasoning Content: ${reasoningContent}`)
-            if (reasoningContent) {
-                reasoningContent = reasoningContent.replace(/<think>/gms, "")
-                result = `<Thoughts>\n${reasoningContent}\n</Thoughts>\n${result}`
-            }
         }
-        if (dat?.choices[0]?.reasoning_content) {
-            result = `<Thoughts>\n${dat.choices[0].reasoning_content}\n</Thoughts>\n${result}`
-        }
+
+        result = prependThoughts(
+            result,
+            reasoningContent,
+            msg.reasoning,
+            msg.reasoning_content,
+            choice.reasoning,
+            choice.reasoning_content
+        )
 
         return result
     }
@@ -1037,6 +1090,101 @@ export async function requestOpenAILegacyInstruct(arg: RequestDataArgumentExtend
 
 type OAIResponseItem = OAIResponseInputItem | OAIResponseOutputItem
 
+const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses"
+const OPENAI_RESPONSES_PARAMETERS = new Set<Parameter>(["temperature", "top_p", "reasoning_effort", "verbosity"])
+
+function getOpenAIResponsesEndpoint(
+    arg: RequestDataArgumentExtended,
+    aiModel: string
+): { url: string; risuIdentify: boolean } {
+    const db = getDatabase()
+    let url = arg.customURL ?? OPENAI_RESPONSES_URL
+
+    if (arg.modelInfo?.endpoint) {
+        url = arg.modelInfo.endpoint
+    }
+
+    let risuIdentify = false
+    if (url.startsWith("risu::")) {
+        risuIdentify = true
+        url = url.replace("risu::", "")
+    }
+
+    if (aiModel === "reverse_proxy" && db.autofillRequestUrl) {
+        if (url.endsWith("v1")) {
+            url += "/responses"
+        } else if (url.endsWith("v1/")) {
+            url += "responses"
+        } else if (!(url.endsWith("responses") || url.endsWith("responses/"))) {
+            if (url.endsWith("/")) {
+                url += "v1/responses"
+            } else {
+                url += "/v1/responses"
+            }
+        }
+    }
+
+    return { url, risuIdentify }
+}
+
+function applyOpenAIResponsesCustomParams(
+    body: Record<string, unknown>,
+    headers: { [key: string]: string },
+    aiModel: string
+): Record<string, unknown> {
+    const db = getDatabase()
+    const additionalParams: [string, string][] = aiModel === "reverse_proxy" ? db.additionalParams : []
+
+    if (aiModel.startsWith("xcustom:::")) {
+        const found = db.customModels.find((model) => model.id === aiModel)
+        if (found?.params) {
+            for (const line of found.params.split("\n")) {
+                const split = line.split("=")
+                if (split.length >= 2) {
+                    additionalParams.push([split[0], split.slice(1).join("=")])
+                }
+            }
+        }
+    }
+
+    for (const [parameterKey, parameterValue] of additionalParams) {
+        let key = parameterKey
+        let value = parameterValue
+
+        if (!key || !value) {
+            continue
+        }
+
+        if (value === "{{none}}") {
+            if (key.startsWith("header::")) {
+                key = key.replace("header::", "")
+                delete headers[key]
+            } else {
+                delete body[key]
+            }
+            continue
+        }
+
+        if (key.startsWith("header::")) {
+            key = key.replace("header::", "")
+            headers[key] = value
+        } else if (value.startsWith("json::")) {
+            value = value.replace("json::", "")
+            try {
+                body = setObjectValue(body, key, JSON.parse(value))
+            } catch {
+                continue
+            }
+        } else if (isNaN(parseFloat(value))) {
+            body = setObjectValue(body, key, value)
+        } else {
+            body = setObjectValue(body, key, parseFloat(value))
+        }
+    }
+
+    return body
+}
+
 export async function requestOpenAIResponseAPI(arg: RequestDataArgumentExtended): Promise<requestDataResponse> {
     const formated = arg.formated
     const db = getDatabase()
@@ -1115,18 +1263,18 @@ export async function requestOpenAIResponseAPI(arg: RequestDataArgumentExtended)
         ;(items[items.length - 1] as OAIResponseOutputItem).status = "incomplete"
     }
 
-    const isReasoningModel = arg.modelInfo.parameters?.includes("reasoning_effort")
+    const parameters = arg.modelInfo.parameters.filter((parameter) => OPENAI_RESPONSES_PARAMETERS.has(parameter))
 
-    const body = applyParameters(
+    let body = applyParameters(
         {
             model: arg.modelInfo.internalID ?? aiModel,
             input: items,
             max_output_tokens: maxTokens,
             tools: [],
             store: false,
-            ...(isReasoningModel ? { include: ["reasoning.encrypted_content"] } : {}),
+            include: ["reasoning.encrypted_content"],
         },
-        arg.modelInfo.parameters as Parameter[],
+        parameters,
         {
             reasoning_effort: "reasoning.effort",
             verbosity: "text.verbosity",
@@ -1137,20 +1285,6 @@ export async function requestOpenAIResponseAPI(arg: RequestDataArgumentExtended)
         }
     )
 
-    if (arg.previewBody) {
-        return {
-            type: "success",
-            result: JSON.stringify({
-                url: "https://api.openai.com/v1/responses",
-                body: body,
-                headers: {
-                    Authorization: "Bearer " + (arg.key ?? db.openAIKey),
-                    "Content-Type": "application/json",
-                },
-            }),
-        }
-    }
-
     if (db.modelTools.includes("search")) {
         body.tools.push("web_search_preview")
     }
@@ -1159,12 +1293,37 @@ export async function requestOpenAIResponseAPI(arg: RequestDataArgumentExtended)
         body.service_tier = db.openAIServiceTier
     }
 
-    const response = await globalFetch("https://api.openai.com/v1/responses", {
+    const endpoint = getOpenAIResponsesEndpoint(arg, aiModel)
+    const headers: { [key: string]: string } = {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + (arg.key ?? (aiModel === "reverse_proxy" ? db.proxyKey : db.openAIKey)),
+    }
+
+    if (arg.modelInfo?.keyIdentifier) {
+        headers["Authorization"] = "Bearer " + db.OaiCompAPIKeys[arg.modelInfo.keyIdentifier]
+    }
+    if (endpoint.risuIdentify) {
+        headers["X-Proxy-Risu"] = "RisuAI"
+    }
+
+    if (aiModel === "reverse_proxy" || aiModel.startsWith("xcustom:::")) {
+        body = applyOpenAIResponsesCustomParams(body, headers, aiModel)
+    }
+
+    if (arg.previewBody) {
+        return {
+            type: "success",
+            result: JSON.stringify({
+                url: endpoint.url,
+                body: body,
+                headers: headers,
+            }),
+        }
+    }
+
+    const response = await globalFetch(endpoint.url, {
         body: body,
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + (arg.key ?? db.openAIKey),
-        },
+        headers: headers,
         chatId: arg.chatId,
         abortSignal: arg.abortSignal,
     })
@@ -1200,14 +1359,14 @@ export async function requestOpenAIResponseAPI(arg: RequestDataArgumentExtended)
     return {
         type: "success",
         result: result,
-        encryptedThinking:
-            encryptedContent && reasoningTokens > 0
-                ? {
-                      provider: "openai",
-                      data: { encrypted_content: encryptedContent },
-                      tokens: reasoningTokens,
-                  }
-                : undefined,
+        encryptedThinking: encryptedContent
+            ? {
+                  provider: "openai",
+                  data: { encrypted_content: encryptedContent },
+                  // Keep encrypted state replayable when a compatible endpoint omits usage details.
+                  tokens: reasoningTokens || 1,
+              }
+            : undefined,
     }
 }
 
@@ -1230,14 +1389,10 @@ function getTranStream(arg: RequestDataArgumentExtended): TransformStream<Uint8A
                             const rawChunk = data.replace("data: ", "")
                             if (rawChunk === "[DONE]") {
                                 if (arg.modelInfo.flags.includes(LLMFlags.deepSeekThinkingOutput)) {
-                                    readed["0"] = readed["0"].replace(/(.*)<\/think>/gms, (m, p1) => {
+                                    readed["0"] = (readed["0"] ?? "").replace(/(.*)<\/think>/gms, (m, p1) => {
                                         reasoningContent = p1
                                         return ""
                                     })
-
-                                    if (reasoningContent) {
-                                        reasoningContent = reasoningContent.replace(/<think>/gm, "")
-                                    }
                                 }
                                 // Add reasoning_tokens to final chunk if available
                                 if (reasoningTokens > 0) {
@@ -1255,7 +1410,7 @@ function getTranStream(arg: RequestDataArgumentExtended): TransformStream<Uint8A
                                     control.enqueue(JSONreaded)
                                 } else if (reasoningContent) {
                                     control.enqueue({
-                                        "0": `<Thoughts>\n${reasoningContent}\n</Thoughts>\n${readed["0"]}`,
+                                        "0": prependThoughts(readed["0"], reasoningContent),
                                         __oai_reasoning_tokens:
                                             reasoningTokens > 0 ? String(reasoningTokens) : undefined,
                                     })
@@ -1327,23 +1482,21 @@ function getTranStream(arg: RequestDataArgumentExtended): TransformStream<Uint8A
 
                                     readed["__tool_calls"] = JSON.stringify(toolCallsData)
                                 }
-                                if (choice?.delta?.reasoning_content) {
-                                    reasoningContent += choice.delta.reasoning_content
-                                }
+                                reasoningContent = appendReasoningChunk(
+                                    reasoningContent,
+                                    choice?.delta?.reasoning_content,
+                                    choice?.delta?.reasoning
+                                )
                             }
                         } catch (error) {}
                     }
                 }
 
                 if (arg.modelInfo.flags.includes(LLMFlags.deepSeekThinkingOutput)) {
-                    readed["0"] = readed["0"].replace(/(.*)<\/think>/gms, (m, p1) => {
+                    readed["0"] = (readed["0"] ?? "").replace(/(.*)<\/think>/gms, (m, p1) => {
                         reasoningContent = p1
                         return ""
                     })
-
-                    if (reasoningContent) {
-                        reasoningContent = reasoningContent.replace(/<think>/gm, "")
-                    }
                 }
                 if (arg.extractJson && (db.jsonSchemaEnabled || arg.schema)) {
                     for (const key in readed) {
@@ -1354,7 +1507,7 @@ function getTranStream(arg: RequestDataArgumentExtended): TransformStream<Uint8A
                     control.enqueue(JSONreaded)
                 } else if (reasoningContent) {
                     control.enqueue({
-                        "0": `<Thoughts>\n${reasoningContent}\n</Thoughts>\n${readed["0"]}`,
+                        "0": prependThoughts(readed["0"], reasoningContent),
                     })
                 } else {
                     control.enqueue(readed)
